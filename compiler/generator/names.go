@@ -1,0 +1,74 @@
+package generator
+
+import (
+	"strings"
+	"unicode"
+
+	"google.golang.org/protobuf/reflect/protoreflect"
+)
+
+func snakeToPascal(s string) string {
+	var b strings.Builder
+	upper := true
+	for _, c := range s {
+		if c == '_' {
+			upper = true
+			continue
+		}
+		if upper {
+			b.WriteRune(unicode.ToUpper(c))
+			upper = false
+		} else {
+			b.WriteRune(c)
+		}
+	}
+	return b.String()
+}
+
+func goPackageName(protoPkg string) string {
+	parts := strings.Split(protoPkg, ".")
+	if len(parts) < 2 {
+		return protoPkg
+	}
+	return parts[len(parts)-2] + parts[len(parts)-1]
+}
+
+func goPackageDir(protoPkg string) string {
+	parts := strings.Split(protoPkg, ".")
+	if len(parts) >= 3 && parts[0] == "opentelemetry" && parts[1] == "proto" {
+		return "otlp/" + strings.Join(parts[2:], "/")
+	}
+	return strings.Join(parts, "/")
+}
+
+func goImportPath(module, protoPkg string) string {
+	return module + "/gen/" + goPackageDir(protoPkg)
+}
+
+func goMessageTypeName(md protoreflect.MessageDescriptor) string {
+	name := string(md.Name())
+	parent := md.Parent()
+	for {
+		pm, ok := parent.(protoreflect.MessageDescriptor)
+		if !ok {
+			break
+		}
+		name = string(pm.Name()) + "_" + name
+		parent = pm.Parent()
+	}
+	return name
+}
+
+func goEnumTypeName(ed protoreflect.EnumDescriptor) string {
+	name := string(ed.Name())
+	parent := ed.Parent()
+	for {
+		pm, ok := parent.(protoreflect.MessageDescriptor)
+		if !ok {
+			break
+		}
+		name = string(pm.Name()) + "_" + name
+		parent = pm.Parent()
+	}
+	return name
+}
