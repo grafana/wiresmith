@@ -25,6 +25,12 @@ go run ./cmd/grafana-protoc/ --proto_path=proto --out=gen --module=grafana-proto
 go test ./test/ -v
 ```
 
+### Run fuzz tests
+```
+go test ./test/ -fuzz FuzzUnmarshalProto -fuzztime 30s
+```
+Feeds random bytes into all generated `UnmarshalProto` methods to verify they return errors rather than panic on malformed input.
+
 ### Run benchmarks
 ```
 GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn go test ./bench/ -bench=. -benchmem -count=5
