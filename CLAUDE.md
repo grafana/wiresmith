@@ -12,6 +12,7 @@ Custom protobuf compiler that generates high-performance Go code from OpenTeleme
 - `test/` - Round-trip correctness tests against official `google.golang.org/protobuf`
 - `bench/` - Comparative benchmarks (ours vs official protobuf vs vtproto)
 - `bench/vtpb/` - vtproto-generated code for benchmark comparison
+- `scripts/` - Helper scripts (e.g. vtproto regeneration)
 
 ## Commands
 
@@ -40,37 +41,7 @@ The env var is needed because both official OTel proto packages and our vtpb cop
 ### Regenerate vtproto comparison code
 Requires `protoc`, `protoc-gen-go`, `protoc-gen-go-vtproto` installed:
 ```
-PROTO_ROOT=$(mktemp -d)
-mkdir -p $PROTO_ROOT/opentelemetry/proto/{common/v1,resource/v1,metrics/v1,trace/v1,logs/v1,profiles/v1development}
-cp proto/common.proto $PROTO_ROOT/opentelemetry/proto/common/v1/
-cp proto/resource.proto $PROTO_ROOT/opentelemetry/proto/resource/v1/
-cp proto/metrics.proto $PROTO_ROOT/opentelemetry/proto/metrics/v1/
-cp proto/trace.proto $PROTO_ROOT/opentelemetry/proto/trace/v1/
-cp proto/logs.proto $PROTO_ROOT/opentelemetry/proto/logs/v1/
-cp proto/profiles.proto $PROTO_ROOT/opentelemetry/proto/profiles/v1development/
-
-protoc -I "$PROTO_ROOT" \
-  --go_out=. --go_opt=module=grafana-protoc \
-  --go_opt=Mopentelemetry/proto/common/v1/common.proto=grafana-protoc/bench/vtpb/common/v1 \
-  --go_opt=Mopentelemetry/proto/resource/v1/resource.proto=grafana-protoc/bench/vtpb/resource/v1 \
-  --go_opt=Mopentelemetry/proto/metrics/v1/metrics.proto=grafana-protoc/bench/vtpb/metrics/v1 \
-  --go_opt=Mopentelemetry/proto/trace/v1/trace.proto=grafana-protoc/bench/vtpb/trace/v1 \
-  --go_opt=Mopentelemetry/proto/logs/v1/logs.proto=grafana-protoc/bench/vtpb/logs/v1 \
-  --go_opt=Mopentelemetry/proto/profiles/v1development/profiles.proto=grafana-protoc/bench/vtpb/profiles/v1development \
-  --go-vtproto_out=. --go-vtproto_opt=module=grafana-protoc \
-  --go-vtproto_opt=features=marshal+unmarshal+size \
-  --go-vtproto_opt=Mopentelemetry/proto/common/v1/common.proto=grafana-protoc/bench/vtpb/common/v1 \
-  --go-vtproto_opt=Mopentelemetry/proto/resource/v1/resource.proto=grafana-protoc/bench/vtpb/resource/v1 \
-  --go-vtproto_opt=Mopentelemetry/proto/metrics/v1/metrics.proto=grafana-protoc/bench/vtpb/metrics/v1 \
-  --go-vtproto_opt=Mopentelemetry/proto/trace/v1/trace.proto=grafana-protoc/bench/vtpb/trace/v1 \
-  --go-vtproto_opt=Mopentelemetry/proto/logs/v1/logs.proto=grafana-protoc/bench/vtpb/logs/v1 \
-  --go-vtproto_opt=Mopentelemetry/proto/profiles/v1development/profiles.proto=grafana-protoc/bench/vtpb/profiles/v1development \
-  opentelemetry/proto/common/v1/common.proto \
-  opentelemetry/proto/resource/v1/resource.proto \
-  opentelemetry/proto/metrics/v1/metrics.proto \
-  opentelemetry/proto/trace/v1/trace.proto \
-  opentelemetry/proto/logs/v1/logs.proto \
-  opentelemetry/proto/profiles/v1development/profiles.proto
+./scripts/regen-vtproto.sh
 ```
 
 ## Design decisions
