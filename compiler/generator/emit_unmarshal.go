@@ -283,9 +283,8 @@ func (fg *FileGenerator) emitRepeatedFieldUnmarshal(goName string, fd protorefle
 	case kind == protoreflect.MessageKind:
 		msgType := fg.imports.goSingularType(fd)
 		fg.emitConsumeBytes()
-		fmt.Fprintf(fg.body, "\t\t\tvar elem %s\n", msgType)
-		fmt.Fprintf(fg.body, "\t\t\tif err := elem.UnmarshalProto(v); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n")
-		fmt.Fprintf(fg.body, "\t\t\t%s = append(%s, elem)\n", access, access)
+		fmt.Fprintf(fg.body, "\t\t\t%s = append(%s, %s{})\n", access, access, msgType)
+		fmt.Fprintf(fg.body, "\t\t\tif err := %s[len(%s)-1].UnmarshalProto(v); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n", access, access)
 		fg.emitAdvanceBytes()
 
 	case kind == protoreflect.StringKind:
@@ -308,6 +307,21 @@ func (fg *FileGenerator) emitPackedFieldUnmarshal(access string, fd protoreflect
 	fmt.Fprintf(fg.body, "\t\t\tif typ == protowire.BytesType {\n")
 	fmt.Fprintf(fg.body, "\t\t\t\tdata, n := protowire.ConsumeBytes(b)\n")
 	fmt.Fprintf(fg.body, "\t\t\t\tif n < 0 {\n\t\t\t\t\treturn fmt.Errorf(\"invalid packed field\")\n\t\t\t\t}\n")
+	// Pre-allocate for fixed-size packed fields where we can compute exact count
+	sliceType := fg.imports.goType(fd)
+	if isFixed64Kind(kind) {
+		fmt.Fprintf(fg.body, "\t\t\t\tif cap(%s)-len(%s) < len(data)/8 {\n", access, access)
+		fmt.Fprintf(fg.body, "\t\t\t\t\t%s = append(make(%s, 0, len(%s)+len(data)/8), %s...)\n", access, sliceType, access, access)
+		fmt.Fprintf(fg.body, "\t\t\t\t}\n")
+	} else if isFixed32Kind(kind) {
+		fmt.Fprintf(fg.body, "\t\t\t\tif cap(%s)-len(%s) < len(data)/4 {\n", access, access)
+		fmt.Fprintf(fg.body, "\t\t\t\t\t%s = append(make(%s, 0, len(%s)+len(data)/4), %s...)\n", access, sliceType, access, access)
+		fmt.Fprintf(fg.body, "\t\t\t\t}\n")
+	} else if kind == protoreflect.BoolKind {
+		fmt.Fprintf(fg.body, "\t\t\t\tif cap(%s)-len(%s) < len(data) {\n", access, access)
+		fmt.Fprintf(fg.body, "\t\t\t\t\t%s = append(make(%s, 0, len(%s)+len(data)), %s...)\n", access, sliceType, access, access)
+		fmt.Fprintf(fg.body, "\t\t\t\t}\n")
+	}
 	fmt.Fprintf(fg.body, "\t\t\t\tfor len(data) > 0 {\n")
 
 	switch {
