@@ -96,25 +96,25 @@ type Status struct {
 	Code    Status_StatusCode
 }
 
-func (m *TracesData) SizeProto() int {
+func (m *TracesData) Size() int {
 	var n int
 	for i := range m.ResourceSpans {
-		s := m.ResourceSpans[i].SizeProto()
+		s := m.ResourceSpans[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	return n
 }
 
-func (m *ResourceSpans) SizeProto() int {
+func (m *ResourceSpans) Size() int {
 	var n int
 	{
-		s := m.Resource.SizeProto()
+		s := m.Resource.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
 		}
 	}
 	for i := range m.ScopeSpans {
-		s := m.ScopeSpans[i].SizeProto()
+		s := m.ScopeSpans[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	if len(m.SchemaUrl) > 0 {
@@ -123,16 +123,16 @@ func (m *ResourceSpans) SizeProto() int {
 	return n
 }
 
-func (m *ScopeSpans) SizeProto() int {
+func (m *ScopeSpans) Size() int {
 	var n int
 	{
-		s := m.Scope.SizeProto()
+		s := m.Scope.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
 		}
 	}
 	for i := range m.Spans {
-		s := m.Spans[i].SizeProto()
+		s := m.Spans[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	if len(m.SchemaUrl) > 0 {
@@ -141,7 +141,7 @@ func (m *ScopeSpans) SizeProto() int {
 	return n
 }
 
-func (m *Span_Event) SizeProto() int {
+func (m *Span_Event) Size() int {
 	var n int
 	if m.TimeUnixNano != 0 {
 		n += 9
@@ -150,7 +150,7 @@ func (m *Span_Event) SizeProto() int {
 		n += 1 + protowire.SizeVarint(uint64(len(m.Name))) + len(m.Name)
 	}
 	for i := range m.Attributes {
-		s := m.Attributes[i].SizeProto()
+		s := m.Attributes[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	if m.DroppedAttributesCount != 0 {
@@ -159,7 +159,7 @@ func (m *Span_Event) SizeProto() int {
 	return n
 }
 
-func (m *Span_Link) SizeProto() int {
+func (m *Span_Link) Size() int {
 	var n int
 	if len(m.TraceId) > 0 {
 		n += 1 + protowire.SizeVarint(uint64(len(m.TraceId))) + len(m.TraceId)
@@ -171,7 +171,7 @@ func (m *Span_Link) SizeProto() int {
 		n += 1 + protowire.SizeVarint(uint64(len(m.TraceState))) + len(m.TraceState)
 	}
 	for i := range m.Attributes {
-		s := m.Attributes[i].SizeProto()
+		s := m.Attributes[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	if m.DroppedAttributesCount != 0 {
@@ -183,7 +183,7 @@ func (m *Span_Link) SizeProto() int {
 	return n
 }
 
-func (m *Span) SizeProto() int {
+func (m *Span) Size() int {
 	var n int
 	if len(m.TraceId) > 0 {
 		n += 1 + protowire.SizeVarint(uint64(len(m.TraceId))) + len(m.TraceId)
@@ -213,28 +213,28 @@ func (m *Span) SizeProto() int {
 		n += 9
 	}
 	for i := range m.Attributes {
-		s := m.Attributes[i].SizeProto()
+		s := m.Attributes[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	if m.DroppedAttributesCount != 0 {
 		n += 1 + protowire.SizeVarint(uint64(m.DroppedAttributesCount))
 	}
 	for i := range m.Events {
-		s := m.Events[i].SizeProto()
+		s := m.Events[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	if m.DroppedEventsCount != 0 {
 		n += 1 + protowire.SizeVarint(uint64(m.DroppedEventsCount))
 	}
 	for i := range m.Links {
-		s := m.Links[i].SizeProto()
+		s := m.Links[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	if m.DroppedLinksCount != 0 {
 		n += 1 + protowire.SizeVarint(uint64(m.DroppedLinksCount))
 	}
 	{
-		s := m.Status.SizeProto()
+		s := m.Status.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
 		}
@@ -242,7 +242,7 @@ func (m *Span) SizeProto() int {
 	return n
 }
 
-func (m *Status) SizeProto() int {
+func (m *Status) Size() int {
 	var n int
 	if len(m.Message) > 0 {
 		n += 1 + protowire.SizeVarint(uint64(len(m.Message))) + len(m.Message)
@@ -253,8 +253,8 @@ func (m *Status) SizeProto() int {
 	return n
 }
 
-func (m *TracesData) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *TracesData) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -275,8 +275,8 @@ func (m *TracesData) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *ResourceSpans) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *ResourceSpans) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -313,8 +313,8 @@ func (m *ResourceSpans) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *ScopeSpans) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *ScopeSpans) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -351,8 +351,8 @@ func (m *ScopeSpans) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *Span_Event) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *Span_Event) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -391,8 +391,8 @@ func (m *Span_Event) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *Span_Link) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *Span_Link) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -445,8 +445,8 @@ func (m *Span_Link) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *Span) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *Span) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -565,8 +565,8 @@ func (m *Span) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *Status) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *Status) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -627,7 +627,7 @@ func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) 
 	}
 }
 
-func (m *TracesData) UnmarshalProto(b []byte) error {
+func (m *TracesData) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -641,7 +641,7 @@ func (m *TracesData) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.ResourceSpans = append(m.ResourceSpans, ResourceSpans{})
-			if err := m.ResourceSpans[len(m.ResourceSpans)-1].UnmarshalProto(v); err != nil {
+			if err := m.ResourceSpans[len(m.ResourceSpans)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -656,7 +656,7 @@ func (m *TracesData) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *ResourceSpans) UnmarshalProto(b []byte) error {
+func (m *ResourceSpans) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -669,7 +669,7 @@ func (m *ResourceSpans) UnmarshalProto(b []byte) error {
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
 			}
-			if err := m.Resource.UnmarshalProto(v); err != nil {
+			if err := m.Resource.Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -679,7 +679,7 @@ func (m *ResourceSpans) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.ScopeSpans = append(m.ScopeSpans, ScopeSpans{})
-			if err := m.ScopeSpans[len(m.ScopeSpans)-1].UnmarshalProto(v); err != nil {
+			if err := m.ScopeSpans[len(m.ScopeSpans)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -701,7 +701,7 @@ func (m *ResourceSpans) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *ScopeSpans) UnmarshalProto(b []byte) error {
+func (m *ScopeSpans) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -714,7 +714,7 @@ func (m *ScopeSpans) UnmarshalProto(b []byte) error {
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
 			}
-			if err := m.Scope.UnmarshalProto(v); err != nil {
+			if err := m.Scope.Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -724,7 +724,7 @@ func (m *ScopeSpans) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.Spans = append(m.Spans, Span{})
-			if err := m.Spans[len(m.Spans)-1].UnmarshalProto(v); err != nil {
+			if err := m.Spans[len(m.Spans)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -746,7 +746,7 @@ func (m *ScopeSpans) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *Span_Event) UnmarshalProto(b []byte) error {
+func (m *Span_Event) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -774,7 +774,7 @@ func (m *Span_Event) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.Attributes = append(m.Attributes, commonv1.KeyValue{})
-			if err := m.Attributes[len(m.Attributes)-1].UnmarshalProto(v); err != nil {
+			if err := m.Attributes[len(m.Attributes)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -796,7 +796,7 @@ func (m *Span_Event) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *Span_Link) UnmarshalProto(b []byte) error {
+func (m *Span_Link) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -831,7 +831,7 @@ func (m *Span_Link) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.Attributes = append(m.Attributes, commonv1.KeyValue{})
-			if err := m.Attributes[len(m.Attributes)-1].UnmarshalProto(v); err != nil {
+			if err := m.Attributes[len(m.Attributes)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -860,7 +860,7 @@ func (m *Span_Link) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *Span) UnmarshalProto(b []byte) error {
+func (m *Span) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -937,7 +937,7 @@ func (m *Span) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.Attributes = append(m.Attributes, commonv1.KeyValue{})
-			if err := m.Attributes[len(m.Attributes)-1].UnmarshalProto(v); err != nil {
+			if err := m.Attributes[len(m.Attributes)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -954,7 +954,7 @@ func (m *Span) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.Events = append(m.Events, Span_Event{})
-			if err := m.Events[len(m.Events)-1].UnmarshalProto(v); err != nil {
+			if err := m.Events[len(m.Events)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -971,7 +971,7 @@ func (m *Span) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.Links = append(m.Links, Span_Link{})
-			if err := m.Links[len(m.Links)-1].UnmarshalProto(v); err != nil {
+			if err := m.Links[len(m.Links)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -987,7 +987,7 @@ func (m *Span) UnmarshalProto(b []byte) error {
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
 			}
-			if err := m.Status.UnmarshalProto(v); err != nil {
+			if err := m.Status.Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1002,7 +1002,7 @@ func (m *Span) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *Status) UnmarshalProto(b []byte) error {
+func (m *Status) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {

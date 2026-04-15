@@ -28,9 +28,9 @@ go test ./test/ -v
 
 ### Run fuzz tests
 ```
-go test ./test/ -fuzz FuzzUnmarshalProto -fuzztime 30s
+go test ./test/ -fuzz FuzzUnmarshal -fuzztime 30s
 ```
-Feeds random bytes into all generated `UnmarshalProto` methods to verify they return errors rather than panic on malformed input.
+Feeds random bytes into all generated `Unmarshal` methods to verify they return errors rather than panic on malformed input.
 
 ### Run benchmarks
 ```

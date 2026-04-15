@@ -16,24 +16,24 @@ type Resource struct {
 	EntityRefs             []commonv1.EntityRef
 }
 
-func (m *Resource) SizeProto() int {
+func (m *Resource) Size() int {
 	var n int
 	for i := range m.Attributes {
-		s := m.Attributes[i].SizeProto()
+		s := m.Attributes[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	if m.DroppedAttributesCount != 0 {
 		n += 1 + protowire.SizeVarint(uint64(m.DroppedAttributesCount))
 	}
 	for i := range m.EntityRefs {
-		s := m.EntityRefs[i].SizeProto()
+		s := m.EntityRefs[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	return n
 }
 
-func (m *Resource) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *Resource) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -101,7 +101,7 @@ func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) 
 	}
 }
 
-func (m *Resource) UnmarshalProto(b []byte) error {
+func (m *Resource) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -115,7 +115,7 @@ func (m *Resource) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.Attributes = append(m.Attributes, commonv1.KeyValue{})
-			if err := m.Attributes[len(m.Attributes)-1].UnmarshalProto(v); err != nil {
+			if err := m.Attributes[len(m.Attributes)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -132,7 +132,7 @@ func (m *Resource) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.EntityRefs = append(m.EntityRefs, commonv1.EntityRef{})
-			if err := m.EntityRefs[len(m.EntityRefs)-1].UnmarshalProto(v); err != nil {
+			if err := m.EntityRefs[len(m.EntityRefs)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]

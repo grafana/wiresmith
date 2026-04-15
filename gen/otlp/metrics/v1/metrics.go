@@ -210,25 +210,25 @@ type Exemplar struct {
 	TraceId            []byte
 }
 
-func (m *MetricsData) SizeProto() int {
+func (m *MetricsData) Size() int {
 	var n int
 	for i := range m.ResourceMetrics {
-		s := m.ResourceMetrics[i].SizeProto()
+		s := m.ResourceMetrics[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	return n
 }
 
-func (m *ResourceMetrics) SizeProto() int {
+func (m *ResourceMetrics) Size() int {
 	var n int
 	{
-		s := m.Resource.SizeProto()
+		s := m.Resource.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
 		}
 	}
 	for i := range m.ScopeMetrics {
-		s := m.ScopeMetrics[i].SizeProto()
+		s := m.ScopeMetrics[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	if len(m.SchemaUrl) > 0 {
@@ -237,16 +237,16 @@ func (m *ResourceMetrics) SizeProto() int {
 	return n
 }
 
-func (m *ScopeMetrics) SizeProto() int {
+func (m *ScopeMetrics) Size() int {
 	var n int
 	{
-		s := m.Scope.SizeProto()
+		s := m.Scope.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
 		}
 	}
 	for i := range m.Metrics {
-		s := m.Metrics[i].SizeProto()
+		s := m.Metrics[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	if len(m.SchemaUrl) > 0 {
@@ -255,7 +255,7 @@ func (m *ScopeMetrics) SizeProto() int {
 	return n
 }
 
-func (m *Metric) SizeProto() int {
+func (m *Metric) Size() int {
 	var n int
 	if len(m.Name) > 0 {
 		n += 1 + protowire.SizeVarint(uint64(len(m.Name))) + len(m.Name)
@@ -268,41 +268,41 @@ func (m *Metric) SizeProto() int {
 	}
 	switch v := m.Data.(type) {
 	case *Metric_Gauge:
-		s := v.Gauge.SizeProto()
+		s := v.Gauge.Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	case *Metric_Sum:
-		s := v.Sum.SizeProto()
+		s := v.Sum.Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	case *Metric_Histogram:
-		s := v.Histogram.SizeProto()
+		s := v.Histogram.Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	case *Metric_ExponentialHistogram:
-		s := v.ExponentialHistogram.SizeProto()
+		s := v.ExponentialHistogram.Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	case *Metric_Summary:
-		s := v.Summary.SizeProto()
+		s := v.Summary.Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	for i := range m.Metadata {
-		s := m.Metadata[i].SizeProto()
+		s := m.Metadata[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	return n
 }
 
-func (m *Gauge) SizeProto() int {
+func (m *Gauge) Size() int {
 	var n int
 	for i := range m.DataPoints {
-		s := m.DataPoints[i].SizeProto()
+		s := m.DataPoints[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	return n
 }
 
-func (m *Sum) SizeProto() int {
+func (m *Sum) Size() int {
 	var n int
 	for i := range m.DataPoints {
-		s := m.DataPoints[i].SizeProto()
+		s := m.DataPoints[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	if m.AggregationTemporality != 0 {
@@ -314,10 +314,10 @@ func (m *Sum) SizeProto() int {
 	return n
 }
 
-func (m *Histogram) SizeProto() int {
+func (m *Histogram) Size() int {
 	var n int
 	for i := range m.DataPoints {
-		s := m.DataPoints[i].SizeProto()
+		s := m.DataPoints[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	if m.AggregationTemporality != 0 {
@@ -326,10 +326,10 @@ func (m *Histogram) SizeProto() int {
 	return n
 }
 
-func (m *ExponentialHistogram) SizeProto() int {
+func (m *ExponentialHistogram) Size() int {
 	var n int
 	for i := range m.DataPoints {
-		s := m.DataPoints[i].SizeProto()
+		s := m.DataPoints[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	if m.AggregationTemporality != 0 {
@@ -338,19 +338,19 @@ func (m *ExponentialHistogram) SizeProto() int {
 	return n
 }
 
-func (m *Summary) SizeProto() int {
+func (m *Summary) Size() int {
 	var n int
 	for i := range m.DataPoints {
-		s := m.DataPoints[i].SizeProto()
+		s := m.DataPoints[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	return n
 }
 
-func (m *NumberDataPoint) SizeProto() int {
+func (m *NumberDataPoint) Size() int {
 	var n int
 	for i := range m.Attributes {
-		s := m.Attributes[i].SizeProto()
+		s := m.Attributes[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	if m.StartTimeUnixNano != 0 {
@@ -368,7 +368,7 @@ func (m *NumberDataPoint) SizeProto() int {
 		n += 9
 	}
 	for i := range m.Exemplars {
-		s := m.Exemplars[i].SizeProto()
+		s := m.Exemplars[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	if m.Flags != 0 {
@@ -377,10 +377,10 @@ func (m *NumberDataPoint) SizeProto() int {
 	return n
 }
 
-func (m *HistogramDataPoint) SizeProto() int {
+func (m *HistogramDataPoint) Size() int {
 	var n int
 	for i := range m.Attributes {
-		s := m.Attributes[i].SizeProto()
+		s := m.Attributes[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	if m.StartTimeUnixNano != 0 {
@@ -404,7 +404,7 @@ func (m *HistogramDataPoint) SizeProto() int {
 		n += 1 + protowire.SizeVarint(uint64(dataLen)) + dataLen
 	}
 	for i := range m.Exemplars {
-		s := m.Exemplars[i].SizeProto()
+		s := m.Exemplars[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	if m.Flags != 0 {
@@ -419,7 +419,7 @@ func (m *HistogramDataPoint) SizeProto() int {
 	return n
 }
 
-func (m *ExponentialHistogramDataPoint_Buckets) SizeProto() int {
+func (m *ExponentialHistogramDataPoint_Buckets) Size() int {
 	var n int
 	if m.Offset != 0 {
 		n += 1 + protowire.SizeVarint(protowire.EncodeZigZag(int64(m.Offset)))
@@ -434,10 +434,10 @@ func (m *ExponentialHistogramDataPoint_Buckets) SizeProto() int {
 	return n
 }
 
-func (m *ExponentialHistogramDataPoint) SizeProto() int {
+func (m *ExponentialHistogramDataPoint) Size() int {
 	var n int
 	for i := range m.Attributes {
-		s := m.Attributes[i].SizeProto()
+		s := m.Attributes[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	if m.StartTimeUnixNano != 0 {
@@ -459,13 +459,13 @@ func (m *ExponentialHistogramDataPoint) SizeProto() int {
 		n += 9
 	}
 	{
-		s := m.Positive.SizeProto()
+		s := m.Positive.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
 		}
 	}
 	{
-		s := m.Negative.SizeProto()
+		s := m.Negative.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
 		}
@@ -474,7 +474,7 @@ func (m *ExponentialHistogramDataPoint) SizeProto() int {
 		n += 1 + protowire.SizeVarint(uint64(m.Flags))
 	}
 	for i := range m.Exemplars {
-		s := m.Exemplars[i].SizeProto()
+		s := m.Exemplars[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	if m.Min != nil {
@@ -489,7 +489,7 @@ func (m *ExponentialHistogramDataPoint) SizeProto() int {
 	return n
 }
 
-func (m *SummaryDataPoint_ValueAtQuantile) SizeProto() int {
+func (m *SummaryDataPoint_ValueAtQuantile) Size() int {
 	var n int
 	if m.Quantile != 0 {
 		n += 9
@@ -500,10 +500,10 @@ func (m *SummaryDataPoint_ValueAtQuantile) SizeProto() int {
 	return n
 }
 
-func (m *SummaryDataPoint) SizeProto() int {
+func (m *SummaryDataPoint) Size() int {
 	var n int
 	for i := range m.Attributes {
-		s := m.Attributes[i].SizeProto()
+		s := m.Attributes[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	if m.StartTimeUnixNano != 0 {
@@ -519,7 +519,7 @@ func (m *SummaryDataPoint) SizeProto() int {
 		n += 9
 	}
 	for i := range m.QuantileValues {
-		s := m.QuantileValues[i].SizeProto()
+		s := m.QuantileValues[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	if m.Flags != 0 {
@@ -528,10 +528,10 @@ func (m *SummaryDataPoint) SizeProto() int {
 	return n
 }
 
-func (m *Exemplar) SizeProto() int {
+func (m *Exemplar) Size() int {
 	var n int
 	for i := range m.FilteredAttributes {
-		s := m.FilteredAttributes[i].SizeProto()
+		s := m.FilteredAttributes[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	if m.TimeUnixNano != 0 {
@@ -554,8 +554,8 @@ func (m *Exemplar) SizeProto() int {
 	return n
 }
 
-func (m *MetricsData) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *MetricsData) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -576,8 +576,8 @@ func (m *MetricsData) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *ResourceMetrics) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *ResourceMetrics) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -614,8 +614,8 @@ func (m *ResourceMetrics) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *ScopeMetrics) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *ScopeMetrics) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -652,8 +652,8 @@ func (m *ScopeMetrics) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *Metric) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *Metric) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -727,8 +727,8 @@ func (m *Metric) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *Gauge) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *Gauge) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -749,8 +749,8 @@ func (m *Gauge) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *Sum) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *Sum) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -786,8 +786,8 @@ func (m *Sum) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *Histogram) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *Histogram) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -813,8 +813,8 @@ func (m *Histogram) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *ExponentialHistogram) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *ExponentialHistogram) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -840,8 +840,8 @@ func (m *ExponentialHistogram) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *Summary) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *Summary) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -862,8 +862,8 @@ func (m *Summary) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *NumberDataPoint) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *NumberDataPoint) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -920,8 +920,8 @@ func (m *NumberDataPoint) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *HistogramDataPoint) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *HistogramDataPoint) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -1008,8 +1008,8 @@ func (m *HistogramDataPoint) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *ExponentialHistogramDataPoint_Buckets) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *ExponentialHistogramDataPoint_Buckets) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -1038,8 +1038,8 @@ func (m *ExponentialHistogramDataPoint_Buckets) MarshalToSizedBuffer(dAtA []byte
 	return len(dAtA) - i
 }
 
-func (m *ExponentialHistogramDataPoint) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *ExponentialHistogramDataPoint) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -1143,8 +1143,8 @@ func (m *ExponentialHistogramDataPoint) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *SummaryDataPoint_ValueAtQuantile) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *SummaryDataPoint_ValueAtQuantile) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -1170,8 +1170,8 @@ func (m *SummaryDataPoint_ValueAtQuantile) MarshalToSizedBuffer(dAtA []byte) int
 	return len(dAtA) - i
 }
 
-func (m *SummaryDataPoint) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *SummaryDataPoint) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -1228,8 +1228,8 @@ func (m *SummaryDataPoint) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *Exemplar) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *Exemplar) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -1317,7 +1317,7 @@ func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) 
 	}
 }
 
-func (m *MetricsData) UnmarshalProto(b []byte) error {
+func (m *MetricsData) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1331,7 +1331,7 @@ func (m *MetricsData) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.ResourceMetrics = append(m.ResourceMetrics, ResourceMetrics{})
-			if err := m.ResourceMetrics[len(m.ResourceMetrics)-1].UnmarshalProto(v); err != nil {
+			if err := m.ResourceMetrics[len(m.ResourceMetrics)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1346,7 +1346,7 @@ func (m *MetricsData) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *ResourceMetrics) UnmarshalProto(b []byte) error {
+func (m *ResourceMetrics) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1359,7 +1359,7 @@ func (m *ResourceMetrics) UnmarshalProto(b []byte) error {
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
 			}
-			if err := m.Resource.UnmarshalProto(v); err != nil {
+			if err := m.Resource.Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1369,7 +1369,7 @@ func (m *ResourceMetrics) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.ScopeMetrics = append(m.ScopeMetrics, ScopeMetrics{})
-			if err := m.ScopeMetrics[len(m.ScopeMetrics)-1].UnmarshalProto(v); err != nil {
+			if err := m.ScopeMetrics[len(m.ScopeMetrics)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1391,7 +1391,7 @@ func (m *ResourceMetrics) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *ScopeMetrics) UnmarshalProto(b []byte) error {
+func (m *ScopeMetrics) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1404,7 +1404,7 @@ func (m *ScopeMetrics) UnmarshalProto(b []byte) error {
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
 			}
-			if err := m.Scope.UnmarshalProto(v); err != nil {
+			if err := m.Scope.Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1414,7 +1414,7 @@ func (m *ScopeMetrics) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.Metrics = append(m.Metrics, Metric{})
-			if err := m.Metrics[len(m.Metrics)-1].UnmarshalProto(v); err != nil {
+			if err := m.Metrics[len(m.Metrics)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1436,7 +1436,7 @@ func (m *ScopeMetrics) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *Metric) UnmarshalProto(b []byte) error {
+func (m *Metric) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1471,7 +1471,7 @@ func (m *Metric) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			var msg Gauge
-			if err := msg.UnmarshalProto(v); err != nil {
+			if err := msg.Unmarshal(v); err != nil {
 				return err
 			}
 			m.Data = &Metric_Gauge{Gauge: msg}
@@ -1482,7 +1482,7 @@ func (m *Metric) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			var msg Sum
-			if err := msg.UnmarshalProto(v); err != nil {
+			if err := msg.Unmarshal(v); err != nil {
 				return err
 			}
 			m.Data = &Metric_Sum{Sum: msg}
@@ -1493,7 +1493,7 @@ func (m *Metric) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			var msg Histogram
-			if err := msg.UnmarshalProto(v); err != nil {
+			if err := msg.Unmarshal(v); err != nil {
 				return err
 			}
 			m.Data = &Metric_Histogram{Histogram: msg}
@@ -1504,7 +1504,7 @@ func (m *Metric) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			var msg ExponentialHistogram
-			if err := msg.UnmarshalProto(v); err != nil {
+			if err := msg.Unmarshal(v); err != nil {
 				return err
 			}
 			m.Data = &Metric_ExponentialHistogram{ExponentialHistogram: msg}
@@ -1515,7 +1515,7 @@ func (m *Metric) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			var msg Summary
-			if err := msg.UnmarshalProto(v); err != nil {
+			if err := msg.Unmarshal(v); err != nil {
 				return err
 			}
 			m.Data = &Metric_Summary{Summary: msg}
@@ -1526,7 +1526,7 @@ func (m *Metric) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.Metadata = append(m.Metadata, commonv1.KeyValue{})
-			if err := m.Metadata[len(m.Metadata)-1].UnmarshalProto(v); err != nil {
+			if err := m.Metadata[len(m.Metadata)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1541,7 +1541,7 @@ func (m *Metric) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *Gauge) UnmarshalProto(b []byte) error {
+func (m *Gauge) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1555,7 +1555,7 @@ func (m *Gauge) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.DataPoints = append(m.DataPoints, NumberDataPoint{})
-			if err := m.DataPoints[len(m.DataPoints)-1].UnmarshalProto(v); err != nil {
+			if err := m.DataPoints[len(m.DataPoints)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1570,7 +1570,7 @@ func (m *Gauge) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *Sum) UnmarshalProto(b []byte) error {
+func (m *Sum) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1584,7 +1584,7 @@ func (m *Sum) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.DataPoints = append(m.DataPoints, NumberDataPoint{})
-			if err := m.DataPoints[len(m.DataPoints)-1].UnmarshalProto(v); err != nil {
+			if err := m.DataPoints[len(m.DataPoints)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1613,7 +1613,7 @@ func (m *Sum) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *Histogram) UnmarshalProto(b []byte) error {
+func (m *Histogram) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1627,7 +1627,7 @@ func (m *Histogram) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.DataPoints = append(m.DataPoints, HistogramDataPoint{})
-			if err := m.DataPoints[len(m.DataPoints)-1].UnmarshalProto(v); err != nil {
+			if err := m.DataPoints[len(m.DataPoints)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1649,7 +1649,7 @@ func (m *Histogram) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *ExponentialHistogram) UnmarshalProto(b []byte) error {
+func (m *ExponentialHistogram) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1663,7 +1663,7 @@ func (m *ExponentialHistogram) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.DataPoints = append(m.DataPoints, ExponentialHistogramDataPoint{})
-			if err := m.DataPoints[len(m.DataPoints)-1].UnmarshalProto(v); err != nil {
+			if err := m.DataPoints[len(m.DataPoints)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1685,7 +1685,7 @@ func (m *ExponentialHistogram) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *Summary) UnmarshalProto(b []byte) error {
+func (m *Summary) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1699,7 +1699,7 @@ func (m *Summary) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.DataPoints = append(m.DataPoints, SummaryDataPoint{})
-			if err := m.DataPoints[len(m.DataPoints)-1].UnmarshalProto(v); err != nil {
+			if err := m.DataPoints[len(m.DataPoints)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1714,7 +1714,7 @@ func (m *Summary) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *NumberDataPoint) UnmarshalProto(b []byte) error {
+func (m *NumberDataPoint) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1728,7 +1728,7 @@ func (m *NumberDataPoint) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.Attributes = append(m.Attributes, commonv1.KeyValue{})
-			if err := m.Attributes[len(m.Attributes)-1].UnmarshalProto(v); err != nil {
+			if err := m.Attributes[len(m.Attributes)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1766,7 +1766,7 @@ func (m *NumberDataPoint) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.Exemplars = append(m.Exemplars, Exemplar{})
-			if err := m.Exemplars[len(m.Exemplars)-1].UnmarshalProto(v); err != nil {
+			if err := m.Exemplars[len(m.Exemplars)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1788,7 +1788,7 @@ func (m *NumberDataPoint) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *HistogramDataPoint) UnmarshalProto(b []byte) error {
+func (m *HistogramDataPoint) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1802,7 +1802,7 @@ func (m *HistogramDataPoint) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.Attributes = append(m.Attributes, commonv1.KeyValue{})
-			if err := m.Attributes[len(m.Attributes)-1].UnmarshalProto(v); err != nil {
+			if err := m.Attributes[len(m.Attributes)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1893,7 +1893,7 @@ func (m *HistogramDataPoint) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.Exemplars = append(m.Exemplars, Exemplar{})
-			if err := m.Exemplars[len(m.Exemplars)-1].UnmarshalProto(v); err != nil {
+			if err := m.Exemplars[len(m.Exemplars)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1931,7 +1931,7 @@ func (m *HistogramDataPoint) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *ExponentialHistogramDataPoint_Buckets) UnmarshalProto(b []byte) error {
+func (m *ExponentialHistogramDataPoint_Buckets) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1980,7 +1980,7 @@ func (m *ExponentialHistogramDataPoint_Buckets) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *ExponentialHistogramDataPoint) UnmarshalProto(b []byte) error {
+func (m *ExponentialHistogramDataPoint) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1994,7 +1994,7 @@ func (m *ExponentialHistogramDataPoint) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.Attributes = append(m.Attributes, commonv1.KeyValue{})
-			if err := m.Attributes[len(m.Attributes)-1].UnmarshalProto(v); err != nil {
+			if err := m.Attributes[len(m.Attributes)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -2046,7 +2046,7 @@ func (m *ExponentialHistogramDataPoint) UnmarshalProto(b []byte) error {
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
 			}
-			if err := m.Positive.UnmarshalProto(v); err != nil {
+			if err := m.Positive.Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -2055,7 +2055,7 @@ func (m *ExponentialHistogramDataPoint) UnmarshalProto(b []byte) error {
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
 			}
-			if err := m.Negative.UnmarshalProto(v); err != nil {
+			if err := m.Negative.Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -2072,7 +2072,7 @@ func (m *ExponentialHistogramDataPoint) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.Exemplars = append(m.Exemplars, Exemplar{})
-			if err := m.Exemplars[len(m.Exemplars)-1].UnmarshalProto(v); err != nil {
+			if err := m.Exemplars[len(m.Exemplars)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -2110,7 +2110,7 @@ func (m *ExponentialHistogramDataPoint) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *SummaryDataPoint_ValueAtQuantile) UnmarshalProto(b []byte) error {
+func (m *SummaryDataPoint_ValueAtQuantile) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -2143,7 +2143,7 @@ func (m *SummaryDataPoint_ValueAtQuantile) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *SummaryDataPoint) UnmarshalProto(b []byte) error {
+func (m *SummaryDataPoint) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -2157,7 +2157,7 @@ func (m *SummaryDataPoint) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.Attributes = append(m.Attributes, commonv1.KeyValue{})
-			if err := m.Attributes[len(m.Attributes)-1].UnmarshalProto(v); err != nil {
+			if err := m.Attributes[len(m.Attributes)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -2195,7 +2195,7 @@ func (m *SummaryDataPoint) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.QuantileValues = append(m.QuantileValues, SummaryDataPoint_ValueAtQuantile{})
-			if err := m.QuantileValues[len(m.QuantileValues)-1].UnmarshalProto(v); err != nil {
+			if err := m.QuantileValues[len(m.QuantileValues)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -2217,7 +2217,7 @@ func (m *SummaryDataPoint) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *Exemplar) UnmarshalProto(b []byte) error {
+func (m *Exemplar) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -2231,7 +2231,7 @@ func (m *Exemplar) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.FilteredAttributes = append(m.FilteredAttributes, commonv1.KeyValue{})
-			if err := m.FilteredAttributes[len(m.FilteredAttributes)-1].UnmarshalProto(v); err != nil {
+			if err := m.FilteredAttributes[len(m.FilteredAttributes)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]

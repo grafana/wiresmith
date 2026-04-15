@@ -13,7 +13,7 @@ import (
 
 // unmarshaler is implemented by all generated message types.
 type unmarshaler interface {
-	UnmarshalProto([]byte) error
+	Unmarshal([]byte) error
 }
 
 // allMessageConstructors returns a constructor for every generated message type.
@@ -81,9 +81,9 @@ func allMessageConstructors() map[string]func() unmarshaler {
 	}
 }
 
-// FuzzUnmarshalProto feeds random bytes into every generated UnmarshalProto
+// FuzzUnmarshal feeds random bytes into every generated Unmarshal
 // method. The test passes as long as no method panics — errors are expected.
-func FuzzUnmarshalProto(f *testing.F) {
+func FuzzUnmarshal(f *testing.F) {
 	// Seed corpus with interesting byte patterns.
 	f.Add([]byte{})                                                     // empty
 	f.Add([]byte{0x08, 0x01})                                           // valid varint field
@@ -101,7 +101,7 @@ func FuzzUnmarshalProto(f *testing.F) {
 		for name, newMsg := range ctors {
 			msg := newMsg()
 			// We only care that it doesn't panic; errors are fine.
-			_ = msg.UnmarshalProto(data)
+			_ = msg.Unmarshal(data)
 			_ = name
 		}
 	})

@@ -11,7 +11,7 @@ func (fg *FileGenerator) emitSize(md protoreflect.MessageDescriptor) {
 	name := goMessageTypeName(md)
 	fg.imports.addImport("google.golang.org/protobuf/encoding/protowire", "")
 
-	fmt.Fprintf(fg.body, "func (m *%s) SizeProto() int {\n", name)
+	fmt.Fprintf(fg.body, "func (m *%s) Size() int {\n", name)
 	fmt.Fprintf(fg.body, "\tvar n int\n")
 
 	seenOneofs := map[string]bool{}
@@ -69,7 +69,7 @@ func (fg *FileGenerator) emitSingularFieldSize(access string, fd protoreflect.Fi
 	case protoreflect.BytesKind:
 		fmt.Fprintf(fg.body, "\tif len(%s) > 0 {\n\t\tn += %d + protowire.SizeVarint(uint64(len(%s))) + len(%s)\n\t}\n", access, tagSize, access, access)
 	case protoreflect.MessageKind:
-		fmt.Fprintf(fg.body, "\t{\n\t\ts := %s.SizeProto()\n\t\tif s > 0 {\n\t\t\tn += %d + protowire.SizeVarint(uint64(s)) + s\n\t\t}\n\t}\n", access, tagSize)
+		fmt.Fprintf(fg.body, "\t{\n\t\ts := %s.Size()\n\t\tif s > 0 {\n\t\t\tn += %d + protowire.SizeVarint(uint64(s)) + s\n\t\t}\n\t}\n", access, tagSize)
 	}
 }
 
@@ -101,7 +101,7 @@ func (fg *FileGenerator) emitRepeatedFieldSize(access string, fd protoreflect.Fi
 	switch {
 	case kind == protoreflect.MessageKind:
 		fmt.Fprintf(fg.body, "\tfor i := range %s {\n", access)
-		fmt.Fprintf(fg.body, "\t\ts := %s[i].SizeProto()\n", access)
+		fmt.Fprintf(fg.body, "\t\ts := %s[i].Size()\n", access)
 		fmt.Fprintf(fg.body, "\t\tn += %d + protowire.SizeVarint(uint64(s)) + s\n", tagSize)
 		fmt.Fprintf(fg.body, "\t}\n")
 	case kind == protoreflect.StringKind:
@@ -169,7 +169,7 @@ func (fg *FileGenerator) emitOneofSize(md protoreflect.MessageDescriptor, oo pro
 		case protoreflect.BytesKind:
 			fmt.Fprintf(fg.body, "\t\tl := len(%s)\n\t\tn += %d + protowire.SizeVarint(uint64(l)) + l\n", access, tagSize)
 		case protoreflect.MessageKind:
-			fmt.Fprintf(fg.body, "\t\ts := %s.SizeProto()\n\t\tn += %d + protowire.SizeVarint(uint64(s)) + s\n", access, tagSize)
+			fmt.Fprintf(fg.body, "\t\ts := %s.Size()\n\t\tn += %d + protowire.SizeVarint(uint64(s)) + s\n", access, tagSize)
 		}
 	}
 

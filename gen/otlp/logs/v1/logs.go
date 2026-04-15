@@ -79,25 +79,25 @@ type LogRecord struct {
 	EventName              string
 }
 
-func (m *LogsData) SizeProto() int {
+func (m *LogsData) Size() int {
 	var n int
 	for i := range m.ResourceLogs {
-		s := m.ResourceLogs[i].SizeProto()
+		s := m.ResourceLogs[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	return n
 }
 
-func (m *ResourceLogs) SizeProto() int {
+func (m *ResourceLogs) Size() int {
 	var n int
 	{
-		s := m.Resource.SizeProto()
+		s := m.Resource.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
 		}
 	}
 	for i := range m.ScopeLogs {
-		s := m.ScopeLogs[i].SizeProto()
+		s := m.ScopeLogs[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	if len(m.SchemaUrl) > 0 {
@@ -106,16 +106,16 @@ func (m *ResourceLogs) SizeProto() int {
 	return n
 }
 
-func (m *ScopeLogs) SizeProto() int {
+func (m *ScopeLogs) Size() int {
 	var n int
 	{
-		s := m.Scope.SizeProto()
+		s := m.Scope.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
 		}
 	}
 	for i := range m.LogRecords {
-		s := m.LogRecords[i].SizeProto()
+		s := m.LogRecords[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	if len(m.SchemaUrl) > 0 {
@@ -124,7 +124,7 @@ func (m *ScopeLogs) SizeProto() int {
 	return n
 }
 
-func (m *LogRecord) SizeProto() int {
+func (m *LogRecord) Size() int {
 	var n int
 	if m.TimeUnixNano != 0 {
 		n += 9
@@ -139,13 +139,13 @@ func (m *LogRecord) SizeProto() int {
 		n += 1 + protowire.SizeVarint(uint64(len(m.SeverityText))) + len(m.SeverityText)
 	}
 	{
-		s := m.Body.SizeProto()
+		s := m.Body.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
 		}
 	}
 	for i := range m.Attributes {
-		s := m.Attributes[i].SizeProto()
+		s := m.Attributes[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	if m.DroppedAttributesCount != 0 {
@@ -166,8 +166,8 @@ func (m *LogRecord) SizeProto() int {
 	return n
 }
 
-func (m *LogsData) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *LogsData) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -188,8 +188,8 @@ func (m *LogsData) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *ResourceLogs) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *ResourceLogs) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -226,8 +226,8 @@ func (m *ResourceLogs) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *ScopeLogs) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *ScopeLogs) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -264,8 +264,8 @@ func (m *ScopeLogs) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *LogRecord) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *LogRecord) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -386,7 +386,7 @@ func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) 
 	}
 }
 
-func (m *LogsData) UnmarshalProto(b []byte) error {
+func (m *LogsData) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -400,7 +400,7 @@ func (m *LogsData) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.ResourceLogs = append(m.ResourceLogs, ResourceLogs{})
-			if err := m.ResourceLogs[len(m.ResourceLogs)-1].UnmarshalProto(v); err != nil {
+			if err := m.ResourceLogs[len(m.ResourceLogs)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -415,7 +415,7 @@ func (m *LogsData) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *ResourceLogs) UnmarshalProto(b []byte) error {
+func (m *ResourceLogs) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -428,7 +428,7 @@ func (m *ResourceLogs) UnmarshalProto(b []byte) error {
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
 			}
-			if err := m.Resource.UnmarshalProto(v); err != nil {
+			if err := m.Resource.Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -438,7 +438,7 @@ func (m *ResourceLogs) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.ScopeLogs = append(m.ScopeLogs, ScopeLogs{})
-			if err := m.ScopeLogs[len(m.ScopeLogs)-1].UnmarshalProto(v); err != nil {
+			if err := m.ScopeLogs[len(m.ScopeLogs)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -460,7 +460,7 @@ func (m *ResourceLogs) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *ScopeLogs) UnmarshalProto(b []byte) error {
+func (m *ScopeLogs) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -473,7 +473,7 @@ func (m *ScopeLogs) UnmarshalProto(b []byte) error {
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
 			}
-			if err := m.Scope.UnmarshalProto(v); err != nil {
+			if err := m.Scope.Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -483,7 +483,7 @@ func (m *ScopeLogs) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.LogRecords = append(m.LogRecords, LogRecord{})
-			if err := m.LogRecords[len(m.LogRecords)-1].UnmarshalProto(v); err != nil {
+			if err := m.LogRecords[len(m.LogRecords)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -505,7 +505,7 @@ func (m *ScopeLogs) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *LogRecord) UnmarshalProto(b []byte) error {
+func (m *LogRecord) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -546,7 +546,7 @@ func (m *LogRecord) UnmarshalProto(b []byte) error {
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
 			}
-			if err := m.Body.UnmarshalProto(v); err != nil {
+			if err := m.Body.Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -556,7 +556,7 @@ func (m *LogRecord) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.Attributes = append(m.Attributes, commonv1.KeyValue{})
-			if err := m.Attributes[len(m.Attributes)-1].UnmarshalProto(v); err != nil {
+			if err := m.Attributes[len(m.Attributes)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]

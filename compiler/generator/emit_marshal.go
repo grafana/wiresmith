@@ -12,9 +12,9 @@ func (fg *FileGenerator) emitMarshal(md protoreflect.MessageDescriptor) {
 	name := goMessageTypeName(md)
 	fg.imports.addImport(fg.module+"/gen/protohelpers", "")
 
-	// MarshalProto allocates and returns the encoded bytes.
-	fmt.Fprintf(fg.body, "func (m *%s) MarshalProto() ([]byte, error) {\n", name)
-	fmt.Fprintf(fg.body, "\tsize := m.SizeProto()\n")
+	// Marshal allocates and returns the encoded bytes.
+	fmt.Fprintf(fg.body, "func (m *%s) Marshal() ([]byte, error) {\n", name)
+	fmt.Fprintf(fg.body, "\tsize := m.Size()\n")
 	fmt.Fprintf(fg.body, "\tif size == 0 {\n\t\treturn nil, nil\n\t}\n")
 	fmt.Fprintf(fg.body, "\tdAtA := make([]byte, size)\n")
 	fmt.Fprintf(fg.body, "\tn := m.MarshalToSizedBuffer(dAtA)\n")

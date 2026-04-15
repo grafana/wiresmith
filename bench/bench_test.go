@@ -187,7 +187,7 @@ func BenchmarkMarshalTraces_Ours(b *testing.B) {
 	b.ResetTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		_, _ = data.MarshalProto()
+		_, _ = data.Marshal()
 	}
 }
 
@@ -205,7 +205,7 @@ func BenchmarkMarshalHistogram_Ours(b *testing.B) {
 	b.ResetTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		_, _ = data.MarshalProto()
+		_, _ = data.Marshal()
 	}
 }
 
@@ -222,12 +222,12 @@ func BenchmarkMarshalHistogram_Official(b *testing.B) {
 
 func BenchmarkUnmarshalTraces_Ours(b *testing.B) {
 	data := buildOurTracesData(100)
-	buf, _ := data.MarshalProto()
+	buf, _ := data.Marshal()
 	b.ResetTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
 		var out tracev1.TracesData
-		_ = out.UnmarshalProto(buf)
+		_ = out.Unmarshal(buf)
 	}
 }
 
@@ -244,12 +244,12 @@ func BenchmarkUnmarshalTraces_Official(b *testing.B) {
 
 func BenchmarkUnmarshalHistogram_Ours(b *testing.B) {
 	data := buildOurHistogramMetrics(50)
-	buf, _ := data.MarshalProto()
+	buf, _ := data.Marshal()
 	b.ResetTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
 		var out metricsv1.MetricsData
-		_ = out.UnmarshalProto(buf)
+		_ = out.Unmarshal(buf)
 	}
 }
 
@@ -271,7 +271,7 @@ func BenchmarkSizeTraces_Ours(b *testing.B) {
 	b.ResetTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		_ = data.SizeProto()
+		_ = data.Size()
 	}
 }
 
@@ -291,7 +291,7 @@ func BenchmarkMarshalSingleSpan_Ours(b *testing.B) {
 	b.ResetTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		_, _ = span.MarshalProto()
+		_, _ = span.Marshal()
 	}
 }
 
@@ -306,12 +306,12 @@ func BenchmarkMarshalSingleSpan_Official(b *testing.B) {
 
 func BenchmarkUnmarshalSingleSpan_Ours(b *testing.B) {
 	span := buildOurTracesData(1).ResourceSpans[0].ScopeSpans[0].Spans[0]
-	buf, _ := span.MarshalProto()
+	buf, _ := span.Marshal()
 	b.ResetTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
 		var out tracev1.Span
-		_ = out.UnmarshalProto(buf)
+		_ = out.Unmarshal(buf)
 	}
 }
 

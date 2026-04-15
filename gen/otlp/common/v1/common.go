@@ -95,7 +95,7 @@ type EntityRef struct {
 	DescriptionKeys []string
 }
 
-func (m *AnyValue) SizeProto() int {
+func (m *AnyValue) Size() int {
 	var n int
 	switch v := m.Value.(type) {
 	case *AnyValue_StringValue:
@@ -110,10 +110,10 @@ func (m *AnyValue) SizeProto() int {
 		_ = v.DoubleValue
 		n += 9
 	case *AnyValue_ArrayValue:
-		s := v.ArrayValue.SizeProto()
+		s := v.ArrayValue.Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	case *AnyValue_KvlistValue:
-		s := v.KvlistValue.SizeProto()
+		s := v.KvlistValue.Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	case *AnyValue_BytesValue:
 		l := len(v.BytesValue)
@@ -124,31 +124,31 @@ func (m *AnyValue) SizeProto() int {
 	return n
 }
 
-func (m *ArrayValue) SizeProto() int {
+func (m *ArrayValue) Size() int {
 	var n int
 	for i := range m.Values {
-		s := m.Values[i].SizeProto()
+		s := m.Values[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	return n
 }
 
-func (m *KeyValueList) SizeProto() int {
+func (m *KeyValueList) Size() int {
 	var n int
 	for i := range m.Values {
-		s := m.Values[i].SizeProto()
+		s := m.Values[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	return n
 }
 
-func (m *KeyValue) SizeProto() int {
+func (m *KeyValue) Size() int {
 	var n int
 	if len(m.Key) > 0 {
 		n += 1 + protowire.SizeVarint(uint64(len(m.Key))) + len(m.Key)
 	}
 	{
-		s := m.Value.SizeProto()
+		s := m.Value.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
 		}
@@ -159,7 +159,7 @@ func (m *KeyValue) SizeProto() int {
 	return n
 }
 
-func (m *InstrumentationScope) SizeProto() int {
+func (m *InstrumentationScope) Size() int {
 	var n int
 	if len(m.Name) > 0 {
 		n += 1 + protowire.SizeVarint(uint64(len(m.Name))) + len(m.Name)
@@ -168,7 +168,7 @@ func (m *InstrumentationScope) SizeProto() int {
 		n += 1 + protowire.SizeVarint(uint64(len(m.Version))) + len(m.Version)
 	}
 	for i := range m.Attributes {
-		s := m.Attributes[i].SizeProto()
+		s := m.Attributes[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	if m.DroppedAttributesCount != 0 {
@@ -177,7 +177,7 @@ func (m *InstrumentationScope) SizeProto() int {
 	return n
 }
 
-func (m *EntityRef) SizeProto() int {
+func (m *EntityRef) Size() int {
 	var n int
 	if len(m.SchemaUrl) > 0 {
 		n += 1 + protowire.SizeVarint(uint64(len(m.SchemaUrl))) + len(m.SchemaUrl)
@@ -194,8 +194,8 @@ func (m *EntityRef) SizeProto() int {
 	return n
 }
 
-func (m *AnyValue) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *AnyValue) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -257,8 +257,8 @@ func (m *AnyValue) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *ArrayValue) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *ArrayValue) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -279,8 +279,8 @@ func (m *ArrayValue) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *KeyValueList) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *KeyValueList) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -301,8 +301,8 @@ func (m *KeyValueList) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *KeyValue) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *KeyValue) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -337,8 +337,8 @@ func (m *KeyValue) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *InstrumentationScope) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *InstrumentationScope) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -378,8 +378,8 @@ func (m *InstrumentationScope) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *EntityRef) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *EntityRef) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -456,7 +456,7 @@ func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) 
 	}
 }
 
-func (m *AnyValue) UnmarshalProto(b []byte) error {
+func (m *AnyValue) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -498,7 +498,7 @@ func (m *AnyValue) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			var msg ArrayValue
-			if err := msg.UnmarshalProto(v); err != nil {
+			if err := msg.Unmarshal(v); err != nil {
 				return err
 			}
 			m.Value = &AnyValue_ArrayValue{ArrayValue: msg}
@@ -509,7 +509,7 @@ func (m *AnyValue) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			var msg KeyValueList
-			if err := msg.UnmarshalProto(v); err != nil {
+			if err := msg.Unmarshal(v); err != nil {
 				return err
 			}
 			m.Value = &AnyValue_KvlistValue{KvlistValue: msg}
@@ -539,7 +539,7 @@ func (m *AnyValue) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *ArrayValue) UnmarshalProto(b []byte) error {
+func (m *ArrayValue) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -553,7 +553,7 @@ func (m *ArrayValue) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.Values = append(m.Values, AnyValue{})
-			if err := m.Values[len(m.Values)-1].UnmarshalProto(v); err != nil {
+			if err := m.Values[len(m.Values)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -568,7 +568,7 @@ func (m *ArrayValue) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *KeyValueList) UnmarshalProto(b []byte) error {
+func (m *KeyValueList) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -582,7 +582,7 @@ func (m *KeyValueList) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.Values = append(m.Values, KeyValue{})
-			if err := m.Values[len(m.Values)-1].UnmarshalProto(v); err != nil {
+			if err := m.Values[len(m.Values)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -597,7 +597,7 @@ func (m *KeyValueList) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *KeyValue) UnmarshalProto(b []byte) error {
+func (m *KeyValue) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -617,7 +617,7 @@ func (m *KeyValue) UnmarshalProto(b []byte) error {
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
 			}
-			if err := m.Value.UnmarshalProto(v); err != nil {
+			if err := m.Value.Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -639,7 +639,7 @@ func (m *KeyValue) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *InstrumentationScope) UnmarshalProto(b []byte) error {
+func (m *InstrumentationScope) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -667,7 +667,7 @@ func (m *InstrumentationScope) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.Attributes = append(m.Attributes, KeyValue{})
-			if err := m.Attributes[len(m.Attributes)-1].UnmarshalProto(v); err != nil {
+			if err := m.Attributes[len(m.Attributes)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -689,7 +689,7 @@ func (m *InstrumentationScope) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *EntityRef) UnmarshalProto(b []byte) error {
+func (m *EntityRef) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {

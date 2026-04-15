@@ -109,46 +109,46 @@ type KeyValueAndUnit struct {
 	UnitStrindex int32
 }
 
-func (m *ProfilesDictionary) SizeProto() int {
+func (m *ProfilesDictionary) Size() int {
 	var n int
 	for i := range m.MappingTable {
-		s := m.MappingTable[i].SizeProto()
+		s := m.MappingTable[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	for i := range m.LocationTable {
-		s := m.LocationTable[i].SizeProto()
+		s := m.LocationTable[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	for i := range m.FunctionTable {
-		s := m.FunctionTable[i].SizeProto()
+		s := m.FunctionTable[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	for i := range m.LinkTable {
-		s := m.LinkTable[i].SizeProto()
+		s := m.LinkTable[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	for _, v := range m.StringTable {
 		n += 1 + protowire.SizeVarint(uint64(len(v))) + len(v)
 	}
 	for i := range m.AttributeTable {
-		s := m.AttributeTable[i].SizeProto()
+		s := m.AttributeTable[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	for i := range m.StackTable {
-		s := m.StackTable[i].SizeProto()
+		s := m.StackTable[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	return n
 }
 
-func (m *ProfilesData) SizeProto() int {
+func (m *ProfilesData) Size() int {
 	var n int
 	for i := range m.ResourceProfiles {
-		s := m.ResourceProfiles[i].SizeProto()
+		s := m.ResourceProfiles[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	{
-		s := m.Dictionary.SizeProto()
+		s := m.Dictionary.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
 		}
@@ -156,16 +156,16 @@ func (m *ProfilesData) SizeProto() int {
 	return n
 }
 
-func (m *ResourceProfiles) SizeProto() int {
+func (m *ResourceProfiles) Size() int {
 	var n int
 	{
-		s := m.Resource.SizeProto()
+		s := m.Resource.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
 		}
 	}
 	for i := range m.ScopeProfiles {
-		s := m.ScopeProfiles[i].SizeProto()
+		s := m.ScopeProfiles[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	if len(m.SchemaUrl) > 0 {
@@ -174,16 +174,16 @@ func (m *ResourceProfiles) SizeProto() int {
 	return n
 }
 
-func (m *ScopeProfiles) SizeProto() int {
+func (m *ScopeProfiles) Size() int {
 	var n int
 	{
-		s := m.Scope.SizeProto()
+		s := m.Scope.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
 		}
 	}
 	for i := range m.Profiles {
-		s := m.Profiles[i].SizeProto()
+		s := m.Profiles[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	if len(m.SchemaUrl) > 0 {
@@ -192,16 +192,16 @@ func (m *ScopeProfiles) SizeProto() int {
 	return n
 }
 
-func (m *Profile) SizeProto() int {
+func (m *Profile) Size() int {
 	var n int
 	{
-		s := m.SampleType.SizeProto()
+		s := m.SampleType.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
 		}
 	}
 	for i := range m.Samples {
-		s := m.Samples[i].SizeProto()
+		s := m.Samples[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	if m.TimeUnixNano != 0 {
@@ -211,7 +211,7 @@ func (m *Profile) SizeProto() int {
 		n += 1 + protowire.SizeVarint(uint64(m.DurationNano))
 	}
 	{
-		s := m.PeriodType.SizeProto()
+		s := m.PeriodType.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
 		}
@@ -241,7 +241,7 @@ func (m *Profile) SizeProto() int {
 	return n
 }
 
-func (m *Link) SizeProto() int {
+func (m *Link) Size() int {
 	var n int
 	if len(m.TraceId) > 0 {
 		n += 1 + protowire.SizeVarint(uint64(len(m.TraceId))) + len(m.TraceId)
@@ -252,7 +252,7 @@ func (m *Link) SizeProto() int {
 	return n
 }
 
-func (m *ValueType) SizeProto() int {
+func (m *ValueType) Size() int {
 	var n int
 	if m.TypeStrindex != 0 {
 		n += 1 + protowire.SizeVarint(uint64(m.TypeStrindex))
@@ -263,7 +263,7 @@ func (m *ValueType) SizeProto() int {
 	return n
 }
 
-func (m *Sample) SizeProto() int {
+func (m *Sample) Size() int {
 	var n int
 	if m.StackIndex != 0 {
 		n += 1 + protowire.SizeVarint(uint64(m.StackIndex))
@@ -292,7 +292,7 @@ func (m *Sample) SizeProto() int {
 	return n
 }
 
-func (m *Mapping) SizeProto() int {
+func (m *Mapping) Size() int {
 	var n int
 	if m.MemoryStart != 0 {
 		n += 1 + protowire.SizeVarint(uint64(m.MemoryStart))
@@ -316,7 +316,7 @@ func (m *Mapping) SizeProto() int {
 	return n
 }
 
-func (m *Stack) SizeProto() int {
+func (m *Stack) Size() int {
 	var n int
 	if len(m.LocationIndices) > 0 {
 		var dataLen int
@@ -328,7 +328,7 @@ func (m *Stack) SizeProto() int {
 	return n
 }
 
-func (m *Location) SizeProto() int {
+func (m *Location) Size() int {
 	var n int
 	if m.MappingIndex != 0 {
 		n += 1 + protowire.SizeVarint(uint64(m.MappingIndex))
@@ -337,7 +337,7 @@ func (m *Location) SizeProto() int {
 		n += 1 + protowire.SizeVarint(uint64(m.Address))
 	}
 	for i := range m.Lines {
-		s := m.Lines[i].SizeProto()
+		s := m.Lines[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	if len(m.AttributeIndices) > 0 {
@@ -350,7 +350,7 @@ func (m *Location) SizeProto() int {
 	return n
 }
 
-func (m *Line) SizeProto() int {
+func (m *Line) Size() int {
 	var n int
 	if m.FunctionIndex != 0 {
 		n += 1 + protowire.SizeVarint(uint64(m.FunctionIndex))
@@ -364,7 +364,7 @@ func (m *Line) SizeProto() int {
 	return n
 }
 
-func (m *Function) SizeProto() int {
+func (m *Function) Size() int {
 	var n int
 	if m.NameStrindex != 0 {
 		n += 1 + protowire.SizeVarint(uint64(m.NameStrindex))
@@ -381,13 +381,13 @@ func (m *Function) SizeProto() int {
 	return n
 }
 
-func (m *KeyValueAndUnit) SizeProto() int {
+func (m *KeyValueAndUnit) Size() int {
 	var n int
 	if m.KeyStrindex != 0 {
 		n += 1 + protowire.SizeVarint(uint64(m.KeyStrindex))
 	}
 	{
-		s := m.Value.SizeProto()
+		s := m.Value.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
 		}
@@ -398,8 +398,8 @@ func (m *KeyValueAndUnit) SizeProto() int {
 	return n
 }
 
-func (m *ProfilesDictionary) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *ProfilesDictionary) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -462,8 +462,8 @@ func (m *ProfilesDictionary) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *ProfilesData) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *ProfilesData) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -493,8 +493,8 @@ func (m *ProfilesData) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *ResourceProfiles) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *ResourceProfiles) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -531,8 +531,8 @@ func (m *ResourceProfiles) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *ScopeProfiles) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *ScopeProfiles) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -569,8 +569,8 @@ func (m *ScopeProfiles) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *Profile) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *Profile) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -661,8 +661,8 @@ func (m *Profile) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *Link) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *Link) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -690,8 +690,8 @@ func (m *Link) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *ValueType) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *ValueType) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -715,8 +715,8 @@ func (m *ValueType) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *Sample) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *Sample) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -769,8 +769,8 @@ func (m *Sample) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *Mapping) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *Mapping) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -814,8 +814,8 @@ func (m *Mapping) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *Stack) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *Stack) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -839,8 +839,8 @@ func (m *Stack) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *Location) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *Location) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -881,8 +881,8 @@ func (m *Location) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *Line) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *Line) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -911,8 +911,8 @@ func (m *Line) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *Function) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *Function) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -946,8 +946,8 @@ func (m *Function) MarshalToSizedBuffer(dAtA []byte) int {
 	return len(dAtA) - i
 }
 
-func (m *KeyValueAndUnit) MarshalProto() ([]byte, error) {
-	size := m.SizeProto()
+func (m *KeyValueAndUnit) Marshal() ([]byte, error) {
+	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
@@ -1015,7 +1015,7 @@ func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) 
 	}
 }
 
-func (m *ProfilesDictionary) UnmarshalProto(b []byte) error {
+func (m *ProfilesDictionary) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1029,7 +1029,7 @@ func (m *ProfilesDictionary) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.MappingTable = append(m.MappingTable, Mapping{})
-			if err := m.MappingTable[len(m.MappingTable)-1].UnmarshalProto(v); err != nil {
+			if err := m.MappingTable[len(m.MappingTable)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1039,7 +1039,7 @@ func (m *ProfilesDictionary) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.LocationTable = append(m.LocationTable, Location{})
-			if err := m.LocationTable[len(m.LocationTable)-1].UnmarshalProto(v); err != nil {
+			if err := m.LocationTable[len(m.LocationTable)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1049,7 +1049,7 @@ func (m *ProfilesDictionary) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.FunctionTable = append(m.FunctionTable, Function{})
-			if err := m.FunctionTable[len(m.FunctionTable)-1].UnmarshalProto(v); err != nil {
+			if err := m.FunctionTable[len(m.FunctionTable)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1059,7 +1059,7 @@ func (m *ProfilesDictionary) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.LinkTable = append(m.LinkTable, Link{})
-			if err := m.LinkTable[len(m.LinkTable)-1].UnmarshalProto(v); err != nil {
+			if err := m.LinkTable[len(m.LinkTable)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1076,7 +1076,7 @@ func (m *ProfilesDictionary) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.AttributeTable = append(m.AttributeTable, KeyValueAndUnit{})
-			if err := m.AttributeTable[len(m.AttributeTable)-1].UnmarshalProto(v); err != nil {
+			if err := m.AttributeTable[len(m.AttributeTable)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1086,7 +1086,7 @@ func (m *ProfilesDictionary) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.StackTable = append(m.StackTable, Stack{})
-			if err := m.StackTable[len(m.StackTable)-1].UnmarshalProto(v); err != nil {
+			if err := m.StackTable[len(m.StackTable)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1101,7 +1101,7 @@ func (m *ProfilesDictionary) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *ProfilesData) UnmarshalProto(b []byte) error {
+func (m *ProfilesData) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1115,7 +1115,7 @@ func (m *ProfilesData) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.ResourceProfiles = append(m.ResourceProfiles, ResourceProfiles{})
-			if err := m.ResourceProfiles[len(m.ResourceProfiles)-1].UnmarshalProto(v); err != nil {
+			if err := m.ResourceProfiles[len(m.ResourceProfiles)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1124,7 +1124,7 @@ func (m *ProfilesData) UnmarshalProto(b []byte) error {
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
 			}
-			if err := m.Dictionary.UnmarshalProto(v); err != nil {
+			if err := m.Dictionary.Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1139,7 +1139,7 @@ func (m *ProfilesData) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *ResourceProfiles) UnmarshalProto(b []byte) error {
+func (m *ResourceProfiles) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1152,7 +1152,7 @@ func (m *ResourceProfiles) UnmarshalProto(b []byte) error {
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
 			}
-			if err := m.Resource.UnmarshalProto(v); err != nil {
+			if err := m.Resource.Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1162,7 +1162,7 @@ func (m *ResourceProfiles) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.ScopeProfiles = append(m.ScopeProfiles, ScopeProfiles{})
-			if err := m.ScopeProfiles[len(m.ScopeProfiles)-1].UnmarshalProto(v); err != nil {
+			if err := m.ScopeProfiles[len(m.ScopeProfiles)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1184,7 +1184,7 @@ func (m *ResourceProfiles) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *ScopeProfiles) UnmarshalProto(b []byte) error {
+func (m *ScopeProfiles) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1197,7 +1197,7 @@ func (m *ScopeProfiles) UnmarshalProto(b []byte) error {
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
 			}
-			if err := m.Scope.UnmarshalProto(v); err != nil {
+			if err := m.Scope.Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1207,7 +1207,7 @@ func (m *ScopeProfiles) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.Profiles = append(m.Profiles, Profile{})
-			if err := m.Profiles[len(m.Profiles)-1].UnmarshalProto(v); err != nil {
+			if err := m.Profiles[len(m.Profiles)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1229,7 +1229,7 @@ func (m *ScopeProfiles) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *Profile) UnmarshalProto(b []byte) error {
+func (m *Profile) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1242,7 +1242,7 @@ func (m *Profile) UnmarshalProto(b []byte) error {
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
 			}
-			if err := m.SampleType.UnmarshalProto(v); err != nil {
+			if err := m.SampleType.Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1252,7 +1252,7 @@ func (m *Profile) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.Samples = append(m.Samples, Sample{})
-			if err := m.Samples[len(m.Samples)-1].UnmarshalProto(v); err != nil {
+			if err := m.Samples[len(m.Samples)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1275,7 +1275,7 @@ func (m *Profile) UnmarshalProto(b []byte) error {
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
 			}
-			if err := m.PeriodType.UnmarshalProto(v); err != nil {
+			if err := m.PeriodType.Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1348,7 +1348,7 @@ func (m *Profile) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *Link) UnmarshalProto(b []byte) error {
+func (m *Link) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1381,7 +1381,7 @@ func (m *Link) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *ValueType) UnmarshalProto(b []byte) error {
+func (m *ValueType) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1414,7 +1414,7 @@ func (m *ValueType) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *Sample) UnmarshalProto(b []byte) error {
+func (m *Sample) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1519,7 +1519,7 @@ func (m *Sample) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *Mapping) UnmarshalProto(b []byte) error {
+func (m *Mapping) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1589,7 +1589,7 @@ func (m *Mapping) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *Stack) UnmarshalProto(b []byte) error {
+func (m *Stack) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1631,7 +1631,7 @@ func (m *Stack) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *Location) UnmarshalProto(b []byte) error {
+func (m *Location) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1659,7 +1659,7 @@ func (m *Location) UnmarshalProto(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.Lines = append(m.Lines, Line{})
-			if err := m.Lines[len(m.Lines)-1].UnmarshalProto(v); err != nil {
+			if err := m.Lines[len(m.Lines)-1].Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1697,7 +1697,7 @@ func (m *Location) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *Line) UnmarshalProto(b []byte) error {
+func (m *Line) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1737,7 +1737,7 @@ func (m *Line) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *Function) UnmarshalProto(b []byte) error {
+func (m *Function) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1784,7 +1784,7 @@ func (m *Function) UnmarshalProto(b []byte) error {
 	return nil
 }
 
-func (m *KeyValueAndUnit) UnmarshalProto(b []byte) error {
+func (m *KeyValueAndUnit) Unmarshal(b []byte) error {
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1804,7 +1804,7 @@ func (m *KeyValueAndUnit) UnmarshalProto(b []byte) error {
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
 			}
-			if err := m.Value.UnmarshalProto(v); err != nil {
+			if err := m.Value.Unmarshal(v); err != nil {
 				return err
 			}
 			b = b[n:]

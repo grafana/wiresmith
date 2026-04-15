@@ -32,7 +32,7 @@ func TestResourceRoundTrip(t *testing.T) {
 		DroppedAttributesCount: 3,
 	}
 
-	ourBytes, err := ours.MarshalProto()
+	ourBytes, err := ours.Marshal()
 	require.NoError(t, err)
 
 	// Unmarshal with official proto
@@ -49,7 +49,7 @@ func TestResourceRoundTrip(t *testing.T) {
 	require.NoError(t, err)
 
 	var decoded resourcev1.Resource
-	require.NoError(t, decoded.UnmarshalProto(officialBytes))
+	require.NoError(t, decoded.Unmarshal(officialBytes))
 	assert.Equal(t, ours.Attributes[0].Key, decoded.Attributes[0].Key)
 	assert.Equal(t, ours.DroppedAttributesCount, decoded.DroppedAttributesCount)
 }
@@ -95,7 +95,7 @@ func TestSpanRoundTrip(t *testing.T) {
 		},
 	}
 
-	ourBytes, err := ours.MarshalProto()
+	ourBytes, err := ours.Marshal()
 	require.NoError(t, err)
 
 	var official otlptrace.Span
@@ -123,7 +123,7 @@ func TestSpanRoundTrip(t *testing.T) {
 	require.NoError(t, err)
 
 	var decoded tracev1.Span
-	require.NoError(t, decoded.UnmarshalProto(officialBytes))
+	require.NoError(t, decoded.Unmarshal(officialBytes))
 	assert.Equal(t, ours.TraceId, decoded.TraceId)
 	assert.Equal(t, ours.Name, decoded.Name)
 	assert.Equal(t, ours.Kind, decoded.Kind)
@@ -203,7 +203,7 @@ func TestAnyValueOneofRoundTrip(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ours := commonv1.AnyValue{Value: tt.value}
-			ourBytes, err := ours.MarshalProto()
+			ourBytes, err := ours.Marshal()
 			require.NoError(t, err)
 
 			var official otlpcommon.AnyValue
@@ -214,10 +214,10 @@ func TestAnyValueOneofRoundTrip(t *testing.T) {
 			officialBytes, err := proto.Marshal(&official)
 			require.NoError(t, err)
 			var decoded commonv1.AnyValue
-			require.NoError(t, decoded.UnmarshalProto(officialBytes))
+			require.NoError(t, decoded.Unmarshal(officialBytes))
 
 			// Re-marshal and compare bytes
-			reBytes, err := decoded.MarshalProto()
+			reBytes, err := decoded.Marshal()
 			require.NoError(t, err)
 			assert.Equal(t, ourBytes, reBytes)
 		})
@@ -244,7 +244,7 @@ func TestLogRecordRoundTrip(t *testing.T) {
 		EventName:              "test.event",
 	}
 
-	ourBytes, err := ours.MarshalProto()
+	ourBytes, err := ours.Marshal()
 	require.NoError(t, err)
 
 	var official otlplogs.LogRecord
@@ -263,7 +263,7 @@ func TestLogRecordRoundTrip(t *testing.T) {
 	officialBytes, err := proto.Marshal(&official)
 	require.NoError(t, err)
 	var decoded logsv1.LogRecord
-	require.NoError(t, decoded.UnmarshalProto(officialBytes))
+	require.NoError(t, decoded.Unmarshal(officialBytes))
 	assert.Equal(t, ours.SeverityNumber, decoded.SeverityNumber)
 	assert.Equal(t, ours.EventName, decoded.EventName)
 }
@@ -289,7 +289,7 @@ func TestHistogramRoundTrip(t *testing.T) {
 		Max:               &max,
 	}
 
-	ourBytes, err := ours.MarshalProto()
+	ourBytes, err := ours.Marshal()
 	require.NoError(t, err)
 
 	var official otlpmetrics.HistogramDataPoint
@@ -310,7 +310,7 @@ func TestHistogramRoundTrip(t *testing.T) {
 	officialBytes, err := proto.Marshal(&official)
 	require.NoError(t, err)
 	var decoded metricsv1.HistogramDataPoint
-	require.NoError(t, decoded.UnmarshalProto(officialBytes))
+	require.NoError(t, decoded.Unmarshal(officialBytes))
 	assert.Equal(t, ours.Count, decoded.Count)
 	require.NotNil(t, decoded.Sum)
 	assert.InDelta(t, sum, *decoded.Sum, 0.001)
@@ -329,7 +329,7 @@ func TestOptionalZeroValue(t *testing.T) {
 		Sum:          &zero, // explicitly set to zero
 	}
 
-	ourBytes, err := ours.MarshalProto()
+	ourBytes, err := ours.Marshal()
 	require.NoError(t, err)
 
 	var official otlpmetrics.HistogramDataPoint
@@ -342,12 +342,12 @@ func TestOptionalZeroValue(t *testing.T) {
 // TestEmptyMessage tests that zero-value structs marshal to empty bytes.
 func TestEmptyMessage(t *testing.T) {
 	ours := tracev1.TracesData{}
-	b, err := ours.MarshalProto()
+	b, err := ours.Marshal()
 	require.NoError(t, err)
 	assert.Empty(t, b)
 
 	var decoded tracev1.TracesData
-	require.NoError(t, decoded.UnmarshalProto(b))
+	require.NoError(t, decoded.Unmarshal(b))
 	assert.Empty(t, decoded.ResourceSpans)
 }
 
@@ -392,7 +392,7 @@ func TestMetricOneofRoundTrip(t *testing.T) {
 				Data:        tt.data,
 			}
 
-			ourBytes, err := ours.MarshalProto()
+			ourBytes, err := ours.Marshal()
 			require.NoError(t, err)
 
 			var official otlpmetrics.Metric
@@ -406,7 +406,7 @@ func TestMetricOneofRoundTrip(t *testing.T) {
 			officialBytes, err := proto.Marshal(&official)
 			require.NoError(t, err)
 			var decoded metricsv1.Metric
-			require.NoError(t, decoded.UnmarshalProto(officialBytes))
+			require.NoError(t, decoded.Unmarshal(officialBytes))
 			assert.Equal(t, ours.Name, decoded.Name)
 		})
 	}
@@ -445,7 +445,7 @@ func TestTracesDataFullRoundTrip(t *testing.T) {
 		},
 	}
 
-	ourBytes, err := ours.MarshalProto()
+	ourBytes, err := ours.Marshal()
 	require.NoError(t, err)
 	require.NotEmpty(t, ourBytes)
 
@@ -466,7 +466,7 @@ func TestTracesDataFullRoundTrip(t *testing.T) {
 	officialBytes, err := proto.Marshal(&official)
 	require.NoError(t, err)
 	var decoded tracev1.TracesData
-	require.NoError(t, decoded.UnmarshalProto(officialBytes))
+	require.NoError(t, decoded.Unmarshal(officialBytes))
 	require.Len(t, decoded.ResourceSpans, 1)
 	assert.Equal(t, "op", decoded.ResourceSpans[0].ScopeSpans[0].Spans[0].Name)
 }
@@ -478,7 +478,7 @@ func TestNumberDataPointOneofRoundTrip(t *testing.T) {
 			TimeUnixNano: 1000,
 			Value:        &metricsv1.NumberDataPoint_AsDouble{AsDouble: 3.14},
 		}
-		b, err := ours.MarshalProto()
+		b, err := ours.Marshal()
 		require.NoError(t, err)
 
 		var official otlpmetrics.NumberDataPoint
@@ -491,7 +491,7 @@ func TestNumberDataPointOneofRoundTrip(t *testing.T) {
 			TimeUnixNano: 1000,
 			Value:        &metricsv1.NumberDataPoint_AsInt{AsInt: -999},
 		}
-		b, err := ours.MarshalProto()
+		b, err := ours.Marshal()
 		require.NoError(t, err)
 
 		var official otlpmetrics.NumberDataPoint
@@ -648,7 +648,7 @@ func TestMetricsDataFullRoundTrip(t *testing.T) {
 		},
 	}
 
-	ourBytes, err := ours.MarshalProto()
+	ourBytes, err := ours.Marshal()
 	require.NoError(t, err)
 	require.NotEmpty(t, ourBytes)
 
@@ -716,7 +716,7 @@ func TestMetricsDataFullRoundTrip(t *testing.T) {
 	officialBytes, err := proto.Marshal(&official)
 	require.NoError(t, err)
 	var decoded metricsv1.MetricsData
-	require.NoError(t, decoded.UnmarshalProto(officialBytes))
+	require.NoError(t, decoded.Unmarshal(officialBytes))
 	require.Len(t, decoded.ResourceMetrics, 1)
 	require.Len(t, decoded.ResourceMetrics[0].ScopeMetrics, 1)
 	require.Len(t, decoded.ResourceMetrics[0].ScopeMetrics[0].Metrics, 5)
@@ -775,7 +775,7 @@ func TestLogsDataFullRoundTrip(t *testing.T) {
 		},
 	}
 
-	ourBytes, err := ours.MarshalProto()
+	ourBytes, err := ours.Marshal()
 	require.NoError(t, err)
 	require.NotEmpty(t, ourBytes)
 
@@ -801,7 +801,7 @@ func TestLogsDataFullRoundTrip(t *testing.T) {
 	officialBytes, err := proto.Marshal(&official)
 	require.NoError(t, err)
 	var decoded logsv1.LogsData
-	require.NoError(t, decoded.UnmarshalProto(officialBytes))
+	require.NoError(t, decoded.Unmarshal(officialBytes))
 	require.Len(t, decoded.ResourceLogs, 1)
 	require.Len(t, decoded.ResourceLogs[0].ScopeLogs, 1)
 	require.Len(t, decoded.ResourceLogs[0].ScopeLogs[0].LogRecords, 2)
@@ -901,13 +901,13 @@ func TestProfilesDataRoundTrip(t *testing.T) {
 		},
 	}
 
-	ourBytes, err := ours.MarshalProto()
+	ourBytes, err := ours.Marshal()
 	require.NoError(t, err)
 	require.NotEmpty(t, ourBytes)
 
 	// Self round-trip: unmarshal our own bytes
 	var decoded profilesv1.ProfilesData
-	require.NoError(t, decoded.UnmarshalProto(ourBytes))
+	require.NoError(t, decoded.Unmarshal(ourBytes))
 
 	require.Len(t, decoded.ResourceProfiles, 1)
 	rp := decoded.ResourceProfiles[0]
@@ -948,7 +948,7 @@ func TestProfilesDataRoundTrip(t *testing.T) {
 	assert.Equal(t, []int32{0}, d.StackTable[0].LocationIndices)
 
 	// Byte-level consistency: marshal decoded, compare
-	reBytes, err := decoded.MarshalProto()
+	reBytes, err := decoded.Marshal()
 	require.NoError(t, err)
 	assert.Equal(t, ourBytes, reBytes)
 }
@@ -964,7 +964,7 @@ func TestKvlistValueRoundTrip(t *testing.T) {
 		}},
 	}
 
-	ourBytes, err := ours.MarshalProto()
+	ourBytes, err := ours.Marshal()
 	require.NoError(t, err)
 
 	var official otlpcommon.AnyValue
@@ -980,8 +980,8 @@ func TestKvlistValueRoundTrip(t *testing.T) {
 	officialBytes, err := proto.Marshal(&official)
 	require.NoError(t, err)
 	var decoded commonv1.AnyValue
-	require.NoError(t, decoded.UnmarshalProto(officialBytes))
-	reBytes, err := decoded.MarshalProto()
+	require.NoError(t, decoded.Unmarshal(officialBytes))
+	reBytes, err := decoded.Marshal()
 	require.NoError(t, err)
 	assert.Equal(t, ourBytes, reBytes)
 }
@@ -995,19 +995,19 @@ func TestEntityRefRoundTrip(t *testing.T) {
 		DescriptionKeys: []string{"service.version"},
 	}
 
-	ourBytes, err := ours.MarshalProto()
+	ourBytes, err := ours.Marshal()
 	require.NoError(t, err)
 	require.NotEmpty(t, ourBytes)
 
 	// Self round-trip (no official proto type available for EntityRef)
 	var decoded commonv1.EntityRef
-	require.NoError(t, decoded.UnmarshalProto(ourBytes))
+	require.NoError(t, decoded.Unmarshal(ourBytes))
 	assert.Equal(t, ours.SchemaUrl, decoded.SchemaUrl)
 	assert.Equal(t, ours.Type, decoded.Type)
 	assert.Equal(t, ours.IdKeys, decoded.IdKeys)
 	assert.Equal(t, ours.DescriptionKeys, decoded.DescriptionKeys)
 
-	reBytes, err := decoded.MarshalProto()
+	reBytes, err := decoded.Marshal()
 	require.NoError(t, err)
 	assert.Equal(t, ourBytes, reBytes)
 }
@@ -1023,7 +1023,7 @@ func TestInstrumentationScopeRoundTrip(t *testing.T) {
 		DroppedAttributesCount: 5,
 	}
 
-	ourBytes, err := ours.MarshalProto()
+	ourBytes, err := ours.Marshal()
 	require.NoError(t, err)
 
 	var official otlpcommon.InstrumentationScope
@@ -1038,7 +1038,7 @@ func TestInstrumentationScopeRoundTrip(t *testing.T) {
 	officialBytes, err := proto.Marshal(&official)
 	require.NoError(t, err)
 	var decoded commonv1.InstrumentationScope
-	require.NoError(t, decoded.UnmarshalProto(officialBytes))
+	require.NoError(t, decoded.Unmarshal(officialBytes))
 	assert.Equal(t, ours.Name, decoded.Name)
 	assert.Equal(t, ours.DroppedAttributesCount, decoded.DroppedAttributesCount)
 }
@@ -1052,7 +1052,7 @@ func TestUnknownFieldSkip(t *testing.T) {
 		},
 		DroppedAttributesCount: 1,
 	}
-	ourBytes, err := ours.MarshalProto()
+	ourBytes, err := ours.Marshal()
 	require.NoError(t, err)
 
 	// Append unknown varint field (field 99, varint)
@@ -1072,7 +1072,7 @@ func TestUnknownFieldSkip(t *testing.T) {
 	withUnknown := append(ourBytes, extra...)
 
 	var decoded resourcev1.Resource
-	require.NoError(t, decoded.UnmarshalProto(withUnknown))
+	require.NoError(t, decoded.Unmarshal(withUnknown))
 	assert.Equal(t, "k", decoded.Attributes[0].Key)
 	assert.Equal(t, uint32(1), decoded.DroppedAttributesCount)
 }
@@ -1084,11 +1084,11 @@ func TestEmptySlicesAndStrings(t *testing.T) {
 			Key:   "",
 			Value: commonv1.AnyValue{Value: &commonv1.AnyValue_StringValue{StringValue: ""}},
 		}
-		b, err := ours.MarshalProto()
+		b, err := ours.Marshal()
 		require.NoError(t, err)
 
 		var decoded commonv1.KeyValue
-		require.NoError(t, decoded.UnmarshalProto(b))
+		require.NoError(t, decoded.Unmarshal(b))
 		// Empty strings are zero values and may not round-trip to a set oneof
 		// but the key should be preserved structurally
 	})
@@ -1097,7 +1097,7 @@ func TestEmptySlicesAndStrings(t *testing.T) {
 		ours := commonv1.AnyValue{
 			Value: &commonv1.AnyValue_BytesValue{BytesValue: []byte{}},
 		}
-		b, err := ours.MarshalProto()
+		b, err := ours.Marshal()
 		require.NoError(t, err)
 
 		var official otlpcommon.AnyValue
@@ -1107,22 +1107,22 @@ func TestEmptySlicesAndStrings(t *testing.T) {
 
 	t.Run("zero_value_span", func(t *testing.T) {
 		ours := tracev1.Span{}
-		b, err := ours.MarshalProto()
+		b, err := ours.Marshal()
 		require.NoError(t, err)
 		assert.Empty(t, b)
 
 		var decoded tracev1.Span
-		require.NoError(t, decoded.UnmarshalProto(b))
+		require.NoError(t, decoded.Unmarshal(b))
 		assert.Equal(t, uint64(0), decoded.StartTimeUnixNano)
 	})
 
 	t.Run("all_zero_log_record", func(t *testing.T) {
 		ours := logsv1.LogRecord{}
-		b, err := ours.MarshalProto()
+		b, err := ours.Marshal()
 		require.NoError(t, err)
 
 		var decoded logsv1.LogRecord
-		require.NoError(t, decoded.UnmarshalProto(b))
+		require.NoError(t, decoded.Unmarshal(b))
 		assert.Equal(t, logsv1.SeverityNumber(0), decoded.SeverityNumber)
 	})
 }
@@ -1138,7 +1138,7 @@ func TestLargeVarintValues(t *testing.T) {
 		Flags:             0xFFFFFFFF,
 	}
 
-	ourBytes, err := ours.MarshalProto()
+	ourBytes, err := ours.Marshal()
 	require.NoError(t, err)
 
 	var official otlptrace.Span
@@ -1151,7 +1151,7 @@ func TestLargeVarintValues(t *testing.T) {
 	officialBytes, err := proto.Marshal(&official)
 	require.NoError(t, err)
 	var decoded tracev1.Span
-	require.NoError(t, decoded.UnmarshalProto(officialBytes))
+	require.NoError(t, decoded.Unmarshal(officialBytes))
 	assert.Equal(t, ours.StartTimeUnixNano, decoded.StartTimeUnixNano)
 	assert.Equal(t, ours.EndTimeUnixNano, decoded.EndTimeUnixNano)
 	assert.Equal(t, ours.Flags, decoded.Flags)
@@ -1195,7 +1195,7 @@ func TestExponentialHistogramDataPointRoundTrip(t *testing.T) {
 		ZeroThreshold: 1e-10,
 	}
 
-	ourBytes, err := ours.MarshalProto()
+	ourBytes, err := ours.Marshal()
 	require.NoError(t, err)
 
 	var official otlpmetrics.ExponentialHistogramDataPoint
@@ -1218,7 +1218,7 @@ func TestExponentialHistogramDataPointRoundTrip(t *testing.T) {
 	officialBytes, err := proto.Marshal(&official)
 	require.NoError(t, err)
 	var decoded metricsv1.ExponentialHistogramDataPoint
-	require.NoError(t, decoded.UnmarshalProto(officialBytes))
+	require.NoError(t, decoded.Unmarshal(officialBytes))
 	assert.Equal(t, ours.Count, decoded.Count)
 	assert.Equal(t, ours.Scale, decoded.Scale)
 	assert.Equal(t, ours.Positive.BucketCounts, decoded.Positive.BucketCounts)
@@ -1246,7 +1246,7 @@ func TestSummaryDataPointRoundTrip(t *testing.T) {
 		Flags: 0,
 	}
 
-	ourBytes, err := ours.MarshalProto()
+	ourBytes, err := ours.Marshal()
 	require.NoError(t, err)
 
 	var official otlpmetrics.SummaryDataPoint
@@ -1264,7 +1264,7 @@ func TestSummaryDataPointRoundTrip(t *testing.T) {
 	officialBytes, err := proto.Marshal(&official)
 	require.NoError(t, err)
 	var decoded metricsv1.SummaryDataPoint
-	require.NoError(t, decoded.UnmarshalProto(officialBytes))
+	require.NoError(t, decoded.Unmarshal(officialBytes))
 	assert.Equal(t, ours.Count, decoded.Count)
 	assert.InDelta(t, ours.Sum, decoded.Sum, 0.001)
 	require.Len(t, decoded.QuantileValues, 6)
@@ -1283,7 +1283,7 @@ func TestExemplarRoundTrip(t *testing.T) {
 			TraceId:      []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
 		}
 
-		ourBytes, err := ours.MarshalProto()
+		ourBytes, err := ours.Marshal()
 		require.NoError(t, err)
 
 		var official otlpmetrics.Exemplar
@@ -1297,7 +1297,7 @@ func TestExemplarRoundTrip(t *testing.T) {
 		officialBytes, err := proto.Marshal(&official)
 		require.NoError(t, err)
 		var decoded metricsv1.Exemplar
-		require.NoError(t, decoded.UnmarshalProto(officialBytes))
+		require.NoError(t, decoded.Unmarshal(officialBytes))
 		assert.InDelta(t, 99.9, decoded.Value.(*metricsv1.Exemplar_AsDouble).AsDouble, 0.001)
 	})
 
@@ -1308,7 +1308,7 @@ func TestExemplarRoundTrip(t *testing.T) {
 			TraceId:      []byte{16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1},
 		}
 
-		ourBytes, err := ours.MarshalProto()
+		ourBytes, err := ours.Marshal()
 		require.NoError(t, err)
 
 		var official otlpmetrics.Exemplar
@@ -1319,7 +1319,7 @@ func TestExemplarRoundTrip(t *testing.T) {
 		officialBytes, err := proto.Marshal(&official)
 		require.NoError(t, err)
 		var decoded metricsv1.Exemplar
-		require.NoError(t, decoded.UnmarshalProto(officialBytes))
+		require.NoError(t, decoded.Unmarshal(officialBytes))
 		assert.Equal(t, int64(-42), decoded.Value.(*metricsv1.Exemplar_AsInt).AsInt)
 	})
 }
@@ -1341,17 +1341,17 @@ func TestResourceWithEntityRefsRoundTrip(t *testing.T) {
 		},
 	}
 
-	ourBytes, err := ours.MarshalProto()
+	ourBytes, err := ours.Marshal()
 	require.NoError(t, err)
 
 	// Self round-trip (EntityRef not in the official go proto v1.10.0)
 	var decoded resourcev1.Resource
-	require.NoError(t, decoded.UnmarshalProto(ourBytes))
+	require.NoError(t, decoded.Unmarshal(ourBytes))
 	require.Len(t, decoded.EntityRefs, 1)
 	assert.Equal(t, "service", decoded.EntityRefs[0].Type)
 	assert.Equal(t, []string{"service.name"}, decoded.EntityRefs[0].IdKeys)
 
-	reBytes, err := decoded.MarshalProto()
+	reBytes, err := decoded.Marshal()
 	require.NoError(t, err)
 	assert.Equal(t, ourBytes, reBytes)
 }
@@ -1364,11 +1364,11 @@ func TestKeyValueWithStrindex(t *testing.T) {
 		KeyStrindex: 7,
 	}
 
-	ourBytes, err := ours.MarshalProto()
+	ourBytes, err := ours.Marshal()
 	require.NoError(t, err)
 
 	var decoded commonv1.KeyValue
-	require.NoError(t, decoded.UnmarshalProto(ourBytes))
+	require.NoError(t, decoded.Unmarshal(ourBytes))
 	assert.Equal(t, "original.key", decoded.Key)
 	assert.Equal(t, int32(7), decoded.KeyStrindex)
 }

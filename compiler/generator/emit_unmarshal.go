@@ -41,7 +41,7 @@ func (fg *FileGenerator) emitUnmarshal(md protoreflect.MessageDescriptor) {
 	fg.imports.addImport("google.golang.org/protobuf/encoding/protowire", "")
 	fg.imports.addImport("fmt", "")
 
-	fmt.Fprintf(fg.body, "func (m *%s) UnmarshalProto(b []byte) error {\n", name)
+	fmt.Fprintf(fg.body, "func (m *%s) Unmarshal(b []byte) error {\n", name)
 	fmt.Fprintf(fg.body, "\tfor len(b) > 0 {\n")
 	fmt.Fprintf(fg.body, "\t\tnum, typ, tagLen := protowire.ConsumeTag(b)\n")
 	fmt.Fprintf(fg.body, "\t\tif tagLen < 0 {\n\t\t\treturn fmt.Errorf(\"invalid tag\")\n\t\t}\n")
@@ -180,7 +180,7 @@ func (fg *FileGenerator) emitSingularFieldUnmarshal(goName string, fd protorefle
 		msgType := fg.imports.goMessageType(fd.Message())
 		_ = msgType
 		fg.emitConsumeBytes()
-		fmt.Fprintf(fg.body, "\t\t\tif err := %s.UnmarshalProto(v); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n", access)
+		fmt.Fprintf(fg.body, "\t\t\tif err := %s.Unmarshal(v); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n", access)
 		fg.emitAdvanceBytes()
 	}
 }
@@ -284,7 +284,7 @@ func (fg *FileGenerator) emitRepeatedFieldUnmarshal(goName string, fd protorefle
 		msgType := fg.imports.goSingularType(fd)
 		fg.emitConsumeBytes()
 		fmt.Fprintf(fg.body, "\t\t\t%s = append(%s, %s{})\n", access, access, msgType)
-		fmt.Fprintf(fg.body, "\t\t\tif err := %s[len(%s)-1].UnmarshalProto(v); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n", access, access)
+		fmt.Fprintf(fg.body, "\t\t\tif err := %s[len(%s)-1].Unmarshal(v); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n", access, access)
 		fg.emitAdvanceBytes()
 
 	case kind == protoreflect.StringKind:
@@ -499,7 +499,7 @@ func (fg *FileGenerator) emitOneofFieldUnmarshal(md protoreflect.MessageDescript
 		fg.emitConsumeBytes()
 		msgType := fg.imports.goSingularType(fd)
 		fmt.Fprintf(fg.body, "\t\t\tvar msg %s\n", msgType)
-		fmt.Fprintf(fg.body, "\t\t\tif err := msg.UnmarshalProto(v); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n")
+		fmt.Fprintf(fg.body, "\t\t\tif err := msg.Unmarshal(v); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n")
 		fmt.Fprintf(fg.body, "\t\t\tm.%s = &%s{%s: msg}\n", ooFieldName, variantName, fieldName)
 		fg.emitAdvanceBytes()
 	}

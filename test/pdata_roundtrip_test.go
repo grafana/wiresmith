@@ -84,7 +84,7 @@ func TestPdataTracesRoundTrip(t *testing.T) {
 
 	// Unmarshal with our generated code
 	var ours tracev1.TracesData
-	require.NoError(t, ours.UnmarshalProto(pdataBytes))
+	require.NoError(t, ours.Unmarshal(pdataBytes))
 
 	// Verify structure
 	require.Len(t, ours.ResourceSpans, 1)
@@ -104,7 +104,7 @@ func TestPdataTracesRoundTrip(t *testing.T) {
 	assert.Equal(t, "deadline exceeded", s.Status.Message)
 
 	// Re-marshal with our code
-	ourBytes, err := ours.MarshalProto()
+	ourBytes, err := ours.Marshal()
 	require.NoError(t, err)
 
 	// Unmarshal back with pdata
@@ -203,7 +203,7 @@ func TestPdataMetricsRoundTrip(t *testing.T) {
 
 	// Unmarshal with our generated code
 	var ours metricsv1.MetricsData
-	require.NoError(t, ours.UnmarshalProto(pdataBytes))
+	require.NoError(t, ours.Unmarshal(pdataBytes))
 
 	// Verify structure
 	require.Len(t, ours.ResourceMetrics, 1)
@@ -241,7 +241,7 @@ func TestPdataMetricsRoundTrip(t *testing.T) {
 	assert.Equal(t, int32(4), expHistData.ExponentialHistogram.DataPoints[0].Scale)
 
 	// Re-marshal with our code
-	ourBytes, err := ours.MarshalProto()
+	ourBytes, err := ours.Marshal()
 	require.NoError(t, err)
 
 	// Unmarshal back with pdata
@@ -306,7 +306,7 @@ func TestPdataLogsRoundTrip(t *testing.T) {
 
 	// Unmarshal with our generated code
 	var ours logsv1.LogsData
-	require.NoError(t, ours.UnmarshalProto(pdataBytes))
+	require.NoError(t, ours.Unmarshal(pdataBytes))
 
 	// Verify structure
 	require.Len(t, ours.ResourceLogs, 1)
@@ -328,7 +328,7 @@ func TestPdataLogsRoundTrip(t *testing.T) {
 	assert.Equal(t, uint32(1), scopeLogs.LogRecords[1].DroppedAttributesCount)
 
 	// Re-marshal with our code
-	ourBytes, err := ours.MarshalProto()
+	ourBytes, err := ours.Marshal()
 	require.NoError(t, err)
 
 	// Unmarshal back with pdata
