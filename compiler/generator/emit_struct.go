@@ -104,7 +104,11 @@ func (fg *FileGenerator) protoTag(fd protoreflect.FieldDescriptor) string {
 
 	protoTag := `protobuf:"` + strings.Join(parts, ",") + `"`
 
-	// JSON tag: gogoslick uses the proto field name (snake_case), not the JSON name (camelCase).
+	// JSON tag: check for gogoproto.jsontag override first.
+	if jt := getJsonTag(fd); jt != "" {
+		return protoTag + fmt.Sprintf(` json:"%s"`, jt)
+	}
+	// gogoslick uses the proto field name (snake_case), not the JSON name (camelCase).
 	jsonName := string(fd.Name())
 	// gogoslick omits omitempty for non-nullable repeated message/bytes fields.
 	if fd.IsList() && !isFieldNullable(fd) && (fd.Kind() == protoreflect.MessageKind || fd.Kind() == protoreflect.BytesKind) {
@@ -146,6 +150,25 @@ func (fg *FileGenerator) emitGetterMethods(md protoreflect.MessageDescriptor) {
 	}
 
 	name := goMessageTypeName(md)
+
+	// Emit oneof interface getters first (e.g., GetMessage() returns the oneof interface).
+	seenOneofs := map[string]bool{}
+	for i := 0; i < md.Fields().Len(); i++ {
+		fd := md.Fields().Get(i)
+		if oo := fd.ContainingOneof(); oo != nil && !oo.IsSynthetic() {
+			ooName := string(oo.Name())
+			if !seenOneofs[ooName] {
+				seenOneofs[ooName] = true
+				goName := snakeToPascal(ooName)
+				ifaceName := oneofInterfaceName(md, oo)
+				fmt.Fprintf(fg.body, "func (m *%s) Get%s() %s {\n", name, goName, ifaceName)
+				fmt.Fprintf(fg.body, "\tif m != nil {\n\t\treturn m.%s\n\t}\n", goName)
+				fmt.Fprintf(fg.body, "\treturn nil\n")
+				fmt.Fprintf(fg.body, "}\n\n")
+			}
+		}
+	}
+
 	for i := 0; i < md.Fields().Len(); i++ {
 		fd := md.Fields().Get(i)
 
@@ -180,7 +203,11 @@ func (fg *FileGenerator) emitOneofGetter(md protoreflect.MessageDescriptor, fd p
 	fmt.Fprintf(fg.body, "\tif x, ok := m.Get%s().(*%s); ok {\n", ooFieldName, variantName)
 	fmt.Fprintf(fg.body, "\t\treturn x.%s\n", goName)
 	fmt.Fprintf(fg.body, "\t}\n")
-	fmt.Fprintf(fg.body, "\treturn %s\n", zeroValueForKind(fd.Kind()))
+	if fd.Kind() == protoreflect.MessageKind {
+		fmt.Fprintf(fg.body, "\treturn %s{}\n", goType)
+	} else {
+		fmt.Fprintf(fg.body, "\treturn %s\n", zeroValueForKind(fd.Kind()))
+	}
 	fmt.Fprintf(fg.body, "}\n\n")
 }
 

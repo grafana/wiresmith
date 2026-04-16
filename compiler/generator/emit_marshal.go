@@ -64,6 +64,33 @@ func (fg *FileGenerator) emitMarshal(md protoreflect.MessageDescriptor) {
 func (fg *FileGenerator) emitFieldMarshalReverse(fd protoreflect.FieldDescriptor) {
 	goName := snakeToPascal(string(fd.Name()))
 	access := "m." + goName
+	num := protowire.Number(fd.Number())
+
+	// customtype fields use MarshalTo (forward) instead of MarshalToSizedBuffer (reverse).
+	if ct := getCustomType(fd); ct != "" {
+		if fd.IsList() {
+			fmt.Fprintf(fg.body, "\tfor iNdEx := len(%s) - 1; iNdEx >= 0; iNdEx-- {\n", access)
+			fmt.Fprintf(fg.body, "\t\t{\n")
+			fmt.Fprintf(fg.body, "\t\t\tsize := %s[iNdEx].Size()\n", access)
+			fmt.Fprintf(fg.body, "\t\t\ti -= size\n")
+			fmt.Fprintf(fg.body, "\t\t\tif _, err := %s[iNdEx].MarshalTo(dAtA[i:]); err != nil {\n\t\t\t\treturn 0, err\n\t\t\t}\n", access)
+			fmt.Fprintf(fg.body, "\t\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(size))\n")
+			fg.reverseTag("\t\t\t", num, protowire.BytesType)
+			fmt.Fprintf(fg.body, "\t\t}\n")
+			fmt.Fprintf(fg.body, "\t}\n")
+		} else {
+			fmt.Fprintf(fg.body, "\t{\n")
+			fmt.Fprintf(fg.body, "\t\tsize := %s.Size()\n", access)
+			fmt.Fprintf(fg.body, "\t\tif size > 0 {\n")
+			fmt.Fprintf(fg.body, "\t\t\ti -= size\n")
+			fmt.Fprintf(fg.body, "\t\t\tif _, err := %s.MarshalTo(dAtA[i:]); err != nil {\n\t\t\t\treturn 0, err\n\t\t\t}\n", access)
+			fmt.Fprintf(fg.body, "\t\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(size))\n")
+			fg.reverseTag("\t\t\t", num, protowire.BytesType)
+			fmt.Fprintf(fg.body, "\t\t}\n")
+			fmt.Fprintf(fg.body, "\t}\n")
+		}
+		return
+	}
 
 	if fd.IsList() {
 		fg.emitRepeatedFieldMarshalReverse(access, fd)

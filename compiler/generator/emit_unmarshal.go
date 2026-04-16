@@ -2,15 +2,29 @@ package generator
 
 import (
 	"fmt"
+	"path/filepath"
+	"strings"
 
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
+
+func (fg *FileGenerator) skipFieldFuncName() string {
+	if fg.gen != nil && fg.gen.GogoCompat {
+		// In gogo compat mode, use file-specific names to avoid redeclaration
+		// when multiple .pb.go files share a Go package.
+		base := filepath.Base(fg.fd.Path())
+		base = strings.TrimSuffix(base, ".proto")
+		return "skipField_" + snakeToPascal(base)
+	}
+	return "skipField"
+}
 
 func (fg *FileGenerator) emitSkipFieldHelper() {
 	fg.imports.addImport("google.golang.org/protobuf/encoding/protowire", "")
 	fg.imports.addImport("fmt", "")
 
-	fmt.Fprintf(fg.body, "func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) {\n")
+	funcName := fg.skipFieldFuncName()
+	fmt.Fprintf(fg.body, "func %s(b []byte, num protowire.Number, typ protowire.Type) (int, error) {\n", funcName)
 	fmt.Fprintf(fg.body, "\tswitch typ {\n")
 	fmt.Fprintf(fg.body, "\tcase protowire.VarintType:\n")
 	fmt.Fprintf(fg.body, "\t\t_, n := protowire.ConsumeVarint(b)\n")
@@ -137,7 +151,7 @@ func (fg *FileGenerator) emitUnmarshal(md protoreflect.MessageDescriptor) {
 	}
 
 	fmt.Fprintf(fg.body, "\t\tdefault:\n")
-	fmt.Fprintf(fg.body, "\t\t\tn, err := skipField(b, num, typ)\n")
+	fmt.Fprintf(fg.body, "\t\t\tn, err := %s(b, num, typ)\n", fg.skipFieldFuncName())
 	fmt.Fprintf(fg.body, "\t\t\tif err != nil {\n\t\t\t\treturn err\n\t\t\t}\n")
 	fmt.Fprintf(fg.body, "\t\t\tb = b[n:]\n")
 	fmt.Fprintf(fg.body, "\t\t}\n") // end switch
@@ -186,7 +200,7 @@ func (fg *FileGenerator) emitFieldUnmarshal(md protoreflect.MessageDescriptor, f
 func (fg *FileGenerator) emitWireTypeCheck(kind protoreflect.Kind) {
 	wt := expectedWireType(kind)
 	fmt.Fprintf(fg.body, "\t\t\tif typ != %s {\n", wt)
-	fmt.Fprintf(fg.body, "\t\t\t\tn, err := skipField(b, num, typ)\n")
+	fmt.Fprintf(fg.body, "\t\t\t\tn, err := %s(b, num, typ)\n", fg.skipFieldFuncName())
 	fmt.Fprintf(fg.body, "\t\t\t\tif err != nil {\n\t\t\t\t\treturn err\n\t\t\t\t}\n")
 	fmt.Fprintf(fg.body, "\t\t\t\tb = b[n:]\n")
 	fmt.Fprintf(fg.body, "\t\t\t\tcontinue\n")
@@ -300,10 +314,15 @@ func (fg *FileGenerator) emitSingularFieldUnmarshal(goName string, fd protorefle
 		fg.emitAdvanceBytes()
 
 	case protoreflect.MessageKind:
-		msgType := fg.imports.goSingularType(fd)
+		var elemType string
+		if ct := getCustomType(fd); ct != "" {
+			elemType = fg.imports.resolveGoTypePath(ct)
+		} else {
+			elemType = fg.imports.goSingularType(fd)
+		}
 		fg.emitConsumeBytes()
-		if isGogoPointerField(fg.gen, fd) {
-			fmt.Fprintf(fg.body, "\t\t\tif %s == nil {\n\t\t\t\t%s = &%s{}\n\t\t\t}\n", access, access, msgType)
+		if isGogoPointerField(fg.gen, fd) && getCustomType(fd) == "" {
+			fmt.Fprintf(fg.body, "\t\t\tif %s == nil {\n\t\t\t\t%s = &%s{}\n\t\t\t}\n", access, access, elemType)
 		}
 		fmt.Fprintf(fg.body, "\t\t\tif err := %s.Unmarshal(v); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n", access)
 		fg.emitAdvanceBytes()
@@ -406,15 +425,21 @@ func (fg *FileGenerator) emitRepeatedFieldUnmarshal(goName string, fd protorefle
 
 	switch {
 	case kind == protoreflect.MessageKind:
-		msgType := fg.imports.goSingularType(fd)
+		// For customtype fields, use the custom type for allocation.
+		var elemType string
+		if ct := getCustomType(fd); ct != "" {
+			elemType = fg.imports.resolveGoTypePath(ct)
+		} else {
+			elemType = fg.imports.goSingularType(fd)
+		}
 		fg.emitConsumeBytes()
 		// In gogo compat mode, repeated message fields default to pointer slices
 		// unless (gogoproto.nullable) = false.
-		usePtr := fg.gen != nil && fg.gen.GogoCompat && isFieldNullable(fd)
+		usePtr := fg.gen != nil && fg.gen.GogoCompat && isFieldNullable(fd) && getCustomType(fd) == ""
 		if usePtr {
-			fmt.Fprintf(fg.body, "\t\t\t%s = append(%s, &%s{})\n", access, access, msgType)
+			fmt.Fprintf(fg.body, "\t\t\t%s = append(%s, &%s{})\n", access, access, elemType)
 		} else {
-			fmt.Fprintf(fg.body, "\t\t\t%s = append(%s, %s{})\n", access, access, msgType)
+			fmt.Fprintf(fg.body, "\t\t\t%s = append(%s, %s{})\n", access, access, elemType)
 		}
 		fmt.Fprintf(fg.body, "\t\t\tif err := %s[len(%s)-1].Unmarshal(v); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n", access, access)
 		fg.emitAdvanceBytes()
@@ -511,7 +536,7 @@ func (fg *FileGenerator) emitPackedFieldUnmarshal(access string, fd protoreflect
 
 	// Skip unexpected wire types
 	fmt.Fprintf(fg.body, "\t\t\t} else {\n")
-	fmt.Fprintf(fg.body, "\t\t\t\tn, err := skipField(b, num, typ)\n")
+	fmt.Fprintf(fg.body, "\t\t\t\tn, err := %s(b, num, typ)\n", fg.skipFieldFuncName())
 	fmt.Fprintf(fg.body, "\t\t\t\tif err != nil {\n\t\t\t\t\treturn err\n\t\t\t\t}\n")
 	fmt.Fprintf(fg.body, "\t\t\t\tb = b[n:]\n")
 	fmt.Fprintf(fg.body, "\t\t\t}\n")

@@ -80,6 +80,27 @@ func (it *ImportTracker) addStdImport(path string) {
 }
 
 func (it *ImportTracker) goType(fd protoreflect.FieldDescriptor) string {
+	// Check for customtype override — completely replaces the Go type.
+	if ct := getCustomType(fd); ct != "" {
+		goType := it.resolveGoTypePath(ct)
+		if fd.IsList() {
+			if isFieldNullable(fd) {
+				return "[]" + goType
+			}
+			return "[]" + goType
+		}
+		return goType
+	}
+
+	// Check for casttype override — replaces the Go type name but keeps the wire encoding.
+	if ct := getCastType(fd); ct != "" {
+		goType := it.resolveGoTypePath(ct)
+		if fd.IsList() {
+			return "[]" + goType
+		}
+		return goType
+	}
+
 	if fd.IsList() {
 		elemType := it.goSingularType(fd)
 		// In gogo compat mode, repeated message fields default to pointer slices
@@ -102,6 +123,34 @@ func (it *ImportTracker) goType(fd protoreflect.FieldDescriptor) string {
 	return it.goSingularType(fd)
 }
 
+// resolveGoTypePath resolves a fully-qualified Go type path (e.g.,
+// "github.com/grafana/mimir/pkg/mimirpb.LabelAdapter") into a qualified
+// type reference, adding the necessary import.
+func (it *ImportTracker) resolveGoTypePath(fullPath string) string {
+	// Check if it's a local type (no dots with slashes).
+	if !strings.Contains(fullPath, "/") && !strings.Contains(fullPath, ".") {
+		return fullPath
+	}
+
+	// Split "github.com/foo/bar.TypeName" into import path and type name.
+	lastDot := strings.LastIndex(fullPath, ".")
+	if lastDot < 0 {
+		return fullPath
+	}
+	importPath := fullPath[:lastDot]
+	typeName := fullPath[lastDot+1:]
+
+	// Derive alias from the last path component.
+	lastSlash := strings.LastIndex(importPath, "/")
+	alias := importPath
+	if lastSlash >= 0 {
+		alias = importPath[lastSlash+1:]
+	}
+
+	it.addImport(importPath, alias)
+	return alias + "." + typeName
+}
+
 // isGogoPointerField returns true if the field should be a pointer in gogo compat mode.
 func isGogoPointerField(gen *Generator, fd protoreflect.FieldDescriptor) bool {
 	return gen != nil && gen.GogoCompat && fd.Kind() == protoreflect.MessageKind && isFieldNullable(fd)
@@ -122,6 +171,70 @@ func isFieldNullable(fd protoreflect.FieldDescriptor) bool {
 		return true
 	}
 	return !containsVarintField(b, 65001, 0)
+}
+
+// getFieldStringOption extracts a string extension value from a field descriptor's options.
+// Returns empty string if the option is not set.
+func getFieldStringOption(fd protoreflect.FieldDescriptor, fieldNum protoreflect.FieldNumber) string {
+	opts, ok := fd.Options().(*descriptorpb.FieldOptions)
+	if !ok || opts == nil {
+		return ""
+	}
+	b, err := proto.Marshal(opts)
+	if err != nil {
+		return ""
+	}
+	return extractStringField(b, fieldNum)
+}
+
+// getCustomType returns the gogoproto.customtype value for a field, or empty string.
+func getCustomType(fd protoreflect.FieldDescriptor) string {
+	return getFieldStringOption(fd, 65003)
+}
+
+// getCastType returns the gogoproto.casttype value for a field, or empty string.
+func getCastType(fd protoreflect.FieldDescriptor) string {
+	return getFieldStringOption(fd, 65007)
+}
+
+// getJsonTag returns the gogoproto.jsontag value for a field, or empty string.
+func getJsonTag(fd protoreflect.FieldDescriptor) string {
+	return getFieldStringOption(fd, 65005)
+}
+
+// extractStringField scans serialized proto bytes for a string (bytes-type) field.
+func extractStringField(b []byte, fieldNum protoreflect.FieldNumber) string {
+	for len(b) > 0 {
+		num, typ, tagLen := protowire.ConsumeTag(b)
+		if tagLen < 0 {
+			return ""
+		}
+		b = b[tagLen:]
+		switch typ {
+		case protowire.VarintType:
+			_, n := protowire.ConsumeVarint(b)
+			if n < 0 {
+				return ""
+			}
+			b = b[n:]
+		case protowire.Fixed32Type:
+			b = b[4:]
+		case protowire.Fixed64Type:
+			b = b[8:]
+		case protowire.BytesType:
+			v, n := protowire.ConsumeBytes(b)
+			if n < 0 {
+				return ""
+			}
+			if num == protowire.Number(fieldNum) {
+				return string(v)
+			}
+			b = b[n:]
+		default:
+			return ""
+		}
+	}
+	return ""
 }
 
 // containsVarintField scans serialized proto bytes for a varint field with the
