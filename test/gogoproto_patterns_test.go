@@ -878,6 +878,6 @@ func TestMarshalToSizedBufferUndersized(t *testing.T) {
 	// Undersized buffer should panic (reverse-write goes out of bounds)
 	assert.Panics(t, func() {
 		tiny := make([]byte, 1)
-		r.MarshalToSizedBuffer(tiny)
+		r.MarshalToSizedBuffer(tiny) //nolint:errcheck // we expect a panic, not an error
 	}, "MarshalToSizedBuffer with undersized buffer should panic")
 }
