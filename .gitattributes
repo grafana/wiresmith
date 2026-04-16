@@ -1,0 +1,2 @@
+# Generated code — always keep our side on merge conflicts.
+gen/** merge=ours
