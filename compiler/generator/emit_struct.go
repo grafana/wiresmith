@@ -199,15 +199,19 @@ func (fg *FileGenerator) emitOneofGetter(md protoreflect.MessageDescriptor, fd p
 	goType := fg.imports.goSingularType(fd)
 	variantName := oneofVariantName(md, fd)
 
-	fmt.Fprintf(fg.body, "func (m *%s) Get%s() %s {\n", name, goName, goType)
+	// In gogo compat mode, oneof message fields are pointers.
+	returnType := goType
+	zeroVal := zeroValueForKind(fd.Kind())
+	if fg.gen != nil && fg.gen.GogoCompat && fd.Kind() == protoreflect.MessageKind {
+		returnType = "*" + goType
+		zeroVal = "nil"
+	}
+
+	fmt.Fprintf(fg.body, "func (m *%s) Get%s() %s {\n", name, goName, returnType)
 	fmt.Fprintf(fg.body, "\tif x, ok := m.Get%s().(*%s); ok {\n", ooFieldName, variantName)
 	fmt.Fprintf(fg.body, "\t\treturn x.%s\n", goName)
 	fmt.Fprintf(fg.body, "\t}\n")
-	if fd.Kind() == protoreflect.MessageKind {
-		fmt.Fprintf(fg.body, "\treturn %s{}\n", goType)
-	} else {
-		fmt.Fprintf(fg.body, "\treturn %s\n", zeroValueForKind(fd.Kind()))
-	}
+	fmt.Fprintf(fg.body, "\treturn %s\n", zeroVal)
 	fmt.Fprintf(fg.body, "}\n\n")
 }
 

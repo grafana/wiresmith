@@ -674,7 +674,12 @@ func (fg *FileGenerator) emitOneofFieldUnmarshal(md protoreflect.MessageDescript
 		msgType := fg.imports.goSingularType(fd)
 		fmt.Fprintf(fg.body, "\t\t\tvar msg %s\n", msgType)
 		fmt.Fprintf(fg.body, "\t\t\tif err := msg.Unmarshal(v); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n")
-		fmt.Fprintf(fg.body, "\t\t\tm.%s = &%s{%s: msg}\n", ooFieldName, variantName, fieldName)
+		// In gogo compat mode, oneof message fields are pointers.
+		if fg.gen != nil && fg.gen.GogoCompat {
+			fmt.Fprintf(fg.body, "\t\t\tm.%s = &%s{%s: &msg}\n", ooFieldName, variantName, fieldName)
+		} else {
+			fmt.Fprintf(fg.body, "\t\t\tm.%s = &%s{%s: msg}\n", ooFieldName, variantName, fieldName)
+		}
 		fg.emitAdvanceBytes()
 	}
 }

@@ -22,6 +22,11 @@ func (fg *FileGenerator) emitOneof(md protoreflect.MessageDescriptor, oo protore
 		fieldName := snakeToPascal(string(fd.Name()))
 		fieldType := fg.imports.goSingularType(fd)
 
+		// In gogo compat mode, message-type oneof fields use pointers.
+		if fg.gen != nil && fg.gen.GogoCompat && fd.Kind() == protoreflect.MessageKind {
+			fieldType = "*" + fieldType
+		}
+
 		fmt.Fprintf(fg.body, "type %s struct {\n", variantName)
 		fmt.Fprintf(fg.body, "\t%s %s\n", fieldName, fieldType)
 		fmt.Fprintf(fg.body, "}\n\n")

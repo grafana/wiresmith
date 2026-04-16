@@ -148,6 +148,7 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 			fg.emitAllEqualMethods(fd)
 		}
 		fg.emitAllStringMethods(fd)
+		fg.emitAllGoStringMethods(fd)
 		fg.emitAllGogoMethods(fd)
 		fg.emitRegistration(fd)
 	}

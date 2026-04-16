@@ -155,6 +155,59 @@ func (fg *FileGenerator) emitAllStringMethods(fd protoreflect.FileDescriptor) {
 	// This is a no-op placeholder for the generator flow.
 }
 
+// emitAllGoStringMethods generates GoString() methods for all messages.
+func (fg *FileGenerator) emitAllGoStringMethods(fd protoreflect.FileDescriptor) {
+	for i := 0; i < fd.Messages().Len(); i++ {
+		fg.emitGoStringMethods(fd.Messages().Get(i))
+	}
+}
+
+func (fg *FileGenerator) emitGoStringMethods(md protoreflect.MessageDescriptor) {
+	for i := 0; i < md.Messages().Len(); i++ {
+		fg.emitGoStringMethods(md.Messages().Get(i))
+	}
+	fg.emitGoString(md)
+}
+
+func (fg *FileGenerator) emitGoString(md protoreflect.MessageDescriptor) {
+	name := goMessageTypeName(md)
+	pkgName := goFilePackage(fg.fd)
+	fg.imports.addStdImport("fmt")
+	fg.imports.addStdImport("strings")
+
+	fmt.Fprintf(fg.body, "func (this *%s) GoString() string {\n", name)
+	fmt.Fprintf(fg.body, "\tif this == nil {\n\t\treturn \"nil\"\n\t}\n")
+
+	// Count fields for initial slice capacity.
+	fieldCount := md.Fields().Len()
+	fmt.Fprintf(fg.body, "\ts := make([]string, 0, %d)\n", fieldCount+4)
+	fmt.Fprintf(fg.body, "\ts = append(s, \"&%s.%s{\")\n", pkgName, name)
+
+	seenOneofs := map[string]bool{}
+	for i := 0; i < md.Fields().Len(); i++ {
+		fd := md.Fields().Get(i)
+
+		if oo := fd.ContainingOneof(); oo != nil && !oo.IsSynthetic() {
+			ooName := string(oo.Name())
+			if !seenOneofs[ooName] {
+				seenOneofs[ooName] = true
+				goName := snakeToPascal(ooName)
+				fmt.Fprintf(fg.body, "\tif this.%s != nil {\n", goName)
+				fmt.Fprintf(fg.body, "\t\ts = append(s, \"%s: \"+fmt.Sprintf(\"%%#v\", this.%s)+\",\\n\")\n", goName, goName)
+				fmt.Fprintf(fg.body, "\t}\n")
+			}
+			continue
+		}
+
+		goName := snakeToPascal(string(fd.Name()))
+		fmt.Fprintf(fg.body, "\ts = append(s, \"%s: \"+fmt.Sprintf(\"%%#v\", this.%s)+\",\\n\")\n", goName, goName)
+	}
+
+	fmt.Fprintf(fg.body, "\ts = append(s, \"}\")\n")
+	fmt.Fprintf(fg.body, "\treturn strings.Join(s, \"\")\n")
+	fmt.Fprintf(fg.body, "}\n\n")
+}
+
 // protoFieldName returns the original proto field name.
 func protoFieldName(fd protoreflect.FieldDescriptor) string {
 	return string(fd.Name())
