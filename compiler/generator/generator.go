@@ -72,6 +72,7 @@ func (g *Generator) Generate(ctx context.Context) error {
 	}
 	compiler := protocompile.Compiler{
 		Resolver: resolver,
+		SourceInfoMode: protocompile.SourceInfoStandard,
 		Reporter: reporter.NewReporter(
 			func(err reporter.ErrorWithPos) error { return err },
 			nil,
@@ -284,6 +285,30 @@ func (fg *FileGenerator) emitUnmarshalMethods(md protoreflect.MessageDescriptor)
 		fg.emitUnmarshalMethods(md.Messages().Get(i))
 	}
 	fg.emitUnmarshal(md)
+}
+
+// leadingComment returns the leading comment for a descriptor, formatted as
+// Go comment lines. Returns empty string if no comment exists.
+func leadingComment(d protoreflect.Descriptor) string {
+	loc := d.ParentFile().SourceLocations().ByDescriptor(d)
+	comment := strings.TrimSpace(loc.LeadingComments)
+	if comment == "" {
+		return ""
+	}
+	var b strings.Builder
+	for _, line := range strings.Split(comment, "\n") {
+		// Protobuf source info preserves leading whitespace from the .proto file;
+		// strip it so the Go comment is clean.
+		line = strings.TrimSpace(line)
+		if line == "" {
+			b.WriteString("//\n")
+		} else {
+			b.WriteString("// ")
+			b.WriteString(line)
+			b.WriteString("\n")
+		}
+	}
+	return b.String()
 }
 
 // isRealOneof returns true if the field belongs to a non-synthetic oneof.

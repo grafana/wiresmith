@@ -10,6 +10,12 @@ import (
 
 func (fg *FileGenerator) emitStruct(md protoreflect.MessageDescriptor) {
 	name := goMessageTypeName(md)
+
+	// Emit message-level leading comment.
+	if c := leadingComment(md); c != "" {
+		fg.body.WriteString(c)
+	}
+
 	fmt.Fprintf(fg.body, "type %s struct {\n", name)
 
 	seenOneofs := map[string]bool{}
@@ -20,6 +26,9 @@ func (fg *FileGenerator) emitStruct(md protoreflect.MessageDescriptor) {
 			ooName := string(oo.Name())
 			if !seenOneofs[ooName] {
 				seenOneofs[ooName] = true
+				if c := leadingComment(oo); c != "" {
+					fg.body.WriteString(indentComment(c))
+				}
 				goName := snakeToPascal(ooName)
 				ifaceName := oneofInterfaceName(md, oo)
 				if fg.gen.GogoCompat {
@@ -29,6 +38,11 @@ func (fg *FileGenerator) emitStruct(md protoreflect.MessageDescriptor) {
 				}
 			}
 			continue
+		}
+
+		// Emit field-level leading comment.
+		if c := leadingComment(fd); c != "" {
+			fg.body.WriteString(indentComment(c))
 		}
 
 		goName := snakeToPascal(string(fd.Name()))
@@ -42,6 +56,17 @@ func (fg *FileGenerator) emitStruct(md protoreflect.MessageDescriptor) {
 	}
 
 	fmt.Fprintf(fg.body, "}\n\n")
+}
+
+// indentComment adds a tab prefix to each line of a Go comment block.
+func indentComment(comment string) string {
+	var b strings.Builder
+	for _, line := range strings.Split(strings.TrimSuffix(comment, "\n"), "\n") {
+		b.WriteByte('\t')
+		b.WriteString(line)
+		b.WriteByte('\n')
+	}
+	return b.String()
 }
 
 // protoTag generates a protobuf struct tag for a field, e.g.:

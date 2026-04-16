@@ -10,10 +10,22 @@ import (
 	"wiresmith/gen/protohelpers"
 )
 
+// Resource information.
 type Resource struct {
-	Attributes             []commonv1.KeyValue
+	// Set of attributes that describe the resource.
+	// Attribute keys MUST be unique (it is not allowed to have more than one
+	// attribute with the same key).
+	// The behavior of software that receives duplicated keys can be unpredictable.
+	Attributes []commonv1.KeyValue
+	// The number of dropped attributes. If the value is 0, then
+	// no attributes were dropped.
 	DroppedAttributesCount uint32
-	EntityRefs             []commonv1.EntityRef
+	// Set of entities that participate in this Resource.
+	//
+	// Note: keys in the references MUST exist in attributes of this message.
+	//
+	// Status: [Development]
+	EntityRefs []commonv1.EntityRef
 }
 
 func (m *Resource) Size() int {

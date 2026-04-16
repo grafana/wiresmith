@@ -12,6 +12,7 @@ import (
 	"wiresmith/gen/protohelpers"
 )
 
+// Possible values for LogRecord.SeverityNumber.
 type SeverityNumber int32
 
 const (
@@ -42,41 +43,156 @@ const (
 	SEVERITY_NUMBER_FATAL4      SeverityNumber = 24
 )
 
+// LogRecordFlags represents constants used to interpret the
+// LogRecord.flags field, which is protobuf 'fixed32' type and is to
+// be used as bit-fields. Each non-zero value defined in this enum is
+// a bit-mask.  To extract the bit-field, for example, use an
+// expression like:
+//
+// (logRecord.flags & LOG_RECORD_FLAGS_TRACE_FLAGS_MASK)
 type LogRecordFlags int32
 
 const (
-	LOG_RECORD_FLAGS_DO_NOT_USE       LogRecordFlags = 0
+	// The zero value for the enum. Should not be used for comparisons.
+	// Instead use bitwise "and" with the appropriate mask as shown above.
+	LOG_RECORD_FLAGS_DO_NOT_USE LogRecordFlags = 0
+	// Bits 0-7 are used for trace flags.
 	LOG_RECORD_FLAGS_TRACE_FLAGS_MASK LogRecordFlags = 255
 )
 
+// LogsData represents the logs data that can be stored in a persistent storage,
+// OR can be embedded by other protocols that transfer OTLP logs data but do not
+// implement the OTLP protocol.
+//
+// The main difference between this message and collector protocol is that
+// in this message there will not be any "control" or "metadata" specific to
+// OTLP protocol.
+//
+// When new fields are added into this message, the OTLP request MUST be updated
+// as well.
 type LogsData struct {
+	// An array of ResourceLogs.
+	// For data coming from a single resource this array will typically contain
+	// one element. Intermediary nodes that receive data from multiple origins
+	// typically batch the data before forwarding further and in that case this
+	// array will contain multiple elements.
 	ResourceLogs []ResourceLogs
 }
 
+// A collection of ScopeLogs from a Resource.
 type ResourceLogs struct {
-	Resource  resourcev1.Resource
+	// The resource for the logs in this message.
+	// If this field is not set then resource info is unknown.
+	Resource resourcev1.Resource
+	// A list of ScopeLogs that originate from a resource.
 	ScopeLogs []ScopeLogs
+	// The Schema URL, if known. This is the identifier of the Schema that the resource data
+	// is recorded in. Notably, the last part of the URL path is the version number of the
+	// schema: http[s]://server[:port]/path/<version>. To learn more about Schema URL see
+	// https://opentelemetry.io/docs/specs/otel/schemas/#schema-url
+	// This schema_url applies to the data in the "resource" field. It does not apply
+	// to the data in the "scope_logs" field which have their own schema_url field.
 	SchemaUrl string
 }
 
+// A collection of Logs produced by a Scope.
 type ScopeLogs struct {
-	Scope      commonv1.InstrumentationScope
+	// The instrumentation scope information for the logs in this message.
+	// Semantically when InstrumentationScope isn't set, it is equivalent with
+	// an empty instrumentation scope name (unknown).
+	Scope commonv1.InstrumentationScope
+	// A list of log records.
 	LogRecords []LogRecord
-	SchemaUrl  string
+	// The Schema URL, if known. This is the identifier of the Schema that the log data
+	// is recorded in. Notably, the last part of the URL path is the version number of the
+	// schema: http[s]://server[:port]/path/<version>. To learn more about Schema URL see
+	// https://opentelemetry.io/docs/specs/otel/schemas/#schema-url
+	// This schema_url applies to the data in the "scope" field and all logs in the
+	// "log_records" field.
+	SchemaUrl string
 }
 
+// A log record according to OpenTelemetry Log Data Model:
+// https://github.com/open-telemetry/oteps/blob/main/text/logs/0097-log-data-model.md
 type LogRecord struct {
-	TimeUnixNano           uint64
-	ObservedTimeUnixNano   uint64
-	SeverityNumber         SeverityNumber
-	SeverityText           string
-	Body                   commonv1.AnyValue
+	// time_unix_nano is the time when the event occurred.
+	// Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
+	// Value of 0 indicates unknown or missing timestamp.
+	TimeUnixNano uint64
+	// Time when the event was observed by the collection system.
+	// For events that originate in OpenTelemetry (e.g. using OpenTelemetry Logging SDK)
+	// this timestamp is typically set at the generation time and is equal to Timestamp.
+	// For events originating externally and collected by OpenTelemetry (e.g. using
+	// Collector) this is the time when OpenTelemetry's code observed the event measured
+	// by the clock of the OpenTelemetry code. This field MUST be set once the event is
+	// observed by OpenTelemetry.
+	//
+	// For converting OpenTelemetry log data to formats that support only one timestamp or
+	// when receiving OpenTelemetry log data by recipients that support only one timestamp
+	// internally the following logic is recommended:
+	// - Use time_unix_nano if it is present, otherwise use observed_time_unix_nano.
+	//
+	// Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
+	// Value of 0 indicates unknown or missing timestamp.
+	ObservedTimeUnixNano uint64
+	// Numerical value of the severity, normalized to values described in Log Data Model.
+	// [Optional].
+	SeverityNumber SeverityNumber
+	// The severity text (also known as log level). The original string representation as
+	// it is known at the source. [Optional].
+	SeverityText string
+	// A value containing the body of the log record. Can be for example a human-readable
+	// string message (including multi-line) describing the event in a free form or it can
+	// be a structured data composed of arrays and maps of other values. [Optional].
+	Body commonv1.AnyValue
+	// Additional attributes that describe the specific event occurrence. [Optional].
+	// Attribute keys MUST be unique (it is not allowed to have more than one
+	// attribute with the same key).
+	// The behavior of software that receives duplicated keys can be unpredictable.
 	Attributes             []commonv1.KeyValue
 	DroppedAttributesCount uint32
-	Flags                  uint32
-	TraceId                []byte
-	SpanId                 []byte
-	EventName              string
+	// Flags, a bit field. 8 least significant bits are the trace flags as
+	// defined in W3C Trace Context specification. 24 most significant bits are reserved
+	// and must be set to 0. Readers must not assume that 24 most significant bits
+	// will be zero and must correctly mask the bits when reading 8-bit trace flag (use
+	// flags & LOG_RECORD_FLAGS_TRACE_FLAGS_MASK). [Optional].
+	Flags uint32
+	// A unique identifier for a trace. All logs from the same trace share
+	// the same `trace_id`. The ID is a 16-byte array. An ID with all zeroes OR
+	// of length other than 16 bytes is considered invalid (empty string in OTLP/JSON
+	// is zero-length and thus is also invalid).
+	//
+	// This field is optional.
+	//
+	// The receivers SHOULD assume that the log record is not associated with a
+	// trace if any of the following is true:
+	// - the field is not present,
+	// - the field contains an invalid value.
+	TraceId []byte
+	// A unique identifier for a span within a trace, assigned when the span
+	// is created. The ID is an 8-byte array. An ID with all zeroes OR of length
+	// other than 8 bytes is considered invalid (empty string in OTLP/JSON
+	// is zero-length and thus is also invalid).
+	//
+	// This field is optional. If the sender specifies a valid span_id then it SHOULD also
+	// specify a valid trace_id.
+	//
+	// The receivers SHOULD assume that the log record is not associated with a
+	// span if any of the following is true:
+	// - the field is not present,
+	// - the field contains an invalid value.
+	SpanId []byte
+	// A unique identifier of event category/type.
+	// All events with the same event_name are expected to conform to the same
+	// schema for both their attributes and their body.
+	//
+	// Recommended to be fully qualified and short (no longer than 256 characters).
+	//
+	// Presence of event_name on the log record identifies this record
+	// as an event.
+	//
+	// [Optional].
+	EventName string
 }
 
 func (m *LogsData) Size() int {
