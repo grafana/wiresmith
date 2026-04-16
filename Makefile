@@ -37,7 +37,7 @@ generate: generate-ours generate-vtproto generate-gogoproto ## Regenerate all co
 bench: ## Run comparative benchmarks
 	GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn go test ./bench/ -bench=. -benchmem -count=5
 
-COUNT ?= -count=10
+COUNT ?= -count=6
 bench-compare: ## Run per-library benchmarks and compare with benchstat
 	@command -v benchstat >/dev/null 2>&1 || { echo "benchstat not found. Install with: go install golang.org/x/perf/cmd/benchstat@latest"; exit 1; }
 	$(eval TMPDIR := $(shell mktemp -d))

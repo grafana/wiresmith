@@ -10,16 +10,16 @@ wiresmith takes a different approach: **value-type structs with generated marsha
 
 ## Benchmarks
 
-Measured on Apple M4 Pro, 10 iterations per library. Full trace payload (100 spans with attributes, events, links).
+Measured on Apple M4 Pro, 10 iterations per library. Covers all OTel signals: traces (100 spans with attributes, events, links), metrics (histogram, gauge, sum, exp histogram, summary), logs, and profiles.
 
 ### Throughput (sec/op, lower is better)
 
 | Benchmark | Ours | Official | VTProto | GogoProto |
 |-----------|------|----------|---------|-----------|
-| MarshalTraces | **6.4 us** | 46.2 us (+618%) | 7.7 us (+20%) | 7.7 us (+19%) |
-| UnmarshalTraces | **33.4 us** | 70.1 us (+110%) | 38.9 us (+16%) | 36.4 us (+9%) |
-| SizeTraces | **1.4 us** | 17.0 us (+1076%) | 2.2 us (+52%) | 2.0 us (+40%) |
-| **Geometric mean** | **1.96 us** | 8.11 us (+314%) | 2.33 us (+19%) | 2.26 us (+15%) |
+| MarshalTraces | **6.5 us** | 46.6 us (+615%) | 8.0 us (+23%) | 7.8 us (+19%) |
+| UnmarshalTraces | **28.3 us** | 74.9 us (+164%) | 41.6 us (+47%) | 38.0 us (+34%) |
+| SizeTraces | **1.5 us** | 16.8 us (+1046%) | 2.1 us (+43%) | 1.8 us (+23%) |
+| **Geometric mean (all signals)** | **2.64 us** | 12.83 us (+348%) | 3.55 us (+35%) | 3.66 us (+39%) |
 
 ### Memory (B/op, lower is better)
 
