@@ -13,17 +13,24 @@ func (fg *FileGenerator) emitMarshal(md protoreflect.MessageDescriptor) {
 	fg.imports.addImport(fg.module+"/gen/protohelpers", "")
 
 	// Marshal allocates and returns the encoded bytes.
-	fmt.Fprintf(fg.body, "func (m *%s) Marshal() ([]byte, error) {\n", name)
+	fmt.Fprintf(fg.body, "func (m *%s) Marshal() (dAtA []byte, err error) {\n", name)
 	fmt.Fprintf(fg.body, "\tsize := m.Size()\n")
 	fmt.Fprintf(fg.body, "\tif size == 0 {\n\t\treturn nil, nil\n\t}\n")
-	fmt.Fprintf(fg.body, "\tdAtA := make([]byte, size)\n")
-	fmt.Fprintf(fg.body, "\tn := m.MarshalToSizedBuffer(dAtA)\n")
+	fmt.Fprintf(fg.body, "\tdAtA = make([]byte, size)\n")
+	fmt.Fprintf(fg.body, "\tn, err := m.MarshalToSizedBuffer(dAtA[:size])\n")
+	fmt.Fprintf(fg.body, "\tif err != nil {\n\t\treturn nil, err\n\t}\n")
 	fmt.Fprintf(fg.body, "\treturn dAtA[:n], nil\n")
+	fmt.Fprintf(fg.body, "}\n\n")
+
+	// MarshalTo writes the message into dAtA.
+	fmt.Fprintf(fg.body, "func (m *%s) MarshalTo(dAtA []byte) (int, error) {\n", name)
+	fmt.Fprintf(fg.body, "\tsize := m.Size()\n")
+	fmt.Fprintf(fg.body, "\treturn m.MarshalToSizedBuffer(dAtA[:size])\n")
 	fmt.Fprintf(fg.body, "}\n\n")
 
 	// MarshalToSizedBuffer writes the message backwards into dAtA.
 	// Returns the number of bytes written.
-	fmt.Fprintf(fg.body, "func (m *%s) MarshalToSizedBuffer(dAtA []byte) int {\n", name)
+	fmt.Fprintf(fg.body, "func (m *%s) MarshalToSizedBuffer(dAtA []byte) (int, error) {\n", name)
 	fmt.Fprintf(fg.body, "\ti := len(dAtA)\n")
 
 	// Collect fields sorted by number descending for reverse-write.
@@ -50,7 +57,7 @@ func (fg *FileGenerator) emitMarshal(md protoreflect.MessageDescriptor) {
 		fg.emitFieldMarshalReverse(fd)
 	}
 
-	fmt.Fprintf(fg.body, "\treturn len(dAtA) - i\n")
+	fmt.Fprintf(fg.body, "\treturn len(dAtA) - i, nil\n")
 	fmt.Fprintf(fg.body, "}\n\n")
 }
 
@@ -167,7 +174,8 @@ func (fg *FileGenerator) emitSingularFieldMarshalReverse(access string, fd proto
 
 	case protoreflect.MessageKind:
 		fmt.Fprintf(fg.body, "\t{\n")
-		fmt.Fprintf(fg.body, "\t\tsize := %s.MarshalToSizedBuffer(dAtA[:i])\n", access)
+		fmt.Fprintf(fg.body, "\t\tsize, err := %s.MarshalToSizedBuffer(dAtA[:i])\n", access)
+		fmt.Fprintf(fg.body, "\t\tif err != nil {\n\t\t\treturn 0, err\n\t\t}\n")
 		fmt.Fprintf(fg.body, "\t\tif size > 0 {\n")
 		fmt.Fprintf(fg.body, "\t\t\ti -= size\n")
 		fmt.Fprintf(fg.body, "\t\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(size))\n")
@@ -245,7 +253,8 @@ func (fg *FileGenerator) emitRepeatedFieldMarshalReverse(access string, fd proto
 	switch {
 	case kind == protoreflect.MessageKind:
 		fmt.Fprintf(fg.body, "\tfor iNdEx := len(%s) - 1; iNdEx >= 0; iNdEx-- {\n", access)
-		fmt.Fprintf(fg.body, "\t\tsize := %s[iNdEx].MarshalToSizedBuffer(dAtA[:i])\n", access)
+		fmt.Fprintf(fg.body, "\t\tsize, err := %s[iNdEx].MarshalToSizedBuffer(dAtA[:i])\n", access)
+		fmt.Fprintf(fg.body, "\t\tif err != nil {\n\t\t\treturn 0, err\n\t\t}\n")
 		fmt.Fprintf(fg.body, "\t\ti -= size\n")
 		fmt.Fprintf(fg.body, "\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(size))\n")
 		fg.reverseTag("\t\t", num, protowire.BytesType)
@@ -405,7 +414,8 @@ func (fg *FileGenerator) emitOneofMarshalReverse(md protoreflect.MessageDescript
 			fg.reverseTag("\t\t", num, protowire.BytesType)
 
 		case protoreflect.MessageKind:
-			fmt.Fprintf(fg.body, "\t\tsize := %s.MarshalToSizedBuffer(dAtA[:i])\n", access)
+			fmt.Fprintf(fg.body, "\t\tsize, err := %s.MarshalToSizedBuffer(dAtA[:i])\n", access)
+			fmt.Fprintf(fg.body, "\t\tif err != nil {\n\t\t\treturn 0, err\n\t\t}\n")
 			fmt.Fprintf(fg.body, "\t\ti -= size\n")
 			fmt.Fprintf(fg.body, "\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(size))\n")
 			fg.reverseTag("\t\t", num, protowire.BytesType)

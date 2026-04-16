@@ -22,7 +22,7 @@ import (
 // sizedBufferMarshaler is implemented by all generated types.
 type sizedBufferMarshaler interface {
 	message
-	MarshalToSizedBuffer([]byte) int
+	MarshalToSizedBuffer([]byte) (int, error)
 }
 
 // ---------------------------------------------------------------------------
@@ -37,7 +37,8 @@ func TestMarshalToSizedBuffer(t *testing.T) {
 				m := ctor().(sizedBufferMarshaler)
 				size := m.Size()
 				buf := make([]byte, size)
-				n := m.MarshalToSizedBuffer(buf)
+				n, err := m.MarshalToSizedBuffer(buf)
+				require.NoError(t, err)
 				assert.Equal(t, size, n, "MarshalToSizedBuffer returned %d, Size() is %d", n, size)
 
 				marshaled, err := m.Marshal()
@@ -133,7 +134,8 @@ func TestMarshalToSizedBuffer(t *testing.T) {
 				require.Greater(t, size, 0, "populated message should have non-zero size")
 
 				buf := make([]byte, size)
-				n := m.MarshalToSizedBuffer(buf)
+				n, err := m.MarshalToSizedBuffer(buf)
+				require.NoError(t, err)
 				assert.Equal(t, size, n, "MarshalToSizedBuffer wrote %d bytes, Size() is %d", n, size)
 
 				marshaled, err := m.Marshal()
@@ -152,7 +154,8 @@ func TestMarshalToSizedBuffer(t *testing.T) {
 		}
 		size := r.Size()
 		oversized := make([]byte, size+100)
-		n := r.MarshalToSizedBuffer(oversized)
+		n, err := r.MarshalToSizedBuffer(oversized)
+		require.NoError(t, err)
 		assert.Equal(t, size, n)
 
 		marshaled, err := r.Marshal()
@@ -875,6 +878,6 @@ func TestMarshalToSizedBufferUndersized(t *testing.T) {
 	// Undersized buffer should panic (reverse-write goes out of bounds)
 	assert.Panics(t, func() {
 		tiny := make([]byte, 1)
-		r.MarshalToSizedBuffer(tiny)
+		r.MarshalToSizedBuffer(tiny) //nolint:errcheck // we expect a panic, not an error
 	}, "MarshalToSizedBuffer with undersized buffer should panic")
 }

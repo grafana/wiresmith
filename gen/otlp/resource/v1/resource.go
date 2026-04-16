@@ -32,20 +32,31 @@ func (m *Resource) Size() int {
 	return n
 }
 
-func (m *Resource) Marshal() ([]byte, error) {
+func (m *Resource) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
-	dAtA := make([]byte, size)
-	n := m.MarshalToSizedBuffer(dAtA)
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
 	return dAtA[:n], nil
 }
 
-func (m *Resource) MarshalToSizedBuffer(dAtA []byte) int {
+func (m *Resource) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Resource) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	for iNdEx := len(m.EntityRefs) - 1; iNdEx >= 0; iNdEx-- {
-		size := m.EntityRefs[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+		size, err := m.EntityRefs[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
 		i -= size
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 		i--
@@ -57,13 +68,16 @@ func (m *Resource) MarshalToSizedBuffer(dAtA []byte) int {
 		dAtA[i] = 0x10
 	}
 	for iNdEx := len(m.Attributes) - 1; iNdEx >= 0; iNdEx-- {
-		size := m.Attributes[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+		size, err := m.Attributes[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
 		i -= size
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 		i--
 		dAtA[i] = 0x0a
 	}
-	return len(dAtA) - i
+	return len(dAtA) - i, nil
 }
 
 func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) {

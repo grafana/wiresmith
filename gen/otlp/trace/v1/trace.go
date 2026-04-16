@@ -253,39 +253,58 @@ func (m *Status) Size() int {
 	return n
 }
 
-func (m *TracesData) Marshal() ([]byte, error) {
+func (m *TracesData) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
-	dAtA := make([]byte, size)
-	n := m.MarshalToSizedBuffer(dAtA)
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
 	return dAtA[:n], nil
 }
 
-func (m *TracesData) MarshalToSizedBuffer(dAtA []byte) int {
+func (m *TracesData) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *TracesData) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	for iNdEx := len(m.ResourceSpans) - 1; iNdEx >= 0; iNdEx-- {
-		size := m.ResourceSpans[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+		size, err := m.ResourceSpans[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
 		i -= size
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 		i--
 		dAtA[i] = 0x0a
 	}
-	return len(dAtA) - i
+	return len(dAtA) - i, nil
 }
 
-func (m *ResourceSpans) Marshal() ([]byte, error) {
+func (m *ResourceSpans) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
-	dAtA := make([]byte, size)
-	n := m.MarshalToSizedBuffer(dAtA)
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
 	return dAtA[:n], nil
 }
 
-func (m *ResourceSpans) MarshalToSizedBuffer(dAtA []byte) int {
+func (m *ResourceSpans) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ResourceSpans) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if len(m.SchemaUrl) > 0 {
 		i -= len(m.SchemaUrl)
@@ -295,14 +314,20 @@ func (m *ResourceSpans) MarshalToSizedBuffer(dAtA []byte) int {
 		dAtA[i] = 0x1a
 	}
 	for iNdEx := len(m.ScopeSpans) - 1; iNdEx >= 0; iNdEx-- {
-		size := m.ScopeSpans[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+		size, err := m.ScopeSpans[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
 		i -= size
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 		i--
 		dAtA[i] = 0x12
 	}
 	{
-		size := m.Resource.MarshalToSizedBuffer(dAtA[:i])
+		size, err := m.Resource.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
 		if size > 0 {
 			i -= size
 			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
@@ -310,20 +335,28 @@ func (m *ResourceSpans) MarshalToSizedBuffer(dAtA []byte) int {
 			dAtA[i] = 0x0a
 		}
 	}
-	return len(dAtA) - i
+	return len(dAtA) - i, nil
 }
 
-func (m *ScopeSpans) Marshal() ([]byte, error) {
+func (m *ScopeSpans) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
-	dAtA := make([]byte, size)
-	n := m.MarshalToSizedBuffer(dAtA)
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
 	return dAtA[:n], nil
 }
 
-func (m *ScopeSpans) MarshalToSizedBuffer(dAtA []byte) int {
+func (m *ScopeSpans) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ScopeSpans) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if len(m.SchemaUrl) > 0 {
 		i -= len(m.SchemaUrl)
@@ -333,14 +366,20 @@ func (m *ScopeSpans) MarshalToSizedBuffer(dAtA []byte) int {
 		dAtA[i] = 0x1a
 	}
 	for iNdEx := len(m.Spans) - 1; iNdEx >= 0; iNdEx-- {
-		size := m.Spans[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+		size, err := m.Spans[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
 		i -= size
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 		i--
 		dAtA[i] = 0x12
 	}
 	{
-		size := m.Scope.MarshalToSizedBuffer(dAtA[:i])
+		size, err := m.Scope.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
 		if size > 0 {
 			i -= size
 			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
@@ -348,20 +387,28 @@ func (m *ScopeSpans) MarshalToSizedBuffer(dAtA []byte) int {
 			dAtA[i] = 0x0a
 		}
 	}
-	return len(dAtA) - i
+	return len(dAtA) - i, nil
 }
 
-func (m *Span_Event) Marshal() ([]byte, error) {
+func (m *Span_Event) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
-	dAtA := make([]byte, size)
-	n := m.MarshalToSizedBuffer(dAtA)
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
 	return dAtA[:n], nil
 }
 
-func (m *Span_Event) MarshalToSizedBuffer(dAtA []byte) int {
+func (m *Span_Event) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Span_Event) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if m.DroppedAttributesCount != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.DroppedAttributesCount))
@@ -369,7 +416,10 @@ func (m *Span_Event) MarshalToSizedBuffer(dAtA []byte) int {
 		dAtA[i] = 0x20
 	}
 	for iNdEx := len(m.Attributes) - 1; iNdEx >= 0; iNdEx-- {
-		size := m.Attributes[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+		size, err := m.Attributes[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
 		i -= size
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 		i--
@@ -388,20 +438,28 @@ func (m *Span_Event) MarshalToSizedBuffer(dAtA []byte) int {
 		i--
 		dAtA[i] = 0x09
 	}
-	return len(dAtA) - i
+	return len(dAtA) - i, nil
 }
 
-func (m *Span_Link) Marshal() ([]byte, error) {
+func (m *Span_Link) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
-	dAtA := make([]byte, size)
-	n := m.MarshalToSizedBuffer(dAtA)
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
 	return dAtA[:n], nil
 }
 
-func (m *Span_Link) MarshalToSizedBuffer(dAtA []byte) int {
+func (m *Span_Link) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Span_Link) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if m.Flags != 0 {
 		i -= 4
@@ -415,7 +473,10 @@ func (m *Span_Link) MarshalToSizedBuffer(dAtA []byte) int {
 		dAtA[i] = 0x28
 	}
 	for iNdEx := len(m.Attributes) - 1; iNdEx >= 0; iNdEx-- {
-		size := m.Attributes[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+		size, err := m.Attributes[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
 		i -= size
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 		i--
@@ -442,20 +503,28 @@ func (m *Span_Link) MarshalToSizedBuffer(dAtA []byte) int {
 		i--
 		dAtA[i] = 0x0a
 	}
-	return len(dAtA) - i
+	return len(dAtA) - i, nil
 }
 
-func (m *Span) Marshal() ([]byte, error) {
+func (m *Span) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
-	dAtA := make([]byte, size)
-	n := m.MarshalToSizedBuffer(dAtA)
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
 	return dAtA[:n], nil
 }
 
-func (m *Span) MarshalToSizedBuffer(dAtA []byte) int {
+func (m *Span) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Span) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if m.Flags != 0 {
 		i -= 4
@@ -466,7 +535,10 @@ func (m *Span) MarshalToSizedBuffer(dAtA []byte) int {
 		dAtA[i] = 0x85
 	}
 	{
-		size := m.Status.MarshalToSizedBuffer(dAtA[:i])
+		size, err := m.Status.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
 		if size > 0 {
 			i -= size
 			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
@@ -480,7 +552,10 @@ func (m *Span) MarshalToSizedBuffer(dAtA []byte) int {
 		dAtA[i] = 0x70
 	}
 	for iNdEx := len(m.Links) - 1; iNdEx >= 0; iNdEx-- {
-		size := m.Links[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+		size, err := m.Links[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
 		i -= size
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 		i--
@@ -492,7 +567,10 @@ func (m *Span) MarshalToSizedBuffer(dAtA []byte) int {
 		dAtA[i] = 0x60
 	}
 	for iNdEx := len(m.Events) - 1; iNdEx >= 0; iNdEx-- {
-		size := m.Events[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+		size, err := m.Events[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
 		i -= size
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 		i--
@@ -504,7 +582,10 @@ func (m *Span) MarshalToSizedBuffer(dAtA []byte) int {
 		dAtA[i] = 0x50
 	}
 	for iNdEx := len(m.Attributes) - 1; iNdEx >= 0; iNdEx-- {
-		size := m.Attributes[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+		size, err := m.Attributes[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
 		i -= size
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 		i--
@@ -562,20 +643,28 @@ func (m *Span) MarshalToSizedBuffer(dAtA []byte) int {
 		i--
 		dAtA[i] = 0x0a
 	}
-	return len(dAtA) - i
+	return len(dAtA) - i, nil
 }
 
-func (m *Status) Marshal() ([]byte, error) {
+func (m *Status) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
-	dAtA := make([]byte, size)
-	n := m.MarshalToSizedBuffer(dAtA)
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
 	return dAtA[:n], nil
 }
 
-func (m *Status) MarshalToSizedBuffer(dAtA []byte) int {
+func (m *Status) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Status) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if m.Code != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.Code))
@@ -589,7 +678,7 @@ func (m *Status) MarshalToSizedBuffer(dAtA []byte) int {
 		i--
 		dAtA[i] = 0x12
 	}
-	return len(dAtA) - i
+	return len(dAtA) - i, nil
 }
 
 func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) {
