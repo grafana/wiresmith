@@ -163,8 +163,16 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 		fmt.Fprintf(os.Stderr, "warning: format error for %s: %v\n", fd.Path(), err)
 	}
 
-	pkg := string(fd.Package())
-	dir := filepath.Join(g.OutDir, goPackageDir(pkg))
+	// In gogo compat mode, use go_package for the output directory
+	// (e.g., go_package="alertspb" → <outDir>/alertspb/).
+	// In default mode, derive from proto package name.
+	var subDir string
+	if g.GogoCompat {
+		subDir = goFilePackage(fd)
+	} else {
+		subDir = goPackageDir(string(fd.Package()))
+	}
+	dir := filepath.Join(g.OutDir, subDir)
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return err
 	}
