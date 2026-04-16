@@ -1491,6 +1491,8 @@ func (m *Exemplar) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+const maxUnmarshalDepth = 10000
+
 func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) {
 	switch typ {
 	case protowire.VarintType:
@@ -1527,6 +1529,13 @@ func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) 
 }
 
 func (m *MetricsData) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *MetricsData) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	if len(b) >= 256 {
 		tmp := b
 		var field1count int
@@ -1583,7 +1592,7 @@ func (m *MetricsData) Unmarshal(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.ResourceMetrics = append(m.ResourceMetrics, ResourceMetrics{})
-			if err := m.ResourceMetrics[len(m.ResourceMetrics)-1].Unmarshal(v); err != nil {
+			if err := m.ResourceMetrics[len(m.ResourceMetrics)-1].unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1599,6 +1608,13 @@ func (m *MetricsData) Unmarshal(b []byte) error {
 }
 
 func (m *ResourceMetrics) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *ResourceMetrics) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	if len(b) >= 256 {
 		tmp := b
 		var field2count int
@@ -1672,7 +1688,7 @@ func (m *ResourceMetrics) Unmarshal(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.ScopeMetrics = append(m.ScopeMetrics, ScopeMetrics{})
-			if err := m.ScopeMetrics[len(m.ScopeMetrics)-1].Unmarshal(v); err != nil {
+			if err := m.ScopeMetrics[len(m.ScopeMetrics)-1].unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1703,6 +1719,13 @@ func (m *ResourceMetrics) Unmarshal(b []byte) error {
 }
 
 func (m *ScopeMetrics) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *ScopeMetrics) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	if len(b) >= 256 {
 		tmp := b
 		var field2count int
@@ -1776,7 +1799,7 @@ func (m *ScopeMetrics) Unmarshal(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.Metrics = append(m.Metrics, Metric{})
-			if err := m.Metrics[len(m.Metrics)-1].Unmarshal(v); err != nil {
+			if err := m.Metrics[len(m.Metrics)-1].unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1807,6 +1830,13 @@ func (m *ScopeMetrics) Unmarshal(b []byte) error {
 }
 
 func (m *Metric) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *Metric) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	if len(b) >= 256 {
 		tmp := b
 		var field12count int
@@ -1908,7 +1938,7 @@ func (m *Metric) Unmarshal(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			var msg Gauge
-			if err := msg.Unmarshal(v); err != nil {
+			if err := msg.unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			m.Data = &Metric_Gauge{Gauge: msg}
@@ -1927,7 +1957,7 @@ func (m *Metric) Unmarshal(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			var msg Sum
-			if err := msg.Unmarshal(v); err != nil {
+			if err := msg.unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			m.Data = &Metric_Sum{Sum: msg}
@@ -1946,7 +1976,7 @@ func (m *Metric) Unmarshal(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			var msg Histogram
-			if err := msg.Unmarshal(v); err != nil {
+			if err := msg.unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			m.Data = &Metric_Histogram{Histogram: msg}
@@ -1965,7 +1995,7 @@ func (m *Metric) Unmarshal(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			var msg ExponentialHistogram
-			if err := msg.Unmarshal(v); err != nil {
+			if err := msg.unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			m.Data = &Metric_ExponentialHistogram{ExponentialHistogram: msg}
@@ -1984,7 +2014,7 @@ func (m *Metric) Unmarshal(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			var msg Summary
-			if err := msg.Unmarshal(v); err != nil {
+			if err := msg.unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			m.Data = &Metric_Summary{Summary: msg}
@@ -2019,6 +2049,13 @@ func (m *Metric) Unmarshal(b []byte) error {
 }
 
 func (m *Gauge) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *Gauge) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	if len(b) >= 256 {
 		tmp := b
 		var field1count int
@@ -2075,7 +2112,7 @@ func (m *Gauge) Unmarshal(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.DataPoints = append(m.DataPoints, NumberDataPoint{})
-			if err := m.DataPoints[len(m.DataPoints)-1].Unmarshal(v); err != nil {
+			if err := m.DataPoints[len(m.DataPoints)-1].unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -2091,6 +2128,13 @@ func (m *Gauge) Unmarshal(b []byte) error {
 }
 
 func (m *Sum) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *Sum) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	if len(b) >= 256 {
 		tmp := b
 		var field1count int
@@ -2147,7 +2191,7 @@ func (m *Sum) Unmarshal(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.DataPoints = append(m.DataPoints, NumberDataPoint{})
-			if err := m.DataPoints[len(m.DataPoints)-1].Unmarshal(v); err != nil {
+			if err := m.DataPoints[len(m.DataPoints)-1].unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -2193,6 +2237,13 @@ func (m *Sum) Unmarshal(b []byte) error {
 }
 
 func (m *Histogram) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *Histogram) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	if len(b) >= 256 {
 		tmp := b
 		var field1count int
@@ -2249,7 +2300,7 @@ func (m *Histogram) Unmarshal(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.DataPoints = append(m.DataPoints, HistogramDataPoint{})
-			if err := m.DataPoints[len(m.DataPoints)-1].Unmarshal(v); err != nil {
+			if err := m.DataPoints[len(m.DataPoints)-1].unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -2280,6 +2331,13 @@ func (m *Histogram) Unmarshal(b []byte) error {
 }
 
 func (m *ExponentialHistogram) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *ExponentialHistogram) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	if len(b) >= 256 {
 		tmp := b
 		var field1count int
@@ -2336,7 +2394,7 @@ func (m *ExponentialHistogram) Unmarshal(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.DataPoints = append(m.DataPoints, ExponentialHistogramDataPoint{})
-			if err := m.DataPoints[len(m.DataPoints)-1].Unmarshal(v); err != nil {
+			if err := m.DataPoints[len(m.DataPoints)-1].unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -2367,6 +2425,13 @@ func (m *ExponentialHistogram) Unmarshal(b []byte) error {
 }
 
 func (m *Summary) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *Summary) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	if len(b) >= 256 {
 		tmp := b
 		var field1count int
@@ -2423,7 +2488,7 @@ func (m *Summary) Unmarshal(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.DataPoints = append(m.DataPoints, SummaryDataPoint{})
-			if err := m.DataPoints[len(m.DataPoints)-1].Unmarshal(v); err != nil {
+			if err := m.DataPoints[len(m.DataPoints)-1].unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -2439,6 +2504,13 @@ func (m *Summary) Unmarshal(b []byte) error {
 }
 
 func (m *NumberDataPoint) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *NumberDataPoint) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	if len(b) >= 256 {
 		tmp := b
 		var field7count int
@@ -2579,7 +2651,7 @@ func (m *NumberDataPoint) Unmarshal(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.Exemplars = append(m.Exemplars, Exemplar{})
-			if err := m.Exemplars[len(m.Exemplars)-1].Unmarshal(v); err != nil {
+			if err := m.Exemplars[len(m.Exemplars)-1].unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -2610,6 +2682,13 @@ func (m *NumberDataPoint) Unmarshal(b []byte) error {
 }
 
 func (m *HistogramDataPoint) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *HistogramDataPoint) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	if len(b) >= 256 {
 		tmp := b
 		var field9count int
@@ -2815,7 +2894,7 @@ func (m *HistogramDataPoint) Unmarshal(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.Exemplars = append(m.Exemplars, Exemplar{})
-			if err := m.Exemplars[len(m.Exemplars)-1].Unmarshal(v); err != nil {
+			if err := m.Exemplars[len(m.Exemplars)-1].unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -2878,6 +2957,13 @@ func (m *HistogramDataPoint) Unmarshal(b []byte) error {
 }
 
 func (m *ExponentialHistogramDataPoint_Buckets) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *ExponentialHistogramDataPoint_Buckets) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -2950,6 +3036,13 @@ func (m *ExponentialHistogramDataPoint_Buckets) Unmarshal(b []byte) error {
 }
 
 func (m *ExponentialHistogramDataPoint) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *ExponentialHistogramDataPoint) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	if len(b) >= 256 {
 		tmp := b
 		var field1count int
@@ -3120,7 +3213,7 @@ func (m *ExponentialHistogramDataPoint) Unmarshal(b []byte) error {
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
 			}
-			if err := m.Positive.Unmarshal(v); err != nil {
+			if err := m.Positive.unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -3137,7 +3230,7 @@ func (m *ExponentialHistogramDataPoint) Unmarshal(b []byte) error {
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
 			}
-			if err := m.Negative.Unmarshal(v); err != nil {
+			if err := m.Negative.unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -3170,7 +3263,7 @@ func (m *ExponentialHistogramDataPoint) Unmarshal(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.Exemplars = append(m.Exemplars, Exemplar{})
-			if err := m.Exemplars[len(m.Exemplars)-1].Unmarshal(v); err != nil {
+			if err := m.Exemplars[len(m.Exemplars)-1].unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -3233,6 +3326,13 @@ func (m *ExponentialHistogramDataPoint) Unmarshal(b []byte) error {
 }
 
 func (m *SummaryDataPoint_ValueAtQuantile) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *SummaryDataPoint_ValueAtQuantile) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -3282,6 +3382,13 @@ func (m *SummaryDataPoint_ValueAtQuantile) Unmarshal(b []byte) error {
 }
 
 func (m *SummaryDataPoint) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *SummaryDataPoint) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	if len(b) >= 256 {
 		tmp := b
 		var field7count int
@@ -3422,7 +3529,7 @@ func (m *SummaryDataPoint) Unmarshal(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.QuantileValues = append(m.QuantileValues, SummaryDataPoint_ValueAtQuantile{})
-			if err := m.QuantileValues[len(m.QuantileValues)-1].Unmarshal(v); err != nil {
+			if err := m.QuantileValues[len(m.QuantileValues)-1].unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -3453,6 +3560,13 @@ func (m *SummaryDataPoint) Unmarshal(b []byte) error {
 }
 
 func (m *Exemplar) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *Exemplar) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	if len(b) >= 256 {
 		tmp := b
 		var field7count int
