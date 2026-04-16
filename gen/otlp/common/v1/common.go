@@ -6,9 +6,9 @@ package v1
 import (
 	"encoding/binary"
 	"fmt"
+	"github.com/grafana/wiresmith/gen/protohelpers"
 	"google.golang.org/protobuf/encoding/protowire"
 	"math"
-	"wiresmith/gen/protohelpers"
 )
 
 type AnyValue_Value interface {

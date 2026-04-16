@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"wiresmith/compiler/generator"
+	"github.com/grafana/wiresmith/compiler/generator"
 )
 
 // stringSlice is a flag.Value that accumulates repeated -proto_path flags.

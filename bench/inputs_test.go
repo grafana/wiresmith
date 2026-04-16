@@ -9,9 +9,9 @@ import (
 	otlpresource "go.opentelemetry.io/proto/otlp/resource/v1"
 	otlptrace "go.opentelemetry.io/proto/otlp/trace/v1"
 
-	vtcommon "wiresmith/gen/vtpb/common/v1"
-	vtprofiles "wiresmith/gen/vtpb/profiles/v1development"
-	vtresource "wiresmith/gen/vtpb/resource/v1"
+	vtcommon "github.com/grafana/wiresmith/gen/vtpb/common/v1"
+	vtprofiles "github.com/grafana/wiresmith/gen/vtpb/profiles/v1development"
+	vtresource "github.com/grafana/wiresmith/gen/vtpb/resource/v1"
 )
 
 // Canonical wire-format bytes generated once via official proto.

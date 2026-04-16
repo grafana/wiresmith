@@ -6,11 +6,11 @@ package v1
 import (
 	"encoding/binary"
 	"fmt"
+	commonv1 "github.com/grafana/wiresmith/gen/otlp/common/v1"
+	resourcev1 "github.com/grafana/wiresmith/gen/otlp/resource/v1"
+	"github.com/grafana/wiresmith/gen/protohelpers"
 	"google.golang.org/protobuf/encoding/protowire"
 	"math"
-	commonv1 "wiresmith/gen/otlp/common/v1"
-	resourcev1 "wiresmith/gen/otlp/resource/v1"
-	"wiresmith/gen/protohelpers"
 )
 
 // AggregationTemporality defines how a metric aggregator reports aggregated

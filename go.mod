@@ -1,4 +1,4 @@
-module wiresmith
+module github.com/grafana/wiresmith
 
 go 1.26.2
 
