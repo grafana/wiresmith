@@ -1,0 +1,50 @@
+{
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  extends: [
+    'config:best-practices',
+    ':semanticCommits',
+  ],
+  schedule: [
+    'at any time',
+  ],
+  vulnerabilityAlerts: {
+    enabled: true,
+    labels: [
+      'security',
+    ],
+  },
+  osvVulnerabilityAlerts: true,
+  separateMajorMinor: true,
+  automergeStrategy: 'squash',
+  automergeType: 'pr',
+  automerge: true,
+  platformAutomerge: true,
+  addLabels: [
+    'dependencies',
+    'renovate',
+    '{{updateType}}',
+  ],
+  minimumReleaseAge: '7 days',
+  postUpdateOptions: [
+    'gomodUpdateImportPaths',
+    'gomodTidy',
+  ],
+  packageRules: [
+    {
+      description: 'Group OpenTelemetry updates',
+      matchManagers: [
+        'gomod',
+      ],
+      groupName: 'opentelemetry',
+      matchPackageNames: [
+        'go.opentelemetry.io/{,**}',
+      ],
+    },
+    {
+      description: 'Fast-track Go updates',
+      matchDepNames: ['go'],
+      rangeStrategy: 'bump',
+      minimumReleaseAge: '0 days',
+    },
+  ],
+}
