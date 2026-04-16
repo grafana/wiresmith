@@ -195,17 +195,25 @@ func (m *EntityRef) Size() int {
 	return n
 }
 
-func (m *AnyValue) Marshal() ([]byte, error) {
+func (m *AnyValue) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
-	dAtA := make([]byte, size)
-	n := m.MarshalToSizedBuffer(dAtA)
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
 	return dAtA[:n], nil
 }
 
-func (m *AnyValue) MarshalToSizedBuffer(dAtA []byte) int {
+func (m *AnyValue) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *AnyValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	switch v := m.Value.(type) {
 	case *AnyValue_StringValueStrindex:
@@ -219,13 +227,19 @@ func (m *AnyValue) MarshalToSizedBuffer(dAtA []byte) int {
 		i--
 		dAtA[i] = 0x3a
 	case *AnyValue_KvlistValue:
-		size := v.KvlistValue.MarshalToSizedBuffer(dAtA[:i])
+		size, err := v.KvlistValue.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
 		i -= size
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 		i--
 		dAtA[i] = 0x32
 	case *AnyValue_ArrayValue:
-		size := v.ArrayValue.MarshalToSizedBuffer(dAtA[:i])
+		size, err := v.ArrayValue.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
 		i -= size
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 		i--
@@ -255,64 +269,94 @@ func (m *AnyValue) MarshalToSizedBuffer(dAtA []byte) int {
 		i--
 		dAtA[i] = 0x0a
 	}
-	return len(dAtA) - i
+	return len(dAtA) - i, nil
 }
 
-func (m *ArrayValue) Marshal() ([]byte, error) {
+func (m *ArrayValue) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
-	dAtA := make([]byte, size)
-	n := m.MarshalToSizedBuffer(dAtA)
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
 	return dAtA[:n], nil
 }
 
-func (m *ArrayValue) MarshalToSizedBuffer(dAtA []byte) int {
+func (m *ArrayValue) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ArrayValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	for iNdEx := len(m.Values) - 1; iNdEx >= 0; iNdEx-- {
-		size := m.Values[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+		size, err := m.Values[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
 		i -= size
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 		i--
 		dAtA[i] = 0x0a
 	}
-	return len(dAtA) - i
+	return len(dAtA) - i, nil
 }
 
-func (m *KeyValueList) Marshal() ([]byte, error) {
+func (m *KeyValueList) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
-	dAtA := make([]byte, size)
-	n := m.MarshalToSizedBuffer(dAtA)
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
 	return dAtA[:n], nil
 }
 
-func (m *KeyValueList) MarshalToSizedBuffer(dAtA []byte) int {
+func (m *KeyValueList) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *KeyValueList) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	for iNdEx := len(m.Values) - 1; iNdEx >= 0; iNdEx-- {
-		size := m.Values[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+		size, err := m.Values[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
 		i -= size
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 		i--
 		dAtA[i] = 0x0a
 	}
-	return len(dAtA) - i
+	return len(dAtA) - i, nil
 }
 
-func (m *KeyValue) Marshal() ([]byte, error) {
+func (m *KeyValue) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
-	dAtA := make([]byte, size)
-	n := m.MarshalToSizedBuffer(dAtA)
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
 	return dAtA[:n], nil
 }
 
-func (m *KeyValue) MarshalToSizedBuffer(dAtA []byte) int {
+func (m *KeyValue) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *KeyValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if m.KeyStrindex != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.KeyStrindex))
@@ -320,7 +364,10 @@ func (m *KeyValue) MarshalToSizedBuffer(dAtA []byte) int {
 		dAtA[i] = 0x18
 	}
 	{
-		size := m.Value.MarshalToSizedBuffer(dAtA[:i])
+		size, err := m.Value.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
 		if size > 0 {
 			i -= size
 			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
@@ -335,20 +382,28 @@ func (m *KeyValue) MarshalToSizedBuffer(dAtA []byte) int {
 		i--
 		dAtA[i] = 0x0a
 	}
-	return len(dAtA) - i
+	return len(dAtA) - i, nil
 }
 
-func (m *InstrumentationScope) Marshal() ([]byte, error) {
+func (m *InstrumentationScope) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
-	dAtA := make([]byte, size)
-	n := m.MarshalToSizedBuffer(dAtA)
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
 	return dAtA[:n], nil
 }
 
-func (m *InstrumentationScope) MarshalToSizedBuffer(dAtA []byte) int {
+func (m *InstrumentationScope) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *InstrumentationScope) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if m.DroppedAttributesCount != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.DroppedAttributesCount))
@@ -356,7 +411,10 @@ func (m *InstrumentationScope) MarshalToSizedBuffer(dAtA []byte) int {
 		dAtA[i] = 0x20
 	}
 	for iNdEx := len(m.Attributes) - 1; iNdEx >= 0; iNdEx-- {
-		size := m.Attributes[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+		size, err := m.Attributes[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
 		i -= size
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 		i--
@@ -376,20 +434,28 @@ func (m *InstrumentationScope) MarshalToSizedBuffer(dAtA []byte) int {
 		i--
 		dAtA[i] = 0x0a
 	}
-	return len(dAtA) - i
+	return len(dAtA) - i, nil
 }
 
-func (m *EntityRef) Marshal() ([]byte, error) {
+func (m *EntityRef) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
-	dAtA := make([]byte, size)
-	n := m.MarshalToSizedBuffer(dAtA)
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
 	return dAtA[:n], nil
 }
 
-func (m *EntityRef) MarshalToSizedBuffer(dAtA []byte) int {
+func (m *EntityRef) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EntityRef) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	for iNdEx := len(m.DescriptionKeys) - 1; iNdEx >= 0; iNdEx-- {
 		i -= len(m.DescriptionKeys[iNdEx])
@@ -419,7 +485,7 @@ func (m *EntityRef) MarshalToSizedBuffer(dAtA []byte) int {
 		i--
 		dAtA[i] = 0x0a
 	}
-	return len(dAtA) - i
+	return len(dAtA) - i, nil
 }
 
 func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) {
@@ -478,6 +544,9 @@ func (m *AnyValue) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if fieldNum == 0 {
+			return fmt.Errorf("proto: illegal tag 0")
+		}
 		switch fieldNum {
 		case 1: // string_value
 			if wireType != 2 {
@@ -791,6 +860,9 @@ func (m *ArrayValue) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if fieldNum == 0 {
+			return fmt.Errorf("proto: illegal tag 0")
+		}
 		switch fieldNum {
 		case 1: // values
 			if wireType != 2 {
@@ -901,6 +973,9 @@ func (m *KeyValueList) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if fieldNum == 0 {
+			return fmt.Errorf("proto: illegal tag 0")
+		}
 		switch fieldNum {
 		case 1: // values
 			if wireType != 2 {
@@ -976,6 +1051,9 @@ func (m *KeyValue) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if fieldNum == 0 {
+			return fmt.Errorf("proto: illegal tag 0")
+		}
 		switch fieldNum {
 		case 1: // key
 			if wireType != 2 {
@@ -1146,6 +1224,9 @@ func (m *InstrumentationScope) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if fieldNum == 0 {
+			return fmt.Errorf("proto: illegal tag 0")
+		}
 		switch fieldNum {
 		case 1: // name
 			if wireType != 2 {
@@ -1359,6 +1440,9 @@ func (m *EntityRef) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if fieldNum == 0 {
+			return fmt.Errorf("proto: illegal tag 0")
+		}
 		switch fieldNum {
 		case 1: // schema_url
 			if wireType != 2 {

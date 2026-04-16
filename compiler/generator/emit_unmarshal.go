@@ -142,6 +142,7 @@ func (fg *FileGenerator) emitUnmarshal(md protoreflect.MessageDescriptor) {
 	fmt.Fprintf(fg.body, "\t\t}\n")
 	fmt.Fprintf(fg.body, "\t\tfieldNum := int32(wire >> 3)\n")
 	fmt.Fprintf(fg.body, "\t\twireType := int(wire & 0x7)\n")
+	fmt.Fprintf(fg.body, "\t\tif fieldNum == 0 {\n\t\t\treturn fmt.Errorf(\"proto: illegal tag 0\")\n\t\t}\n")
 
 	fmt.Fprintf(fg.body, "\t\tswitch fieldNum {\n")
 
@@ -467,13 +468,13 @@ func (fg *FileGenerator) emitPackedFieldUnmarshal(access string, fd protoreflect
 	switch {
 	case isFixed64Kind(kind):
 		fg.imports.addImport("encoding/binary", "")
-		fmt.Fprintf(fg.body, "\t\t\t\t\tif (iNdEx + 8) > l {\n\t\t\t\t\t\treturn io.ErrUnexpectedEOF\n\t\t\t\t\t}\n")
+		fmt.Fprintf(fg.body, "\t\t\t\t\tif (iNdEx + 8) > postIndex {\n\t\t\t\t\t\treturn io.ErrUnexpectedEOF\n\t\t\t\t\t}\n")
 		fmt.Fprintf(fg.body, "\t\t\t\t\tv := binary.LittleEndian.Uint64(dAtA[iNdEx:])\n")
 		fmt.Fprintf(fg.body, "\t\t\t\t\tiNdEx += 8\n")
 		fg.emitPackedElementDecode(access, fd, kind, "v")
 	case isFixed32Kind(kind):
 		fg.imports.addImport("encoding/binary", "")
-		fmt.Fprintf(fg.body, "\t\t\t\t\tif (iNdEx + 4) > l {\n\t\t\t\t\t\treturn io.ErrUnexpectedEOF\n\t\t\t\t\t}\n")
+		fmt.Fprintf(fg.body, "\t\t\t\t\tif (iNdEx + 4) > postIndex {\n\t\t\t\t\t\treturn io.ErrUnexpectedEOF\n\t\t\t\t\t}\n")
 		fmt.Fprintf(fg.body, "\t\t\t\t\tv := binary.LittleEndian.Uint32(dAtA[iNdEx:])\n")
 		fmt.Fprintf(fg.body, "\t\t\t\t\tiNdEx += 4\n")
 		fg.emitPackedElementDecode(access, fd, kind, "v")
@@ -481,7 +482,7 @@ func (fg *FileGenerator) emitPackedFieldUnmarshal(access string, fd protoreflect
 		fmt.Fprintf(fg.body, "\t\t\t\t\tvar v uint64\n")
 		fmt.Fprintf(fg.body, "\t\t\t\t\tfor shift := uint(0); ; shift += 7 {\n")
 		fmt.Fprintf(fg.body, "\t\t\t\t\t\tif shift >= 64 {\n\t\t\t\t\t\t\treturn protohelpers.ErrIntOverflow\n\t\t\t\t\t\t}\n")
-		fmt.Fprintf(fg.body, "\t\t\t\t\t\tif iNdEx >= l {\n\t\t\t\t\t\t\treturn io.ErrUnexpectedEOF\n\t\t\t\t\t\t}\n")
+		fmt.Fprintf(fg.body, "\t\t\t\t\t\tif iNdEx >= postIndex {\n\t\t\t\t\t\t\treturn io.ErrUnexpectedEOF\n\t\t\t\t\t\t}\n")
 		fmt.Fprintf(fg.body, "\t\t\t\t\t\tb := dAtA[iNdEx]\n")
 		fmt.Fprintf(fg.body, "\t\t\t\t\t\tiNdEx++\n")
 		fmt.Fprintf(fg.body, "\t\t\t\t\t\tv |= uint64(b&0x7F) << shift\n")

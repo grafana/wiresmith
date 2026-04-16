@@ -1271,6 +1271,9 @@ func (m *ProfilesDictionary) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if fieldNum == 0 {
+			return fmt.Errorf("proto: illegal tag 0")
+		}
 		switch fieldNum {
 		case 1: // mapping_table
 			if wireType != 2 {
@@ -1612,6 +1615,9 @@ func (m *ProfilesData) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if fieldNum == 0 {
+			return fmt.Errorf("proto: illegal tag 0")
+		}
 		switch fieldNum {
 		case 1: // resource_profiles
 			if wireType != 2 {
@@ -1760,6 +1766,9 @@ func (m *ResourceProfiles) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if fieldNum == 0 {
+			return fmt.Errorf("proto: illegal tag 0")
+		}
 		switch fieldNum {
 		case 1: // resource
 			if wireType != 2 {
@@ -1944,6 +1953,9 @@ func (m *ScopeProfiles) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if fieldNum == 0 {
+			return fmt.Errorf("proto: illegal tag 0")
+		}
 		switch fieldNum {
 		case 1: // scope
 			if wireType != 2 {
@@ -2128,6 +2140,9 @@ func (m *Profile) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if fieldNum == 0 {
+			return fmt.Errorf("proto: illegal tag 0")
+		}
 		switch fieldNum {
 		case 1: // sample_type
 			if wireType != 2 {
@@ -2484,7 +2499,7 @@ func (m *Profile) Unmarshal(dAtA []byte) error {
 						if shift >= 64 {
 							return protohelpers.ErrIntOverflow
 						}
-						if iNdEx >= l {
+						if iNdEx >= postIndex {
 							return io.ErrUnexpectedEOF
 						}
 						b := dAtA[iNdEx]
@@ -2555,6 +2570,9 @@ func (m *Link) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if fieldNum == 0 {
+			return fmt.Errorf("proto: illegal tag 0")
+		}
 		switch fieldNum {
 		case 1: // trace_id
 			if wireType != 2 {
@@ -2663,6 +2681,9 @@ func (m *ValueType) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if fieldNum == 0 {
+			return fmt.Errorf("proto: illegal tag 0")
+		}
 		switch fieldNum {
 		case 1: // type_strindex
 			if wireType != 0 {
@@ -2749,6 +2770,9 @@ func (m *Sample) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if fieldNum == 0 {
+			return fmt.Errorf("proto: illegal tag 0")
+		}
 		switch fieldNum {
 		case 1: // stack_index
 			if wireType != 0 {
@@ -2817,7 +2841,7 @@ func (m *Sample) Unmarshal(dAtA []byte) error {
 						if shift >= 64 {
 							return protohelpers.ErrIntOverflow
 						}
-						if iNdEx >= l {
+						if iNdEx >= postIndex {
 							return io.ErrUnexpectedEOF
 						}
 						b := dAtA[iNdEx]
@@ -2920,7 +2944,7 @@ func (m *Sample) Unmarshal(dAtA []byte) error {
 						if shift >= 64 {
 							return protohelpers.ErrIntOverflow
 						}
-						if iNdEx >= l {
+						if iNdEx >= postIndex {
 							return io.ErrUnexpectedEOF
 						}
 						b := dAtA[iNdEx]
@@ -2987,7 +3011,7 @@ func (m *Sample) Unmarshal(dAtA []byte) error {
 					m.TimestampsUnixNano = make([]uint64, 0, elementCount)
 				}
 				for iNdEx < postIndex {
-					if (iNdEx + 8) > l {
+					if (iNdEx + 8) > postIndex {
 						return io.ErrUnexpectedEOF
 					}
 					v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
@@ -3043,6 +3067,9 @@ func (m *Mapping) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if fieldNum == 0 {
+			return fmt.Errorf("proto: illegal tag 0")
+		}
 		switch fieldNum {
 		case 1: // memory_start
 			if wireType != 0 {
@@ -3186,7 +3213,7 @@ func (m *Mapping) Unmarshal(dAtA []byte) error {
 						if shift >= 64 {
 							return protohelpers.ErrIntOverflow
 						}
-						if iNdEx >= l {
+						if iNdEx >= postIndex {
 							return io.ErrUnexpectedEOF
 						}
 						b := dAtA[iNdEx]
@@ -3257,6 +3284,9 @@ func (m *Stack) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if fieldNum == 0 {
+			return fmt.Errorf("proto: illegal tag 0")
+		}
 		switch fieldNum {
 		case 1: // location_indices
 			if wireType == 2 {
@@ -3300,7 +3330,7 @@ func (m *Stack) Unmarshal(dAtA []byte) error {
 						if shift >= 64 {
 							return protohelpers.ErrIntOverflow
 						}
-						if iNdEx >= l {
+						if iNdEx >= postIndex {
 							return io.ErrUnexpectedEOF
 						}
 						b := dAtA[iNdEx]
@@ -3406,6 +3436,9 @@ func (m *Location) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if fieldNum == 0 {
+			return fmt.Errorf("proto: illegal tag 0")
+		}
 		switch fieldNum {
 		case 1: // mapping_index
 			if wireType != 0 {
@@ -3538,7 +3571,7 @@ func (m *Location) Unmarshal(dAtA []byte) error {
 						if shift >= 64 {
 							return protohelpers.ErrIntOverflow
 						}
-						if iNdEx >= l {
+						if iNdEx >= postIndex {
 							return io.ErrUnexpectedEOF
 						}
 						b := dAtA[iNdEx]
@@ -3609,6 +3642,9 @@ func (m *Line) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if fieldNum == 0 {
+			return fmt.Errorf("proto: illegal tag 0")
+		}
 		switch fieldNum {
 		case 1: // function_index
 			if wireType != 0 {
@@ -3720,6 +3756,9 @@ func (m *Function) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if fieldNum == 0 {
+			return fmt.Errorf("proto: illegal tag 0")
+		}
 		switch fieldNum {
 		case 1: // name_strindex
 			if wireType != 0 {
@@ -3856,6 +3895,9 @@ func (m *KeyValueAndUnit) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if fieldNum == 0 {
+			return fmt.Errorf("proto: illegal tag 0")
+		}
 		switch fieldNum {
 		case 1: // key_strindex
 			if wireType != 0 {

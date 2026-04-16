@@ -496,6 +496,9 @@ func (m *LogsData) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if fieldNum == 0 {
+			return fmt.Errorf("proto: illegal tag 0")
+		}
 		switch fieldNum {
 		case 1: // resource_logs
 			if wireType != 2 {
@@ -606,6 +609,9 @@ func (m *ResourceLogs) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if fieldNum == 0 {
+			return fmt.Errorf("proto: illegal tag 0")
+		}
 		switch fieldNum {
 		case 1: // resource
 			if wireType != 2 {
@@ -790,6 +796,9 @@ func (m *ScopeLogs) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if fieldNum == 0 {
+			return fmt.Errorf("proto: illegal tag 0")
+		}
 		switch fieldNum {
 		case 1: // scope
 			if wireType != 2 {
@@ -974,6 +983,9 @@ func (m *LogRecord) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if fieldNum == 0 {
+			return fmt.Errorf("proto: illegal tag 0")
+		}
 		switch fieldNum {
 		case 1: // time_unix_nano
 			if wireType != 1 {
