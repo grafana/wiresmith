@@ -995,10 +995,6 @@ func TestUnmarshalMalformedInput(t *testing.T) {
 		return b
 	}()
 
-	type unmarshaler interface {
-		Unmarshal([]byte) error
-	}
-
 	// Test each malformed input against representative types
 	testCases := []struct {
 		name  string

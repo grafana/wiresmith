@@ -29,11 +29,6 @@ func (it *ImportTracker) addProtoImport(protoPkg string) string {
 	return it.addImport(importPath, alias)
 }
 
-func (it *ImportTracker) addStdImport(path string) {
-	// For standard library imports, alias is empty
-	it.imports[path] = ""
-}
-
 func (it *ImportTracker) goType(fd protoreflect.FieldDescriptor) string {
 	if fd.IsList() {
 		return "[]" + it.goSingularType(fd)
