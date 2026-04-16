@@ -73,6 +73,7 @@ jobs:
         with:
           go-version-file: go.mod
       - run: make generate-ours
+      - run: git add gen/ --intent-to-add
       - name: Check gen/otlp/ is up to date
         run: |
           if ! git diff --exit-code gen/otlp/; then
