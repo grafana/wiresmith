@@ -104,11 +104,13 @@ func (fg *FileGenerator) protoTag(fd protoreflect.FieldDescriptor) string {
 
 	protoTag := `protobuf:"` + strings.Join(parts, ",") + `"`
 
-	// JSON tag
-	jsonName := fd.JSONName()
-	jsonTag := fmt.Sprintf(` json:"%s,omitempty"`, jsonName)
-
-	return protoTag + jsonTag
+	// JSON tag: gogoslick uses the proto field name (snake_case), not the JSON name (camelCase).
+	jsonName := string(fd.Name())
+	// gogoslick omits omitempty for non-nullable repeated message/bytes fields.
+	if fd.IsList() && !isFieldNullable(fd) && (fd.Kind() == protoreflect.MessageKind || fd.Kind() == protoreflect.BytesKind) {
+		return protoTag + fmt.Sprintf(` json:"%s"`, jsonName)
+	}
+	return protoTag + fmt.Sprintf(` json:"%s,omitempty"`, jsonName)
 }
 
 // protoWireTypeName returns the protobuf wire type name for struct tags.
