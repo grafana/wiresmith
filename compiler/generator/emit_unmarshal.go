@@ -404,6 +404,12 @@ func (fg *FileGenerator) emitOptionalFieldUnmarshal(goName string, fd protorefle
 		fg.emitConsumeString()
 		fmt.Fprintf(fg.body, "\t\t\t%s = &v\n", access)
 		fg.emitAdvanceBytes()
+
+	case protoreflect.BytesKind:
+		// optional bytes is []byte (not *[]byte), so we copy the value directly.
+		fg.emitConsumeBytes()
+		fmt.Fprintf(fg.body, "\t\t\t%s = append(%s[:0], v...)\n", access, access)
+		fg.emitAdvanceBytes()
 	}
 }
 

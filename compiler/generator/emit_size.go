@@ -91,6 +91,9 @@ func (fg *FileGenerator) emitOptionalFieldSize(access string, fd protoreflect.Fi
 		fmt.Fprintf(fg.body, "\t\tn += %d\n", tagSize+8)
 	case protoreflect.StringKind:
 		fmt.Fprintf(fg.body, "\t\tn += %d + protowire.SizeVarint(uint64(len(*%s))) + len(*%s)\n", tagSize, access, access)
+	case protoreflect.BytesKind:
+		// optional bytes is []byte (not *[]byte); nil guard is the same "!= nil" check.
+		fmt.Fprintf(fg.body, "\t\tn += %d + protowire.SizeVarint(uint64(len(%s))) + len(%s)\n", tagSize, access, access)
 	}
 	fmt.Fprintf(fg.body, "\t}\n")
 }
