@@ -21,7 +21,7 @@ All commands are available via `make`:
 |--------|-------------|
 | `make build` | Build all packages |
 | `make test` | Run correctness tests |
-| `make fuzz` | Fuzz `Unmarshal` methods (30s) — feeds random bytes to verify errors, not panics |
+| `make fuzz` | Fuzz all 7 targets (10s each) — panic safety, round-trip, size, cross-library, structured trace/metrics/logs |
 | `make generate` | Regenerate all code (ours + vtproto + gogoproto). Requires `protoc`, `protoc-gen-go`, `protoc-gen-go-vtproto`, `protoc-gen-gogofast` |
 | `make generate-ours` | Regenerate only our code from protos |
 | `make bench` | Run comparative benchmarks (5 iterations) |

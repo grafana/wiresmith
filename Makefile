@@ -29,8 +29,12 @@ build: ## Build all packages
 test: ## Run correctness tests
 	go test ./test/ -v
 
-fuzz: ## Fuzz Unmarshal methods (30s)
-	go test ./test/ -fuzz FuzzUnmarshal -fuzztime 30s
+fuzz: ## Fuzz all targets (10s each)
+	@for target in FuzzUnmarshal FuzzRoundTrip FuzzMarshalSize FuzzCrossLibrary FuzzStructuredTrace FuzzStructuredMetrics FuzzStructuredLogs; do \
+		echo "==> Fuzzing $$target..."; \
+		GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn \
+			go test ./test/ -fuzz $$target -fuzztime 10s -run='^$$' || exit 1; \
+	done
 
 generate: generate-ours generate-vtproto generate-gogoproto ## Regenerate all code (ours + vtproto + gogoproto)
 
