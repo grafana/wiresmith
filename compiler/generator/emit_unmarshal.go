@@ -36,12 +36,94 @@ func (fg *FileGenerator) emitSkipFieldHelper() {
 	fmt.Fprintf(fg.body, "}\n\n")
 }
 
+// repeatedFieldsForPreScan returns list fields whose element count can be
+// determined by counting wire-format field-number occurrences (messages,
+// strings, bytes). Packed scalars are excluded because one wire occurrence
+// contains many elements.
+func repeatedFieldsForPreScan(md protoreflect.MessageDescriptor) []protoreflect.FieldDescriptor {
+	var fields []protoreflect.FieldDescriptor
+	for i := 0; i < md.Fields().Len(); i++ {
+		fd := md.Fields().Get(i)
+		if !fd.IsList() {
+			continue
+		}
+		switch fd.Kind() {
+		case protoreflect.MessageKind, protoreflect.StringKind, protoreflect.BytesKind:
+			fields = append(fields, fd)
+		}
+	}
+	return fields
+}
+
+// preScanMinBytes is the minimum message size for the pre-scan to run.
+// Small messages (individual spans, data points) have few repeated elements
+// so the scanning overhead outweighs the pre-allocation savings. Large
+// container messages (ScopeSpans with many spans) benefit significantly.
+const preScanMinBytes = 256
+
+// emitPreScan emits a lightweight tag-scanning loop that counts occurrences of
+// repeated message/string/bytes fields, then pre-allocates their slices with
+// exact capacity. This avoids expensive realloc+copy cycles for value-type
+// slices during the main unmarshal loop. Gated on len(b) to skip small messages
+// where the overhead isn't justified.
+func (fg *FileGenerator) emitPreScan(md protoreflect.MessageDescriptor) {
+	fields := repeatedFieldsForPreScan(md)
+	if len(fields) == 0 {
+		return
+	}
+
+	fmt.Fprintf(fg.body, "\tif len(b) >= %d {\n", preScanMinBytes)
+	fmt.Fprintf(fg.body, "\t\ttmp := b\n")
+	for _, fd := range fields {
+		fmt.Fprintf(fg.body, "\t\tvar field%dcount int\n", fd.Number())
+	}
+	fmt.Fprintf(fg.body, "\t\tfor len(tmp) > 0 {\n")
+	fmt.Fprintf(fg.body, "\t\t\tnum, typ, tagLen := protowire.ConsumeTag(tmp)\n")
+	fmt.Fprintf(fg.body, "\t\t\tif tagLen < 0 {\n\t\t\t\tbreak\n\t\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\t\ttmp = tmp[tagLen:]\n")
+
+	fmt.Fprintf(fg.body, "\t\t\tswitch num {\n")
+	for _, fd := range fields {
+		fmt.Fprintf(fg.body, "\t\t\tcase %d:\n", fd.Number())
+		fmt.Fprintf(fg.body, "\t\t\t\tfield%dcount++\n", fd.Number())
+	}
+	fmt.Fprintf(fg.body, "\t\t\t}\n")
+
+	fmt.Fprintf(fg.body, "\t\t\tvar skip int\n")
+	fmt.Fprintf(fg.body, "\t\t\tswitch typ {\n")
+	fmt.Fprintf(fg.body, "\t\t\tcase protowire.VarintType:\n")
+	fmt.Fprintf(fg.body, "\t\t\t\t_, skip = protowire.ConsumeVarint(tmp)\n")
+	fmt.Fprintf(fg.body, "\t\t\tcase protowire.Fixed32Type:\n")
+	fmt.Fprintf(fg.body, "\t\t\t\tskip = 4\n")
+	fmt.Fprintf(fg.body, "\t\t\tcase protowire.Fixed64Type:\n")
+	fmt.Fprintf(fg.body, "\t\t\t\tskip = 8\n")
+	fmt.Fprintf(fg.body, "\t\t\tcase protowire.BytesType:\n")
+	fmt.Fprintf(fg.body, "\t\t\t\t_, skip = protowire.ConsumeBytes(tmp)\n")
+	fmt.Fprintf(fg.body, "\t\t\tcase protowire.StartGroupType:\n")
+	fmt.Fprintf(fg.body, "\t\t\t\t_, skip = protowire.ConsumeGroup(num, tmp)\n")
+	fmt.Fprintf(fg.body, "\t\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\t\tif skip < 0 || skip > len(tmp) {\n\t\t\t\tbreak\n\t\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\t\ttmp = tmp[skip:]\n")
+	fmt.Fprintf(fg.body, "\t\t}\n")
+
+	for _, fd := range fields {
+		goName := snakeToPascal(string(fd.Name()))
+		sliceType := fg.imports.goType(fd)
+		fmt.Fprintf(fg.body, "\t\tif field%dcount > 0 {\n", fd.Number())
+		fmt.Fprintf(fg.body, "\t\t\tm.%s = make(%s, 0, field%dcount)\n", goName, sliceType, fd.Number())
+		fmt.Fprintf(fg.body, "\t\t}\n")
+	}
+
+	fmt.Fprintf(fg.body, "\t}\n")
+}
+
 func (fg *FileGenerator) emitUnmarshal(md protoreflect.MessageDescriptor) {
 	name := goMessageTypeName(md)
 	fg.imports.addImport("google.golang.org/protobuf/encoding/protowire", "")
 	fg.imports.addImport("fmt", "")
 
 	fmt.Fprintf(fg.body, "func (m *%s) Unmarshal(b []byte) error {\n", name)
+	fg.emitPreScan(md)
 	fmt.Fprintf(fg.body, "\tfor len(b) > 0 {\n")
 	fmt.Fprintf(fg.body, "\t\tnum, typ, tagLen := protowire.ConsumeTag(b)\n")
 	fmt.Fprintf(fg.body, "\t\tif tagLen < 0 {\n\t\t\treturn fmt.Errorf(\"invalid tag\")\n\t\t}\n")
@@ -307,19 +389,19 @@ func (fg *FileGenerator) emitPackedFieldUnmarshal(access string, fd protoreflect
 	fmt.Fprintf(fg.body, "\t\t\tif typ == protowire.BytesType {\n")
 	fmt.Fprintf(fg.body, "\t\t\t\tdata, n := protowire.ConsumeBytes(b)\n")
 	fmt.Fprintf(fg.body, "\t\t\t\tif n < 0 {\n\t\t\t\t\treturn fmt.Errorf(\"invalid packed field\")\n\t\t\t\t}\n")
-	// Pre-allocate for fixed-size packed fields where we can compute exact count
+	// Pre-allocate with exact capacity for fixed-size packed fields
 	sliceType := fg.imports.goType(fd)
 	if isFixed64Kind(kind) {
-		fmt.Fprintf(fg.body, "\t\t\t\tif cap(%s)-len(%s) < len(data)/8 {\n", access, access)
-		fmt.Fprintf(fg.body, "\t\t\t\t\t%s = append(make(%s, 0, len(%s)+len(data)/8), %s...)\n", access, sliceType, access, access)
+		fmt.Fprintf(fg.body, "\t\t\t\tif elementCount := len(data) / 8; elementCount != 0 && len(%s) == 0 {\n", access)
+		fmt.Fprintf(fg.body, "\t\t\t\t\t%s = make(%s, 0, elementCount)\n", access, sliceType)
 		fmt.Fprintf(fg.body, "\t\t\t\t}\n")
 	} else if isFixed32Kind(kind) {
-		fmt.Fprintf(fg.body, "\t\t\t\tif cap(%s)-len(%s) < len(data)/4 {\n", access, access)
-		fmt.Fprintf(fg.body, "\t\t\t\t\t%s = append(make(%s, 0, len(%s)+len(data)/4), %s...)\n", access, sliceType, access, access)
+		fmt.Fprintf(fg.body, "\t\t\t\tif elementCount := len(data) / 4; elementCount != 0 && len(%s) == 0 {\n", access)
+		fmt.Fprintf(fg.body, "\t\t\t\t\t%s = make(%s, 0, elementCount)\n", access, sliceType)
 		fmt.Fprintf(fg.body, "\t\t\t\t}\n")
 	} else if kind == protoreflect.BoolKind {
-		fmt.Fprintf(fg.body, "\t\t\t\tif cap(%s)-len(%s) < len(data) {\n", access, access)
-		fmt.Fprintf(fg.body, "\t\t\t\t\t%s = append(make(%s, 0, len(%s)+len(data)), %s...)\n", access, sliceType, access, access)
+		fmt.Fprintf(fg.body, "\t\t\t\tif elementCount := len(data); elementCount != 0 && len(%s) == 0 {\n", access)
+		fmt.Fprintf(fg.body, "\t\t\t\t\t%s = make(%s, 0, elementCount)\n", access, sliceType)
 		fmt.Fprintf(fg.body, "\t\t\t\t}\n")
 	}
 	fmt.Fprintf(fg.body, "\t\t\t\tfor len(data) > 0 {\n")

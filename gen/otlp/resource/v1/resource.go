@@ -102,6 +102,47 @@ func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) 
 }
 
 func (m *Resource) Unmarshal(b []byte) error {
+	if len(b) >= 256 {
+		tmp := b
+		var field1count int
+		var field3count int
+		for len(tmp) > 0 {
+			num, typ, tagLen := protowire.ConsumeTag(tmp)
+			if tagLen < 0 {
+				break
+			}
+			tmp = tmp[tagLen:]
+			switch num {
+			case 1:
+				field1count++
+			case 3:
+				field3count++
+			}
+			var skip int
+			switch typ {
+			case protowire.VarintType:
+				_, skip = protowire.ConsumeVarint(tmp)
+			case protowire.Fixed32Type:
+				skip = 4
+			case protowire.Fixed64Type:
+				skip = 8
+			case protowire.BytesType:
+				_, skip = protowire.ConsumeBytes(tmp)
+			case protowire.StartGroupType:
+				_, skip = protowire.ConsumeGroup(num, tmp)
+			}
+			if skip < 0 || skip > len(tmp) {
+				break
+			}
+			tmp = tmp[skip:]
+		}
+		if field1count > 0 {
+			m.Attributes = make([]commonv1.KeyValue, 0, field1count)
+		}
+		if field3count > 0 {
+			m.EntityRefs = make([]commonv1.EntityRef, 0, field3count)
+		}
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {

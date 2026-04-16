@@ -1318,6 +1318,41 @@ func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) 
 }
 
 func (m *MetricsData) Unmarshal(b []byte) error {
+	if len(b) >= 256 {
+		tmp := b
+		var field1count int
+		for len(tmp) > 0 {
+			num, typ, tagLen := protowire.ConsumeTag(tmp)
+			if tagLen < 0 {
+				break
+			}
+			tmp = tmp[tagLen:]
+			switch num {
+			case 1:
+				field1count++
+			}
+			var skip int
+			switch typ {
+			case protowire.VarintType:
+				_, skip = protowire.ConsumeVarint(tmp)
+			case protowire.Fixed32Type:
+				skip = 4
+			case protowire.Fixed64Type:
+				skip = 8
+			case protowire.BytesType:
+				_, skip = protowire.ConsumeBytes(tmp)
+			case protowire.StartGroupType:
+				_, skip = protowire.ConsumeGroup(num, tmp)
+			}
+			if skip < 0 || skip > len(tmp) {
+				break
+			}
+			tmp = tmp[skip:]
+		}
+		if field1count > 0 {
+			m.ResourceMetrics = make([]ResourceMetrics, 0, field1count)
+		}
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1347,6 +1382,41 @@ func (m *MetricsData) Unmarshal(b []byte) error {
 }
 
 func (m *ResourceMetrics) Unmarshal(b []byte) error {
+	if len(b) >= 256 {
+		tmp := b
+		var field2count int
+		for len(tmp) > 0 {
+			num, typ, tagLen := protowire.ConsumeTag(tmp)
+			if tagLen < 0 {
+				break
+			}
+			tmp = tmp[tagLen:]
+			switch num {
+			case 2:
+				field2count++
+			}
+			var skip int
+			switch typ {
+			case protowire.VarintType:
+				_, skip = protowire.ConsumeVarint(tmp)
+			case protowire.Fixed32Type:
+				skip = 4
+			case protowire.Fixed64Type:
+				skip = 8
+			case protowire.BytesType:
+				_, skip = protowire.ConsumeBytes(tmp)
+			case protowire.StartGroupType:
+				_, skip = protowire.ConsumeGroup(num, tmp)
+			}
+			if skip < 0 || skip > len(tmp) {
+				break
+			}
+			tmp = tmp[skip:]
+		}
+		if field2count > 0 {
+			m.ScopeMetrics = make([]ScopeMetrics, 0, field2count)
+		}
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1392,6 +1462,41 @@ func (m *ResourceMetrics) Unmarshal(b []byte) error {
 }
 
 func (m *ScopeMetrics) Unmarshal(b []byte) error {
+	if len(b) >= 256 {
+		tmp := b
+		var field2count int
+		for len(tmp) > 0 {
+			num, typ, tagLen := protowire.ConsumeTag(tmp)
+			if tagLen < 0 {
+				break
+			}
+			tmp = tmp[tagLen:]
+			switch num {
+			case 2:
+				field2count++
+			}
+			var skip int
+			switch typ {
+			case protowire.VarintType:
+				_, skip = protowire.ConsumeVarint(tmp)
+			case protowire.Fixed32Type:
+				skip = 4
+			case protowire.Fixed64Type:
+				skip = 8
+			case protowire.BytesType:
+				_, skip = protowire.ConsumeBytes(tmp)
+			case protowire.StartGroupType:
+				_, skip = protowire.ConsumeGroup(num, tmp)
+			}
+			if skip < 0 || skip > len(tmp) {
+				break
+			}
+			tmp = tmp[skip:]
+		}
+		if field2count > 0 {
+			m.Metrics = make([]Metric, 0, field2count)
+		}
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1437,6 +1542,41 @@ func (m *ScopeMetrics) Unmarshal(b []byte) error {
 }
 
 func (m *Metric) Unmarshal(b []byte) error {
+	if len(b) >= 256 {
+		tmp := b
+		var field12count int
+		for len(tmp) > 0 {
+			num, typ, tagLen := protowire.ConsumeTag(tmp)
+			if tagLen < 0 {
+				break
+			}
+			tmp = tmp[tagLen:]
+			switch num {
+			case 12:
+				field12count++
+			}
+			var skip int
+			switch typ {
+			case protowire.VarintType:
+				_, skip = protowire.ConsumeVarint(tmp)
+			case protowire.Fixed32Type:
+				skip = 4
+			case protowire.Fixed64Type:
+				skip = 8
+			case protowire.BytesType:
+				_, skip = protowire.ConsumeBytes(tmp)
+			case protowire.StartGroupType:
+				_, skip = protowire.ConsumeGroup(num, tmp)
+			}
+			if skip < 0 || skip > len(tmp) {
+				break
+			}
+			tmp = tmp[skip:]
+		}
+		if field12count > 0 {
+			m.Metadata = make([]commonv1.KeyValue, 0, field12count)
+		}
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1542,6 +1682,41 @@ func (m *Metric) Unmarshal(b []byte) error {
 }
 
 func (m *Gauge) Unmarshal(b []byte) error {
+	if len(b) >= 256 {
+		tmp := b
+		var field1count int
+		for len(tmp) > 0 {
+			num, typ, tagLen := protowire.ConsumeTag(tmp)
+			if tagLen < 0 {
+				break
+			}
+			tmp = tmp[tagLen:]
+			switch num {
+			case 1:
+				field1count++
+			}
+			var skip int
+			switch typ {
+			case protowire.VarintType:
+				_, skip = protowire.ConsumeVarint(tmp)
+			case protowire.Fixed32Type:
+				skip = 4
+			case protowire.Fixed64Type:
+				skip = 8
+			case protowire.BytesType:
+				_, skip = protowire.ConsumeBytes(tmp)
+			case protowire.StartGroupType:
+				_, skip = protowire.ConsumeGroup(num, tmp)
+			}
+			if skip < 0 || skip > len(tmp) {
+				break
+			}
+			tmp = tmp[skip:]
+		}
+		if field1count > 0 {
+			m.DataPoints = make([]NumberDataPoint, 0, field1count)
+		}
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1571,6 +1746,41 @@ func (m *Gauge) Unmarshal(b []byte) error {
 }
 
 func (m *Sum) Unmarshal(b []byte) error {
+	if len(b) >= 256 {
+		tmp := b
+		var field1count int
+		for len(tmp) > 0 {
+			num, typ, tagLen := protowire.ConsumeTag(tmp)
+			if tagLen < 0 {
+				break
+			}
+			tmp = tmp[tagLen:]
+			switch num {
+			case 1:
+				field1count++
+			}
+			var skip int
+			switch typ {
+			case protowire.VarintType:
+				_, skip = protowire.ConsumeVarint(tmp)
+			case protowire.Fixed32Type:
+				skip = 4
+			case protowire.Fixed64Type:
+				skip = 8
+			case protowire.BytesType:
+				_, skip = protowire.ConsumeBytes(tmp)
+			case protowire.StartGroupType:
+				_, skip = protowire.ConsumeGroup(num, tmp)
+			}
+			if skip < 0 || skip > len(tmp) {
+				break
+			}
+			tmp = tmp[skip:]
+		}
+		if field1count > 0 {
+			m.DataPoints = make([]NumberDataPoint, 0, field1count)
+		}
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1614,6 +1824,41 @@ func (m *Sum) Unmarshal(b []byte) error {
 }
 
 func (m *Histogram) Unmarshal(b []byte) error {
+	if len(b) >= 256 {
+		tmp := b
+		var field1count int
+		for len(tmp) > 0 {
+			num, typ, tagLen := protowire.ConsumeTag(tmp)
+			if tagLen < 0 {
+				break
+			}
+			tmp = tmp[tagLen:]
+			switch num {
+			case 1:
+				field1count++
+			}
+			var skip int
+			switch typ {
+			case protowire.VarintType:
+				_, skip = protowire.ConsumeVarint(tmp)
+			case protowire.Fixed32Type:
+				skip = 4
+			case protowire.Fixed64Type:
+				skip = 8
+			case protowire.BytesType:
+				_, skip = protowire.ConsumeBytes(tmp)
+			case protowire.StartGroupType:
+				_, skip = protowire.ConsumeGroup(num, tmp)
+			}
+			if skip < 0 || skip > len(tmp) {
+				break
+			}
+			tmp = tmp[skip:]
+		}
+		if field1count > 0 {
+			m.DataPoints = make([]HistogramDataPoint, 0, field1count)
+		}
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1650,6 +1895,41 @@ func (m *Histogram) Unmarshal(b []byte) error {
 }
 
 func (m *ExponentialHistogram) Unmarshal(b []byte) error {
+	if len(b) >= 256 {
+		tmp := b
+		var field1count int
+		for len(tmp) > 0 {
+			num, typ, tagLen := protowire.ConsumeTag(tmp)
+			if tagLen < 0 {
+				break
+			}
+			tmp = tmp[tagLen:]
+			switch num {
+			case 1:
+				field1count++
+			}
+			var skip int
+			switch typ {
+			case protowire.VarintType:
+				_, skip = protowire.ConsumeVarint(tmp)
+			case protowire.Fixed32Type:
+				skip = 4
+			case protowire.Fixed64Type:
+				skip = 8
+			case protowire.BytesType:
+				_, skip = protowire.ConsumeBytes(tmp)
+			case protowire.StartGroupType:
+				_, skip = protowire.ConsumeGroup(num, tmp)
+			}
+			if skip < 0 || skip > len(tmp) {
+				break
+			}
+			tmp = tmp[skip:]
+		}
+		if field1count > 0 {
+			m.DataPoints = make([]ExponentialHistogramDataPoint, 0, field1count)
+		}
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1686,6 +1966,41 @@ func (m *ExponentialHistogram) Unmarshal(b []byte) error {
 }
 
 func (m *Summary) Unmarshal(b []byte) error {
+	if len(b) >= 256 {
+		tmp := b
+		var field1count int
+		for len(tmp) > 0 {
+			num, typ, tagLen := protowire.ConsumeTag(tmp)
+			if tagLen < 0 {
+				break
+			}
+			tmp = tmp[tagLen:]
+			switch num {
+			case 1:
+				field1count++
+			}
+			var skip int
+			switch typ {
+			case protowire.VarintType:
+				_, skip = protowire.ConsumeVarint(tmp)
+			case protowire.Fixed32Type:
+				skip = 4
+			case protowire.Fixed64Type:
+				skip = 8
+			case protowire.BytesType:
+				_, skip = protowire.ConsumeBytes(tmp)
+			case protowire.StartGroupType:
+				_, skip = protowire.ConsumeGroup(num, tmp)
+			}
+			if skip < 0 || skip > len(tmp) {
+				break
+			}
+			tmp = tmp[skip:]
+		}
+		if field1count > 0 {
+			m.DataPoints = make([]SummaryDataPoint, 0, field1count)
+		}
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1715,6 +2030,47 @@ func (m *Summary) Unmarshal(b []byte) error {
 }
 
 func (m *NumberDataPoint) Unmarshal(b []byte) error {
+	if len(b) >= 256 {
+		tmp := b
+		var field7count int
+		var field5count int
+		for len(tmp) > 0 {
+			num, typ, tagLen := protowire.ConsumeTag(tmp)
+			if tagLen < 0 {
+				break
+			}
+			tmp = tmp[tagLen:]
+			switch num {
+			case 7:
+				field7count++
+			case 5:
+				field5count++
+			}
+			var skip int
+			switch typ {
+			case protowire.VarintType:
+				_, skip = protowire.ConsumeVarint(tmp)
+			case protowire.Fixed32Type:
+				skip = 4
+			case protowire.Fixed64Type:
+				skip = 8
+			case protowire.BytesType:
+				_, skip = protowire.ConsumeBytes(tmp)
+			case protowire.StartGroupType:
+				_, skip = protowire.ConsumeGroup(num, tmp)
+			}
+			if skip < 0 || skip > len(tmp) {
+				break
+			}
+			tmp = tmp[skip:]
+		}
+		if field7count > 0 {
+			m.Attributes = make([]commonv1.KeyValue, 0, field7count)
+		}
+		if field5count > 0 {
+			m.Exemplars = make([]Exemplar, 0, field5count)
+		}
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1789,6 +2145,47 @@ func (m *NumberDataPoint) Unmarshal(b []byte) error {
 }
 
 func (m *HistogramDataPoint) Unmarshal(b []byte) error {
+	if len(b) >= 256 {
+		tmp := b
+		var field9count int
+		var field8count int
+		for len(tmp) > 0 {
+			num, typ, tagLen := protowire.ConsumeTag(tmp)
+			if tagLen < 0 {
+				break
+			}
+			tmp = tmp[tagLen:]
+			switch num {
+			case 9:
+				field9count++
+			case 8:
+				field8count++
+			}
+			var skip int
+			switch typ {
+			case protowire.VarintType:
+				_, skip = protowire.ConsumeVarint(tmp)
+			case protowire.Fixed32Type:
+				skip = 4
+			case protowire.Fixed64Type:
+				skip = 8
+			case protowire.BytesType:
+				_, skip = protowire.ConsumeBytes(tmp)
+			case protowire.StartGroupType:
+				_, skip = protowire.ConsumeGroup(num, tmp)
+			}
+			if skip < 0 || skip > len(tmp) {
+				break
+			}
+			tmp = tmp[skip:]
+		}
+		if field9count > 0 {
+			m.Attributes = make([]commonv1.KeyValue, 0, field9count)
+		}
+		if field8count > 0 {
+			m.Exemplars = make([]Exemplar, 0, field8count)
+		}
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1841,8 +2238,8 @@ func (m *HistogramDataPoint) Unmarshal(b []byte) error {
 				if n < 0 {
 					return fmt.Errorf("invalid packed field")
 				}
-				if cap(m.BucketCounts)-len(m.BucketCounts) < len(data)/8 {
-					m.BucketCounts = append(make([]uint64, 0, len(m.BucketCounts)+len(data)/8), m.BucketCounts...)
+				if elementCount := len(data) / 8; elementCount != 0 && len(m.BucketCounts) == 0 {
+					m.BucketCounts = make([]uint64, 0, elementCount)
 				}
 				for len(data) > 0 {
 					v, vn := protowire.ConsumeFixed64(data)
@@ -1867,8 +2264,8 @@ func (m *HistogramDataPoint) Unmarshal(b []byte) error {
 				if n < 0 {
 					return fmt.Errorf("invalid packed field")
 				}
-				if cap(m.ExplicitBounds)-len(m.ExplicitBounds) < len(data)/8 {
-					m.ExplicitBounds = append(make([]float64, 0, len(m.ExplicitBounds)+len(data)/8), m.ExplicitBounds...)
+				if elementCount := len(data) / 8; elementCount != 0 && len(m.ExplicitBounds) == 0 {
+					m.ExplicitBounds = make([]float64, 0, elementCount)
 				}
 				for len(data) > 0 {
 					v, vn := protowire.ConsumeFixed64(data)
@@ -1981,6 +2378,47 @@ func (m *ExponentialHistogramDataPoint_Buckets) Unmarshal(b []byte) error {
 }
 
 func (m *ExponentialHistogramDataPoint) Unmarshal(b []byte) error {
+	if len(b) >= 256 {
+		tmp := b
+		var field1count int
+		var field11count int
+		for len(tmp) > 0 {
+			num, typ, tagLen := protowire.ConsumeTag(tmp)
+			if tagLen < 0 {
+				break
+			}
+			tmp = tmp[tagLen:]
+			switch num {
+			case 1:
+				field1count++
+			case 11:
+				field11count++
+			}
+			var skip int
+			switch typ {
+			case protowire.VarintType:
+				_, skip = protowire.ConsumeVarint(tmp)
+			case protowire.Fixed32Type:
+				skip = 4
+			case protowire.Fixed64Type:
+				skip = 8
+			case protowire.BytesType:
+				_, skip = protowire.ConsumeBytes(tmp)
+			case protowire.StartGroupType:
+				_, skip = protowire.ConsumeGroup(num, tmp)
+			}
+			if skip < 0 || skip > len(tmp) {
+				break
+			}
+			tmp = tmp[skip:]
+		}
+		if field1count > 0 {
+			m.Attributes = make([]commonv1.KeyValue, 0, field1count)
+		}
+		if field11count > 0 {
+			m.Exemplars = make([]Exemplar, 0, field11count)
+		}
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -2144,6 +2582,47 @@ func (m *SummaryDataPoint_ValueAtQuantile) Unmarshal(b []byte) error {
 }
 
 func (m *SummaryDataPoint) Unmarshal(b []byte) error {
+	if len(b) >= 256 {
+		tmp := b
+		var field7count int
+		var field6count int
+		for len(tmp) > 0 {
+			num, typ, tagLen := protowire.ConsumeTag(tmp)
+			if tagLen < 0 {
+				break
+			}
+			tmp = tmp[tagLen:]
+			switch num {
+			case 7:
+				field7count++
+			case 6:
+				field6count++
+			}
+			var skip int
+			switch typ {
+			case protowire.VarintType:
+				_, skip = protowire.ConsumeVarint(tmp)
+			case protowire.Fixed32Type:
+				skip = 4
+			case protowire.Fixed64Type:
+				skip = 8
+			case protowire.BytesType:
+				_, skip = protowire.ConsumeBytes(tmp)
+			case protowire.StartGroupType:
+				_, skip = protowire.ConsumeGroup(num, tmp)
+			}
+			if skip < 0 || skip > len(tmp) {
+				break
+			}
+			tmp = tmp[skip:]
+		}
+		if field7count > 0 {
+			m.Attributes = make([]commonv1.KeyValue, 0, field7count)
+		}
+		if field6count > 0 {
+			m.QuantileValues = make([]SummaryDataPoint_ValueAtQuantile, 0, field6count)
+		}
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -2218,6 +2697,41 @@ func (m *SummaryDataPoint) Unmarshal(b []byte) error {
 }
 
 func (m *Exemplar) Unmarshal(b []byte) error {
+	if len(b) >= 256 {
+		tmp := b
+		var field7count int
+		for len(tmp) > 0 {
+			num, typ, tagLen := protowire.ConsumeTag(tmp)
+			if tagLen < 0 {
+				break
+			}
+			tmp = tmp[tagLen:]
+			switch num {
+			case 7:
+				field7count++
+			}
+			var skip int
+			switch typ {
+			case protowire.VarintType:
+				_, skip = protowire.ConsumeVarint(tmp)
+			case protowire.Fixed32Type:
+				skip = 4
+			case protowire.Fixed64Type:
+				skip = 8
+			case protowire.BytesType:
+				_, skip = protowire.ConsumeBytes(tmp)
+			case protowire.StartGroupType:
+				_, skip = protowire.ConsumeGroup(num, tmp)
+			}
+			if skip < 0 || skip > len(tmp) {
+				break
+			}
+			tmp = tmp[skip:]
+		}
+		if field7count > 0 {
+			m.FilteredAttributes = make([]commonv1.KeyValue, 0, field7count)
+		}
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {

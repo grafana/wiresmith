@@ -540,6 +540,41 @@ func (m *AnyValue) Unmarshal(b []byte) error {
 }
 
 func (m *ArrayValue) Unmarshal(b []byte) error {
+	if len(b) >= 256 {
+		tmp := b
+		var field1count int
+		for len(tmp) > 0 {
+			num, typ, tagLen := protowire.ConsumeTag(tmp)
+			if tagLen < 0 {
+				break
+			}
+			tmp = tmp[tagLen:]
+			switch num {
+			case 1:
+				field1count++
+			}
+			var skip int
+			switch typ {
+			case protowire.VarintType:
+				_, skip = protowire.ConsumeVarint(tmp)
+			case protowire.Fixed32Type:
+				skip = 4
+			case protowire.Fixed64Type:
+				skip = 8
+			case protowire.BytesType:
+				_, skip = protowire.ConsumeBytes(tmp)
+			case protowire.StartGroupType:
+				_, skip = protowire.ConsumeGroup(num, tmp)
+			}
+			if skip < 0 || skip > len(tmp) {
+				break
+			}
+			tmp = tmp[skip:]
+		}
+		if field1count > 0 {
+			m.Values = make([]AnyValue, 0, field1count)
+		}
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -569,6 +604,41 @@ func (m *ArrayValue) Unmarshal(b []byte) error {
 }
 
 func (m *KeyValueList) Unmarshal(b []byte) error {
+	if len(b) >= 256 {
+		tmp := b
+		var field1count int
+		for len(tmp) > 0 {
+			num, typ, tagLen := protowire.ConsumeTag(tmp)
+			if tagLen < 0 {
+				break
+			}
+			tmp = tmp[tagLen:]
+			switch num {
+			case 1:
+				field1count++
+			}
+			var skip int
+			switch typ {
+			case protowire.VarintType:
+				_, skip = protowire.ConsumeVarint(tmp)
+			case protowire.Fixed32Type:
+				skip = 4
+			case protowire.Fixed64Type:
+				skip = 8
+			case protowire.BytesType:
+				_, skip = protowire.ConsumeBytes(tmp)
+			case protowire.StartGroupType:
+				_, skip = protowire.ConsumeGroup(num, tmp)
+			}
+			if skip < 0 || skip > len(tmp) {
+				break
+			}
+			tmp = tmp[skip:]
+		}
+		if field1count > 0 {
+			m.Values = make([]KeyValue, 0, field1count)
+		}
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -640,6 +710,41 @@ func (m *KeyValue) Unmarshal(b []byte) error {
 }
 
 func (m *InstrumentationScope) Unmarshal(b []byte) error {
+	if len(b) >= 256 {
+		tmp := b
+		var field3count int
+		for len(tmp) > 0 {
+			num, typ, tagLen := protowire.ConsumeTag(tmp)
+			if tagLen < 0 {
+				break
+			}
+			tmp = tmp[tagLen:]
+			switch num {
+			case 3:
+				field3count++
+			}
+			var skip int
+			switch typ {
+			case protowire.VarintType:
+				_, skip = protowire.ConsumeVarint(tmp)
+			case protowire.Fixed32Type:
+				skip = 4
+			case protowire.Fixed64Type:
+				skip = 8
+			case protowire.BytesType:
+				_, skip = protowire.ConsumeBytes(tmp)
+			case protowire.StartGroupType:
+				_, skip = protowire.ConsumeGroup(num, tmp)
+			}
+			if skip < 0 || skip > len(tmp) {
+				break
+			}
+			tmp = tmp[skip:]
+		}
+		if field3count > 0 {
+			m.Attributes = make([]KeyValue, 0, field3count)
+		}
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -690,6 +795,47 @@ func (m *InstrumentationScope) Unmarshal(b []byte) error {
 }
 
 func (m *EntityRef) Unmarshal(b []byte) error {
+	if len(b) >= 256 {
+		tmp := b
+		var field3count int
+		var field4count int
+		for len(tmp) > 0 {
+			num, typ, tagLen := protowire.ConsumeTag(tmp)
+			if tagLen < 0 {
+				break
+			}
+			tmp = tmp[tagLen:]
+			switch num {
+			case 3:
+				field3count++
+			case 4:
+				field4count++
+			}
+			var skip int
+			switch typ {
+			case protowire.VarintType:
+				_, skip = protowire.ConsumeVarint(tmp)
+			case protowire.Fixed32Type:
+				skip = 4
+			case protowire.Fixed64Type:
+				skip = 8
+			case protowire.BytesType:
+				_, skip = protowire.ConsumeBytes(tmp)
+			case protowire.StartGroupType:
+				_, skip = protowire.ConsumeGroup(num, tmp)
+			}
+			if skip < 0 || skip > len(tmp) {
+				break
+			}
+			tmp = tmp[skip:]
+		}
+		if field3count > 0 {
+			m.IdKeys = make([]string, 0, field3count)
+		}
+		if field4count > 0 {
+			m.DescriptionKeys = make([]string, 0, field4count)
+		}
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {

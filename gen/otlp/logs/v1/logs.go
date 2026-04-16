@@ -387,6 +387,41 @@ func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) 
 }
 
 func (m *LogsData) Unmarshal(b []byte) error {
+	if len(b) >= 256 {
+		tmp := b
+		var field1count int
+		for len(tmp) > 0 {
+			num, typ, tagLen := protowire.ConsumeTag(tmp)
+			if tagLen < 0 {
+				break
+			}
+			tmp = tmp[tagLen:]
+			switch num {
+			case 1:
+				field1count++
+			}
+			var skip int
+			switch typ {
+			case protowire.VarintType:
+				_, skip = protowire.ConsumeVarint(tmp)
+			case protowire.Fixed32Type:
+				skip = 4
+			case protowire.Fixed64Type:
+				skip = 8
+			case protowire.BytesType:
+				_, skip = protowire.ConsumeBytes(tmp)
+			case protowire.StartGroupType:
+				_, skip = protowire.ConsumeGroup(num, tmp)
+			}
+			if skip < 0 || skip > len(tmp) {
+				break
+			}
+			tmp = tmp[skip:]
+		}
+		if field1count > 0 {
+			m.ResourceLogs = make([]ResourceLogs, 0, field1count)
+		}
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -416,6 +451,41 @@ func (m *LogsData) Unmarshal(b []byte) error {
 }
 
 func (m *ResourceLogs) Unmarshal(b []byte) error {
+	if len(b) >= 256 {
+		tmp := b
+		var field2count int
+		for len(tmp) > 0 {
+			num, typ, tagLen := protowire.ConsumeTag(tmp)
+			if tagLen < 0 {
+				break
+			}
+			tmp = tmp[tagLen:]
+			switch num {
+			case 2:
+				field2count++
+			}
+			var skip int
+			switch typ {
+			case protowire.VarintType:
+				_, skip = protowire.ConsumeVarint(tmp)
+			case protowire.Fixed32Type:
+				skip = 4
+			case protowire.Fixed64Type:
+				skip = 8
+			case protowire.BytesType:
+				_, skip = protowire.ConsumeBytes(tmp)
+			case protowire.StartGroupType:
+				_, skip = protowire.ConsumeGroup(num, tmp)
+			}
+			if skip < 0 || skip > len(tmp) {
+				break
+			}
+			tmp = tmp[skip:]
+		}
+		if field2count > 0 {
+			m.ScopeLogs = make([]ScopeLogs, 0, field2count)
+		}
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -461,6 +531,41 @@ func (m *ResourceLogs) Unmarshal(b []byte) error {
 }
 
 func (m *ScopeLogs) Unmarshal(b []byte) error {
+	if len(b) >= 256 {
+		tmp := b
+		var field2count int
+		for len(tmp) > 0 {
+			num, typ, tagLen := protowire.ConsumeTag(tmp)
+			if tagLen < 0 {
+				break
+			}
+			tmp = tmp[tagLen:]
+			switch num {
+			case 2:
+				field2count++
+			}
+			var skip int
+			switch typ {
+			case protowire.VarintType:
+				_, skip = protowire.ConsumeVarint(tmp)
+			case protowire.Fixed32Type:
+				skip = 4
+			case protowire.Fixed64Type:
+				skip = 8
+			case protowire.BytesType:
+				_, skip = protowire.ConsumeBytes(tmp)
+			case protowire.StartGroupType:
+				_, skip = protowire.ConsumeGroup(num, tmp)
+			}
+			if skip < 0 || skip > len(tmp) {
+				break
+			}
+			tmp = tmp[skip:]
+		}
+		if field2count > 0 {
+			m.LogRecords = make([]LogRecord, 0, field2count)
+		}
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -506,6 +611,41 @@ func (m *ScopeLogs) Unmarshal(b []byte) error {
 }
 
 func (m *LogRecord) Unmarshal(b []byte) error {
+	if len(b) >= 256 {
+		tmp := b
+		var field6count int
+		for len(tmp) > 0 {
+			num, typ, tagLen := protowire.ConsumeTag(tmp)
+			if tagLen < 0 {
+				break
+			}
+			tmp = tmp[tagLen:]
+			switch num {
+			case 6:
+				field6count++
+			}
+			var skip int
+			switch typ {
+			case protowire.VarintType:
+				_, skip = protowire.ConsumeVarint(tmp)
+			case protowire.Fixed32Type:
+				skip = 4
+			case protowire.Fixed64Type:
+				skip = 8
+			case protowire.BytesType:
+				_, skip = protowire.ConsumeBytes(tmp)
+			case protowire.StartGroupType:
+				_, skip = protowire.ConsumeGroup(num, tmp)
+			}
+			if skip < 0 || skip > len(tmp) {
+				break
+			}
+			tmp = tmp[skip:]
+		}
+		if field6count > 0 {
+			m.Attributes = make([]commonv1.KeyValue, 0, field6count)
+		}
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {

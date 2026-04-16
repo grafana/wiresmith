@@ -1016,6 +1016,77 @@ func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) 
 }
 
 func (m *ProfilesDictionary) Unmarshal(b []byte) error {
+	if len(b) >= 256 {
+		tmp := b
+		var field1count int
+		var field2count int
+		var field3count int
+		var field4count int
+		var field5count int
+		var field6count int
+		var field7count int
+		for len(tmp) > 0 {
+			num, typ, tagLen := protowire.ConsumeTag(tmp)
+			if tagLen < 0 {
+				break
+			}
+			tmp = tmp[tagLen:]
+			switch num {
+			case 1:
+				field1count++
+			case 2:
+				field2count++
+			case 3:
+				field3count++
+			case 4:
+				field4count++
+			case 5:
+				field5count++
+			case 6:
+				field6count++
+			case 7:
+				field7count++
+			}
+			var skip int
+			switch typ {
+			case protowire.VarintType:
+				_, skip = protowire.ConsumeVarint(tmp)
+			case protowire.Fixed32Type:
+				skip = 4
+			case protowire.Fixed64Type:
+				skip = 8
+			case protowire.BytesType:
+				_, skip = protowire.ConsumeBytes(tmp)
+			case protowire.StartGroupType:
+				_, skip = protowire.ConsumeGroup(num, tmp)
+			}
+			if skip < 0 || skip > len(tmp) {
+				break
+			}
+			tmp = tmp[skip:]
+		}
+		if field1count > 0 {
+			m.MappingTable = make([]Mapping, 0, field1count)
+		}
+		if field2count > 0 {
+			m.LocationTable = make([]Location, 0, field2count)
+		}
+		if field3count > 0 {
+			m.FunctionTable = make([]Function, 0, field3count)
+		}
+		if field4count > 0 {
+			m.LinkTable = make([]Link, 0, field4count)
+		}
+		if field5count > 0 {
+			m.StringTable = make([]string, 0, field5count)
+		}
+		if field6count > 0 {
+			m.AttributeTable = make([]KeyValueAndUnit, 0, field6count)
+		}
+		if field7count > 0 {
+			m.StackTable = make([]Stack, 0, field7count)
+		}
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1102,6 +1173,41 @@ func (m *ProfilesDictionary) Unmarshal(b []byte) error {
 }
 
 func (m *ProfilesData) Unmarshal(b []byte) error {
+	if len(b) >= 256 {
+		tmp := b
+		var field1count int
+		for len(tmp) > 0 {
+			num, typ, tagLen := protowire.ConsumeTag(tmp)
+			if tagLen < 0 {
+				break
+			}
+			tmp = tmp[tagLen:]
+			switch num {
+			case 1:
+				field1count++
+			}
+			var skip int
+			switch typ {
+			case protowire.VarintType:
+				_, skip = protowire.ConsumeVarint(tmp)
+			case protowire.Fixed32Type:
+				skip = 4
+			case protowire.Fixed64Type:
+				skip = 8
+			case protowire.BytesType:
+				_, skip = protowire.ConsumeBytes(tmp)
+			case protowire.StartGroupType:
+				_, skip = protowire.ConsumeGroup(num, tmp)
+			}
+			if skip < 0 || skip > len(tmp) {
+				break
+			}
+			tmp = tmp[skip:]
+		}
+		if field1count > 0 {
+			m.ResourceProfiles = make([]ResourceProfiles, 0, field1count)
+		}
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1140,6 +1246,41 @@ func (m *ProfilesData) Unmarshal(b []byte) error {
 }
 
 func (m *ResourceProfiles) Unmarshal(b []byte) error {
+	if len(b) >= 256 {
+		tmp := b
+		var field2count int
+		for len(tmp) > 0 {
+			num, typ, tagLen := protowire.ConsumeTag(tmp)
+			if tagLen < 0 {
+				break
+			}
+			tmp = tmp[tagLen:]
+			switch num {
+			case 2:
+				field2count++
+			}
+			var skip int
+			switch typ {
+			case protowire.VarintType:
+				_, skip = protowire.ConsumeVarint(tmp)
+			case protowire.Fixed32Type:
+				skip = 4
+			case protowire.Fixed64Type:
+				skip = 8
+			case protowire.BytesType:
+				_, skip = protowire.ConsumeBytes(tmp)
+			case protowire.StartGroupType:
+				_, skip = protowire.ConsumeGroup(num, tmp)
+			}
+			if skip < 0 || skip > len(tmp) {
+				break
+			}
+			tmp = tmp[skip:]
+		}
+		if field2count > 0 {
+			m.ScopeProfiles = make([]ScopeProfiles, 0, field2count)
+		}
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1185,6 +1326,41 @@ func (m *ResourceProfiles) Unmarshal(b []byte) error {
 }
 
 func (m *ScopeProfiles) Unmarshal(b []byte) error {
+	if len(b) >= 256 {
+		tmp := b
+		var field2count int
+		for len(tmp) > 0 {
+			num, typ, tagLen := protowire.ConsumeTag(tmp)
+			if tagLen < 0 {
+				break
+			}
+			tmp = tmp[tagLen:]
+			switch num {
+			case 2:
+				field2count++
+			}
+			var skip int
+			switch typ {
+			case protowire.VarintType:
+				_, skip = protowire.ConsumeVarint(tmp)
+			case protowire.Fixed32Type:
+				skip = 4
+			case protowire.Fixed64Type:
+				skip = 8
+			case protowire.BytesType:
+				_, skip = protowire.ConsumeBytes(tmp)
+			case protowire.StartGroupType:
+				_, skip = protowire.ConsumeGroup(num, tmp)
+			}
+			if skip < 0 || skip > len(tmp) {
+				break
+			}
+			tmp = tmp[skip:]
+		}
+		if field2count > 0 {
+			m.Profiles = make([]Profile, 0, field2count)
+		}
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1230,6 +1406,41 @@ func (m *ScopeProfiles) Unmarshal(b []byte) error {
 }
 
 func (m *Profile) Unmarshal(b []byte) error {
+	if len(b) >= 256 {
+		tmp := b
+		var field2count int
+		for len(tmp) > 0 {
+			num, typ, tagLen := protowire.ConsumeTag(tmp)
+			if tagLen < 0 {
+				break
+			}
+			tmp = tmp[tagLen:]
+			switch num {
+			case 2:
+				field2count++
+			}
+			var skip int
+			switch typ {
+			case protowire.VarintType:
+				_, skip = protowire.ConsumeVarint(tmp)
+			case protowire.Fixed32Type:
+				skip = 4
+			case protowire.Fixed64Type:
+				skip = 8
+			case protowire.BytesType:
+				_, skip = protowire.ConsumeBytes(tmp)
+			case protowire.StartGroupType:
+				_, skip = protowire.ConsumeGroup(num, tmp)
+			}
+			if skip < 0 || skip > len(tmp) {
+				break
+			}
+			tmp = tmp[skip:]
+		}
+		if field2count > 0 {
+			m.Samples = make([]Sample, 0, field2count)
+		}
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1488,8 +1699,8 @@ func (m *Sample) Unmarshal(b []byte) error {
 				if n < 0 {
 					return fmt.Errorf("invalid packed field")
 				}
-				if cap(m.TimestampsUnixNano)-len(m.TimestampsUnixNano) < len(data)/8 {
-					m.TimestampsUnixNano = append(make([]uint64, 0, len(m.TimestampsUnixNano)+len(data)/8), m.TimestampsUnixNano...)
+				if elementCount := len(data) / 8; elementCount != 0 && len(m.TimestampsUnixNano) == 0 {
+					m.TimestampsUnixNano = make([]uint64, 0, elementCount)
 				}
 				for len(data) > 0 {
 					v, vn := protowire.ConsumeFixed64(data)
@@ -1632,6 +1843,41 @@ func (m *Stack) Unmarshal(b []byte) error {
 }
 
 func (m *Location) Unmarshal(b []byte) error {
+	if len(b) >= 256 {
+		tmp := b
+		var field3count int
+		for len(tmp) > 0 {
+			num, typ, tagLen := protowire.ConsumeTag(tmp)
+			if tagLen < 0 {
+				break
+			}
+			tmp = tmp[tagLen:]
+			switch num {
+			case 3:
+				field3count++
+			}
+			var skip int
+			switch typ {
+			case protowire.VarintType:
+				_, skip = protowire.ConsumeVarint(tmp)
+			case protowire.Fixed32Type:
+				skip = 4
+			case protowire.Fixed64Type:
+				skip = 8
+			case protowire.BytesType:
+				_, skip = protowire.ConsumeBytes(tmp)
+			case protowire.StartGroupType:
+				_, skip = protowire.ConsumeGroup(num, tmp)
+			}
+			if skip < 0 || skip > len(tmp) {
+				break
+			}
+			tmp = tmp[skip:]
+		}
+		if field3count > 0 {
+			m.Lines = make([]Line, 0, field3count)
+		}
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
