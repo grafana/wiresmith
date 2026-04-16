@@ -8,15 +8,22 @@ Custom protobuf compiler that generates high-performance Go code from OpenTeleme
 - `compiler/generator/` - Code generator: reads proto descriptors via `bufbuild/protocompile`, emits Go structs + marshal/unmarshal/size methods
 - `cmd/grafana-protoc/` - CLI entry point
 - `gen/otlp/` - Generated Go packages (one per proto file)
+- `gen/vtpb/` - vtproto-generated code for benchmark comparison
+- `gen/gogopb/` - gogoproto-generated code for benchmark comparison
 - `gen/protohelpers/` - Shared reverse-write encoding helpers (based on vtprotobuf's protohelpers, Apache 2.0)
 - `test/` - Round-trip correctness tests against official `google.golang.org/protobuf`
-- `bench/` - Comparative benchmarks (ours vs official protobuf vs vtproto)
-- `bench/vtpb/` - vtproto-generated code for benchmark comparison
-- `scripts/` - Helper scripts (e.g. vtproto regeneration)
+- `bench/` - Comparative benchmarks (ours vs official protobuf vs vtproto vs gogoproto)
+- `scripts/` - Code generation scripts
 
 ## Commands
 
-### Regenerate code from protos
+### Regenerate all code (ours + vtproto + gogoproto)
+Requires `protoc`, `protoc-gen-go`, `protoc-gen-go-vtproto`, `protoc-gen-gogofast` installed:
+```
+./scripts/generate.sh
+```
+
+### Regenerate only our code from protos
 ```
 go run ./cmd/grafana-protoc/ --proto_path=proto --out=gen --module=grafana-protoc
 ```
@@ -36,13 +43,7 @@ Feeds random bytes into all generated `Unmarshal` methods to verify they return 
 ```
 GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn go test ./bench/ -bench=. -benchmem -count=5
 ```
-The env var is needed because both official OTel proto packages and our vtpb copies register the same proto files.
-
-### Regenerate vtproto comparison code
-Requires `protoc`, `protoc-gen-go`, `protoc-gen-go-vtproto` installed:
-```
-./scripts/regen-vtproto.sh
-```
+The env var is needed because official OTel proto packages, vtpb, and gogopb copies all register the same proto files.
 
 ## Design decisions
 

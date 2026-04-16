@@ -4,6 +4,7 @@ go 1.26.2
 
 require (
 	github.com/bufbuild/protocompile v0.14.1
+	github.com/gogo/protobuf v1.3.2
 	github.com/planetscale/vtprotobuf v0.6.0
 	github.com/stretchr/testify v1.11.1
 	go.opentelemetry.io/collector/pdata v1.56.0
