@@ -1,4 +1,4 @@
-# grafana-protoc
+# wiresmith
 
 Custom protobuf compiler that generates high-performance Go code from OpenTelemetry .proto files using `google.golang.org/protobuf/encoding/protowire` and reverse-write marshaling.
 
@@ -6,7 +6,7 @@ Custom protobuf compiler that generates high-performance Go code from OpenTeleme
 
 - `proto/` - Source OpenTelemetry .proto files (common, resource, metrics, trace, logs, profiles)
 - `compiler/generator/` - Code generator: reads proto descriptors via `bufbuild/protocompile`, emits Go structs + marshal/unmarshal/size methods
-- `cmd/grafana-protoc/` - CLI entry point
+- `cmd/wiresmith/` - CLI entry point
 - `gen/otlp/` - Generated Go packages (one per proto file)
 - `gen/vtpb/` - vtproto-generated code for benchmark comparison
 - `gen/gogopb/` - gogoproto-generated code for benchmark comparison

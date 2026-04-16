@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"os"
 
-	"grafana-protoc/compiler/generator"
+	"wiresmith/compiler/generator"
 )
 
 func main() {
 	protoDir := flag.String("proto_path", "proto", "directory containing .proto files")
 	outDir := flag.String("out", "gen", "output directory for generated Go files")
-	module := flag.String("module", "grafana-protoc", "Go module name")
+	module := flag.String("module", "wiresmith", "Go module name")
 	flag.Parse()
 
 	g := &generator.Generator{

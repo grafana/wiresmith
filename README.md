@@ -1,4 +1,4 @@
-# grafana-protoc
+# wiresmith
 
 Custom protobuf compiler that generates high-performance Go code from OpenTelemetry `.proto` files. Built on `google.golang.org/protobuf/encoding/protowire` and reverse-write marshaling.
 
@@ -6,7 +6,7 @@ Custom protobuf compiler that generates high-performance Go code from OpenTeleme
 
 The official Go protobuf runtime uses reflection-based marshaling, which adds overhead that matters at scale. Existing alternatives like [vtprotobuf](https://github.com/planetscale/vtprotobuf) and [gogoproto](https://github.com/gogo/protobuf) generate faster code but still use pointer-based message fields, trading heap allocations for indirection on every access.
 
-grafana-protoc takes a different approach: **value-type structs with generated marshal/unmarshal code and zero reflection**. The result is fewer allocations, better cache locality, and faster serialization across the board.
+wiresmith takes a different approach: **value-type structs with generated marshal/unmarshal code and zero reflection**. The result is fewer allocations, better cache locality, and faster serialization across the board.
 
 ## Benchmarks
 

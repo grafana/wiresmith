@@ -9,12 +9,12 @@ import (
 
 	"google.golang.org/protobuf/proto"
 
-	commonv1 "grafana-protoc/gen/otlp/common/v1"
-	logsv1 "grafana-protoc/gen/otlp/logs/v1"
-	metricsv1 "grafana-protoc/gen/otlp/metrics/v1"
-	profilesv1 "grafana-protoc/gen/otlp/profiles/v1development"
-	resourcev1 "grafana-protoc/gen/otlp/resource/v1"
-	tracev1 "grafana-protoc/gen/otlp/trace/v1"
+	commonv1 "wiresmith/gen/otlp/common/v1"
+	logsv1 "wiresmith/gen/otlp/logs/v1"
+	metricsv1 "wiresmith/gen/otlp/metrics/v1"
+	profilesv1 "wiresmith/gen/otlp/profiles/v1development"
+	resourcev1 "wiresmith/gen/otlp/resource/v1"
+	tracev1 "wiresmith/gen/otlp/trace/v1"
 
 	otlpcommon "go.opentelemetry.io/proto/otlp/common/v1"
 	otlplogs "go.opentelemetry.io/proto/otlp/logs/v1"

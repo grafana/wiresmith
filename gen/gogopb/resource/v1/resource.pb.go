@@ -6,7 +6,7 @@ package v1
 import (
 	fmt "fmt"
 	proto "github.com/gogo/protobuf/proto"
-	v1 "grafana-protoc/gen/gogopb/common/v1"
+	v1 "wiresmith/gen/gogopb/common/v1"
 	io "io"
 	math "math"
 	math_bits "math/bits"

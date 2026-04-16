@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 
-MODULE := grafana-protoc
+MODULE := wiresmith
 
 ALL_PROTOS := \
 	opentelemetry/proto/common/v1/common.proto \
@@ -79,8 +79,8 @@ define setup_proto_root
 endef
 
 generate-ours:
-	@echo "==> Generating grafana-protoc code → gen/otlp/"
-	go run ./cmd/grafana-protoc/ --proto_path=proto --out=gen --module=$(MODULE)
+	@echo "==> Generating wiresmith code → gen/otlp/"
+	go run ./cmd/wiresmith/ --proto_path=proto --out=gen --module=$(MODULE)
 
 generate-vtproto:
 	$(setup_proto_root)

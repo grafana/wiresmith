@@ -1,4 +1,4 @@
-module grafana-protoc
+module wiresmith
 
 go 1.26.2
 

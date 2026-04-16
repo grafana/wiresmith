@@ -3,10 +3,10 @@ package bench
 import (
 	"testing"
 
-	logsv1 "grafana-protoc/gen/otlp/logs/v1"
-	metricsv1 "grafana-protoc/gen/otlp/metrics/v1"
-	profilesv1 "grafana-protoc/gen/otlp/profiles/v1development"
-	tracev1 "grafana-protoc/gen/otlp/trace/v1"
+	logsv1 "wiresmith/gen/otlp/logs/v1"
+	metricsv1 "wiresmith/gen/otlp/metrics/v1"
+	profilesv1 "wiresmith/gen/otlp/profiles/v1development"
+	tracev1 "wiresmith/gen/otlp/trace/v1"
 )
 
 // --- Marshal ---

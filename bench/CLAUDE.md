@@ -13,7 +13,7 @@ All benchmarks use identical wire-format bytes generated once via official proto
 ## File Layout
 
 - `inputs_test.go` — Canonical wire bytes generation (single source of truth, uses official proto + vtproto for profiles)
-- `ours_bench_test.go` — grafana-protoc benchmarks
+- `ours_bench_test.go` — wiresmith benchmarks
 - `official_bench_test.go` — google.golang.org/protobuf benchmarks
 - `vtproto_bench_test.go` — vtprotobuf benchmarks
 - `gogoproto_bench_test.go` — gogoproto benchmarks
@@ -43,7 +43,7 @@ Each library is benchmarked on:
 ## Generated Code
 
 All generated code lives under `gen/`:
-- `gen/otlp/` — Our generated code (`go run ./cmd/grafana-protoc/`)
+- `gen/otlp/` — Our generated code (`go run ./cmd/wiresmith/`)
 - `gen/vtpb/` — vtproto (`protoc` + `protoc-gen-go` + `protoc-gen-go-vtproto`)
 - `gen/gogopb/` — gogoproto (`protoc` + `protoc-gen-gogofast`)
 

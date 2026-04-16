@@ -8,7 +8,7 @@ import (
 	fmt "fmt"
 	protohelpers "github.com/planetscale/vtprotobuf/protohelpers"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	v1 "grafana-protoc/gen/vtpb/common/v1"
+	v1 "wiresmith/gen/vtpb/common/v1"
 	io "io"
 )
 
