@@ -21,7 +21,7 @@ func (s *stringSlice) Set(v string) error {
 
 func main() {
 	var protoPaths stringSlice
-	flag.Var(&protoPaths, "proto_path", "directory containing .proto files (can be repeated; first is primary)")
+	flag.Var(&protoPaths, "proto_path", "directory for resolving .proto imports (can be repeated)")
 	outDir := flag.String("out", "gen", "output directory for generated Go files")
 	module := flag.String("module", "wiresmith", "Go module name")
 	helpersImport := flag.String("helpers_import", "", "import path for protohelpers package (default: <module>/gen/protohelpers)")
@@ -36,6 +36,7 @@ func main() {
 		Module:        *module,
 		OutDir:        *outDir,
 		ProtoPaths:    protoPaths,
+		ProtoFiles:    flag.Args(),
 		HelpersImport: *helpersImport,
 		GogoCompat:    *gogoCompat,
 	}

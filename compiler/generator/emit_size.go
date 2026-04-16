@@ -69,7 +69,11 @@ func (fg *FileGenerator) emitSingularFieldSize(access string, fd protoreflect.Fi
 	case protoreflect.BytesKind:
 		fmt.Fprintf(fg.body, "\tif len(%s) > 0 {\n\t\tn += %d + protowire.SizeVarint(uint64(len(%s))) + len(%s)\n\t}\n", access, tagSize, access, access)
 	case protoreflect.MessageKind:
-		fmt.Fprintf(fg.body, "\t{\n\t\ts := %s.Size()\n\t\tif s > 0 {\n\t\t\tn += %d + protowire.SizeVarint(uint64(s)) + s\n\t\t}\n\t}\n", access, tagSize)
+		if isGogoPointerField(fg.gen, fd) {
+			fmt.Fprintf(fg.body, "\tif %s != nil {\n\t\ts := %s.Size()\n\t\tn += %d + protowire.SizeVarint(uint64(s)) + s\n\t}\n", access, access, tagSize)
+		} else {
+			fmt.Fprintf(fg.body, "\t{\n\t\ts := %s.Size()\n\t\tif s > 0 {\n\t\t\tn += %d + protowire.SizeVarint(uint64(s)) + s\n\t\t}\n\t}\n", access, tagSize)
+		}
 	}
 }
 

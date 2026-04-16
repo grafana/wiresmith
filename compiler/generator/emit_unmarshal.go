@@ -300,9 +300,11 @@ func (fg *FileGenerator) emitSingularFieldUnmarshal(goName string, fd protorefle
 		fg.emitAdvanceBytes()
 
 	case protoreflect.MessageKind:
-		msgType := fg.imports.goMessageType(fd.Message())
-		_ = msgType
+		msgType := fg.imports.goSingularType(fd)
 		fg.emitConsumeBytes()
+		if isGogoPointerField(fg.gen, fd) {
+			fmt.Fprintf(fg.body, "\t\t\tif %s == nil {\n\t\t\t\t%s = &%s{}\n\t\t\t}\n", access, access, msgType)
+		}
 		fmt.Fprintf(fg.body, "\t\t\tif err := %s.Unmarshal(v); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n", access)
 		fg.emitAdvanceBytes()
 	}
@@ -406,7 +408,14 @@ func (fg *FileGenerator) emitRepeatedFieldUnmarshal(goName string, fd protorefle
 	case kind == protoreflect.MessageKind:
 		msgType := fg.imports.goSingularType(fd)
 		fg.emitConsumeBytes()
-		fmt.Fprintf(fg.body, "\t\t\t%s = append(%s, %s{})\n", access, access, msgType)
+		// In gogo compat mode, repeated message fields default to pointer slices
+		// unless (gogoproto.nullable) = false.
+		usePtr := fg.gen != nil && fg.gen.GogoCompat && isFieldNullable(fd)
+		if usePtr {
+			fmt.Fprintf(fg.body, "\t\t\t%s = append(%s, &%s{})\n", access, access, msgType)
+		} else {
+			fmt.Fprintf(fg.body, "\t\t\t%s = append(%s, %s{})\n", access, access, msgType)
+		}
 		fmt.Fprintf(fg.body, "\t\t\tif err := %s[len(%s)-1].Unmarshal(v); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n", access, access)
 		fg.emitAdvanceBytes()
 

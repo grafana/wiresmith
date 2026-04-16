@@ -13,6 +13,7 @@ import (
 
 	"github.com/bufbuild/protocompile"
 	"github.com/bufbuild/protocompile/reporter"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/descriptorpb"
 )
@@ -24,9 +25,13 @@ type Generator struct {
 	GogoCompat    bool
 
 	// ProtoPaths lists directories to search for .proto files.
-	// The first path is the primary directory whose .proto files are compiled.
-	// Additional paths are used only for resolving imports.
+	// When ProtoFiles is empty, the first path is scanned for .proto files to compile.
+	// All paths are used for resolving imports.
 	ProtoPaths []string
+
+	// ProtoFiles lists specific .proto files to compile (positional args).
+	// When set, only these files are compiled; the first proto path is NOT scanned.
+	ProtoFiles []string
 
 	// Deprecated: use ProtoPaths instead. Kept for backward compatibility.
 	ProtoDir string
@@ -59,9 +64,18 @@ func (g *Generator) protoPaths() []string {
 
 func (g *Generator) Generate(ctx context.Context) error {
 	paths := g.protoPaths()
-	primaryDir := paths[0]
 
-	mapping, importPaths, err := buildImportMapping(primaryDir)
+	var mapping map[string][]byte
+	var importPaths []string
+	var err error
+
+	if len(g.ProtoFiles) > 0 {
+		// Compile only the explicitly named proto files.
+		mapping, importPaths, err = buildImportMappingFromFiles(g.ProtoFiles)
+	} else {
+		// Scan the first proto path directory.
+		mapping, importPaths, err = buildImportMapping(paths[0])
+	}
 	if err != nil {
 		return fmt.Errorf("building import mapping: %w", err)
 	}
@@ -127,8 +141,12 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 	fg.emitAllUnmarshalMethods(fd)
 
 	if g.GogoCompat {
-		fg.emitAllGetters(fd)
-		fg.emitAllEqualMethods(fd)
+		if !isFileOptionFalse(fd, 63001) { // gogoproto.goproto_getters_all
+			fg.emitAllGetters(fd)
+		}
+		if !isFileOptionFalse(fd, 63013) { // gogoproto.equal_all
+			fg.emitAllEqualMethods(fd)
+		}
 		fg.emitAllStringMethods(fd)
 		fg.emitAllGogoMethods(fd)
 		fg.emitRegistration(fd)
@@ -287,6 +305,34 @@ func (fg *FileGenerator) emitUnmarshalMethods(md protoreflect.MessageDescriptor)
 	fg.emitUnmarshal(md)
 }
 
+// isMessageOptionFalse checks if a boolean message-level option is explicitly set to false.
+func isMessageOptionFalse(md protoreflect.MessageDescriptor, fieldNum protoreflect.FieldNumber) bool {
+	opts, ok := md.Options().(*descriptorpb.MessageOptions)
+	if !ok || opts == nil {
+		return false
+	}
+	b, err := proto.Marshal(opts)
+	if err != nil {
+		return false
+	}
+	return containsVarintField(b, fieldNum, 0)
+}
+
+// isFileOptionFalse checks if a boolean file-level option (by field number) is
+// explicitly set to false. Used for gogoproto file options like equal_all (65017),
+// goproto_getters_all (65018), etc.
+func isFileOptionFalse(fd protoreflect.FileDescriptor, fieldNum protoreflect.FieldNumber) bool {
+	opts, ok := fd.Options().(*descriptorpb.FileOptions)
+	if !ok || opts == nil {
+		return false
+	}
+	b, err := proto.Marshal(opts)
+	if err != nil {
+		return false
+	}
+	return containsVarintField(b, fieldNum, 0)
+}
+
 // leadingComment returns the leading comment for a descriptor, formatted as
 // Go comment lines. Returns empty string if no comment exists.
 func leadingComment(d protoreflect.Descriptor) string {
@@ -356,6 +402,34 @@ func buildImportMapping(protoDir string) (map[string][]byte, []string, error) {
 
 		pkg := string(m[1])
 		importPath := strings.ReplaceAll(pkg, ".", "/") + "/" + entry.Name()
+		mapping[importPath] = content
+		importPaths = append(importPaths, importPath)
+	}
+
+	return mapping, importPaths, nil
+}
+
+// buildImportMappingFromFiles reads specific proto files and builds a mapping
+// from import paths to file contents.
+func buildImportMappingFromFiles(files []string) (map[string][]byte, []string, error) {
+	mapping := make(map[string][]byte)
+	var importPaths []string
+	pkgRE := regexp.MustCompile(`(?m)^package\s+([\w.]+)\s*;`)
+
+	for _, filePath := range files {
+		content, err := os.ReadFile(filePath)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		m := pkgRE.FindSubmatch(content)
+		if m == nil {
+			return nil, nil, fmt.Errorf("no package found in %s", filePath)
+		}
+
+		pkg := string(m[1])
+		base := filepath.Base(filePath)
+		importPath := strings.ReplaceAll(pkg, ".", "/") + "/" + base
 		mapping[importPath] = content
 		importPaths = append(importPaths, importPath)
 	}

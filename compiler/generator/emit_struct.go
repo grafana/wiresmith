@@ -160,8 +160,8 @@ func (fg *FileGenerator) emitGetterMethods(md protoreflect.MessageDescriptor) {
 		fmt.Fprintf(fg.body, "\t\treturn m.%s\n", goName)
 		fmt.Fprintf(fg.body, "\t}\n")
 
-		// Return zero value
-		fmt.Fprintf(fg.body, "\treturn %s\n", zeroValue(fd))
+		// Return zero value. For message types, use the typed zero struct literal.
+		fmt.Fprintf(fg.body, "\treturn %s\n", fg.zeroValueFor(fd))
 		fmt.Fprintf(fg.body, "}\n\n")
 	}
 }
@@ -180,6 +180,24 @@ func (fg *FileGenerator) emitOneofGetter(md protoreflect.MessageDescriptor, fd p
 	fmt.Fprintf(fg.body, "\t}\n")
 	fmt.Fprintf(fg.body, "\treturn %s\n", zeroValueForKind(fd.Kind()))
 	fmt.Fprintf(fg.body, "}\n\n")
+}
+
+// zeroValueFor returns the zero value string for a field, using the resolved
+// Go type for message fields (e.g., "core.LabelMatcher{}" instead of "{}").
+func (fg *FileGenerator) zeroValueFor(fd protoreflect.FieldDescriptor) string {
+	if fd.IsList() {
+		return "nil"
+	}
+	if fd.HasOptionalKeyword() {
+		return "nil"
+	}
+	if fd.Kind() == protoreflect.MessageKind {
+		if isGogoPointerField(fg.gen, fd) {
+			return "nil"
+		}
+		return fg.imports.goMessageType(fd.Message()) + "{}"
+	}
+	return zeroValueForKind(fd.Kind())
 }
 
 // zeroValue returns the zero value string for a field.

@@ -4,6 +4,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"google.golang.org/protobuf/encoding/protowire"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/descriptorpb"
 )
@@ -79,12 +81,83 @@ func (it *ImportTracker) addStdImport(path string) {
 
 func (it *ImportTracker) goType(fd protoreflect.FieldDescriptor) string {
 	if fd.IsList() {
-		return "[]" + it.goSingularType(fd)
+		elemType := it.goSingularType(fd)
+		// In gogo compat mode, repeated message fields default to pointer slices
+		// (matching gogoslick behavior). Use value types only when
+		// (gogoproto.nullable) = false is set.
+		if it.gen != nil && it.gen.GogoCompat && fd.Kind() == protoreflect.MessageKind && isFieldNullable(fd) {
+			return "[]*" + elemType
+		}
+		return "[]" + elemType
 	}
 	if fd.HasOptionalKeyword() {
 		return it.goOptionalType(fd)
 	}
+	// In gogo compat mode, singular message fields default to pointers
+	// (matching gogoslick behavior). Use value types only when
+	// (gogoproto.nullable) = false is set.
+	if it.gen != nil && it.gen.GogoCompat && fd.Kind() == protoreflect.MessageKind && isFieldNullable(fd) {
+		return "*" + it.goSingularType(fd)
+	}
 	return it.goSingularType(fd)
+}
+
+// isGogoPointerField returns true if the field should be a pointer in gogo compat mode.
+func isGogoPointerField(gen *Generator, fd protoreflect.FieldDescriptor) bool {
+	return gen != nil && gen.GogoCompat && fd.Kind() == protoreflect.MessageKind && isFieldNullable(fd)
+}
+
+// isFieldNullable checks the gogoproto.nullable field option (extension 65001).
+// Returns true (the gogoproto default) if the option is not set or set to true.
+// Returns false only when explicitly set to (gogoproto.nullable) = false.
+func isFieldNullable(fd protoreflect.FieldDescriptor) bool {
+	opts, ok := fd.Options().(*descriptorpb.FieldOptions)
+	if !ok || opts == nil {
+		return true
+	}
+	// gogoproto.nullable is extension field 65001 on FieldOptions (varint type).
+	// Serialize the options and scan for the field tag.
+	b, err := proto.Marshal(opts)
+	if err != nil {
+		return true
+	}
+	return !containsVarintField(b, 65001, 0)
+}
+
+// containsVarintField scans serialized proto bytes for a varint field with the
+// given number and value.
+func containsVarintField(b []byte, fieldNum protoreflect.FieldNumber, val uint64) bool {
+	for len(b) > 0 {
+		num, typ, tagLen := protowire.ConsumeTag(b)
+		if tagLen < 0 {
+			return false
+		}
+		b = b[tagLen:]
+		switch typ {
+		case protowire.VarintType:
+			v, n := protowire.ConsumeVarint(b)
+			if n < 0 {
+				return false
+			}
+			if num == protowire.Number(fieldNum) && v == val {
+				return true
+			}
+			b = b[n:]
+		case protowire.Fixed32Type:
+			b = b[4:]
+		case protowire.Fixed64Type:
+			b = b[8:]
+		case protowire.BytesType:
+			_, n := protowire.ConsumeBytes(b)
+			if n < 0 {
+				return false
+			}
+			b = b[n:]
+		default:
+			return false
+		}
+	}
+	return false
 }
 
 func (it *ImportTracker) goSingularType(fd protoreflect.FieldDescriptor) string {

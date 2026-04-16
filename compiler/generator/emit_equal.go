@@ -21,6 +21,11 @@ func (fg *FileGenerator) emitEqualMethods(md protoreflect.MessageDescriptor) {
 }
 
 func (fg *FileGenerator) emitEqual(md protoreflect.MessageDescriptor) {
+	// Skip Equal for messages with (gogoproto.equal) = false.
+	if isMessageOptionFalse(md, 64013) {
+		return
+	}
+
 	name := goMessageTypeName(md)
 
 	// Only import "bytes" if there are []byte fields.
@@ -81,7 +86,13 @@ func (fg *FileGenerator) emitFieldEqual(fd protoreflect.FieldDescriptor, goName 
 	case protoreflect.BytesKind:
 		fmt.Fprintf(fg.body, "\tif !bytes.Equal(this.%s, that1.%s) {\n\t\treturn false\n\t}\n", goName, goName)
 	case protoreflect.MessageKind:
-		fmt.Fprintf(fg.body, "\tif !this.%s.Equal(that1.%s) {\n\t\treturn false\n\t}\n", goName, goName)
+		if isGogoPointerField(fg.gen, fd) {
+			// Pointer message field: nil check then Equal.
+			fmt.Fprintf(fg.body, "\tif !this.%s.Equal(that1.%s) {\n\t\treturn false\n\t}\n", goName, goName)
+		} else {
+			// Value message field.
+			fmt.Fprintf(fg.body, "\tif !this.%s.Equal(that1.%s) {\n\t\treturn false\n\t}\n", goName, goName)
+		}
 	default:
 		fmt.Fprintf(fg.body, "\tif this.%s != that1.%s {\n\t\treturn false\n\t}\n", goName, goName)
 	}

@@ -173,15 +173,25 @@ func (fg *FileGenerator) emitSingularFieldMarshalReverse(access string, fd proto
 		fmt.Fprintf(fg.body, "\t}\n")
 
 	case protoreflect.MessageKind:
-		fmt.Fprintf(fg.body, "\t{\n")
-		fmt.Fprintf(fg.body, "\t\tsize, err := %s.MarshalToSizedBuffer(dAtA[:i])\n", access)
-		fmt.Fprintf(fg.body, "\t\tif err != nil {\n\t\t\treturn 0, err\n\t\t}\n")
-		fmt.Fprintf(fg.body, "\t\tif size > 0 {\n")
-		fmt.Fprintf(fg.body, "\t\t\ti -= size\n")
-		fmt.Fprintf(fg.body, "\t\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(size))\n")
-		fg.reverseTag("\t\t\t", num, protowire.BytesType)
-		fmt.Fprintf(fg.body, "\t\t}\n")
-		fmt.Fprintf(fg.body, "\t}\n")
+		if isGogoPointerField(fg.gen, fd) {
+			fmt.Fprintf(fg.body, "\tif %s != nil {\n", access)
+			fmt.Fprintf(fg.body, "\t\tsize, err := %s.MarshalToSizedBuffer(dAtA[:i])\n", access)
+			fmt.Fprintf(fg.body, "\t\tif err != nil {\n\t\t\treturn 0, err\n\t\t}\n")
+			fmt.Fprintf(fg.body, "\t\ti -= size\n")
+			fmt.Fprintf(fg.body, "\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(size))\n")
+			fg.reverseTag("\t\t", num, protowire.BytesType)
+			fmt.Fprintf(fg.body, "\t}\n")
+		} else {
+			fmt.Fprintf(fg.body, "\t{\n")
+			fmt.Fprintf(fg.body, "\t\tsize, err := %s.MarshalToSizedBuffer(dAtA[:i])\n", access)
+			fmt.Fprintf(fg.body, "\t\tif err != nil {\n\t\t\treturn 0, err\n\t\t}\n")
+			fmt.Fprintf(fg.body, "\t\tif size > 0 {\n")
+			fmt.Fprintf(fg.body, "\t\t\ti -= size\n")
+			fmt.Fprintf(fg.body, "\t\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(size))\n")
+			fg.reverseTag("\t\t\t", num, protowire.BytesType)
+			fmt.Fprintf(fg.body, "\t\t}\n")
+			fmt.Fprintf(fg.body, "\t}\n")
+		}
 	}
 }
 
