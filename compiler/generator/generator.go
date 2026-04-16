@@ -115,7 +115,7 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 		fd:      fd,
 		gen:     g,
 		module:  g.Module,
-		imports: newImportTracker(g.Module, string(fd.Package())),
+		imports: newImportTracker(g, g.Module, string(fd.Package())),
 		body:    &bytes.Buffer{},
 	}
 
