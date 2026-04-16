@@ -2,7 +2,17 @@
 // Based on github.com/planetscale/vtprotobuf/protohelpers (Apache 2.0 license).
 package protohelpers
 
-import "math/bits"
+import (
+	"errors"
+	"math/bits"
+)
+
+var (
+	// ErrIntOverflow is returned when a varint exceeds 64 bits during unmarshaling.
+	ErrIntOverflow = errors.New("proto: integer overflow")
+	// ErrInvalidLength is returned when a negative or overflowing length is encountered.
+	ErrInvalidLength = errors.New("proto: negative length found during unmarshaling")
+)
 
 // EncodeVarint writes a varint-encoded uint64 into dAtA ending at offset,
 // writing backwards. Returns the new offset (before the encoded varint).

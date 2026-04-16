@@ -7,6 +7,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"google.golang.org/protobuf/encoding/protowire"
+	"io"
 	"math"
 	"wiresmith/gen/protohelpers"
 )
@@ -194,25 +195,17 @@ func (m *EntityRef) Size() int {
 	return n
 }
 
-func (m *AnyValue) Marshal() (dAtA []byte, err error) {
+func (m *AnyValue) Marshal() ([]byte, error) {
 	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
+	dAtA := make([]byte, size)
+	n := m.MarshalToSizedBuffer(dAtA)
 	return dAtA[:n], nil
 }
 
-func (m *AnyValue) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *AnyValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *AnyValue) MarshalToSizedBuffer(dAtA []byte) int {
 	i := len(dAtA)
 	switch v := m.Value.(type) {
 	case *AnyValue_StringValueStrindex:
@@ -226,19 +219,13 @@ func (m *AnyValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x3a
 	case *AnyValue_KvlistValue:
-		size, err := v.KvlistValue.MarshalToSizedBuffer(dAtA[:i])
-		if err != nil {
-			return 0, err
-		}
+		size := v.KvlistValue.MarshalToSizedBuffer(dAtA[:i])
 		i -= size
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 		i--
 		dAtA[i] = 0x32
 	case *AnyValue_ArrayValue:
-		size, err := v.ArrayValue.MarshalToSizedBuffer(dAtA[:i])
-		if err != nil {
-			return 0, err
-		}
+		size := v.ArrayValue.MarshalToSizedBuffer(dAtA[:i])
 		i -= size
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 		i--
@@ -268,94 +255,64 @@ func (m *AnyValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x0a
 	}
-	return len(dAtA) - i, nil
+	return len(dAtA) - i
 }
 
-func (m *ArrayValue) Marshal() (dAtA []byte, err error) {
+func (m *ArrayValue) Marshal() ([]byte, error) {
 	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
+	dAtA := make([]byte, size)
+	n := m.MarshalToSizedBuffer(dAtA)
 	return dAtA[:n], nil
 }
 
-func (m *ArrayValue) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *ArrayValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *ArrayValue) MarshalToSizedBuffer(dAtA []byte) int {
 	i := len(dAtA)
 	for iNdEx := len(m.Values) - 1; iNdEx >= 0; iNdEx-- {
-		size, err := m.Values[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-		if err != nil {
-			return 0, err
-		}
+		size := m.Values[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 		i -= size
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 		i--
 		dAtA[i] = 0x0a
 	}
-	return len(dAtA) - i, nil
+	return len(dAtA) - i
 }
 
-func (m *KeyValueList) Marshal() (dAtA []byte, err error) {
+func (m *KeyValueList) Marshal() ([]byte, error) {
 	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
+	dAtA := make([]byte, size)
+	n := m.MarshalToSizedBuffer(dAtA)
 	return dAtA[:n], nil
 }
 
-func (m *KeyValueList) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *KeyValueList) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *KeyValueList) MarshalToSizedBuffer(dAtA []byte) int {
 	i := len(dAtA)
 	for iNdEx := len(m.Values) - 1; iNdEx >= 0; iNdEx-- {
-		size, err := m.Values[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-		if err != nil {
-			return 0, err
-		}
+		size := m.Values[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 		i -= size
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 		i--
 		dAtA[i] = 0x0a
 	}
-	return len(dAtA) - i, nil
+	return len(dAtA) - i
 }
 
-func (m *KeyValue) Marshal() (dAtA []byte, err error) {
+func (m *KeyValue) Marshal() ([]byte, error) {
 	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
+	dAtA := make([]byte, size)
+	n := m.MarshalToSizedBuffer(dAtA)
 	return dAtA[:n], nil
 }
 
-func (m *KeyValue) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *KeyValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *KeyValue) MarshalToSizedBuffer(dAtA []byte) int {
 	i := len(dAtA)
 	if m.KeyStrindex != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.KeyStrindex))
@@ -363,10 +320,7 @@ func (m *KeyValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		dAtA[i] = 0x18
 	}
 	{
-		size, err := m.Value.MarshalToSizedBuffer(dAtA[:i])
-		if err != nil {
-			return 0, err
-		}
+		size := m.Value.MarshalToSizedBuffer(dAtA[:i])
 		if size > 0 {
 			i -= size
 			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
@@ -381,28 +335,20 @@ func (m *KeyValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x0a
 	}
-	return len(dAtA) - i, nil
+	return len(dAtA) - i
 }
 
-func (m *InstrumentationScope) Marshal() (dAtA []byte, err error) {
+func (m *InstrumentationScope) Marshal() ([]byte, error) {
 	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
+	dAtA := make([]byte, size)
+	n := m.MarshalToSizedBuffer(dAtA)
 	return dAtA[:n], nil
 }
 
-func (m *InstrumentationScope) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *InstrumentationScope) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *InstrumentationScope) MarshalToSizedBuffer(dAtA []byte) int {
 	i := len(dAtA)
 	if m.DroppedAttributesCount != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.DroppedAttributesCount))
@@ -410,10 +356,7 @@ func (m *InstrumentationScope) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		dAtA[i] = 0x20
 	}
 	for iNdEx := len(m.Attributes) - 1; iNdEx >= 0; iNdEx-- {
-		size, err := m.Attributes[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-		if err != nil {
-			return 0, err
-		}
+		size := m.Attributes[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 		i -= size
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 		i--
@@ -433,28 +376,20 @@ func (m *InstrumentationScope) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x0a
 	}
-	return len(dAtA) - i, nil
+	return len(dAtA) - i
 }
 
-func (m *EntityRef) Marshal() (dAtA []byte, err error) {
+func (m *EntityRef) Marshal() ([]byte, error) {
 	size := m.Size()
 	if size == 0 {
 		return nil, nil
 	}
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
+	dAtA := make([]byte, size)
+	n := m.MarshalToSizedBuffer(dAtA)
 	return dAtA[:n], nil
 }
 
-func (m *EntityRef) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *EntityRef) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *EntityRef) MarshalToSizedBuffer(dAtA []byte) int {
 	i := len(dAtA)
 	for iNdEx := len(m.DescriptionKeys) - 1; iNdEx >= 0; iNdEx-- {
 		i -= len(m.DescriptionKeys[iNdEx])
@@ -484,7 +419,7 @@ func (m *EntityRef) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x0a
 	}
-	return len(dAtA) - i, nil
+	return len(dAtA) - i
 }
 
 func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) {
@@ -522,156 +457,287 @@ func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) 
 	}
 }
 
-func (m *AnyValue) Unmarshal(b []byte) error {
-	for len(b) > 0 {
-		num, typ, tagLen := protowire.ConsumeTag(b)
-		if tagLen < 0 {
-			return fmt.Errorf("invalid tag")
+func (m *AnyValue) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return protohelpers.ErrIntOverflow
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
 		}
-		b = b[tagLen:]
-		switch num {
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		switch fieldNum {
 		case 1: // string_value
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipField(dAtA[iNdEx:], protowire.Number(fieldNum), protowire.Type(wireType))
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeString(b)
-			if n < 0 {
-				return fmt.Errorf("invalid string")
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
-			m.Value = &AnyValue_StringValue{StringValue: v}
-			b = b[n:]
+			if byteLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Value = &AnyValue_StringValue{StringValue: string(dAtA[iNdEx:postIndex])}
+			iNdEx = postIndex
 		case 2: // bool_value
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipField(dAtA[iNdEx:], protowire.Number(fieldNum), protowire.Type(wireType))
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 			m.Value = &AnyValue_BoolValue{BoolValue: v != 0}
-			b = b[n:]
 		case 3: // int_value
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipField(dAtA[iNdEx:], protowire.Number(fieldNum), protowire.Type(wireType))
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 			m.Value = &AnyValue_IntValue{IntValue: int64(v)}
-			b = b[n:]
 		case 4: // double_value
-			if typ != protowire.Fixed64Type {
-				n, err := skipField(b, num, typ)
+			if wireType != 1 {
+				n, err := skipField(dAtA[iNdEx:], protowire.Number(fieldNum), protowire.Type(wireType))
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeFixed64(b)
-			if n < 0 {
-				return fmt.Errorf("invalid fixed64")
+			if (iNdEx + 8) > l {
+				return io.ErrUnexpectedEOF
 			}
+			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
+			iNdEx += 8
 			m.Value = &AnyValue_DoubleValue{DoubleValue: math.Float64frombits(v)}
-			b = b[n:]
 		case 5: // array_value
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipField(dAtA[iNdEx:], protowire.Number(fieldNum), protowire.Type(wireType))
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeBytes(b)
-			if n < 0 {
-				return fmt.Errorf("invalid bytes")
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
 			}
 			var msg ArrayValue
-			if err := msg.Unmarshal(v); err != nil {
+			if err := msg.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			m.Value = &AnyValue_ArrayValue{ArrayValue: msg}
-			b = b[n:]
+			iNdEx = postIndex
 		case 6: // kvlist_value
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipField(dAtA[iNdEx:], protowire.Number(fieldNum), protowire.Type(wireType))
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeBytes(b)
-			if n < 0 {
-				return fmt.Errorf("invalid bytes")
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
 			}
 			var msg KeyValueList
-			if err := msg.Unmarshal(v); err != nil {
+			if err := msg.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			m.Value = &AnyValue_KvlistValue{KvlistValue: msg}
-			b = b[n:]
+			iNdEx = postIndex
 		case 7: // bytes_value
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipField(dAtA[iNdEx:], protowire.Number(fieldNum), protowire.Type(wireType))
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeBytes(b)
-			if n < 0 {
-				return fmt.Errorf("invalid bytes")
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
-			m.Value = &AnyValue_BytesValue{BytesValue: append([]byte(nil), v...)}
-			b = b[n:]
+			if byteLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Value = &AnyValue_BytesValue{BytesValue: append([]byte(nil), dAtA[iNdEx:postIndex]...)}
+			iNdEx = postIndex
 		case 8: // string_value_strindex
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipField(dAtA[iNdEx:], protowire.Number(fieldNum), protowire.Type(wireType))
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 			m.Value = &AnyValue_StringValueStrindex{StringValueStrindex: int32(v)}
-			b = b[n:]
 		default:
-			n, err := skipField(b, num, typ)
+			n, err := skipField(dAtA[iNdEx:], protowire.Number(fieldNum), protowire.Type(wireType))
 			if err != nil {
 				return err
 			}
-			b = b[n:]
+			iNdEx += n
 		}
+	}
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
 	}
 	return nil
 }
 
-func (m *ArrayValue) Unmarshal(b []byte) error {
-	if len(b) >= 256 {
-		tmp := b
+func (m *ArrayValue) Unmarshal(dAtA []byte) error {
+	if len(dAtA) >= 256 {
+		tmp := dAtA
 		var field1count int
 		for len(tmp) > 0 {
 			num, typ, tagLen := protowire.ConsumeTag(tmp)
@@ -705,45 +771,83 @@ func (m *ArrayValue) Unmarshal(b []byte) error {
 			m.Values = make([]AnyValue, 0, field1count)
 		}
 	}
-	for len(b) > 0 {
-		num, typ, tagLen := protowire.ConsumeTag(b)
-		if tagLen < 0 {
-			return fmt.Errorf("invalid tag")
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return protohelpers.ErrIntOverflow
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
 		}
-		b = b[tagLen:]
-		switch num {
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		switch fieldNum {
 		case 1: // values
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipField(dAtA[iNdEx:], protowire.Number(fieldNum), protowire.Type(wireType))
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeBytes(b)
-			if n < 0 {
-				return fmt.Errorf("invalid bytes")
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
 			}
 			m.Values = append(m.Values, AnyValue{})
-			if err := m.Values[len(m.Values)-1].Unmarshal(v); err != nil {
+			if err := m.Values[len(m.Values)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
-			b = b[n:]
+			iNdEx = postIndex
 		default:
-			n, err := skipField(b, num, typ)
+			n, err := skipField(dAtA[iNdEx:], protowire.Number(fieldNum), protowire.Type(wireType))
 			if err != nil {
 				return err
 			}
-			b = b[n:]
+			iNdEx += n
 		}
+	}
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
 	}
 	return nil
 }
 
-func (m *KeyValueList) Unmarshal(b []byte) error {
-	if len(b) >= 256 {
-		tmp := b
+func (m *KeyValueList) Unmarshal(dAtA []byte) error {
+	if len(dAtA) >= 256 {
+		tmp := dAtA
 		var field1count int
 		for len(tmp) > 0 {
 			num, typ, tagLen := protowire.ConsumeTag(tmp)
@@ -777,111 +881,218 @@ func (m *KeyValueList) Unmarshal(b []byte) error {
 			m.Values = make([]KeyValue, 0, field1count)
 		}
 	}
-	for len(b) > 0 {
-		num, typ, tagLen := protowire.ConsumeTag(b)
-		if tagLen < 0 {
-			return fmt.Errorf("invalid tag")
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return protohelpers.ErrIntOverflow
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
 		}
-		b = b[tagLen:]
-		switch num {
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		switch fieldNum {
 		case 1: // values
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipField(dAtA[iNdEx:], protowire.Number(fieldNum), protowire.Type(wireType))
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeBytes(b)
-			if n < 0 {
-				return fmt.Errorf("invalid bytes")
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
 			}
 			m.Values = append(m.Values, KeyValue{})
-			if err := m.Values[len(m.Values)-1].Unmarshal(v); err != nil {
+			if err := m.Values[len(m.Values)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
-			b = b[n:]
+			iNdEx = postIndex
 		default:
-			n, err := skipField(b, num, typ)
+			n, err := skipField(dAtA[iNdEx:], protowire.Number(fieldNum), protowire.Type(wireType))
 			if err != nil {
 				return err
 			}
-			b = b[n:]
+			iNdEx += n
 		}
+	}
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
 	}
 	return nil
 }
 
-func (m *KeyValue) Unmarshal(b []byte) error {
-	for len(b) > 0 {
-		num, typ, tagLen := protowire.ConsumeTag(b)
-		if tagLen < 0 {
-			return fmt.Errorf("invalid tag")
+func (m *KeyValue) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return protohelpers.ErrIntOverflow
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
 		}
-		b = b[tagLen:]
-		switch num {
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		switch fieldNum {
 		case 1: // key
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipField(dAtA[iNdEx:], protowire.Number(fieldNum), protowire.Type(wireType))
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeString(b)
-			if n < 0 {
-				return fmt.Errorf("invalid string")
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
-			m.Key = v
-			b = b[n:]
+			if byteLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Key = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
 		case 2: // value
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipField(dAtA[iNdEx:], protowire.Number(fieldNum), protowire.Type(wireType))
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeBytes(b)
-			if n < 0 {
-				return fmt.Errorf("invalid bytes")
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
-			if err := m.Value.Unmarshal(v); err != nil {
+			if byteLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Value.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
-			b = b[n:]
+			iNdEx = postIndex
 		case 3: // key_strindex
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipField(dAtA[iNdEx:], protowire.Number(fieldNum), protowire.Type(wireType))
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 			m.KeyStrindex = int32(v)
-			b = b[n:]
 		default:
-			n, err := skipField(b, num, typ)
+			n, err := skipField(dAtA[iNdEx:], protowire.Number(fieldNum), protowire.Type(wireType))
 			if err != nil {
 				return err
 			}
-			b = b[n:]
+			iNdEx += n
 		}
+	}
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
 	}
 	return nil
 }
 
-func (m *InstrumentationScope) Unmarshal(b []byte) error {
-	if len(b) >= 256 {
-		tmp := b
+func (m *InstrumentationScope) Unmarshal(dAtA []byte) error {
+	if len(dAtA) >= 256 {
+		tmp := dAtA
 		var field3count int
 		for len(tmp) > 0 {
 			num, typ, tagLen := protowire.ConsumeTag(tmp)
@@ -915,90 +1126,180 @@ func (m *InstrumentationScope) Unmarshal(b []byte) error {
 			m.Attributes = make([]KeyValue, 0, field3count)
 		}
 	}
-	for len(b) > 0 {
-		num, typ, tagLen := protowire.ConsumeTag(b)
-		if tagLen < 0 {
-			return fmt.Errorf("invalid tag")
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return protohelpers.ErrIntOverflow
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
 		}
-		b = b[tagLen:]
-		switch num {
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		switch fieldNum {
 		case 1: // name
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipField(dAtA[iNdEx:], protowire.Number(fieldNum), protowire.Type(wireType))
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeString(b)
-			if n < 0 {
-				return fmt.Errorf("invalid string")
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
-			m.Name = v
-			b = b[n:]
+			if byteLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Name = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
 		case 2: // version
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipField(dAtA[iNdEx:], protowire.Number(fieldNum), protowire.Type(wireType))
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeString(b)
-			if n < 0 {
-				return fmt.Errorf("invalid string")
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
-			m.Version = v
-			b = b[n:]
+			if byteLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Version = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
 		case 3: // attributes
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipField(dAtA[iNdEx:], protowire.Number(fieldNum), protowire.Type(wireType))
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeBytes(b)
-			if n < 0 {
-				return fmt.Errorf("invalid bytes")
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
 			}
 			m.Attributes = append(m.Attributes, KeyValue{})
-			if err := m.Attributes[len(m.Attributes)-1].Unmarshal(v); err != nil {
+			if err := m.Attributes[len(m.Attributes)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
-			b = b[n:]
+			iNdEx = postIndex
 		case 4: // dropped_attributes_count
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipField(dAtA[iNdEx:], protowire.Number(fieldNum), protowire.Type(wireType))
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 			m.DroppedAttributesCount = uint32(v)
-			b = b[n:]
 		default:
-			n, err := skipField(b, num, typ)
+			n, err := skipField(dAtA[iNdEx:], protowire.Number(fieldNum), protowire.Type(wireType))
 			if err != nil {
 				return err
 			}
-			b = b[n:]
+			iNdEx += n
 		}
+	}
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
 	}
 	return nil
 }
 
-func (m *EntityRef) Unmarshal(b []byte) error {
-	if len(b) >= 256 {
-		tmp := b
+func (m *EntityRef) Unmarshal(dAtA []byte) error {
+	if len(dAtA) >= 256 {
+		tmp := dAtA
 		var field3count int
 		var field4count int
 		for len(tmp) > 0 {
@@ -1038,80 +1339,181 @@ func (m *EntityRef) Unmarshal(b []byte) error {
 			m.DescriptionKeys = make([]string, 0, field4count)
 		}
 	}
-	for len(b) > 0 {
-		num, typ, tagLen := protowire.ConsumeTag(b)
-		if tagLen < 0 {
-			return fmt.Errorf("invalid tag")
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return protohelpers.ErrIntOverflow
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
 		}
-		b = b[tagLen:]
-		switch num {
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		switch fieldNum {
 		case 1: // schema_url
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipField(dAtA[iNdEx:], protowire.Number(fieldNum), protowire.Type(wireType))
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeString(b)
-			if n < 0 {
-				return fmt.Errorf("invalid string")
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
-			m.SchemaUrl = v
-			b = b[n:]
+			if byteLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.SchemaUrl = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
 		case 2: // type
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipField(dAtA[iNdEx:], protowire.Number(fieldNum), protowire.Type(wireType))
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeString(b)
-			if n < 0 {
-				return fmt.Errorf("invalid string")
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
-			m.Type = v
-			b = b[n:]
+			if byteLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Type = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
 		case 3: // id_keys
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipField(dAtA[iNdEx:], protowire.Number(fieldNum), protowire.Type(wireType))
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeString(b)
-			if n < 0 {
-				return fmt.Errorf("invalid string")
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
-			m.IdKeys = append(m.IdKeys, v)
-			b = b[n:]
+			if byteLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.IdKeys = append(m.IdKeys, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
 		case 4: // description_keys
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipField(dAtA[iNdEx:], protowire.Number(fieldNum), protowire.Type(wireType))
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeString(b)
-			if n < 0 {
-				return fmt.Errorf("invalid string")
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
-			m.DescriptionKeys = append(m.DescriptionKeys, v)
-			b = b[n:]
+			if byteLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.DescriptionKeys = append(m.DescriptionKeys, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
 		default:
-			n, err := skipField(b, num, typ)
+			n, err := skipField(dAtA[iNdEx:], protowire.Number(fieldNum), protowire.Type(wireType))
 			if err != nil {
 				return err
 			}
-			b = b[n:]
+			iNdEx += n
 		}
+	}
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
 	}
 	return nil
 }
