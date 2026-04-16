@@ -1,6 +1,6 @@
 module github.com/grafana/wiresmith
 
-go 1.26.2
+go 1.25.9
 
 require (
 	github.com/bufbuild/protocompile v0.14.1
