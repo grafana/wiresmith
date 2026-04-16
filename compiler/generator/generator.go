@@ -150,9 +150,15 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 		return err
 	}
 
-	// Use the proto filename without extension as the Go filename
+	// Use the proto filename without extension as the Go filename.
+	// In gogo compat mode, use .pb.go suffix to match protoc convention
+	// and avoid conflicts with hand-written .go files.
 	base := filepath.Base(fd.Path())
-	base = strings.TrimSuffix(base, ".proto") + ".go"
+	if g.GogoCompat {
+		base = strings.TrimSuffix(base, ".proto") + ".pb.go"
+	} else {
+		base = strings.TrimSuffix(base, ".proto") + ".go"
+	}
 	outPath := filepath.Join(dir, base)
 
 	return os.WriteFile(outPath, formatted, 0o644)
