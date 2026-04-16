@@ -43,7 +43,7 @@ All generated code lives under `gen/`:
 
 Regenerate all at once:
 ```bash
-./scripts/generate.sh
+make generate
 ```
 
 Requires: `protoc`, `protoc-gen-go`, `protoc-gen-go-vtproto`, `protoc-gen-gogofast`

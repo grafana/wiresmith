@@ -13,37 +13,20 @@ Custom protobuf compiler that generates high-performance Go code from OpenTeleme
 - `gen/protohelpers/` - Shared reverse-write encoding helpers (based on vtprotobuf's protohelpers, Apache 2.0)
 - `test/` - Round-trip correctness tests against official `google.golang.org/protobuf`
 - `bench/` - Comparative benchmarks (ours vs official protobuf vs vtproto vs gogoproto)
-- `scripts/` - Code generation scripts
-
 ## Commands
 
-### Regenerate all code (ours + vtproto + gogoproto)
-Requires `protoc`, `protoc-gen-go`, `protoc-gen-go-vtproto`, `protoc-gen-gogofast` installed:
-```
-./scripts/generate.sh
-```
+All commands are available via `make`:
 
-### Regenerate only our code from protos
-```
-go run ./cmd/grafana-protoc/ --proto_path=proto --out=gen --module=grafana-protoc
-```
-
-### Run tests
-```
-go test ./test/ -v
-```
-
-### Run fuzz tests
-```
-go test ./test/ -fuzz FuzzUnmarshal -fuzztime 30s
-```
-Feeds random bytes into all generated `Unmarshal` methods to verify they return errors rather than panic on malformed input.
-
-### Run benchmarks
-```
-GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn go test ./bench/ -bench=. -benchmem -count=5
-```
-The env var is needed because official OTel proto packages, vtpb, and gogopb copies all register the same proto files.
+| Target | Description |
+|--------|-------------|
+| `make build` | Build all packages |
+| `make test` | Run correctness tests |
+| `make fuzz` | Fuzz `Unmarshal` methods (30s) — feeds random bytes to verify errors, not panics |
+| `make generate` | Regenerate all code (ours + vtproto + gogoproto). Requires `protoc`, `protoc-gen-go`, `protoc-gen-go-vtproto`, `protoc-gen-gogofast` |
+| `make generate-ours` | Regenerate only our code from protos |
+| `make bench` | Run comparative benchmarks (5 iterations) |
+| `make bench-compare` | Run per-library benchmarks and compare with `benchstat`. Accepts `COUNT=-count=N` |
+| `make clean` | Remove all generated code under `gen/` |
 
 ## Design decisions
 
