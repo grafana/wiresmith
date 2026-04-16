@@ -151,6 +151,14 @@ func (m *Resource) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 1: // attributes
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -161,6 +169,14 @@ func (m *Resource) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 2: // dropped_attributes_count
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -168,6 +184,14 @@ func (m *Resource) Unmarshal(b []byte) error {
 			m.DroppedAttributesCount = uint32(v)
 			b = b[n:]
 		case 3: // entity_refs
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")

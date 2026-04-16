@@ -5,7 +5,9 @@ import (
 
 	"google.golang.org/protobuf/proto"
 
+	vtlogs "grafana-protoc/gen/vtpb/logs/v1"
 	vtmetrics "grafana-protoc/gen/vtpb/metrics/v1"
+	vtprofiles "grafana-protoc/gen/vtpb/profiles/v1development"
 	vttrace "grafana-protoc/gen/vtpb/trace/v1"
 )
 
@@ -47,6 +49,78 @@ func BenchmarkMarshalSingleSpan_VTProto(b *testing.B) {
 	}
 }
 
+func BenchmarkMarshalLogs_VTProto(b *testing.B) {
+	var data vtlogs.LogsData
+	if err := proto.Unmarshal(logsBytes50, &data); err != nil {
+		b.Fatal(err)
+	}
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_, _ = data.MarshalVT()
+	}
+}
+
+func BenchmarkMarshalGauge_VTProto(b *testing.B) {
+	var data vtmetrics.MetricsData
+	if err := proto.Unmarshal(gaugeBytes50, &data); err != nil {
+		b.Fatal(err)
+	}
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_, _ = data.MarshalVT()
+	}
+}
+
+func BenchmarkMarshalSum_VTProto(b *testing.B) {
+	var data vtmetrics.MetricsData
+	if err := proto.Unmarshal(sumBytes50, &data); err != nil {
+		b.Fatal(err)
+	}
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_, _ = data.MarshalVT()
+	}
+}
+
+func BenchmarkMarshalExpHistogram_VTProto(b *testing.B) {
+	var data vtmetrics.MetricsData
+	if err := proto.Unmarshal(expHistBytes50, &data); err != nil {
+		b.Fatal(err)
+	}
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_, _ = data.MarshalVT()
+	}
+}
+
+func BenchmarkMarshalSummary_VTProto(b *testing.B) {
+	var data vtmetrics.MetricsData
+	if err := proto.Unmarshal(summaryBytes50, &data); err != nil {
+		b.Fatal(err)
+	}
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_, _ = data.MarshalVT()
+	}
+}
+
+func BenchmarkMarshalProfiles_VTProto(b *testing.B) {
+	var data vtprofiles.ProfilesData
+	if err := proto.Unmarshal(profilesBytes50, &data); err != nil {
+		b.Fatal(err)
+	}
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_, _ = data.MarshalVT()
+	}
+}
+
 // --- Unmarshal ---
 
 func BenchmarkUnmarshalTraces_VTProto(b *testing.B) {
@@ -73,6 +147,60 @@ func BenchmarkUnmarshalSingleSpan_VTProto(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		var out vttrace.Span
 		_ = out.UnmarshalVT(singleSpanBytes)
+	}
+}
+
+func BenchmarkUnmarshalLogs_VTProto(b *testing.B) {
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		var out vtlogs.LogsData
+		_ = out.UnmarshalVT(logsBytes50)
+	}
+}
+
+func BenchmarkUnmarshalGauge_VTProto(b *testing.B) {
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		var out vtmetrics.MetricsData
+		_ = out.UnmarshalVT(gaugeBytes50)
+	}
+}
+
+func BenchmarkUnmarshalSum_VTProto(b *testing.B) {
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		var out vtmetrics.MetricsData
+		_ = out.UnmarshalVT(sumBytes50)
+	}
+}
+
+func BenchmarkUnmarshalExpHistogram_VTProto(b *testing.B) {
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		var out vtmetrics.MetricsData
+		_ = out.UnmarshalVT(expHistBytes50)
+	}
+}
+
+func BenchmarkUnmarshalSummary_VTProto(b *testing.B) {
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		var out vtmetrics.MetricsData
+		_ = out.UnmarshalVT(summaryBytes50)
+	}
+}
+
+func BenchmarkUnmarshalProfiles_VTProto(b *testing.B) {
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		var out vtprofiles.ProfilesData
+		_ = out.UnmarshalVT(profilesBytes50)
 	}
 }
 

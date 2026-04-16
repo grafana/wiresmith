@@ -153,6 +153,16 @@ func (fg *FileGenerator) emitFieldUnmarshal(md protoreflect.MessageDescriptor, f
 
 	fmt.Fprintf(fg.body, "\t\tcase %d: // %s\n", fieldNum, fd.Name())
 
+	// Packed repeated fields handle wire type dispatch internally
+	// (packed=BytesType vs unpacked=native type).
+	if fd.IsList() && isPackable(kind) {
+		fg.emitRepeatedFieldUnmarshal(goName, fd)
+		return
+	}
+
+	// All other fields have exactly one expected wire type.
+	fg.emitWireTypeCheck(kind)
+
 	if fd.IsList() {
 		fg.emitRepeatedFieldUnmarshal(goName, fd)
 		return
@@ -169,6 +179,37 @@ func (fg *FileGenerator) emitFieldUnmarshal(md protoreflect.MessageDescriptor, f
 	}
 
 	fg.emitSingularFieldUnmarshal(goName, fd, kind)
+}
+
+// emitWireTypeCheck emits a check that the wire type matches the expected type
+// for a given proto kind, skipping the field if it doesn't match.
+func (fg *FileGenerator) emitWireTypeCheck(kind protoreflect.Kind) {
+	wt := expectedWireType(kind)
+	fmt.Fprintf(fg.body, "\t\t\tif typ != %s {\n", wt)
+	fmt.Fprintf(fg.body, "\t\t\t\tn, err := skipField(b, num, typ)\n")
+	fmt.Fprintf(fg.body, "\t\t\t\tif err != nil {\n\t\t\t\t\treturn err\n\t\t\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\t\t\tb = b[n:]\n")
+	fmt.Fprintf(fg.body, "\t\t\t\tcontinue\n")
+	fmt.Fprintf(fg.body, "\t\t\t}\n")
+}
+
+// expectedWireType returns the protowire constant string for the expected wire
+// type of a proto kind.
+func expectedWireType(kind protoreflect.Kind) string {
+	switch kind {
+	case protoreflect.BoolKind, protoreflect.EnumKind,
+		protoreflect.Int32Kind, protoreflect.Sint32Kind, protoreflect.Uint32Kind,
+		protoreflect.Int64Kind, protoreflect.Sint64Kind, protoreflect.Uint64Kind:
+		return "protowire.VarintType"
+	case protoreflect.Fixed32Kind, protoreflect.Sfixed32Kind, protoreflect.FloatKind:
+		return "protowire.Fixed32Type"
+	case protoreflect.Fixed64Kind, protoreflect.Sfixed64Kind, protoreflect.DoubleKind:
+		return "protowire.Fixed64Type"
+	case protoreflect.StringKind, protoreflect.BytesKind, protoreflect.MessageKind:
+		return "protowire.BytesType"
+	default:
+		return "protowire.BytesType"
+	}
 }
 
 func (fg *FileGenerator) emitSingularFieldUnmarshal(goName string, fd protoreflect.FieldDescriptor, kind protoreflect.Kind) {
@@ -403,6 +444,17 @@ func (fg *FileGenerator) emitPackedFieldUnmarshal(access string, fd protoreflect
 		fmt.Fprintf(fg.body, "\t\t\t\tif elementCount := len(data); elementCount != 0 && len(%s) == 0 {\n", access)
 		fmt.Fprintf(fg.body, "\t\t\t\t\t%s = make(%s, 0, elementCount)\n", access, sliceType)
 		fmt.Fprintf(fg.body, "\t\t\t\t}\n")
+	} else {
+		// Varint kinds: count elements by scanning for terminator bytes (< 128)
+		fmt.Fprintf(fg.body, "\t\t\t\tvar elementCount int\n")
+		fmt.Fprintf(fg.body, "\t\t\t\tfor _, b := range data {\n")
+		fmt.Fprintf(fg.body, "\t\t\t\t\tif b < 128 {\n")
+		fmt.Fprintf(fg.body, "\t\t\t\t\t\telementCount++\n")
+		fmt.Fprintf(fg.body, "\t\t\t\t\t}\n")
+		fmt.Fprintf(fg.body, "\t\t\t\t}\n")
+		fmt.Fprintf(fg.body, "\t\t\t\tif elementCount != 0 && len(%s) == 0 {\n", access)
+		fmt.Fprintf(fg.body, "\t\t\t\t\t%s = make(%s, 0, elementCount)\n", access, sliceType)
+		fmt.Fprintf(fg.body, "\t\t\t\t}\n")
 	}
 	fmt.Fprintf(fg.body, "\t\t\t\tfor len(data) > 0 {\n")
 
@@ -426,7 +478,8 @@ func (fg *FileGenerator) emitPackedFieldUnmarshal(access string, fd protoreflect
 
 	fmt.Fprintf(fg.body, "\t\t\t\t}\n")
 	fmt.Fprintf(fg.body, "\t\t\t\tb = b[n:]\n")
-	fmt.Fprintf(fg.body, "\t\t\t} else {\n")
+	nativeWt := expectedWireType(kind)
+	fmt.Fprintf(fg.body, "\t\t\t} else if typ == %s {\n", nativeWt)
 
 	// Non-packed: single element
 	switch {
@@ -447,6 +500,11 @@ func (fg *FileGenerator) emitPackedFieldUnmarshal(access string, fd protoreflect
 		fmt.Fprintf(fg.body, "\t\t\t\tb = b[n:]\n")
 	}
 
+	// Skip unexpected wire types
+	fmt.Fprintf(fg.body, "\t\t\t} else {\n")
+	fmt.Fprintf(fg.body, "\t\t\t\tn, err := skipField(b, num, typ)\n")
+	fmt.Fprintf(fg.body, "\t\t\t\tif err != nil {\n\t\t\t\t\treturn err\n\t\t\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\t\t\tb = b[n:]\n")
 	fmt.Fprintf(fg.body, "\t\t\t}\n")
 }
 

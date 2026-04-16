@@ -465,6 +465,14 @@ func (m *AnyValue) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 1: // string_value
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeString(b)
 			if n < 0 {
 				return fmt.Errorf("invalid string")
@@ -472,6 +480,14 @@ func (m *AnyValue) Unmarshal(b []byte) error {
 			m.Value = &AnyValue_StringValue{StringValue: v}
 			b = b[n:]
 		case 2: // bool_value
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -479,6 +495,14 @@ func (m *AnyValue) Unmarshal(b []byte) error {
 			m.Value = &AnyValue_BoolValue{BoolValue: v != 0}
 			b = b[n:]
 		case 3: // int_value
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -486,6 +510,14 @@ func (m *AnyValue) Unmarshal(b []byte) error {
 			m.Value = &AnyValue_IntValue{IntValue: int64(v)}
 			b = b[n:]
 		case 4: // double_value
+			if typ != protowire.Fixed64Type {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeFixed64(b)
 			if n < 0 {
 				return fmt.Errorf("invalid fixed64")
@@ -493,6 +525,14 @@ func (m *AnyValue) Unmarshal(b []byte) error {
 			m.Value = &AnyValue_DoubleValue{DoubleValue: math.Float64frombits(v)}
 			b = b[n:]
 		case 5: // array_value
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -504,6 +544,14 @@ func (m *AnyValue) Unmarshal(b []byte) error {
 			m.Value = &AnyValue_ArrayValue{ArrayValue: msg}
 			b = b[n:]
 		case 6: // kvlist_value
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -515,6 +563,14 @@ func (m *AnyValue) Unmarshal(b []byte) error {
 			m.Value = &AnyValue_KvlistValue{KvlistValue: msg}
 			b = b[n:]
 		case 7: // bytes_value
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -522,6 +578,14 @@ func (m *AnyValue) Unmarshal(b []byte) error {
 			m.Value = &AnyValue_BytesValue{BytesValue: append([]byte(nil), v...)}
 			b = b[n:]
 		case 8: // string_value_strindex
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -583,6 +647,14 @@ func (m *ArrayValue) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 1: // values
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -647,6 +719,14 @@ func (m *KeyValueList) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 1: // values
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -676,6 +756,14 @@ func (m *KeyValue) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 1: // key
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeString(b)
 			if n < 0 {
 				return fmt.Errorf("invalid string")
@@ -683,6 +771,14 @@ func (m *KeyValue) Unmarshal(b []byte) error {
 			m.Key = v
 			b = b[n:]
 		case 2: // value
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -692,6 +788,14 @@ func (m *KeyValue) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 3: // key_strindex
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -753,6 +857,14 @@ func (m *InstrumentationScope) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 1: // name
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeString(b)
 			if n < 0 {
 				return fmt.Errorf("invalid string")
@@ -760,6 +872,14 @@ func (m *InstrumentationScope) Unmarshal(b []byte) error {
 			m.Name = v
 			b = b[n:]
 		case 2: // version
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeString(b)
 			if n < 0 {
 				return fmt.Errorf("invalid string")
@@ -767,6 +887,14 @@ func (m *InstrumentationScope) Unmarshal(b []byte) error {
 			m.Version = v
 			b = b[n:]
 		case 3: // attributes
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -777,6 +905,14 @@ func (m *InstrumentationScope) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 4: // dropped_attributes_count
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -844,6 +980,14 @@ func (m *EntityRef) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 1: // schema_url
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeString(b)
 			if n < 0 {
 				return fmt.Errorf("invalid string")
@@ -851,6 +995,14 @@ func (m *EntityRef) Unmarshal(b []byte) error {
 			m.SchemaUrl = v
 			b = b[n:]
 		case 2: // type
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeString(b)
 			if n < 0 {
 				return fmt.Errorf("invalid string")
@@ -858,6 +1010,14 @@ func (m *EntityRef) Unmarshal(b []byte) error {
 			m.Type = v
 			b = b[n:]
 		case 3: // id_keys
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeString(b)
 			if n < 0 {
 				return fmt.Errorf("invalid string")
@@ -865,6 +1025,14 @@ func (m *EntityRef) Unmarshal(b []byte) error {
 			m.IdKeys = append(m.IdKeys, v)
 			b = b[n:]
 		case 4: // description_keys
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeString(b)
 			if n < 0 {
 				return fmt.Errorf("invalid string")

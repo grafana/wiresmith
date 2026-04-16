@@ -1361,6 +1361,14 @@ func (m *MetricsData) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 1: // resource_metrics
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -1425,6 +1433,14 @@ func (m *ResourceMetrics) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 1: // resource
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -1434,6 +1450,14 @@ func (m *ResourceMetrics) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 2: // scope_metrics
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -1444,6 +1468,14 @@ func (m *ResourceMetrics) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 3: // schema_url
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeString(b)
 			if n < 0 {
 				return fmt.Errorf("invalid string")
@@ -1505,6 +1537,14 @@ func (m *ScopeMetrics) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 1: // scope
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -1514,6 +1554,14 @@ func (m *ScopeMetrics) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 2: // metrics
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -1524,6 +1572,14 @@ func (m *ScopeMetrics) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 3: // schema_url
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeString(b)
 			if n < 0 {
 				return fmt.Errorf("invalid string")
@@ -1585,6 +1641,14 @@ func (m *Metric) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 1: // name
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeString(b)
 			if n < 0 {
 				return fmt.Errorf("invalid string")
@@ -1592,6 +1656,14 @@ func (m *Metric) Unmarshal(b []byte) error {
 			m.Name = v
 			b = b[n:]
 		case 2: // description
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeString(b)
 			if n < 0 {
 				return fmt.Errorf("invalid string")
@@ -1599,6 +1671,14 @@ func (m *Metric) Unmarshal(b []byte) error {
 			m.Description = v
 			b = b[n:]
 		case 3: // unit
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeString(b)
 			if n < 0 {
 				return fmt.Errorf("invalid string")
@@ -1606,6 +1686,14 @@ func (m *Metric) Unmarshal(b []byte) error {
 			m.Unit = v
 			b = b[n:]
 		case 5: // gauge
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -1617,6 +1705,14 @@ func (m *Metric) Unmarshal(b []byte) error {
 			m.Data = &Metric_Gauge{Gauge: msg}
 			b = b[n:]
 		case 7: // sum
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -1628,6 +1724,14 @@ func (m *Metric) Unmarshal(b []byte) error {
 			m.Data = &Metric_Sum{Sum: msg}
 			b = b[n:]
 		case 9: // histogram
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -1639,6 +1743,14 @@ func (m *Metric) Unmarshal(b []byte) error {
 			m.Data = &Metric_Histogram{Histogram: msg}
 			b = b[n:]
 		case 10: // exponential_histogram
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -1650,6 +1762,14 @@ func (m *Metric) Unmarshal(b []byte) error {
 			m.Data = &Metric_ExponentialHistogram{ExponentialHistogram: msg}
 			b = b[n:]
 		case 11: // summary
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -1661,6 +1781,14 @@ func (m *Metric) Unmarshal(b []byte) error {
 			m.Data = &Metric_Summary{Summary: msg}
 			b = b[n:]
 		case 12: // metadata
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -1725,6 +1853,14 @@ func (m *Gauge) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 1: // data_points
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -1789,6 +1925,14 @@ func (m *Sum) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 1: // data_points
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -1799,6 +1943,14 @@ func (m *Sum) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 2: // aggregation_temporality
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -1806,6 +1958,14 @@ func (m *Sum) Unmarshal(b []byte) error {
 			m.AggregationTemporality = AggregationTemporality(v)
 			b = b[n:]
 		case 3: // is_monotonic
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -1867,6 +2027,14 @@ func (m *Histogram) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 1: // data_points
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -1877,6 +2045,14 @@ func (m *Histogram) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 2: // aggregation_temporality
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -1938,6 +2114,14 @@ func (m *ExponentialHistogram) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 1: // data_points
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -1948,6 +2132,14 @@ func (m *ExponentialHistogram) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 2: // aggregation_temporality
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -2009,6 +2201,14 @@ func (m *Summary) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 1: // data_points
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -2079,6 +2279,14 @@ func (m *NumberDataPoint) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 7: // attributes
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -2089,6 +2297,14 @@ func (m *NumberDataPoint) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 2: // start_time_unix_nano
+			if typ != protowire.Fixed64Type {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeFixed64(b)
 			if n < 0 {
 				return fmt.Errorf("invalid fixed64")
@@ -2096,6 +2312,14 @@ func (m *NumberDataPoint) Unmarshal(b []byte) error {
 			m.StartTimeUnixNano = v
 			b = b[n:]
 		case 3: // time_unix_nano
+			if typ != protowire.Fixed64Type {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeFixed64(b)
 			if n < 0 {
 				return fmt.Errorf("invalid fixed64")
@@ -2103,6 +2327,14 @@ func (m *NumberDataPoint) Unmarshal(b []byte) error {
 			m.TimeUnixNano = v
 			b = b[n:]
 		case 4: // as_double
+			if typ != protowire.Fixed64Type {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeFixed64(b)
 			if n < 0 {
 				return fmt.Errorf("invalid fixed64")
@@ -2110,6 +2342,14 @@ func (m *NumberDataPoint) Unmarshal(b []byte) error {
 			m.Value = &NumberDataPoint_AsDouble{AsDouble: math.Float64frombits(v)}
 			b = b[n:]
 		case 6: // as_int
+			if typ != protowire.Fixed64Type {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeFixed64(b)
 			if n < 0 {
 				return fmt.Errorf("invalid fixed64")
@@ -2117,6 +2357,14 @@ func (m *NumberDataPoint) Unmarshal(b []byte) error {
 			m.Value = &NumberDataPoint_AsInt{AsInt: int64(v)}
 			b = b[n:]
 		case 5: // exemplars
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -2127,6 +2375,14 @@ func (m *NumberDataPoint) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 8: // flags
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -2194,6 +2450,14 @@ func (m *HistogramDataPoint) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 9: // attributes
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -2204,6 +2468,14 @@ func (m *HistogramDataPoint) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 2: // start_time_unix_nano
+			if typ != protowire.Fixed64Type {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeFixed64(b)
 			if n < 0 {
 				return fmt.Errorf("invalid fixed64")
@@ -2211,6 +2483,14 @@ func (m *HistogramDataPoint) Unmarshal(b []byte) error {
 			m.StartTimeUnixNano = v
 			b = b[n:]
 		case 3: // time_unix_nano
+			if typ != protowire.Fixed64Type {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeFixed64(b)
 			if n < 0 {
 				return fmt.Errorf("invalid fixed64")
@@ -2218,6 +2498,14 @@ func (m *HistogramDataPoint) Unmarshal(b []byte) error {
 			m.TimeUnixNano = v
 			b = b[n:]
 		case 4: // count
+			if typ != protowire.Fixed64Type {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeFixed64(b)
 			if n < 0 {
 				return fmt.Errorf("invalid fixed64")
@@ -2225,6 +2513,14 @@ func (m *HistogramDataPoint) Unmarshal(b []byte) error {
 			m.Count = v
 			b = b[n:]
 		case 5: // sum
+			if typ != protowire.Fixed64Type {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeFixed64(b)
 			if n < 0 {
 				return fmt.Errorf("invalid fixed64")
@@ -2250,12 +2546,18 @@ func (m *HistogramDataPoint) Unmarshal(b []byte) error {
 					data = data[vn:]
 				}
 				b = b[n:]
-			} else {
+			} else if typ == protowire.Fixed64Type {
 				v, n := protowire.ConsumeFixed64(b)
 				if n < 0 {
 					return fmt.Errorf("invalid fixed64")
 				}
 				m.BucketCounts = append(m.BucketCounts, v)
+				b = b[n:]
+			} else {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
 				b = b[n:]
 			}
 		case 7: // explicit_bounds
@@ -2276,15 +2578,29 @@ func (m *HistogramDataPoint) Unmarshal(b []byte) error {
 					data = data[vn:]
 				}
 				b = b[n:]
-			} else {
+			} else if typ == protowire.Fixed64Type {
 				v, n := protowire.ConsumeFixed64(b)
 				if n < 0 {
 					return fmt.Errorf("invalid fixed64")
 				}
 				m.ExplicitBounds = append(m.ExplicitBounds, math.Float64frombits(v))
 				b = b[n:]
+			} else {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
 			}
 		case 8: // exemplars
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -2295,6 +2611,14 @@ func (m *HistogramDataPoint) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 10: // flags
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -2302,6 +2626,14 @@ func (m *HistogramDataPoint) Unmarshal(b []byte) error {
 			m.Flags = uint32(v)
 			b = b[n:]
 		case 11: // min
+			if typ != protowire.Fixed64Type {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeFixed64(b)
 			if n < 0 {
 				return fmt.Errorf("invalid fixed64")
@@ -2310,6 +2642,14 @@ func (m *HistogramDataPoint) Unmarshal(b []byte) error {
 			m.Min = &tmp
 			b = b[n:]
 		case 12: // max
+			if typ != protowire.Fixed64Type {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeFixed64(b)
 			if n < 0 {
 				return fmt.Errorf("invalid fixed64")
@@ -2337,6 +2677,14 @@ func (m *ExponentialHistogramDataPoint_Buckets) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 1: // offset
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -2349,6 +2697,15 @@ func (m *ExponentialHistogramDataPoint_Buckets) Unmarshal(b []byte) error {
 				if n < 0 {
 					return fmt.Errorf("invalid packed field")
 				}
+				var elementCount int
+				for _, b := range data {
+					if b < 128 {
+						elementCount++
+					}
+				}
+				if elementCount != 0 && len(m.BucketCounts) == 0 {
+					m.BucketCounts = make([]uint64, 0, elementCount)
+				}
 				for len(data) > 0 {
 					v, vn := protowire.ConsumeVarint(data)
 					if vn < 0 {
@@ -2358,12 +2715,18 @@ func (m *ExponentialHistogramDataPoint_Buckets) Unmarshal(b []byte) error {
 					data = data[vn:]
 				}
 				b = b[n:]
-			} else {
+			} else if typ == protowire.VarintType {
 				v, n := protowire.ConsumeVarint(b)
 				if n < 0 {
 					return fmt.Errorf("invalid varint")
 				}
 				m.BucketCounts = append(m.BucketCounts, v)
+				b = b[n:]
+			} else {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
 				b = b[n:]
 			}
 		default:
@@ -2427,6 +2790,14 @@ func (m *ExponentialHistogramDataPoint) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 1: // attributes
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -2437,6 +2808,14 @@ func (m *ExponentialHistogramDataPoint) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 2: // start_time_unix_nano
+			if typ != protowire.Fixed64Type {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeFixed64(b)
 			if n < 0 {
 				return fmt.Errorf("invalid fixed64")
@@ -2444,6 +2823,14 @@ func (m *ExponentialHistogramDataPoint) Unmarshal(b []byte) error {
 			m.StartTimeUnixNano = v
 			b = b[n:]
 		case 3: // time_unix_nano
+			if typ != protowire.Fixed64Type {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeFixed64(b)
 			if n < 0 {
 				return fmt.Errorf("invalid fixed64")
@@ -2451,6 +2838,14 @@ func (m *ExponentialHistogramDataPoint) Unmarshal(b []byte) error {
 			m.TimeUnixNano = v
 			b = b[n:]
 		case 4: // count
+			if typ != protowire.Fixed64Type {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeFixed64(b)
 			if n < 0 {
 				return fmt.Errorf("invalid fixed64")
@@ -2458,6 +2853,14 @@ func (m *ExponentialHistogramDataPoint) Unmarshal(b []byte) error {
 			m.Count = v
 			b = b[n:]
 		case 5: // sum
+			if typ != protowire.Fixed64Type {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeFixed64(b)
 			if n < 0 {
 				return fmt.Errorf("invalid fixed64")
@@ -2466,6 +2869,14 @@ func (m *ExponentialHistogramDataPoint) Unmarshal(b []byte) error {
 			m.Sum = &tmp
 			b = b[n:]
 		case 6: // scale
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -2473,6 +2884,14 @@ func (m *ExponentialHistogramDataPoint) Unmarshal(b []byte) error {
 			m.Scale = int32(protowire.DecodeZigZag(v))
 			b = b[n:]
 		case 7: // zero_count
+			if typ != protowire.Fixed64Type {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeFixed64(b)
 			if n < 0 {
 				return fmt.Errorf("invalid fixed64")
@@ -2480,6 +2899,14 @@ func (m *ExponentialHistogramDataPoint) Unmarshal(b []byte) error {
 			m.ZeroCount = v
 			b = b[n:]
 		case 8: // positive
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -2489,6 +2916,14 @@ func (m *ExponentialHistogramDataPoint) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 9: // negative
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -2498,6 +2933,14 @@ func (m *ExponentialHistogramDataPoint) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 10: // flags
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -2505,6 +2948,14 @@ func (m *ExponentialHistogramDataPoint) Unmarshal(b []byte) error {
 			m.Flags = uint32(v)
 			b = b[n:]
 		case 11: // exemplars
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -2515,6 +2966,14 @@ func (m *ExponentialHistogramDataPoint) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 12: // min
+			if typ != protowire.Fixed64Type {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeFixed64(b)
 			if n < 0 {
 				return fmt.Errorf("invalid fixed64")
@@ -2523,6 +2982,14 @@ func (m *ExponentialHistogramDataPoint) Unmarshal(b []byte) error {
 			m.Min = &tmp
 			b = b[n:]
 		case 13: // max
+			if typ != protowire.Fixed64Type {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeFixed64(b)
 			if n < 0 {
 				return fmt.Errorf("invalid fixed64")
@@ -2531,6 +2998,14 @@ func (m *ExponentialHistogramDataPoint) Unmarshal(b []byte) error {
 			m.Max = &tmp
 			b = b[n:]
 		case 14: // zero_threshold
+			if typ != protowire.Fixed64Type {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeFixed64(b)
 			if n < 0 {
 				return fmt.Errorf("invalid fixed64")
@@ -2557,6 +3032,14 @@ func (m *SummaryDataPoint_ValueAtQuantile) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 1: // quantile
+			if typ != protowire.Fixed64Type {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeFixed64(b)
 			if n < 0 {
 				return fmt.Errorf("invalid fixed64")
@@ -2564,6 +3047,14 @@ func (m *SummaryDataPoint_ValueAtQuantile) Unmarshal(b []byte) error {
 			m.Quantile = math.Float64frombits(v)
 			b = b[n:]
 		case 2: // value
+			if typ != protowire.Fixed64Type {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeFixed64(b)
 			if n < 0 {
 				return fmt.Errorf("invalid fixed64")
@@ -2631,6 +3122,14 @@ func (m *SummaryDataPoint) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 7: // attributes
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -2641,6 +3140,14 @@ func (m *SummaryDataPoint) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 2: // start_time_unix_nano
+			if typ != protowire.Fixed64Type {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeFixed64(b)
 			if n < 0 {
 				return fmt.Errorf("invalid fixed64")
@@ -2648,6 +3155,14 @@ func (m *SummaryDataPoint) Unmarshal(b []byte) error {
 			m.StartTimeUnixNano = v
 			b = b[n:]
 		case 3: // time_unix_nano
+			if typ != protowire.Fixed64Type {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeFixed64(b)
 			if n < 0 {
 				return fmt.Errorf("invalid fixed64")
@@ -2655,6 +3170,14 @@ func (m *SummaryDataPoint) Unmarshal(b []byte) error {
 			m.TimeUnixNano = v
 			b = b[n:]
 		case 4: // count
+			if typ != protowire.Fixed64Type {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeFixed64(b)
 			if n < 0 {
 				return fmt.Errorf("invalid fixed64")
@@ -2662,6 +3185,14 @@ func (m *SummaryDataPoint) Unmarshal(b []byte) error {
 			m.Count = v
 			b = b[n:]
 		case 5: // sum
+			if typ != protowire.Fixed64Type {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeFixed64(b)
 			if n < 0 {
 				return fmt.Errorf("invalid fixed64")
@@ -2669,6 +3200,14 @@ func (m *SummaryDataPoint) Unmarshal(b []byte) error {
 			m.Sum = math.Float64frombits(v)
 			b = b[n:]
 		case 6: // quantile_values
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -2679,6 +3218,14 @@ func (m *SummaryDataPoint) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 8: // flags
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -2740,6 +3287,14 @@ func (m *Exemplar) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 7: // filtered_attributes
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -2750,6 +3305,14 @@ func (m *Exemplar) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 2: // time_unix_nano
+			if typ != protowire.Fixed64Type {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeFixed64(b)
 			if n < 0 {
 				return fmt.Errorf("invalid fixed64")
@@ -2757,6 +3320,14 @@ func (m *Exemplar) Unmarshal(b []byte) error {
 			m.TimeUnixNano = v
 			b = b[n:]
 		case 3: // as_double
+			if typ != protowire.Fixed64Type {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeFixed64(b)
 			if n < 0 {
 				return fmt.Errorf("invalid fixed64")
@@ -2764,6 +3335,14 @@ func (m *Exemplar) Unmarshal(b []byte) error {
 			m.Value = &Exemplar_AsDouble{AsDouble: math.Float64frombits(v)}
 			b = b[n:]
 		case 6: // as_int
+			if typ != protowire.Fixed64Type {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeFixed64(b)
 			if n < 0 {
 				return fmt.Errorf("invalid fixed64")
@@ -2771,6 +3350,14 @@ func (m *Exemplar) Unmarshal(b []byte) error {
 			m.Value = &Exemplar_AsInt{AsInt: int64(v)}
 			b = b[n:]
 		case 4: // span_id
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -2778,6 +3365,14 @@ func (m *Exemplar) Unmarshal(b []byte) error {
 			m.SpanId = append(m.SpanId[:0], v...)
 			b = b[n:]
 		case 5: // trace_id
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")

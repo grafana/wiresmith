@@ -430,6 +430,14 @@ func (m *LogsData) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 1: // resource_logs
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -494,6 +502,14 @@ func (m *ResourceLogs) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 1: // resource
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -503,6 +519,14 @@ func (m *ResourceLogs) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 2: // scope_logs
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -513,6 +537,14 @@ func (m *ResourceLogs) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 3: // schema_url
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeString(b)
 			if n < 0 {
 				return fmt.Errorf("invalid string")
@@ -574,6 +606,14 @@ func (m *ScopeLogs) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 1: // scope
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -583,6 +623,14 @@ func (m *ScopeLogs) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 2: // log_records
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -593,6 +641,14 @@ func (m *ScopeLogs) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 3: // schema_url
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeString(b)
 			if n < 0 {
 				return fmt.Errorf("invalid string")
@@ -654,6 +710,14 @@ func (m *LogRecord) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 1: // time_unix_nano
+			if typ != protowire.Fixed64Type {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeFixed64(b)
 			if n < 0 {
 				return fmt.Errorf("invalid fixed64")
@@ -661,6 +725,14 @@ func (m *LogRecord) Unmarshal(b []byte) error {
 			m.TimeUnixNano = v
 			b = b[n:]
 		case 11: // observed_time_unix_nano
+			if typ != protowire.Fixed64Type {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeFixed64(b)
 			if n < 0 {
 				return fmt.Errorf("invalid fixed64")
@@ -668,6 +740,14 @@ func (m *LogRecord) Unmarshal(b []byte) error {
 			m.ObservedTimeUnixNano = v
 			b = b[n:]
 		case 2: // severity_number
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -675,6 +755,14 @@ func (m *LogRecord) Unmarshal(b []byte) error {
 			m.SeverityNumber = SeverityNumber(v)
 			b = b[n:]
 		case 3: // severity_text
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeString(b)
 			if n < 0 {
 				return fmt.Errorf("invalid string")
@@ -682,6 +770,14 @@ func (m *LogRecord) Unmarshal(b []byte) error {
 			m.SeverityText = v
 			b = b[n:]
 		case 5: // body
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -691,6 +787,14 @@ func (m *LogRecord) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 6: // attributes
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -701,6 +805,14 @@ func (m *LogRecord) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 7: // dropped_attributes_count
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -708,6 +820,14 @@ func (m *LogRecord) Unmarshal(b []byte) error {
 			m.DroppedAttributesCount = uint32(v)
 			b = b[n:]
 		case 8: // flags
+			if typ != protowire.Fixed32Type {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeFixed32(b)
 			if n < 0 {
 				return fmt.Errorf("invalid fixed32")
@@ -715,6 +835,14 @@ func (m *LogRecord) Unmarshal(b []byte) error {
 			m.Flags = v
 			b = b[n:]
 		case 9: // trace_id
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -722,6 +850,14 @@ func (m *LogRecord) Unmarshal(b []byte) error {
 			m.TraceId = append(m.TraceId[:0], v...)
 			b = b[n:]
 		case 10: // span_id
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -729,6 +865,14 @@ func (m *LogRecord) Unmarshal(b []byte) error {
 			m.SpanId = append(m.SpanId[:0], v...)
 			b = b[n:]
 		case 12: // event_name
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeString(b)
 			if n < 0 {
 				return fmt.Errorf("invalid string")

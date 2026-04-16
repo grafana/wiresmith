@@ -8,11 +8,11 @@ Comparative benchmarks for protobuf serialization across four implementations:
 
 ## Shared Input Strategy
 
-All benchmarks use identical wire-format bytes generated once via official proto in `inputs_test.go`. Each library unmarshals from these canonical bytes during setup (for marshal/size benchmarks) or uses them directly (for unmarshal benchmarks). This guarantees apples-to-apples comparison with a single source of truth for test data.
+All benchmarks use identical wire-format bytes generated once via official proto in `inputs_test.go`. Each library unmarshals from these canonical bytes during setup (for marshal/size benchmarks) or uses them directly (for unmarshal benchmarks). This guarantees apples-to-apples comparison with a single source of truth for test data. Exception: ProfilesData uses vtproto types for canonical byte generation because the official proto package doesn't include profiles.
 
 ## File Layout
 
-- `inputs_test.go` — Canonical wire bytes generation (single source of truth, uses official proto)
+- `inputs_test.go` — Canonical wire bytes generation (single source of truth, uses official proto + vtproto for profiles)
 - `ours_bench_test.go` — grafana-protoc benchmarks
 - `official_bench_test.go` — google.golang.org/protobuf benchmarks
 - `vtproto_bench_test.go` — vtprotobuf benchmarks
@@ -32,6 +32,12 @@ Each library is benchmarked on:
 - `MarshalTraces` / `UnmarshalTraces` — 100 spans with attributes, events, status
 - `MarshalHistogram` / `UnmarshalHistogram` — 50 histogram data points with bounds and buckets
 - `MarshalSingleSpan` / `UnmarshalSingleSpan` — single span message
+- `MarshalLogs` / `UnmarshalLogs` — 50 log records with severity, body, attributes, trace context
+- `MarshalGauge` / `UnmarshalGauge` — 50 gauge number data points (double values)
+- `MarshalSum` / `UnmarshalSum` — 50 monotonic cumulative sum data points (int values)
+- `MarshalExpHistogram` / `UnmarshalExpHistogram` — 50 exponential histogram data points with positive/negative buckets
+- `MarshalSummary` / `UnmarshalSummary` — 50 summary data points with quantile values
+- `MarshalProfiles` / `UnmarshalProfiles` — profile with 50 samples, dictionary with functions/locations/mappings/stacks (Ours/VTProto/GogoProto only, no official proto)
 - `SizeTraces` — size computation for 100 spans
 
 ## Generated Code

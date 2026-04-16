@@ -1095,6 +1095,14 @@ func (m *ProfilesDictionary) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 1: // mapping_table
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -1105,6 +1113,14 @@ func (m *ProfilesDictionary) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 2: // location_table
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -1115,6 +1131,14 @@ func (m *ProfilesDictionary) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 3: // function_table
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -1125,6 +1149,14 @@ func (m *ProfilesDictionary) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 4: // link_table
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -1135,6 +1167,14 @@ func (m *ProfilesDictionary) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 5: // string_table
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeString(b)
 			if n < 0 {
 				return fmt.Errorf("invalid string")
@@ -1142,6 +1182,14 @@ func (m *ProfilesDictionary) Unmarshal(b []byte) error {
 			m.StringTable = append(m.StringTable, v)
 			b = b[n:]
 		case 6: // attribute_table
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -1152,6 +1200,14 @@ func (m *ProfilesDictionary) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 7: // stack_table
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -1216,6 +1272,14 @@ func (m *ProfilesData) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 1: // resource_profiles
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -1226,6 +1290,14 @@ func (m *ProfilesData) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 2: // dictionary
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -1289,6 +1361,14 @@ func (m *ResourceProfiles) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 1: // resource
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -1298,6 +1378,14 @@ func (m *ResourceProfiles) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 2: // scope_profiles
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -1308,6 +1396,14 @@ func (m *ResourceProfiles) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 3: // schema_url
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeString(b)
 			if n < 0 {
 				return fmt.Errorf("invalid string")
@@ -1369,6 +1465,14 @@ func (m *ScopeProfiles) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 1: // scope
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -1378,6 +1482,14 @@ func (m *ScopeProfiles) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 2: // profiles
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -1388,6 +1500,14 @@ func (m *ScopeProfiles) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 3: // schema_url
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeString(b)
 			if n < 0 {
 				return fmt.Errorf("invalid string")
@@ -1449,6 +1569,14 @@ func (m *Profile) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 1: // sample_type
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -1458,6 +1586,14 @@ func (m *Profile) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 2: // samples
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -1468,6 +1604,14 @@ func (m *Profile) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 3: // time_unix_nano
+			if typ != protowire.Fixed64Type {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeFixed64(b)
 			if n < 0 {
 				return fmt.Errorf("invalid fixed64")
@@ -1475,6 +1619,14 @@ func (m *Profile) Unmarshal(b []byte) error {
 			m.TimeUnixNano = v
 			b = b[n:]
 		case 4: // duration_nano
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -1482,6 +1634,14 @@ func (m *Profile) Unmarshal(b []byte) error {
 			m.DurationNano = v
 			b = b[n:]
 		case 5: // period_type
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -1491,6 +1651,14 @@ func (m *Profile) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 6: // period
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -1498,6 +1666,14 @@ func (m *Profile) Unmarshal(b []byte) error {
 			m.Period = int64(v)
 			b = b[n:]
 		case 7: // profile_id
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -1505,6 +1681,14 @@ func (m *Profile) Unmarshal(b []byte) error {
 			m.ProfileId = append(m.ProfileId[:0], v...)
 			b = b[n:]
 		case 8: // dropped_attributes_count
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -1512,6 +1696,14 @@ func (m *Profile) Unmarshal(b []byte) error {
 			m.DroppedAttributesCount = uint32(v)
 			b = b[n:]
 		case 9: // original_payload_format
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeString(b)
 			if n < 0 {
 				return fmt.Errorf("invalid string")
@@ -1519,6 +1711,14 @@ func (m *Profile) Unmarshal(b []byte) error {
 			m.OriginalPayloadFormat = v
 			b = b[n:]
 		case 10: // original_payload
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -1531,6 +1731,15 @@ func (m *Profile) Unmarshal(b []byte) error {
 				if n < 0 {
 					return fmt.Errorf("invalid packed field")
 				}
+				var elementCount int
+				for _, b := range data {
+					if b < 128 {
+						elementCount++
+					}
+				}
+				if elementCount != 0 && len(m.AttributeIndices) == 0 {
+					m.AttributeIndices = make([]int32, 0, elementCount)
+				}
 				for len(data) > 0 {
 					v, vn := protowire.ConsumeVarint(data)
 					if vn < 0 {
@@ -1540,12 +1749,18 @@ func (m *Profile) Unmarshal(b []byte) error {
 					data = data[vn:]
 				}
 				b = b[n:]
-			} else {
+			} else if typ == protowire.VarintType {
 				v, n := protowire.ConsumeVarint(b)
 				if n < 0 {
 					return fmt.Errorf("invalid varint")
 				}
 				m.AttributeIndices = append(m.AttributeIndices, int32(v))
+				b = b[n:]
+			} else {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
 				b = b[n:]
 			}
 		default:
@@ -1568,6 +1783,14 @@ func (m *Link) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 1: // trace_id
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -1575,6 +1798,14 @@ func (m *Link) Unmarshal(b []byte) error {
 			m.TraceId = append(m.TraceId[:0], v...)
 			b = b[n:]
 		case 2: // span_id
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -1601,6 +1832,14 @@ func (m *ValueType) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 1: // type_strindex
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -1608,6 +1847,14 @@ func (m *ValueType) Unmarshal(b []byte) error {
 			m.TypeStrindex = int32(v)
 			b = b[n:]
 		case 2: // unit_strindex
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -1634,6 +1881,14 @@ func (m *Sample) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 1: // stack_index
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -1646,6 +1901,15 @@ func (m *Sample) Unmarshal(b []byte) error {
 				if n < 0 {
 					return fmt.Errorf("invalid packed field")
 				}
+				var elementCount int
+				for _, b := range data {
+					if b < 128 {
+						elementCount++
+					}
+				}
+				if elementCount != 0 && len(m.AttributeIndices) == 0 {
+					m.AttributeIndices = make([]int32, 0, elementCount)
+				}
 				for len(data) > 0 {
 					v, vn := protowire.ConsumeVarint(data)
 					if vn < 0 {
@@ -1655,15 +1919,29 @@ func (m *Sample) Unmarshal(b []byte) error {
 					data = data[vn:]
 				}
 				b = b[n:]
-			} else {
+			} else if typ == protowire.VarintType {
 				v, n := protowire.ConsumeVarint(b)
 				if n < 0 {
 					return fmt.Errorf("invalid varint")
 				}
 				m.AttributeIndices = append(m.AttributeIndices, int32(v))
 				b = b[n:]
+			} else {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
 			}
 		case 3: // link_index
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -1676,6 +1954,15 @@ func (m *Sample) Unmarshal(b []byte) error {
 				if n < 0 {
 					return fmt.Errorf("invalid packed field")
 				}
+				var elementCount int
+				for _, b := range data {
+					if b < 128 {
+						elementCount++
+					}
+				}
+				if elementCount != 0 && len(m.Values) == 0 {
+					m.Values = make([]int64, 0, elementCount)
+				}
 				for len(data) > 0 {
 					v, vn := protowire.ConsumeVarint(data)
 					if vn < 0 {
@@ -1685,12 +1972,18 @@ func (m *Sample) Unmarshal(b []byte) error {
 					data = data[vn:]
 				}
 				b = b[n:]
-			} else {
+			} else if typ == protowire.VarintType {
 				v, n := protowire.ConsumeVarint(b)
 				if n < 0 {
 					return fmt.Errorf("invalid varint")
 				}
 				m.Values = append(m.Values, int64(v))
+				b = b[n:]
+			} else {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
 				b = b[n:]
 			}
 		case 5: // timestamps_unix_nano
@@ -1711,12 +2004,18 @@ func (m *Sample) Unmarshal(b []byte) error {
 					data = data[vn:]
 				}
 				b = b[n:]
-			} else {
+			} else if typ == protowire.Fixed64Type {
 				v, n := protowire.ConsumeFixed64(b)
 				if n < 0 {
 					return fmt.Errorf("invalid fixed64")
 				}
 				m.TimestampsUnixNano = append(m.TimestampsUnixNano, v)
+				b = b[n:]
+			} else {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
 				b = b[n:]
 			}
 		default:
@@ -1739,6 +2038,14 @@ func (m *Mapping) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 1: // memory_start
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -1746,6 +2053,14 @@ func (m *Mapping) Unmarshal(b []byte) error {
 			m.MemoryStart = v
 			b = b[n:]
 		case 2: // memory_limit
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -1753,6 +2068,14 @@ func (m *Mapping) Unmarshal(b []byte) error {
 			m.MemoryLimit = v
 			b = b[n:]
 		case 3: // file_offset
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -1760,6 +2083,14 @@ func (m *Mapping) Unmarshal(b []byte) error {
 			m.FileOffset = v
 			b = b[n:]
 		case 4: // filename_strindex
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -1772,6 +2103,15 @@ func (m *Mapping) Unmarshal(b []byte) error {
 				if n < 0 {
 					return fmt.Errorf("invalid packed field")
 				}
+				var elementCount int
+				for _, b := range data {
+					if b < 128 {
+						elementCount++
+					}
+				}
+				if elementCount != 0 && len(m.AttributeIndices) == 0 {
+					m.AttributeIndices = make([]int32, 0, elementCount)
+				}
 				for len(data) > 0 {
 					v, vn := protowire.ConsumeVarint(data)
 					if vn < 0 {
@@ -1781,12 +2121,18 @@ func (m *Mapping) Unmarshal(b []byte) error {
 					data = data[vn:]
 				}
 				b = b[n:]
-			} else {
+			} else if typ == protowire.VarintType {
 				v, n := protowire.ConsumeVarint(b)
 				if n < 0 {
 					return fmt.Errorf("invalid varint")
 				}
 				m.AttributeIndices = append(m.AttributeIndices, int32(v))
+				b = b[n:]
+			} else {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
 				b = b[n:]
 			}
 		default:
@@ -1814,6 +2160,15 @@ func (m *Stack) Unmarshal(b []byte) error {
 				if n < 0 {
 					return fmt.Errorf("invalid packed field")
 				}
+				var elementCount int
+				for _, b := range data {
+					if b < 128 {
+						elementCount++
+					}
+				}
+				if elementCount != 0 && len(m.LocationIndices) == 0 {
+					m.LocationIndices = make([]int32, 0, elementCount)
+				}
 				for len(data) > 0 {
 					v, vn := protowire.ConsumeVarint(data)
 					if vn < 0 {
@@ -1823,12 +2178,18 @@ func (m *Stack) Unmarshal(b []byte) error {
 					data = data[vn:]
 				}
 				b = b[n:]
-			} else {
+			} else if typ == protowire.VarintType {
 				v, n := protowire.ConsumeVarint(b)
 				if n < 0 {
 					return fmt.Errorf("invalid varint")
 				}
 				m.LocationIndices = append(m.LocationIndices, int32(v))
+				b = b[n:]
+			} else {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
 				b = b[n:]
 			}
 		default:
@@ -1886,6 +2247,14 @@ func (m *Location) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 1: // mapping_index
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -1893,6 +2262,14 @@ func (m *Location) Unmarshal(b []byte) error {
 			m.MappingIndex = int32(v)
 			b = b[n:]
 		case 2: // address
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -1900,6 +2277,14 @@ func (m *Location) Unmarshal(b []byte) error {
 			m.Address = v
 			b = b[n:]
 		case 3: // lines
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -1915,6 +2300,15 @@ func (m *Location) Unmarshal(b []byte) error {
 				if n < 0 {
 					return fmt.Errorf("invalid packed field")
 				}
+				var elementCount int
+				for _, b := range data {
+					if b < 128 {
+						elementCount++
+					}
+				}
+				if elementCount != 0 && len(m.AttributeIndices) == 0 {
+					m.AttributeIndices = make([]int32, 0, elementCount)
+				}
 				for len(data) > 0 {
 					v, vn := protowire.ConsumeVarint(data)
 					if vn < 0 {
@@ -1924,12 +2318,18 @@ func (m *Location) Unmarshal(b []byte) error {
 					data = data[vn:]
 				}
 				b = b[n:]
-			} else {
+			} else if typ == protowire.VarintType {
 				v, n := protowire.ConsumeVarint(b)
 				if n < 0 {
 					return fmt.Errorf("invalid varint")
 				}
 				m.AttributeIndices = append(m.AttributeIndices, int32(v))
+				b = b[n:]
+			} else {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
 				b = b[n:]
 			}
 		default:
@@ -1952,6 +2352,14 @@ func (m *Line) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 1: // function_index
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -1959,6 +2367,14 @@ func (m *Line) Unmarshal(b []byte) error {
 			m.FunctionIndex = int32(v)
 			b = b[n:]
 		case 2: // line
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -1966,6 +2382,14 @@ func (m *Line) Unmarshal(b []byte) error {
 			m.Line = int64(v)
 			b = b[n:]
 		case 3: // column
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -1992,6 +2416,14 @@ func (m *Function) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 1: // name_strindex
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -1999,6 +2431,14 @@ func (m *Function) Unmarshal(b []byte) error {
 			m.NameStrindex = int32(v)
 			b = b[n:]
 		case 2: // system_name_strindex
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -2006,6 +2446,14 @@ func (m *Function) Unmarshal(b []byte) error {
 			m.SystemNameStrindex = int32(v)
 			b = b[n:]
 		case 3: // filename_strindex
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -2013,6 +2461,14 @@ func (m *Function) Unmarshal(b []byte) error {
 			m.FilenameStrindex = int32(v)
 			b = b[n:]
 		case 4: // start_line
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -2039,6 +2495,14 @@ func (m *KeyValueAndUnit) Unmarshal(b []byte) error {
 		b = b[tagLen:]
 		switch num {
 		case 1: // key_strindex
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
@@ -2046,6 +2510,14 @@ func (m *KeyValueAndUnit) Unmarshal(b []byte) error {
 			m.KeyStrindex = int32(v)
 			b = b[n:]
 		case 2: // value
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeBytes(b)
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
@@ -2055,6 +2527,14 @@ func (m *KeyValueAndUnit) Unmarshal(b []byte) error {
 			}
 			b = b[n:]
 		case 3: // unit_strindex
+			if typ != protowire.VarintType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
 			v, n := protowire.ConsumeVarint(b)
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
