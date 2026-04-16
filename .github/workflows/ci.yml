@@ -42,7 +42,7 @@ jobs:
       - uses: actions/setup-go@0aaccfd150d50ccaeb58ebd88d36e91967a5f35b # v5.4.0
         with:
           go-version-file: go.mod
-      - uses: golangci/golangci-lint-action@7119f3d5ddced62a10a044847a6c6bb0f7a5e76a # v7.0.0
+      - uses: golangci/golangci-lint-action@1481404843c368bc19ca9406f87d6e0fc97bdcfd # v7.0.0
 
   fuzz:
     name: Fuzz
