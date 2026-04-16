@@ -681,6 +681,8 @@ func (m *Status) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+const maxUnmarshalDepth = 10000
+
 func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) {
 	switch typ {
 	case protowire.VarintType:
@@ -717,6 +719,13 @@ func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) 
 }
 
 func (m *TracesData) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *TracesData) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	if len(b) >= 256 {
 		tmp := b
 		var field1count int
@@ -773,7 +782,7 @@ func (m *TracesData) Unmarshal(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.ResourceSpans = append(m.ResourceSpans, ResourceSpans{})
-			if err := m.ResourceSpans[len(m.ResourceSpans)-1].Unmarshal(v); err != nil {
+			if err := m.ResourceSpans[len(m.ResourceSpans)-1].unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -789,6 +798,13 @@ func (m *TracesData) Unmarshal(b []byte) error {
 }
 
 func (m *ResourceSpans) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *ResourceSpans) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	if len(b) >= 256 {
 		tmp := b
 		var field2count int
@@ -862,7 +878,7 @@ func (m *ResourceSpans) Unmarshal(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.ScopeSpans = append(m.ScopeSpans, ScopeSpans{})
-			if err := m.ScopeSpans[len(m.ScopeSpans)-1].Unmarshal(v); err != nil {
+			if err := m.ScopeSpans[len(m.ScopeSpans)-1].unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -893,6 +909,13 @@ func (m *ResourceSpans) Unmarshal(b []byte) error {
 }
 
 func (m *ScopeSpans) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *ScopeSpans) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	if len(b) >= 256 {
 		tmp := b
 		var field2count int
@@ -966,7 +989,7 @@ func (m *ScopeSpans) Unmarshal(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.Spans = append(m.Spans, Span{})
-			if err := m.Spans[len(m.Spans)-1].Unmarshal(v); err != nil {
+			if err := m.Spans[len(m.Spans)-1].unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -997,6 +1020,13 @@ func (m *ScopeSpans) Unmarshal(b []byte) error {
 }
 
 func (m *Span_Event) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *Span_Event) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	if len(b) >= 256 {
 		tmp := b
 		var field3count int
@@ -1114,6 +1144,13 @@ func (m *Span_Event) Unmarshal(b []byte) error {
 }
 
 func (m *Span_Link) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *Span_Link) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	if len(b) >= 256 {
 		tmp := b
 		var field4count int
@@ -1261,6 +1298,13 @@ func (m *Span_Link) Unmarshal(b []byte) error {
 }
 
 func (m *Span) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *Span) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	if len(b) >= 256 {
 		tmp := b
 		var field9count int
@@ -1497,7 +1541,7 @@ func (m *Span) Unmarshal(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.Events = append(m.Events, Span_Event{})
-			if err := m.Events[len(m.Events)-1].Unmarshal(v); err != nil {
+			if err := m.Events[len(m.Events)-1].unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1530,7 +1574,7 @@ func (m *Span) Unmarshal(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.Links = append(m.Links, Span_Link{})
-			if err := m.Links[len(m.Links)-1].Unmarshal(v); err != nil {
+			if err := m.Links[len(m.Links)-1].unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1562,7 +1606,7 @@ func (m *Span) Unmarshal(b []byte) error {
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
 			}
-			if err := m.Status.Unmarshal(v); err != nil {
+			if err := m.Status.unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -1578,6 +1622,13 @@ func (m *Span) Unmarshal(b []byte) error {
 }
 
 func (m *Status) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *Status) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {

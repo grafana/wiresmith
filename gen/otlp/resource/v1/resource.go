@@ -80,6 +80,8 @@ func (m *Resource) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+const maxUnmarshalDepth = 10000
+
 func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) {
 	switch typ {
 	case protowire.VarintType:
@@ -116,6 +118,13 @@ func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) 
 }
 
 func (m *Resource) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *Resource) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	if len(b) >= 256 {
 		tmp := b
 		var field1count int

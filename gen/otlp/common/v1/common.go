@@ -487,6 +487,8 @@ func (m *EntityRef) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+const maxUnmarshalDepth = 10000
+
 func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) {
 	switch typ {
 	case protowire.VarintType:
@@ -523,6 +525,13 @@ func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) 
 }
 
 func (m *AnyValue) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *AnyValue) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -604,7 +613,7 @@ func (m *AnyValue) Unmarshal(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			var msg ArrayValue
-			if err := msg.Unmarshal(v); err != nil {
+			if err := msg.unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			m.Value = &AnyValue_ArrayValue{ArrayValue: msg}
@@ -623,7 +632,7 @@ func (m *AnyValue) Unmarshal(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			var msg KeyValueList
-			if err := msg.Unmarshal(v); err != nil {
+			if err := msg.unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			m.Value = &AnyValue_KvlistValue{KvlistValue: msg}
@@ -670,6 +679,13 @@ func (m *AnyValue) Unmarshal(b []byte) error {
 }
 
 func (m *ArrayValue) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *ArrayValue) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	if len(b) >= 256 {
 		tmp := b
 		var field1count int
@@ -726,7 +742,7 @@ func (m *ArrayValue) Unmarshal(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.Values = append(m.Values, AnyValue{})
-			if err := m.Values[len(m.Values)-1].Unmarshal(v); err != nil {
+			if err := m.Values[len(m.Values)-1].unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -742,6 +758,13 @@ func (m *ArrayValue) Unmarshal(b []byte) error {
 }
 
 func (m *KeyValueList) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *KeyValueList) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	if len(b) >= 256 {
 		tmp := b
 		var field1count int
@@ -798,7 +821,7 @@ func (m *KeyValueList) Unmarshal(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.Values = append(m.Values, KeyValue{})
-			if err := m.Values[len(m.Values)-1].Unmarshal(v); err != nil {
+			if err := m.Values[len(m.Values)-1].unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -814,6 +837,13 @@ func (m *KeyValueList) Unmarshal(b []byte) error {
 }
 
 func (m *KeyValue) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *KeyValue) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -849,7 +879,7 @@ func (m *KeyValue) Unmarshal(b []byte) error {
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
 			}
-			if err := m.Value.Unmarshal(v); err != nil {
+			if err := m.Value.unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -880,6 +910,13 @@ func (m *KeyValue) Unmarshal(b []byte) error {
 }
 
 func (m *InstrumentationScope) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *InstrumentationScope) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	if len(b) >= 256 {
 		tmp := b
 		var field3count int
@@ -966,7 +1003,7 @@ func (m *InstrumentationScope) Unmarshal(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.Attributes = append(m.Attributes, KeyValue{})
-			if err := m.Attributes[len(m.Attributes)-1].Unmarshal(v); err != nil {
+			if err := m.Attributes[len(m.Attributes)-1].unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -997,6 +1034,13 @@ func (m *InstrumentationScope) Unmarshal(b []byte) error {
 }
 
 func (m *EntityRef) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *EntityRef) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	if len(b) >= 256 {
 		tmp := b
 		var field3count int
