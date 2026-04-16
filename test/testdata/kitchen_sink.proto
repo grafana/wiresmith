@@ -1,0 +1,142 @@
+syntax = "proto3";
+
+package test.kitchensink.v1;
+
+option go_package = "wiresmith/gen/test/kitchensink/v1";
+
+// Message with every singular scalar type
+message AllScalars {
+  double   field_double   = 1;
+  float    field_float    = 2;
+  int32    field_int32    = 3;
+  int64    field_int64    = 4;
+  uint32   field_uint32   = 5;
+  uint64   field_uint64   = 6;
+  sint32   field_sint32   = 7;
+  sint64   field_sint64   = 8;
+  fixed32  field_fixed32  = 9;
+  fixed64  field_fixed64  = 10;
+  sfixed32 field_sfixed32 = 11;
+  sfixed64 field_sfixed64 = 12;
+  bool     field_bool     = 13;
+  string   field_string   = 14;
+  bytes    field_bytes    = 15;
+}
+
+// Message with every optional scalar type
+message AllOptionalScalars {
+  optional double   field_double   = 1;
+  optional float    field_float    = 2;
+  optional int32    field_int32    = 3;
+  optional int64    field_int64    = 4;
+  optional uint32   field_uint32   = 5;
+  optional uint64   field_uint64   = 6;
+  optional sint32   field_sint32   = 7;
+  optional sint64   field_sint64   = 8;
+  optional fixed32  field_fixed32  = 9;
+  optional fixed64  field_fixed64  = 10;
+  optional sfixed32 field_sfixed32 = 11;
+  optional sfixed64 field_sfixed64 = 12;
+  optional bool     field_bool     = 13;
+  optional string   field_string   = 14;
+  optional bytes    field_bytes    = 15;
+}
+
+// Message with every repeated (packed) scalar type
+message AllRepeatedScalars {
+  repeated double   field_double   = 1;
+  repeated float    field_float    = 2;
+  repeated int32    field_int32    = 3;
+  repeated int64    field_int64    = 4;
+  repeated uint32   field_uint32   = 5;
+  repeated uint64   field_uint64   = 6;
+  repeated sint32   field_sint32   = 7;
+  repeated sint64   field_sint64   = 8;
+  repeated fixed32  field_fixed32  = 9;
+  repeated fixed64  field_fixed64  = 10;
+  repeated sfixed32 field_sfixed32 = 11;
+  repeated sfixed64 field_sfixed64 = 12;
+  repeated bool     field_bool     = 13;
+  repeated string   field_string   = 14;
+  repeated bytes    field_bytes    = 15;
+}
+
+// Oneof with various types
+message OneofVariants {
+  oneof value {
+    double   double_value   = 1;
+    float    float_value    = 2;
+    int32    int32_value    = 3;
+    int64    int64_value    = 4;
+    uint32   uint32_value   = 5;
+    uint64   uint64_value   = 6;
+    sint32   sint32_value   = 7;
+    sint64   sint64_value   = 8;
+    fixed32  fixed32_value  = 9;
+    fixed64  fixed64_value  = 10;
+    sfixed32 sfixed32_value = 11;
+    sfixed64 sfixed64_value = 12;
+    bool     bool_value     = 13;
+    string   string_value   = 14;
+    bytes    bytes_value    = 15;
+  }
+}
+
+// Nested messages for depth testing
+message Outer {
+  Middle middle = 1;
+  repeated Middle middles = 2;
+  string name = 3;
+}
+
+message Middle {
+  Inner inner = 1;
+  repeated Inner inners = 2;
+  int64 value = 3;
+}
+
+message Inner {
+  string data = 1;
+  bytes raw = 2;
+  sint64 signed_val = 3;
+  sfixed32 fixed_val = 4;
+}
+
+// High field numbers (multi-byte tags)
+message HighFieldNumbers {
+  string field_1 = 1;
+  string field_16 = 16;
+  string field_128 = 128;
+  string field_2048 = 2048;
+  string field_16384 = 16384;
+}
+
+// Enum testing
+enum Color {
+  COLOR_UNSPECIFIED = 0;
+  COLOR_RED = 1;
+  COLOR_GREEN = 2;
+  COLOR_BLUE = 3;
+}
+
+message WithEnum {
+  Color color = 1;
+  repeated Color colors = 2;
+}
+
+// Empty message
+message Empty {}
+
+// Message with only repeated fields
+message OnlyRepeated {
+  repeated string names = 1;
+  repeated int64 values = 2;
+  repeated Inner items = 3;
+}
+
+// Message referencing another message with oneof
+message Container {
+  OneofVariants variant = 1;
+  AllScalars scalars = 2;
+  repeated OneofVariants variants = 3;
+}

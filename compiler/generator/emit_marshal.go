@@ -241,6 +241,12 @@ func (fg *FileGenerator) emitOptionalFieldMarshalReverse(access string, fd proto
 		fmt.Fprintf(fg.body, "\t\ti -= len(*%s)\n\t\tcopy(dAtA[i:], *%s)\n", access, access)
 		fmt.Fprintf(fg.body, "\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(len(*%s)))\n", access)
 		fg.reverseTag("\t\t", num, protowire.BytesType)
+
+	case protoreflect.BytesKind:
+		// optional bytes is []byte (not *[]byte); nil guard already emitted above.
+		fmt.Fprintf(fg.body, "\t\ti -= len(%s)\n\t\tcopy(dAtA[i:], %s)\n", access, access)
+		fmt.Fprintf(fg.body, "\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(len(%s)))\n", access)
+		fg.reverseTag("\t\t", num, protowire.BytesType)
 	}
 
 	fmt.Fprintf(fg.body, "\t}\n")
