@@ -38,6 +38,10 @@ func (fg *FileGenerator) emitFieldSize(fd protoreflect.FieldDescriptor) {
 	access := "m." + goName
 	tagSize := protowire.SizeTag(protowire.Number(fd.Number()))
 
+	if fd.IsMap() {
+		fg.emitMapFieldSize(access, fd, tagSize)
+		return
+	}
 	if fd.IsList() {
 		fg.emitRepeatedFieldSize(access, fd, tagSize)
 		return
@@ -141,6 +145,71 @@ func (fg *FileGenerator) emitRepeatedFieldSize(access string, fd protoreflect.Fi
 
 	case isPackable(kind) && !fd.IsPacked():
 		fg.emitUnpackedRepeatedFieldSize(access, fd, tagSize)
+	}
+}
+
+func (fg *FileGenerator) emitMapFieldSize(access string, fd protoreflect.FieldDescriptor, tagSize int) {
+	keyFd := fd.MapKey()
+	valFd := fd.MapValue()
+	keyTagSize := protowire.SizeTag(1)
+	valTagSize := protowire.SizeTag(2)
+
+	keyUsed := mapElementSizeUsesVar(keyFd.Kind())
+	valUsed := mapElementSizeUsesVar(valFd.Kind())
+	switch {
+	case keyUsed && valUsed:
+		fmt.Fprintf(fg.body, "\tfor k, v := range %s {\n", access)
+	case keyUsed:
+		fmt.Fprintf(fg.body, "\tfor k := range %s {\n", access)
+	case valUsed:
+		fmt.Fprintf(fg.body, "\tfor _, v := range %s {\n", access)
+	default:
+		fmt.Fprintf(fg.body, "\tfor range %s {\n", access)
+	}
+	fmt.Fprintf(fg.body, "\t\tentrySize := 0\n")
+
+	fg.emitMapElementSize("k", keyFd, keyTagSize, "\t\t")
+	fg.emitMapElementSize("v", valFd, valTagSize, "\t\t")
+
+	fmt.Fprintf(fg.body, "\t\tn += %d + protowire.SizeVarint(uint64(entrySize)) + entrySize\n", tagSize)
+	fmt.Fprintf(fg.body, "\t}\n")
+}
+
+// mapElementSizeUsesVar returns true if computing the size of this kind
+// requires referencing the variable (i.e. it's not a constant-size type).
+func mapElementSizeUsesVar(kind protoreflect.Kind) bool {
+	switch kind {
+	case protoreflect.BoolKind,
+		protoreflect.Fixed32Kind, protoreflect.Sfixed32Kind, protoreflect.FloatKind,
+		protoreflect.Fixed64Kind, protoreflect.Sfixed64Kind, protoreflect.DoubleKind:
+		return false
+	default:
+		return true
+	}
+}
+
+func (fg *FileGenerator) emitMapElementSize(varName string, fd protoreflect.FieldDescriptor, tagSize int, indent string) {
+	kind := fd.Kind()
+	switch kind {
+	case protoreflect.BoolKind:
+		fmt.Fprintf(fg.body, "%sentrySize += %d\n", indent, tagSize+1)
+	case protoreflect.Int32Kind, protoreflect.Uint32Kind, protoreflect.Int64Kind, protoreflect.Uint64Kind, protoreflect.EnumKind:
+		fmt.Fprintf(fg.body, "%sentrySize += %d + protowire.SizeVarint(uint64(%s))\n", indent, tagSize, varName)
+	case protoreflect.Sint32Kind:
+		fmt.Fprintf(fg.body, "%sentrySize += %d + protowire.SizeVarint(protowire.EncodeZigZag(int64(%s)))\n", indent, tagSize, varName)
+	case protoreflect.Sint64Kind:
+		fmt.Fprintf(fg.body, "%sentrySize += %d + protowire.SizeVarint(protowire.EncodeZigZag(%s))\n", indent, tagSize, varName)
+	case protoreflect.Fixed32Kind, protoreflect.Sfixed32Kind, protoreflect.FloatKind:
+		fmt.Fprintf(fg.body, "%sentrySize += %d\n", indent, tagSize+4)
+	case protoreflect.Fixed64Kind, protoreflect.Sfixed64Kind, protoreflect.DoubleKind:
+		fmt.Fprintf(fg.body, "%sentrySize += %d\n", indent, tagSize+8)
+	case protoreflect.StringKind:
+		fmt.Fprintf(fg.body, "%sentrySize += %d + protowire.SizeVarint(uint64(len(%s))) + len(%s)\n", indent, tagSize, varName, varName)
+	case protoreflect.BytesKind:
+		fmt.Fprintf(fg.body, "%sentrySize += %d + protowire.SizeVarint(uint64(len(%s))) + len(%s)\n", indent, tagSize, varName, varName)
+	case protoreflect.MessageKind:
+		fmt.Fprintf(fg.body, "%ss := %s.Size()\n", indent, varName)
+		fmt.Fprintf(fg.body, "%sentrySize += %d + protowire.SizeVarint(uint64(s)) + s\n", indent, tagSize)
 	}
 }
 

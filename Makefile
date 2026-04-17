@@ -93,6 +93,8 @@ generate-conformance: ## Regenerate conformance test code
 generate-ours:
 	@echo "==> Generating wiresmith code → gen/otlp/"
 	go run ./cmd/wiresmith/ --proto_path=proto --out=gen --module=$(MODULE)
+	@echo "==> Generating wiresmith code → gen/test/kitchensink/"
+	go run ./cmd/wiresmith/ --proto_path=test/testdata --out=gen --module=$(MODULE)
 
 generate-vtproto:
 	$(setup_proto_root)

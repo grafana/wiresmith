@@ -140,3 +140,24 @@ message Container {
   AllScalars scalars = 2;
   repeated OneofVariants variants = 3;
 }
+
+// Maps with all supported key/value type combinations
+message AllMaps {
+  map<int32, int32>       map_int32_int32       = 1;
+  map<int64, int64>       map_int64_int64       = 2;
+  map<uint32, uint32>     map_uint32_uint32     = 3;
+  map<uint64, uint64>     map_uint64_uint64     = 4;
+  map<sint32, sint32>     map_sint32_sint32     = 5;
+  map<sint64, sint64>     map_sint64_sint64     = 6;
+  map<fixed32, fixed32>   map_fixed32_fixed32   = 7;
+  map<fixed64, fixed64>   map_fixed64_fixed64   = 8;
+  map<sfixed32, sfixed32> map_sfixed32_sfixed32 = 9;
+  map<sfixed64, sfixed64> map_sfixed64_sfixed64 = 10;
+  map<bool, bool>         map_bool_bool         = 11;
+  map<string, string>     map_string_string     = 12;
+  map<string, bytes>      map_string_bytes      = 13;
+  map<int32, float>       map_int32_float       = 14;
+  map<int32, double>      map_int32_double      = 15;
+  map<string, Inner>      map_string_message    = 16;
+  map<string, Color>      map_string_enum       = 17;
+}

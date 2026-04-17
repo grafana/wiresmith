@@ -30,6 +30,9 @@ func (it *ImportTracker) addProtoImport(protoPkg string) string {
 }
 
 func (it *ImportTracker) goType(fd protoreflect.FieldDescriptor) string {
+	if fd.IsMap() {
+		return it.goMapType(fd)
+	}
 	if fd.IsList() {
 		return "[]" + it.goSingularType(fd)
 	}
@@ -37,6 +40,12 @@ func (it *ImportTracker) goType(fd protoreflect.FieldDescriptor) string {
 		return it.goOptionalType(fd)
 	}
 	return it.goSingularType(fd)
+}
+
+func (it *ImportTracker) goMapType(fd protoreflect.FieldDescriptor) string {
+	keyFd := fd.MapKey()
+	valFd := fd.MapValue()
+	return "map[" + it.goSingularType(keyFd) + "]" + it.goSingularType(valFd)
 }
 
 func (it *ImportTracker) goSingularType(fd protoreflect.FieldDescriptor) string {

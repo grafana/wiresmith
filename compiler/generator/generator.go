@@ -141,7 +141,11 @@ func (fg *FileGenerator) emitNestedEnums(md protoreflect.MessageDescriptor) {
 		fg.emitEnum(md.Enums().Get(i))
 	}
 	for i := 0; i < md.Messages().Len(); i++ {
-		fg.emitNestedEnums(md.Messages().Get(i))
+		nested := md.Messages().Get(i)
+		if nested.IsMapEntry() {
+			continue
+		}
+		fg.emitNestedEnums(nested)
 	}
 }
 
@@ -160,7 +164,11 @@ func (fg *FileGenerator) emitMessageOneofs(md protoreflect.MessageDescriptor) {
 		fg.emitOneof(md, oo)
 	}
 	for i := 0; i < md.Messages().Len(); i++ {
-		fg.emitMessageOneofs(md.Messages().Get(i))
+		nested := md.Messages().Get(i)
+		if nested.IsMapEntry() {
+			continue
+		}
+		fg.emitMessageOneofs(nested)
 	}
 }
 
@@ -171,9 +179,12 @@ func (fg *FileGenerator) emitAllStructs(fd protoreflect.FileDescriptor) {
 }
 
 func (fg *FileGenerator) emitMessageStructs(md protoreflect.MessageDescriptor) {
-	// Nested messages first
 	for i := 0; i < md.Messages().Len(); i++ {
-		fg.emitMessageStructs(md.Messages().Get(i))
+		nested := md.Messages().Get(i)
+		if nested.IsMapEntry() {
+			continue
+		}
+		fg.emitMessageStructs(nested)
 	}
 	fg.emitStruct(md)
 }
@@ -186,7 +197,11 @@ func (fg *FileGenerator) emitAllSizeMethods(fd protoreflect.FileDescriptor) {
 
 func (fg *FileGenerator) emitSizeMethods(md protoreflect.MessageDescriptor) {
 	for i := 0; i < md.Messages().Len(); i++ {
-		fg.emitSizeMethods(md.Messages().Get(i))
+		nested := md.Messages().Get(i)
+		if nested.IsMapEntry() {
+			continue
+		}
+		fg.emitSizeMethods(nested)
 	}
 	fg.emitSize(md)
 }
@@ -199,7 +214,11 @@ func (fg *FileGenerator) emitAllMarshalMethods(fd protoreflect.FileDescriptor) {
 
 func (fg *FileGenerator) emitMarshalMethods(md protoreflect.MessageDescriptor) {
 	for i := 0; i < md.Messages().Len(); i++ {
-		fg.emitMarshalMethods(md.Messages().Get(i))
+		nested := md.Messages().Get(i)
+		if nested.IsMapEntry() {
+			continue
+		}
+		fg.emitMarshalMethods(nested)
 	}
 	fg.emitMarshal(md)
 }
@@ -215,7 +234,11 @@ func (fg *FileGenerator) emitAllUnmarshalMethods(fd protoreflect.FileDescriptor)
 
 func (fg *FileGenerator) emitUnmarshalMethods(md protoreflect.MessageDescriptor) {
 	for i := 0; i < md.Messages().Len(); i++ {
-		fg.emitUnmarshalMethods(md.Messages().Get(i))
+		nested := md.Messages().Get(i)
+		if nested.IsMapEntry() {
+			continue
+		}
+		fg.emitUnmarshalMethods(nested)
 	}
 	fg.emitUnmarshal(md)
 }

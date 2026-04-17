@@ -219,6 +219,26 @@ type Container struct {
 	Variants []OneofVariants
 }
 
+type AllMaps struct {
+	MapInt32Int32       map[int32]int32
+	MapInt64Int64       map[int64]int64
+	MapUint32Uint32     map[uint32]uint32
+	MapUint64Uint64     map[uint64]uint64
+	MapSint32Sint32     map[int32]int32
+	MapSint64Sint64     map[int64]int64
+	MapFixed32Fixed32   map[uint32]uint32
+	MapFixed64Fixed64   map[uint64]uint64
+	MapSfixed32Sfixed32 map[int32]int32
+	MapSfixed64Sfixed64 map[int64]int64
+	MapBoolBool         map[bool]bool
+	MapStringString     map[string]string
+	MapStringBytes      map[string][]byte
+	MapInt32Float       map[int32]float32
+	MapInt32Double      map[int32]float64
+	MapStringMessage    map[string]Inner
+	MapStringEnum       map[string]Color
+}
+
 func (m *AllScalars) Size() int {
 	var n int
 	if m.FieldDouble != 0 {
@@ -575,6 +595,114 @@ func (m *Container) Size() int {
 	for i := range m.Variants {
 		s := m.Variants[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
+	}
+	return n
+}
+
+func (m *AllMaps) Size() int {
+	var n int
+	for k, v := range m.MapInt32Int32 {
+		entrySize := 0
+		entrySize += 1 + protowire.SizeVarint(uint64(k))
+		entrySize += 1 + protowire.SizeVarint(uint64(v))
+		n += 1 + protowire.SizeVarint(uint64(entrySize)) + entrySize
+	}
+	for k, v := range m.MapInt64Int64 {
+		entrySize := 0
+		entrySize += 1 + protowire.SizeVarint(uint64(k))
+		entrySize += 1 + protowire.SizeVarint(uint64(v))
+		n += 1 + protowire.SizeVarint(uint64(entrySize)) + entrySize
+	}
+	for k, v := range m.MapUint32Uint32 {
+		entrySize := 0
+		entrySize += 1 + protowire.SizeVarint(uint64(k))
+		entrySize += 1 + protowire.SizeVarint(uint64(v))
+		n += 1 + protowire.SizeVarint(uint64(entrySize)) + entrySize
+	}
+	for k, v := range m.MapUint64Uint64 {
+		entrySize := 0
+		entrySize += 1 + protowire.SizeVarint(uint64(k))
+		entrySize += 1 + protowire.SizeVarint(uint64(v))
+		n += 1 + protowire.SizeVarint(uint64(entrySize)) + entrySize
+	}
+	for k, v := range m.MapSint32Sint32 {
+		entrySize := 0
+		entrySize += 1 + protowire.SizeVarint(protowire.EncodeZigZag(int64(k)))
+		entrySize += 1 + protowire.SizeVarint(protowire.EncodeZigZag(int64(v)))
+		n += 1 + protowire.SizeVarint(uint64(entrySize)) + entrySize
+	}
+	for k, v := range m.MapSint64Sint64 {
+		entrySize := 0
+		entrySize += 1 + protowire.SizeVarint(protowire.EncodeZigZag(k))
+		entrySize += 1 + protowire.SizeVarint(protowire.EncodeZigZag(v))
+		n += 1 + protowire.SizeVarint(uint64(entrySize)) + entrySize
+	}
+	for range m.MapFixed32Fixed32 {
+		entrySize := 0
+		entrySize += 5
+		entrySize += 5
+		n += 1 + protowire.SizeVarint(uint64(entrySize)) + entrySize
+	}
+	for range m.MapFixed64Fixed64 {
+		entrySize := 0
+		entrySize += 9
+		entrySize += 9
+		n += 1 + protowire.SizeVarint(uint64(entrySize)) + entrySize
+	}
+	for range m.MapSfixed32Sfixed32 {
+		entrySize := 0
+		entrySize += 5
+		entrySize += 5
+		n += 1 + protowire.SizeVarint(uint64(entrySize)) + entrySize
+	}
+	for range m.MapSfixed64Sfixed64 {
+		entrySize := 0
+		entrySize += 9
+		entrySize += 9
+		n += 1 + protowire.SizeVarint(uint64(entrySize)) + entrySize
+	}
+	for range m.MapBoolBool {
+		entrySize := 0
+		entrySize += 2
+		entrySize += 2
+		n += 1 + protowire.SizeVarint(uint64(entrySize)) + entrySize
+	}
+	for k, v := range m.MapStringString {
+		entrySize := 0
+		entrySize += 1 + protowire.SizeVarint(uint64(len(k))) + len(k)
+		entrySize += 1 + protowire.SizeVarint(uint64(len(v))) + len(v)
+		n += 1 + protowire.SizeVarint(uint64(entrySize)) + entrySize
+	}
+	for k, v := range m.MapStringBytes {
+		entrySize := 0
+		entrySize += 1 + protowire.SizeVarint(uint64(len(k))) + len(k)
+		entrySize += 1 + protowire.SizeVarint(uint64(len(v))) + len(v)
+		n += 1 + protowire.SizeVarint(uint64(entrySize)) + entrySize
+	}
+	for k := range m.MapInt32Float {
+		entrySize := 0
+		entrySize += 1 + protowire.SizeVarint(uint64(k))
+		entrySize += 5
+		n += 1 + protowire.SizeVarint(uint64(entrySize)) + entrySize
+	}
+	for k := range m.MapInt32Double {
+		entrySize := 0
+		entrySize += 1 + protowire.SizeVarint(uint64(k))
+		entrySize += 9
+		n += 1 + protowire.SizeVarint(uint64(entrySize)) + entrySize
+	}
+	for k, v := range m.MapStringMessage {
+		entrySize := 0
+		entrySize += 1 + protowire.SizeVarint(uint64(len(k))) + len(k)
+		s := v.Size()
+		entrySize += 1 + protowire.SizeVarint(uint64(s)) + s
+		n += 2 + protowire.SizeVarint(uint64(entrySize)) + entrySize
+	}
+	for k, v := range m.MapStringEnum {
+		entrySize := 0
+		entrySize += 1 + protowire.SizeVarint(uint64(len(k))) + len(k)
+		entrySize += 1 + protowire.SizeVarint(uint64(v))
+		n += 2 + protowire.SizeVarint(uint64(entrySize)) + entrySize
 	}
 	return n
 }
@@ -1461,6 +1589,276 @@ func (m *Container) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *AllMaps) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	if size == 0 {
+		return nil, nil
+	}
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *AllMaps) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *AllMaps) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	for k, v := range m.MapStringEnum {
+		baseI := i
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(v))
+		i--
+		dAtA[i] = 0x10
+		i -= len(k)
+		copy(dAtA[i:], k)
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(k)))
+		i--
+		dAtA[i] = 0x0a
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(baseI-i))
+		i--
+		dAtA[i] = 0x01
+		i--
+		dAtA[i] = 0x8a
+	}
+	for k, v := range m.MapStringMessage {
+		baseI := i
+		size, err := v.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		i--
+		dAtA[i] = 0x12
+		i -= len(k)
+		copy(dAtA[i:], k)
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(k)))
+		i--
+		dAtA[i] = 0x0a
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(baseI-i))
+		i--
+		dAtA[i] = 0x01
+		i--
+		dAtA[i] = 0x82
+	}
+	for k, v := range m.MapInt32Double {
+		baseI := i
+		i -= 8
+		binary.LittleEndian.PutUint64(dAtA[i:], math.Float64bits(v))
+		i--
+		dAtA[i] = 0x11
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(k))
+		i--
+		dAtA[i] = 0x08
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(baseI-i))
+		i--
+		dAtA[i] = 0x7a
+	}
+	for k, v := range m.MapInt32Float {
+		baseI := i
+		i -= 4
+		binary.LittleEndian.PutUint32(dAtA[i:], math.Float32bits(v))
+		i--
+		dAtA[i] = 0x15
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(k))
+		i--
+		dAtA[i] = 0x08
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(baseI-i))
+		i--
+		dAtA[i] = 0x72
+	}
+	for k, v := range m.MapStringBytes {
+		baseI := i
+		i -= len(v)
+		copy(dAtA[i:], v)
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(v)))
+		i--
+		dAtA[i] = 0x12
+		i -= len(k)
+		copy(dAtA[i:], k)
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(k)))
+		i--
+		dAtA[i] = 0x0a
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(baseI-i))
+		i--
+		dAtA[i] = 0x6a
+	}
+	for k, v := range m.MapStringString {
+		baseI := i
+		i -= len(v)
+		copy(dAtA[i:], v)
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(v)))
+		i--
+		dAtA[i] = 0x12
+		i -= len(k)
+		copy(dAtA[i:], k)
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(k)))
+		i--
+		dAtA[i] = 0x0a
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(baseI-i))
+		i--
+		dAtA[i] = 0x62
+	}
+	for k, v := range m.MapBoolBool {
+		baseI := i
+		i--
+		if v {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x10
+		i--
+		if k {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x08
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(baseI-i))
+		i--
+		dAtA[i] = 0x5a
+	}
+	for k, v := range m.MapSfixed64Sfixed64 {
+		baseI := i
+		i -= 8
+		binary.LittleEndian.PutUint64(dAtA[i:], uint64(v))
+		i--
+		dAtA[i] = 0x11
+		i -= 8
+		binary.LittleEndian.PutUint64(dAtA[i:], uint64(k))
+		i--
+		dAtA[i] = 0x09
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(baseI-i))
+		i--
+		dAtA[i] = 0x52
+	}
+	for k, v := range m.MapSfixed32Sfixed32 {
+		baseI := i
+		i -= 4
+		binary.LittleEndian.PutUint32(dAtA[i:], uint32(v))
+		i--
+		dAtA[i] = 0x15
+		i -= 4
+		binary.LittleEndian.PutUint32(dAtA[i:], uint32(k))
+		i--
+		dAtA[i] = 0x0d
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(baseI-i))
+		i--
+		dAtA[i] = 0x4a
+	}
+	for k, v := range m.MapFixed64Fixed64 {
+		baseI := i
+		i -= 8
+		binary.LittleEndian.PutUint64(dAtA[i:], v)
+		i--
+		dAtA[i] = 0x11
+		i -= 8
+		binary.LittleEndian.PutUint64(dAtA[i:], k)
+		i--
+		dAtA[i] = 0x09
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(baseI-i))
+		i--
+		dAtA[i] = 0x42
+	}
+	for k, v := range m.MapFixed32Fixed32 {
+		baseI := i
+		i -= 4
+		binary.LittleEndian.PutUint32(dAtA[i:], v)
+		i--
+		dAtA[i] = 0x15
+		i -= 4
+		binary.LittleEndian.PutUint32(dAtA[i:], k)
+		i--
+		dAtA[i] = 0x0d
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(baseI-i))
+		i--
+		dAtA[i] = 0x3a
+	}
+	for k, v := range m.MapSint64Sint64 {
+		baseI := i
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(uint64(v<<1)^uint64(int64(v)>>63)))
+		i--
+		dAtA[i] = 0x10
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(uint64(k<<1)^uint64(int64(k)>>63)))
+		i--
+		dAtA[i] = 0x08
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(baseI-i))
+		i--
+		dAtA[i] = 0x32
+	}
+	for k, v := range m.MapSint32Sint32 {
+		baseI := i
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(uint32(v<<1)^uint32(int32(v)>>31)))
+		i--
+		dAtA[i] = 0x10
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(uint32(k<<1)^uint32(int32(k)>>31)))
+		i--
+		dAtA[i] = 0x08
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(baseI-i))
+		i--
+		dAtA[i] = 0x2a
+	}
+	for k, v := range m.MapUint64Uint64 {
+		baseI := i
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(v))
+		i--
+		dAtA[i] = 0x10
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(k))
+		i--
+		dAtA[i] = 0x08
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(baseI-i))
+		i--
+		dAtA[i] = 0x22
+	}
+	for k, v := range m.MapUint32Uint32 {
+		baseI := i
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(v))
+		i--
+		dAtA[i] = 0x10
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(k))
+		i--
+		dAtA[i] = 0x08
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(baseI-i))
+		i--
+		dAtA[i] = 0x1a
+	}
+	for k, v := range m.MapInt64Int64 {
+		baseI := i
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(v))
+		i--
+		dAtA[i] = 0x10
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(k))
+		i--
+		dAtA[i] = 0x08
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(baseI-i))
+		i--
+		dAtA[i] = 0x12
+	}
+	for k, v := range m.MapInt32Int32 {
+		baseI := i
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(v))
+		i--
+		dAtA[i] = 0x10
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(k))
+		i--
+		dAtA[i] = 0x08
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(baseI-i))
+		i--
+		dAtA[i] = 0x0a
+	}
+	return len(dAtA) - i, nil
+}
+
+const maxUnmarshalDepth = 10000
+
 func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) {
 	switch typ {
 	case protowire.VarintType:
@@ -1497,6 +1895,13 @@ func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) 
 }
 
 func (m *AllScalars) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *AllScalars) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1741,6 +2146,13 @@ func (m *AllScalars) Unmarshal(b []byte) error {
 }
 
 func (m *AllOptionalScalars) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *AllOptionalScalars) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -1996,6 +2408,13 @@ func (m *AllOptionalScalars) Unmarshal(b []byte) error {
 }
 
 func (m *AllRepeatedScalars) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *AllRepeatedScalars) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	if len(b) >= 256 {
 		tmp := b
 		var field14count int
@@ -2538,6 +2957,13 @@ func (m *AllRepeatedScalars) Unmarshal(b []byte) error {
 }
 
 func (m *OneofVariants) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *OneofVariants) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -2782,6 +3208,13 @@ func (m *OneofVariants) Unmarshal(b []byte) error {
 }
 
 func (m *Outer) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *Outer) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	if len(b) >= 256 {
 		tmp := b
 		var field2count int
@@ -2837,7 +3270,7 @@ func (m *Outer) Unmarshal(b []byte) error {
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
 			}
-			if err := m.Middle.Unmarshal(v); err != nil {
+			if err := m.Middle.unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -2855,7 +3288,7 @@ func (m *Outer) Unmarshal(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.Middles = append(m.Middles, Middle{})
-			if err := m.Middles[len(m.Middles)-1].Unmarshal(v); err != nil {
+			if err := m.Middles[len(m.Middles)-1].unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -2886,6 +3319,13 @@ func (m *Outer) Unmarshal(b []byte) error {
 }
 
 func (m *Middle) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *Middle) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	if len(b) >= 256 {
 		tmp := b
 		var field2count int
@@ -2941,7 +3381,7 @@ func (m *Middle) Unmarshal(b []byte) error {
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
 			}
-			if err := m.Inner.Unmarshal(v); err != nil {
+			if err := m.Inner.unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -2959,7 +3399,7 @@ func (m *Middle) Unmarshal(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.Inners = append(m.Inners, Inner{})
-			if err := m.Inners[len(m.Inners)-1].Unmarshal(v); err != nil {
+			if err := m.Inners[len(m.Inners)-1].unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -2990,6 +3430,13 @@ func (m *Middle) Unmarshal(b []byte) error {
 }
 
 func (m *Inner) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *Inner) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -3069,6 +3516,13 @@ func (m *Inner) Unmarshal(b []byte) error {
 }
 
 func (m *HighFieldNumbers) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *HighFieldNumbers) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -3163,6 +3617,13 @@ func (m *HighFieldNumbers) Unmarshal(b []byte) error {
 }
 
 func (m *WithEnum) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *WithEnum) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -3235,6 +3696,13 @@ func (m *WithEnum) Unmarshal(b []byte) error {
 }
 
 func (m *Empty) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *Empty) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {
@@ -3254,6 +3722,13 @@ func (m *Empty) Unmarshal(b []byte) error {
 }
 
 func (m *OnlyRepeated) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *OnlyRepeated) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	if len(b) >= 256 {
 		tmp := b
 		var field1count int
@@ -3369,7 +3844,7 @@ func (m *OnlyRepeated) Unmarshal(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.Items = append(m.Items, Inner{})
-			if err := m.Items[len(m.Items)-1].Unmarshal(v); err != nil {
+			if err := m.Items[len(m.Items)-1].unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -3385,6 +3860,13 @@ func (m *OnlyRepeated) Unmarshal(b []byte) error {
 }
 
 func (m *Container) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *Container) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	if len(b) >= 256 {
 		tmp := b
 		var field3count int
@@ -3440,7 +3922,7 @@ func (m *Container) Unmarshal(b []byte) error {
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
 			}
-			if err := m.Variant.Unmarshal(v); err != nil {
+			if err := m.Variant.unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -3457,7 +3939,7 @@ func (m *Container) Unmarshal(b []byte) error {
 			if n < 0 {
 				return fmt.Errorf("invalid bytes")
 			}
-			if err := m.Scalars.Unmarshal(v); err != nil {
+			if err := m.Scalars.unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -3475,9 +3957,887 @@ func (m *Container) Unmarshal(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.Variants = append(m.Variants, OneofVariants{})
-			if err := m.Variants[len(m.Variants)-1].Unmarshal(v); err != nil {
+			if err := m.Variants[len(m.Variants)-1].unmarshal(v, depth+1); err != nil {
 				return err
 			}
+			b = b[n:]
+		default:
+			n, err := skipField(b, num, typ)
+			if err != nil {
+				return err
+			}
+			b = b[n:]
+		}
+	}
+	return nil
+}
+
+func (m *AllMaps) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *AllMaps) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
+	for len(b) > 0 {
+		num, typ, tagLen := protowire.ConsumeTag(b)
+		if tagLen < 0 {
+			return fmt.Errorf("invalid tag")
+		}
+		b = b[tagLen:]
+		switch num {
+		case 1: // map_int32_int32
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
+			v, n := protowire.ConsumeBytes(b)
+			if n < 0 {
+				return fmt.Errorf("invalid bytes")
+			}
+			if m.MapInt32Int32 == nil {
+				m.MapInt32Int32 = make(map[int32]int32)
+			}
+			var mapkey int32
+			var mapvalue int32
+			entryData := v
+			for len(entryData) > 0 {
+				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
+				if entryTagLen < 0 {
+					return fmt.Errorf("invalid map entry tag")
+				}
+				entryData = entryData[entryTagLen:]
+				switch entryNum {
+				case 1:
+					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
+					if tmpN < 0 {
+						return fmt.Errorf("invalid varint")
+					}
+					mapkey = int32(tmpVal)
+					entryData = entryData[tmpN:]
+				case 2:
+					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
+					if tmpN < 0 {
+						return fmt.Errorf("invalid varint")
+					}
+					mapvalue = int32(tmpVal)
+					entryData = entryData[tmpN:]
+				default:
+					skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+					if skipErr != nil {
+						return skipErr
+					}
+					entryData = entryData[skipN:]
+				}
+			}
+			m.MapInt32Int32[mapkey] = mapvalue
+			b = b[n:]
+		case 2: // map_int64_int64
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
+			v, n := protowire.ConsumeBytes(b)
+			if n < 0 {
+				return fmt.Errorf("invalid bytes")
+			}
+			if m.MapInt64Int64 == nil {
+				m.MapInt64Int64 = make(map[int64]int64)
+			}
+			var mapkey int64
+			var mapvalue int64
+			entryData := v
+			for len(entryData) > 0 {
+				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
+				if entryTagLen < 0 {
+					return fmt.Errorf("invalid map entry tag")
+				}
+				entryData = entryData[entryTagLen:]
+				switch entryNum {
+				case 1:
+					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
+					if tmpN < 0 {
+						return fmt.Errorf("invalid varint")
+					}
+					mapkey = int64(tmpVal)
+					entryData = entryData[tmpN:]
+				case 2:
+					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
+					if tmpN < 0 {
+						return fmt.Errorf("invalid varint")
+					}
+					mapvalue = int64(tmpVal)
+					entryData = entryData[tmpN:]
+				default:
+					skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+					if skipErr != nil {
+						return skipErr
+					}
+					entryData = entryData[skipN:]
+				}
+			}
+			m.MapInt64Int64[mapkey] = mapvalue
+			b = b[n:]
+		case 3: // map_uint32_uint32
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
+			v, n := protowire.ConsumeBytes(b)
+			if n < 0 {
+				return fmt.Errorf("invalid bytes")
+			}
+			if m.MapUint32Uint32 == nil {
+				m.MapUint32Uint32 = make(map[uint32]uint32)
+			}
+			var mapkey uint32
+			var mapvalue uint32
+			entryData := v
+			for len(entryData) > 0 {
+				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
+				if entryTagLen < 0 {
+					return fmt.Errorf("invalid map entry tag")
+				}
+				entryData = entryData[entryTagLen:]
+				switch entryNum {
+				case 1:
+					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
+					if tmpN < 0 {
+						return fmt.Errorf("invalid varint")
+					}
+					mapkey = uint32(tmpVal)
+					entryData = entryData[tmpN:]
+				case 2:
+					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
+					if tmpN < 0 {
+						return fmt.Errorf("invalid varint")
+					}
+					mapvalue = uint32(tmpVal)
+					entryData = entryData[tmpN:]
+				default:
+					skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+					if skipErr != nil {
+						return skipErr
+					}
+					entryData = entryData[skipN:]
+				}
+			}
+			m.MapUint32Uint32[mapkey] = mapvalue
+			b = b[n:]
+		case 4: // map_uint64_uint64
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
+			v, n := protowire.ConsumeBytes(b)
+			if n < 0 {
+				return fmt.Errorf("invalid bytes")
+			}
+			if m.MapUint64Uint64 == nil {
+				m.MapUint64Uint64 = make(map[uint64]uint64)
+			}
+			var mapkey uint64
+			var mapvalue uint64
+			entryData := v
+			for len(entryData) > 0 {
+				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
+				if entryTagLen < 0 {
+					return fmt.Errorf("invalid map entry tag")
+				}
+				entryData = entryData[entryTagLen:]
+				switch entryNum {
+				case 1:
+					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
+					if tmpN < 0 {
+						return fmt.Errorf("invalid varint")
+					}
+					mapkey = tmpVal
+					entryData = entryData[tmpN:]
+				case 2:
+					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
+					if tmpN < 0 {
+						return fmt.Errorf("invalid varint")
+					}
+					mapvalue = tmpVal
+					entryData = entryData[tmpN:]
+				default:
+					skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+					if skipErr != nil {
+						return skipErr
+					}
+					entryData = entryData[skipN:]
+				}
+			}
+			m.MapUint64Uint64[mapkey] = mapvalue
+			b = b[n:]
+		case 5: // map_sint32_sint32
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
+			v, n := protowire.ConsumeBytes(b)
+			if n < 0 {
+				return fmt.Errorf("invalid bytes")
+			}
+			if m.MapSint32Sint32 == nil {
+				m.MapSint32Sint32 = make(map[int32]int32)
+			}
+			var mapkey int32
+			var mapvalue int32
+			entryData := v
+			for len(entryData) > 0 {
+				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
+				if entryTagLen < 0 {
+					return fmt.Errorf("invalid map entry tag")
+				}
+				entryData = entryData[entryTagLen:]
+				switch entryNum {
+				case 1:
+					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
+					if tmpN < 0 {
+						return fmt.Errorf("invalid varint")
+					}
+					mapkey = int32(protowire.DecodeZigZag(tmpVal))
+					entryData = entryData[tmpN:]
+				case 2:
+					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
+					if tmpN < 0 {
+						return fmt.Errorf("invalid varint")
+					}
+					mapvalue = int32(protowire.DecodeZigZag(tmpVal))
+					entryData = entryData[tmpN:]
+				default:
+					skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+					if skipErr != nil {
+						return skipErr
+					}
+					entryData = entryData[skipN:]
+				}
+			}
+			m.MapSint32Sint32[mapkey] = mapvalue
+			b = b[n:]
+		case 6: // map_sint64_sint64
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
+			v, n := protowire.ConsumeBytes(b)
+			if n < 0 {
+				return fmt.Errorf("invalid bytes")
+			}
+			if m.MapSint64Sint64 == nil {
+				m.MapSint64Sint64 = make(map[int64]int64)
+			}
+			var mapkey int64
+			var mapvalue int64
+			entryData := v
+			for len(entryData) > 0 {
+				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
+				if entryTagLen < 0 {
+					return fmt.Errorf("invalid map entry tag")
+				}
+				entryData = entryData[entryTagLen:]
+				switch entryNum {
+				case 1:
+					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
+					if tmpN < 0 {
+						return fmt.Errorf("invalid varint")
+					}
+					mapkey = int64(protowire.DecodeZigZag(tmpVal))
+					entryData = entryData[tmpN:]
+				case 2:
+					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
+					if tmpN < 0 {
+						return fmt.Errorf("invalid varint")
+					}
+					mapvalue = int64(protowire.DecodeZigZag(tmpVal))
+					entryData = entryData[tmpN:]
+				default:
+					skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+					if skipErr != nil {
+						return skipErr
+					}
+					entryData = entryData[skipN:]
+				}
+			}
+			m.MapSint64Sint64[mapkey] = mapvalue
+			b = b[n:]
+		case 7: // map_fixed32_fixed32
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
+			v, n := protowire.ConsumeBytes(b)
+			if n < 0 {
+				return fmt.Errorf("invalid bytes")
+			}
+			if m.MapFixed32Fixed32 == nil {
+				m.MapFixed32Fixed32 = make(map[uint32]uint32)
+			}
+			var mapkey uint32
+			var mapvalue uint32
+			entryData := v
+			for len(entryData) > 0 {
+				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
+				if entryTagLen < 0 {
+					return fmt.Errorf("invalid map entry tag")
+				}
+				entryData = entryData[entryTagLen:]
+				switch entryNum {
+				case 1:
+					tmpVal, tmpN := protowire.ConsumeFixed32(entryData)
+					if tmpN < 0 {
+						return fmt.Errorf("invalid fixed32")
+					}
+					mapkey = tmpVal
+					entryData = entryData[tmpN:]
+				case 2:
+					tmpVal, tmpN := protowire.ConsumeFixed32(entryData)
+					if tmpN < 0 {
+						return fmt.Errorf("invalid fixed32")
+					}
+					mapvalue = tmpVal
+					entryData = entryData[tmpN:]
+				default:
+					skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+					if skipErr != nil {
+						return skipErr
+					}
+					entryData = entryData[skipN:]
+				}
+			}
+			m.MapFixed32Fixed32[mapkey] = mapvalue
+			b = b[n:]
+		case 8: // map_fixed64_fixed64
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
+			v, n := protowire.ConsumeBytes(b)
+			if n < 0 {
+				return fmt.Errorf("invalid bytes")
+			}
+			if m.MapFixed64Fixed64 == nil {
+				m.MapFixed64Fixed64 = make(map[uint64]uint64)
+			}
+			var mapkey uint64
+			var mapvalue uint64
+			entryData := v
+			for len(entryData) > 0 {
+				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
+				if entryTagLen < 0 {
+					return fmt.Errorf("invalid map entry tag")
+				}
+				entryData = entryData[entryTagLen:]
+				switch entryNum {
+				case 1:
+					tmpVal, tmpN := protowire.ConsumeFixed64(entryData)
+					if tmpN < 0 {
+						return fmt.Errorf("invalid fixed64")
+					}
+					mapkey = tmpVal
+					entryData = entryData[tmpN:]
+				case 2:
+					tmpVal, tmpN := protowire.ConsumeFixed64(entryData)
+					if tmpN < 0 {
+						return fmt.Errorf("invalid fixed64")
+					}
+					mapvalue = tmpVal
+					entryData = entryData[tmpN:]
+				default:
+					skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+					if skipErr != nil {
+						return skipErr
+					}
+					entryData = entryData[skipN:]
+				}
+			}
+			m.MapFixed64Fixed64[mapkey] = mapvalue
+			b = b[n:]
+		case 9: // map_sfixed32_sfixed32
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
+			v, n := protowire.ConsumeBytes(b)
+			if n < 0 {
+				return fmt.Errorf("invalid bytes")
+			}
+			if m.MapSfixed32Sfixed32 == nil {
+				m.MapSfixed32Sfixed32 = make(map[int32]int32)
+			}
+			var mapkey int32
+			var mapvalue int32
+			entryData := v
+			for len(entryData) > 0 {
+				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
+				if entryTagLen < 0 {
+					return fmt.Errorf("invalid map entry tag")
+				}
+				entryData = entryData[entryTagLen:]
+				switch entryNum {
+				case 1:
+					tmpVal, tmpN := protowire.ConsumeFixed32(entryData)
+					if tmpN < 0 {
+						return fmt.Errorf("invalid fixed32")
+					}
+					mapkey = int32(tmpVal)
+					entryData = entryData[tmpN:]
+				case 2:
+					tmpVal, tmpN := protowire.ConsumeFixed32(entryData)
+					if tmpN < 0 {
+						return fmt.Errorf("invalid fixed32")
+					}
+					mapvalue = int32(tmpVal)
+					entryData = entryData[tmpN:]
+				default:
+					skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+					if skipErr != nil {
+						return skipErr
+					}
+					entryData = entryData[skipN:]
+				}
+			}
+			m.MapSfixed32Sfixed32[mapkey] = mapvalue
+			b = b[n:]
+		case 10: // map_sfixed64_sfixed64
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
+			v, n := protowire.ConsumeBytes(b)
+			if n < 0 {
+				return fmt.Errorf("invalid bytes")
+			}
+			if m.MapSfixed64Sfixed64 == nil {
+				m.MapSfixed64Sfixed64 = make(map[int64]int64)
+			}
+			var mapkey int64
+			var mapvalue int64
+			entryData := v
+			for len(entryData) > 0 {
+				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
+				if entryTagLen < 0 {
+					return fmt.Errorf("invalid map entry tag")
+				}
+				entryData = entryData[entryTagLen:]
+				switch entryNum {
+				case 1:
+					tmpVal, tmpN := protowire.ConsumeFixed64(entryData)
+					if tmpN < 0 {
+						return fmt.Errorf("invalid fixed64")
+					}
+					mapkey = int64(tmpVal)
+					entryData = entryData[tmpN:]
+				case 2:
+					tmpVal, tmpN := protowire.ConsumeFixed64(entryData)
+					if tmpN < 0 {
+						return fmt.Errorf("invalid fixed64")
+					}
+					mapvalue = int64(tmpVal)
+					entryData = entryData[tmpN:]
+				default:
+					skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+					if skipErr != nil {
+						return skipErr
+					}
+					entryData = entryData[skipN:]
+				}
+			}
+			m.MapSfixed64Sfixed64[mapkey] = mapvalue
+			b = b[n:]
+		case 11: // map_bool_bool
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
+			v, n := protowire.ConsumeBytes(b)
+			if n < 0 {
+				return fmt.Errorf("invalid bytes")
+			}
+			if m.MapBoolBool == nil {
+				m.MapBoolBool = make(map[bool]bool)
+			}
+			var mapkey bool
+			var mapvalue bool
+			entryData := v
+			for len(entryData) > 0 {
+				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
+				if entryTagLen < 0 {
+					return fmt.Errorf("invalid map entry tag")
+				}
+				entryData = entryData[entryTagLen:]
+				switch entryNum {
+				case 1:
+					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
+					if tmpN < 0 {
+						return fmt.Errorf("invalid varint")
+					}
+					mapkey = tmpVal != 0
+					entryData = entryData[tmpN:]
+				case 2:
+					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
+					if tmpN < 0 {
+						return fmt.Errorf("invalid varint")
+					}
+					mapvalue = tmpVal != 0
+					entryData = entryData[tmpN:]
+				default:
+					skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+					if skipErr != nil {
+						return skipErr
+					}
+					entryData = entryData[skipN:]
+				}
+			}
+			m.MapBoolBool[mapkey] = mapvalue
+			b = b[n:]
+		case 12: // map_string_string
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
+			v, n := protowire.ConsumeBytes(b)
+			if n < 0 {
+				return fmt.Errorf("invalid bytes")
+			}
+			if m.MapStringString == nil {
+				m.MapStringString = make(map[string]string)
+			}
+			var mapkey string
+			var mapvalue string
+			entryData := v
+			for len(entryData) > 0 {
+				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
+				if entryTagLen < 0 {
+					return fmt.Errorf("invalid map entry tag")
+				}
+				entryData = entryData[entryTagLen:]
+				switch entryNum {
+				case 1:
+					tmpVal, tmpN := protowire.ConsumeString(entryData)
+					if tmpN < 0 {
+						return fmt.Errorf("invalid string")
+					}
+					mapkey = tmpVal
+					entryData = entryData[tmpN:]
+				case 2:
+					tmpVal, tmpN := protowire.ConsumeString(entryData)
+					if tmpN < 0 {
+						return fmt.Errorf("invalid string")
+					}
+					mapvalue = tmpVal
+					entryData = entryData[tmpN:]
+				default:
+					skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+					if skipErr != nil {
+						return skipErr
+					}
+					entryData = entryData[skipN:]
+				}
+			}
+			m.MapStringString[mapkey] = mapvalue
+			b = b[n:]
+		case 13: // map_string_bytes
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
+			v, n := protowire.ConsumeBytes(b)
+			if n < 0 {
+				return fmt.Errorf("invalid bytes")
+			}
+			if m.MapStringBytes == nil {
+				m.MapStringBytes = make(map[string][]byte)
+			}
+			var mapkey string
+			var mapvalue []byte
+			entryData := v
+			for len(entryData) > 0 {
+				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
+				if entryTagLen < 0 {
+					return fmt.Errorf("invalid map entry tag")
+				}
+				entryData = entryData[entryTagLen:]
+				switch entryNum {
+				case 1:
+					tmpVal, tmpN := protowire.ConsumeString(entryData)
+					if tmpN < 0 {
+						return fmt.Errorf("invalid string")
+					}
+					mapkey = tmpVal
+					entryData = entryData[tmpN:]
+				case 2:
+					tmpVal, tmpN := protowire.ConsumeBytes(entryData)
+					if tmpN < 0 {
+						return fmt.Errorf("invalid bytes")
+					}
+					mapvalue = append(mapvalue[:0], tmpVal...)
+					entryData = entryData[tmpN:]
+				default:
+					skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+					if skipErr != nil {
+						return skipErr
+					}
+					entryData = entryData[skipN:]
+				}
+			}
+			m.MapStringBytes[mapkey] = mapvalue
+			b = b[n:]
+		case 14: // map_int32_float
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
+			v, n := protowire.ConsumeBytes(b)
+			if n < 0 {
+				return fmt.Errorf("invalid bytes")
+			}
+			if m.MapInt32Float == nil {
+				m.MapInt32Float = make(map[int32]float32)
+			}
+			var mapkey int32
+			var mapvalue float32
+			entryData := v
+			for len(entryData) > 0 {
+				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
+				if entryTagLen < 0 {
+					return fmt.Errorf("invalid map entry tag")
+				}
+				entryData = entryData[entryTagLen:]
+				switch entryNum {
+				case 1:
+					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
+					if tmpN < 0 {
+						return fmt.Errorf("invalid varint")
+					}
+					mapkey = int32(tmpVal)
+					entryData = entryData[tmpN:]
+				case 2:
+					tmpVal, tmpN := protowire.ConsumeFixed32(entryData)
+					if tmpN < 0 {
+						return fmt.Errorf("invalid fixed32")
+					}
+					mapvalue = math.Float32frombits(tmpVal)
+					entryData = entryData[tmpN:]
+				default:
+					skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+					if skipErr != nil {
+						return skipErr
+					}
+					entryData = entryData[skipN:]
+				}
+			}
+			m.MapInt32Float[mapkey] = mapvalue
+			b = b[n:]
+		case 15: // map_int32_double
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
+			v, n := protowire.ConsumeBytes(b)
+			if n < 0 {
+				return fmt.Errorf("invalid bytes")
+			}
+			if m.MapInt32Double == nil {
+				m.MapInt32Double = make(map[int32]float64)
+			}
+			var mapkey int32
+			var mapvalue float64
+			entryData := v
+			for len(entryData) > 0 {
+				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
+				if entryTagLen < 0 {
+					return fmt.Errorf("invalid map entry tag")
+				}
+				entryData = entryData[entryTagLen:]
+				switch entryNum {
+				case 1:
+					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
+					if tmpN < 0 {
+						return fmt.Errorf("invalid varint")
+					}
+					mapkey = int32(tmpVal)
+					entryData = entryData[tmpN:]
+				case 2:
+					tmpVal, tmpN := protowire.ConsumeFixed64(entryData)
+					if tmpN < 0 {
+						return fmt.Errorf("invalid fixed64")
+					}
+					mapvalue = math.Float64frombits(tmpVal)
+					entryData = entryData[tmpN:]
+				default:
+					skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+					if skipErr != nil {
+						return skipErr
+					}
+					entryData = entryData[skipN:]
+				}
+			}
+			m.MapInt32Double[mapkey] = mapvalue
+			b = b[n:]
+		case 16: // map_string_message
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
+			v, n := protowire.ConsumeBytes(b)
+			if n < 0 {
+				return fmt.Errorf("invalid bytes")
+			}
+			if m.MapStringMessage == nil {
+				m.MapStringMessage = make(map[string]Inner)
+			}
+			var mapkey string
+			var mapvalue Inner
+			entryData := v
+			for len(entryData) > 0 {
+				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
+				if entryTagLen < 0 {
+					return fmt.Errorf("invalid map entry tag")
+				}
+				entryData = entryData[entryTagLen:]
+				switch entryNum {
+				case 1:
+					tmpVal, tmpN := protowire.ConsumeString(entryData)
+					if tmpN < 0 {
+						return fmt.Errorf("invalid string")
+					}
+					mapkey = tmpVal
+					entryData = entryData[tmpN:]
+				case 2:
+					tmpVal, tmpN := protowire.ConsumeBytes(entryData)
+					if tmpN < 0 {
+						return fmt.Errorf("invalid bytes")
+					}
+					if err := mapvalue.unmarshal(tmpVal, depth+1); err != nil {
+						return err
+					}
+					entryData = entryData[tmpN:]
+				default:
+					skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+					if skipErr != nil {
+						return skipErr
+					}
+					entryData = entryData[skipN:]
+				}
+			}
+			m.MapStringMessage[mapkey] = mapvalue
+			b = b[n:]
+		case 17: // map_string_enum
+			if typ != protowire.BytesType {
+				n, err := skipField(b, num, typ)
+				if err != nil {
+					return err
+				}
+				b = b[n:]
+				continue
+			}
+			v, n := protowire.ConsumeBytes(b)
+			if n < 0 {
+				return fmt.Errorf("invalid bytes")
+			}
+			if m.MapStringEnum == nil {
+				m.MapStringEnum = make(map[string]Color)
+			}
+			var mapkey string
+			var mapvalue Color
+			entryData := v
+			for len(entryData) > 0 {
+				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
+				if entryTagLen < 0 {
+					return fmt.Errorf("invalid map entry tag")
+				}
+				entryData = entryData[entryTagLen:]
+				switch entryNum {
+				case 1:
+					tmpVal, tmpN := protowire.ConsumeString(entryData)
+					if tmpN < 0 {
+						return fmt.Errorf("invalid string")
+					}
+					mapkey = tmpVal
+					entryData = entryData[tmpN:]
+				case 2:
+					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
+					if tmpN < 0 {
+						return fmt.Errorf("invalid varint")
+					}
+					mapvalue = Color(tmpVal)
+					entryData = entryData[tmpN:]
+				default:
+					skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+					if skipErr != nil {
+						return skipErr
+					}
+					entryData = entryData[skipN:]
+				}
+			}
+			m.MapStringEnum[mapkey] = mapvalue
 			b = b[n:]
 		default:
 			n, err := skipField(b, num, typ)
