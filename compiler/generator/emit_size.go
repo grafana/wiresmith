@@ -91,6 +91,9 @@ func (fg *FileGenerator) emitOptionalFieldSize(access string, fd protoreflect.Fi
 		fmt.Fprintf(fg.body, "\t\tn += %d\n", tagSize+8)
 	case protoreflect.StringKind:
 		fmt.Fprintf(fg.body, "\t\tn += %d + protowire.SizeVarint(uint64(len(*%s))) + len(*%s)\n", tagSize, access, access)
+	case protoreflect.BytesKind:
+		// optional bytes is []byte (not *[]byte); nil guard is the same "!= nil" check.
+		fmt.Fprintf(fg.body, "\t\tn += %d + protowire.SizeVarint(uint64(len(%s))) + len(%s)\n", tagSize, access, access)
 	}
 	fmt.Fprintf(fg.body, "\t}\n")
 }
@@ -112,7 +115,7 @@ func (fg *FileGenerator) emitRepeatedFieldSize(access string, fd protoreflect.Fi
 		fmt.Fprintf(fg.body, "\tfor _, v := range %s {\n", access)
 		fmt.Fprintf(fg.body, "\t\tn += %d + protowire.SizeVarint(uint64(len(v))) + len(v)\n", tagSize)
 		fmt.Fprintf(fg.body, "\t}\n")
-	case isPackable(kind):
+	case isPackable(kind) && fd.IsPacked():
 		fmt.Fprintf(fg.body, "\tif len(%s) > 0 {\n", access)
 		if isFixed64Kind(kind) {
 			fmt.Fprintf(fg.body, "\t\tdataLen := len(%s) * 8\n", access)
@@ -134,6 +137,33 @@ func (fg *FileGenerator) emitRepeatedFieldSize(access string, fd protoreflect.Fi
 			fmt.Fprintf(fg.body, "\t\t}\n")
 		}
 		fmt.Fprintf(fg.body, "\t\tn += %d + protowire.SizeVarint(uint64(dataLen)) + dataLen\n", tagSize)
+		fmt.Fprintf(fg.body, "\t}\n")
+
+	case isPackable(kind) && !fd.IsPacked():
+		fg.emitUnpackedRepeatedFieldSize(access, fd, tagSize)
+	}
+}
+
+func (fg *FileGenerator) emitUnpackedRepeatedFieldSize(access string, fd protoreflect.FieldDescriptor, tagSize int) {
+	kind := fd.Kind()
+
+	switch {
+	case isFixed64Kind(kind):
+		fmt.Fprintf(fg.body, "\tn += len(%s) * %d\n", access, tagSize+8)
+	case isFixed32Kind(kind):
+		fmt.Fprintf(fg.body, "\tn += len(%s) * %d\n", access, tagSize+4)
+	case kind == protoreflect.BoolKind:
+		fmt.Fprintf(fg.body, "\tn += len(%s) * %d\n", access, tagSize+1)
+	default:
+		fmt.Fprintf(fg.body, "\tfor _, v := range %s {\n", access)
+		switch kind {
+		case protoreflect.Sint32Kind:
+			fmt.Fprintf(fg.body, "\t\tn += %d + protowire.SizeVarint(protowire.EncodeZigZag(int64(v)))\n", tagSize)
+		case protoreflect.Sint64Kind:
+			fmt.Fprintf(fg.body, "\t\tn += %d + protowire.SizeVarint(protowire.EncodeZigZag(v))\n", tagSize)
+		default:
+			fmt.Fprintf(fg.body, "\t\tn += %d + protowire.SizeVarint(uint64(v))\n", tagSize)
+		}
 		fmt.Fprintf(fg.body, "\t}\n")
 	}
 }

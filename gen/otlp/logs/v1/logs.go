@@ -404,6 +404,8 @@ func (m *LogRecord) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+const maxUnmarshalDepth = 10000
+
 func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) {
 	switch typ {
 	case protowire.VarintType:
@@ -440,6 +442,13 @@ func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) 
 }
 
 func (m *LogsData) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *LogsData) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	if len(b) >= 256 {
 		tmp := b
 		var field1count int
@@ -496,7 +505,7 @@ func (m *LogsData) Unmarshal(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.ResourceLogs = append(m.ResourceLogs, ResourceLogs{})
-			if err := m.ResourceLogs[len(m.ResourceLogs)-1].Unmarshal(v); err != nil {
+			if err := m.ResourceLogs[len(m.ResourceLogs)-1].unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -512,6 +521,13 @@ func (m *LogsData) Unmarshal(b []byte) error {
 }
 
 func (m *ResourceLogs) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *ResourceLogs) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	if len(b) >= 256 {
 		tmp := b
 		var field2count int
@@ -585,7 +601,7 @@ func (m *ResourceLogs) Unmarshal(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.ScopeLogs = append(m.ScopeLogs, ScopeLogs{})
-			if err := m.ScopeLogs[len(m.ScopeLogs)-1].Unmarshal(v); err != nil {
+			if err := m.ScopeLogs[len(m.ScopeLogs)-1].unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -616,6 +632,13 @@ func (m *ResourceLogs) Unmarshal(b []byte) error {
 }
 
 func (m *ScopeLogs) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *ScopeLogs) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	if len(b) >= 256 {
 		tmp := b
 		var field2count int
@@ -689,7 +712,7 @@ func (m *ScopeLogs) Unmarshal(b []byte) error {
 				return fmt.Errorf("invalid bytes")
 			}
 			m.LogRecords = append(m.LogRecords, LogRecord{})
-			if err := m.LogRecords[len(m.LogRecords)-1].Unmarshal(v); err != nil {
+			if err := m.LogRecords[len(m.LogRecords)-1].unmarshal(v, depth+1); err != nil {
 				return err
 			}
 			b = b[n:]
@@ -720,6 +743,13 @@ func (m *ScopeLogs) Unmarshal(b []byte) error {
 }
 
 func (m *LogRecord) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *LogRecord) unmarshal(b []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
 	if len(b) >= 256 {
 		tmp := b
 		var field6count int

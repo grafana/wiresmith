@@ -122,7 +122,16 @@ func (fg *FileGenerator) emitUnmarshal(md protoreflect.MessageDescriptor) {
 	fg.imports.addImport("google.golang.org/protobuf/encoding/protowire", "")
 	fg.imports.addImport("fmt", "")
 
+	// Public wrapper that starts depth tracking at zero.
 	fmt.Fprintf(fg.body, "func (m *%s) Unmarshal(b []byte) error {\n", name)
+	fmt.Fprintf(fg.body, "\treturn m.unmarshal(b, 0)\n")
+	fmt.Fprintf(fg.body, "}\n\n")
+
+	// Private implementation with recursion depth limit.
+	fmt.Fprintf(fg.body, "func (m *%s) unmarshal(b []byte, depth int) error {\n", name)
+	fmt.Fprintf(fg.body, "\tif depth > maxUnmarshalDepth {\n")
+	fmt.Fprintf(fg.body, "\t\treturn fmt.Errorf(\"exceeded max recursion depth\")\n")
+	fmt.Fprintf(fg.body, "\t}\n")
 	fg.emitPreScan(md)
 	fmt.Fprintf(fg.body, "\tfor len(b) > 0 {\n")
 	fmt.Fprintf(fg.body, "\t\tnum, typ, tagLen := protowire.ConsumeTag(b)\n")
@@ -303,7 +312,7 @@ func (fg *FileGenerator) emitSingularFieldUnmarshal(goName string, fd protorefle
 		msgType := fg.imports.goMessageType(fd.Message())
 		_ = msgType
 		fg.emitConsumeBytes()
-		fmt.Fprintf(fg.body, "\t\t\tif err := %s.Unmarshal(v); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n", access)
+		fg.emitUnmarshalCall(access, fd.Message())
 		fg.emitAdvanceBytes()
 	}
 }
@@ -395,6 +404,12 @@ func (fg *FileGenerator) emitOptionalFieldUnmarshal(goName string, fd protorefle
 		fg.emitConsumeString()
 		fmt.Fprintf(fg.body, "\t\t\t%s = &v\n", access)
 		fg.emitAdvanceBytes()
+
+	case protoreflect.BytesKind:
+		// optional bytes is []byte (not *[]byte), so we copy the value directly.
+		fg.emitConsumeBytes()
+		fmt.Fprintf(fg.body, "\t\t\t%s = append(%s[:0], v...)\n", access, access)
+		fg.emitAdvanceBytes()
 	}
 }
 
@@ -407,7 +422,8 @@ func (fg *FileGenerator) emitRepeatedFieldUnmarshal(goName string, fd protorefle
 		msgType := fg.imports.goSingularType(fd)
 		fg.emitConsumeBytes()
 		fmt.Fprintf(fg.body, "\t\t\t%s = append(%s, %s{})\n", access, access, msgType)
-		fmt.Fprintf(fg.body, "\t\t\tif err := %s[len(%s)-1].Unmarshal(v); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n", access, access)
+		sliceAccess := fmt.Sprintf("%s[len(%s)-1]", access, access)
+		fg.emitUnmarshalCall(sliceAccess, fd.Message())
 		fg.emitAdvanceBytes()
 
 	case kind == protoreflect.StringKind:
@@ -639,7 +655,7 @@ func (fg *FileGenerator) emitOneofFieldUnmarshal(md protoreflect.MessageDescript
 		fg.emitConsumeBytes()
 		msgType := fg.imports.goSingularType(fd)
 		fmt.Fprintf(fg.body, "\t\t\tvar msg %s\n", msgType)
-		fmt.Fprintf(fg.body, "\t\t\tif err := msg.Unmarshal(v); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n")
+		fg.emitUnmarshalCall("msg", fd.Message())
 		fmt.Fprintf(fg.body, "\t\t\tm.%s = &%s{%s: msg}\n", ooFieldName, variantName, fieldName)
 		fg.emitAdvanceBytes()
 	}
@@ -674,4 +690,17 @@ func (fg *FileGenerator) emitConsumeString() {
 
 func (fg *FileGenerator) emitAdvanceBytes() {
 	fmt.Fprintf(fg.body, "\t\t\tb = b[n:]\n")
+}
+
+// emitUnmarshalCall emits the correct recursive unmarshal call for a message
+// field. Same-package types use the private unmarshal(b, depth+1) to propagate
+// the depth counter; cross-package types use the public Unmarshal(b) because
+// the private method is not exported.
+func (fg *FileGenerator) emitUnmarshalCall(access string, md protoreflect.MessageDescriptor) {
+	msgPkg := string(md.ParentFile().Package())
+	if msgPkg == fg.imports.selfPkg {
+		fmt.Fprintf(fg.body, "\t\t\tif err := %s.unmarshal(v, depth+1); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n", access)
+	} else {
+		fmt.Fprintf(fg.body, "\t\t\tif err := %s.Unmarshal(v); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n", access)
+	}
 }
