@@ -595,15 +595,18 @@ func (fg *FileGenerator) emitMapFieldUnmarshal(goName string, fd protoreflect.Fi
 	fmt.Fprintf(fg.body, "\t\t\t\tentryData = entryData[entryTagLen:]\n")
 	fmt.Fprintf(fg.body, "\t\t\t\tswitch entryNum {\n")
 
-	// Key field (field number 1)
+	// Known fields decode without a wire-type guard: the entry is bounded by
+	// the outer length prefix so a mismatched type produces a parse error, not
+	// a buffer overread. Both vtprotobuf and gogoproto take the same approach
+	// for the same performance reason — an extra branch per field is measurable
+	// on the hot path.
 	fmt.Fprintf(fg.body, "\t\t\t\tcase 1:\n")
 	fg.emitMapEntryFieldUnmarshal("mapkey", keyFd, "\t\t\t\t\t")
 
-	// Value field (field number 2)
 	fmt.Fprintf(fg.body, "\t\t\t\tcase 2:\n")
 	fg.emitMapEntryFieldUnmarshal("mapvalue", valFd, "\t\t\t\t\t")
 
-	// Unknown fields inside entry — skip
+	// Unknown fields — skip
 	fmt.Fprintf(fg.body, "\t\t\t\tdefault:\n")
 	fmt.Fprintf(fg.body, "\t\t\t\t\tskipN, skipErr := skipField(entryData, entryNum, entryTyp)\n")
 	fmt.Fprintf(fg.body, "\t\t\t\t\tif skipErr != nil {\n\t\t\t\t\t\treturn skipErr\n\t\t\t\t\t}\n")

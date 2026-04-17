@@ -17,6 +17,8 @@ All benchmarks use identical wire-format bytes generated once via official proto
 - `official_bench_test.go` — google.golang.org/protobuf benchmarks
 - `vtproto_bench_test.go` — vtprotobuf benchmarks
 - `gogoproto_bench_test.go` — gogoproto benchmarks
+- `map_bench_test.go` — Map field benchmarks (all four implementations)
+- `mapproto/maps.proto` — Proto definition for map benchmarks
 
 ## Running
 
@@ -39,6 +41,7 @@ Each library is benchmarked on:
 - `MarshalSummary` / `UnmarshalSummary` — 50 summary data points with quantile values
 - `MarshalProfiles` / `UnmarshalProfiles` — profile with 50 samples, dictionary with functions/locations/mappings/stacks (Ours/VTProto/GogoProto only, no official proto)
 - `SizeTraces` — size computation for 100 spans
+- `MarshalMap` / `UnmarshalMap` / `SizeMap` — 100-entry maps (string, int64, message values)
 
 ## Generated Code
 
@@ -46,6 +49,7 @@ All generated code lives under `gen/`:
 - `gen/otlp/` — Our generated code (`go run ./cmd/wiresmith/`)
 - `gen/vtpb/` — vtproto (`protoc` + `protoc-gen-go` + `protoc-gen-go-vtproto`)
 - `gen/gogopb/` — gogoproto (`protoc` + `protoc-gen-gogofast`)
+- `gen/bench/` — Map benchmark code (all four implementations from `bench/mapproto/maps.proto`)
 
 Regenerate all at once:
 ```bash
@@ -53,6 +57,22 @@ make generate
 ```
 
 Requires: `protoc`, `protoc-gen-go`, `protoc-gen-go-vtproto`, `protoc-gen-gogofast`
+
+## Map benchmark results (Apple M4 Pro)
+
+100-entry maps with string, int64, and message values:
+
+| Operation | Ours | VTProto | GogoProto | Official |
+|-----------|-----:|--------:|----------:|---------:|
+| Marshal ns/op | 5,800 | 8,560 | 8,550 | 33,400 |
+| Marshal B/op | 9,472 | 9,472 | 9,472 | 22,272 |
+| Marshal allocs | 1 | 1 | 1 | 1,001 |
+| Unmarshal ns/op | 14,840 | 16,870 | 16,730 | 44,500 |
+| Unmarshal B/op | 25,704 | 39,368 | 37,768 | 51,304 |
+| Unmarshal allocs | 512 | 633 | 633 | 1,518 |
+| Size ns/op | 1,700 | 1,600 | — | — |
+
+Marshal is ~32% faster than vtproto/gogoproto due to reverse-write. Unmarshal is ~12% faster with 35% less memory due to pre-scan map pre-allocation and value-type message values (avoids per-entry heap allocation at the cost of larger map entries during growth — compensated by the pre-allocation eliminating rehashing).
 
 ## Gogoproto and `optional`
 
