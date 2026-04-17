@@ -14,6 +14,13 @@ func (fg *FileGenerator) emitStruct(md protoreflect.MessageDescriptor) {
 	for i := 0; i < md.Fields().Len(); i++ {
 		fd := md.Fields().Get(i)
 
+		if fd.IsMap() {
+			goName := snakeToPascal(string(fd.Name()))
+			goType := fg.imports.goType(fd)
+			fmt.Fprintf(fg.body, "\t%s %s\n", goName, goType)
+			continue
+		}
+
 		if oo := fd.ContainingOneof(); oo != nil && !oo.IsSynthetic() {
 			ooName := string(oo.Name())
 			if !seenOneofs[ooName] {

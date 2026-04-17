@@ -36,14 +36,19 @@ func (fg *FileGenerator) emitSkipFieldHelper() {
 	fmt.Fprintf(fg.body, "}\n\n")
 }
 
-// repeatedFieldsForPreScan returns list fields whose element count can be
-// determined by counting wire-format field-number occurrences (messages,
-// strings, bytes). Packed scalars are excluded because one wire occurrence
-// contains many elements.
-func repeatedFieldsForPreScan(md protoreflect.MessageDescriptor) []protoreflect.FieldDescriptor {
+// fieldsForPreScan returns fields whose element count can be determined by
+// counting wire-format field-number occurrences. This includes repeated
+// message/string/bytes fields (packed scalars are excluded because one wire
+// occurrence contains many elements) and map fields (each wire occurrence
+// is one map entry).
+func fieldsForPreScan(md protoreflect.MessageDescriptor) []protoreflect.FieldDescriptor {
 	var fields []protoreflect.FieldDescriptor
 	for i := 0; i < md.Fields().Len(); i++ {
 		fd := md.Fields().Get(i)
+		if fd.IsMap() {
+			fields = append(fields, fd)
+			continue
+		}
 		if !fd.IsList() {
 			continue
 		}
@@ -67,7 +72,7 @@ const preScanMinBytes = 256
 // slices during the main unmarshal loop. Gated on len(b) to skip small messages
 // where the overhead isn't justified.
 func (fg *FileGenerator) emitPreScan(md protoreflect.MessageDescriptor) {
-	fields := repeatedFieldsForPreScan(md)
+	fields := fieldsForPreScan(md)
 	if len(fields) == 0 {
 		return
 	}
@@ -108,9 +113,13 @@ func (fg *FileGenerator) emitPreScan(md protoreflect.MessageDescriptor) {
 
 	for _, fd := range fields {
 		goName := snakeToPascal(string(fd.Name()))
-		sliceType := fg.imports.goType(fd)
+		goType := fg.imports.goType(fd)
 		fmt.Fprintf(fg.body, "\t\tif field%dcount > 0 {\n", fd.Number())
-		fmt.Fprintf(fg.body, "\t\t\tm.%s = make(%s, 0, field%dcount)\n", goName, sliceType, fd.Number())
+		if fd.IsMap() {
+			fmt.Fprintf(fg.body, "\t\t\tm.%s = make(%s, field%dcount)\n", goName, goType, fd.Number())
+		} else {
+			fmt.Fprintf(fg.body, "\t\t\tm.%s = make(%s, 0, field%dcount)\n", goName, goType, fd.Number())
+		}
 		fmt.Fprintf(fg.body, "\t\t}\n")
 	}
 
@@ -161,6 +170,12 @@ func (fg *FileGenerator) emitFieldUnmarshal(md protoreflect.MessageDescriptor, f
 	kind := fd.Kind()
 
 	fmt.Fprintf(fg.body, "\t\tcase %d: // %s\n", fieldNum, fd.Name())
+
+	if fd.IsMap() {
+		fg.emitWireTypeCheck(protoreflect.MessageKind)
+		fg.emitMapFieldUnmarshal(goName, fd)
+		return
+	}
 
 	// Packed repeated fields handle wire type dispatch internally
 	// (packed=BytesType vs unpacked=native type).
@@ -557,6 +572,174 @@ func (fg *FileGenerator) emitPackedElementDecode(access string, fd protoreflect.
 	case protoreflect.DoubleKind:
 		fg.imports.addImport("math", "")
 		fmt.Fprintf(fg.body, "\t\t\t\t%s = append(%s, math.Float64frombits(%s))\n", access, access, varName)
+	}
+}
+
+func (fg *FileGenerator) emitMapFieldUnmarshal(goName string, fd protoreflect.FieldDescriptor) {
+	keyFd := fd.MapKey()
+	valFd := fd.MapValue()
+	access := "m." + goName
+	mapType := fg.imports.goType(fd)
+
+	fg.emitConsumeBytes()
+
+	fmt.Fprintf(fg.body, "\t\t\tif %s == nil {\n", access)
+	fmt.Fprintf(fg.body, "\t\t\t\t%s = make(%s)\n", access, mapType)
+	fmt.Fprintf(fg.body, "\t\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\t\tvar mapkey %s\n", fg.imports.goSingularType(keyFd))
+	fmt.Fprintf(fg.body, "\t\t\tvar mapvalue %s\n", fg.imports.goSingularType(valFd))
+	fmt.Fprintf(fg.body, "\t\t\tentryData := v\n")
+	fmt.Fprintf(fg.body, "\t\t\tfor len(entryData) > 0 {\n")
+	fmt.Fprintf(fg.body, "\t\t\t\tentryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)\n")
+	fmt.Fprintf(fg.body, "\t\t\t\tif entryTagLen < 0 {\n\t\t\t\t\treturn fmt.Errorf(\"invalid map entry tag\")\n\t\t\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\t\t\tentryData = entryData[entryTagLen:]\n")
+	fmt.Fprintf(fg.body, "\t\t\t\tswitch entryNum {\n")
+
+	fmt.Fprintf(fg.body, "\t\t\t\tcase 1:\n")
+	fg.emitMapEntryWireTypeCheck(keyFd.Kind())
+	fg.emitMapEntryFieldUnmarshal("mapkey", keyFd, "\t\t\t\t\t")
+
+	fmt.Fprintf(fg.body, "\t\t\t\tcase 2:\n")
+	fg.emitMapEntryWireTypeCheck(valFd.Kind())
+	fg.emitMapEntryFieldUnmarshal("mapvalue", valFd, "\t\t\t\t\t")
+
+	// Unknown fields — skip
+	fmt.Fprintf(fg.body, "\t\t\t\tdefault:\n")
+	fmt.Fprintf(fg.body, "\t\t\t\t\tskipN, skipErr := skipField(entryData, entryNum, entryTyp)\n")
+	fmt.Fprintf(fg.body, "\t\t\t\t\tif skipErr != nil {\n\t\t\t\t\t\treturn skipErr\n\t\t\t\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\t\t\t\tentryData = entryData[skipN:]\n")
+
+	fmt.Fprintf(fg.body, "\t\t\t\t}\n") // end switch
+	fmt.Fprintf(fg.body, "\t\t\t}\n")   // end for
+	fmt.Fprintf(fg.body, "\t\t\t%s[mapkey] = mapvalue\n", access)
+
+	fg.emitAdvanceBytes()
+}
+
+// emitMapEntryWireTypeCheck emits a wire-type check for a map entry field,
+// skipping on mismatch to match the behavior of non-map field parsing.
+func (fg *FileGenerator) emitMapEntryWireTypeCheck(kind protoreflect.Kind) {
+	wt := expectedWireType(kind)
+	fmt.Fprintf(fg.body, "\t\t\t\t\tif entryTyp != %s {\n", wt)
+	fmt.Fprintf(fg.body, "\t\t\t\t\t\tskipN, skipErr := skipField(entryData, entryNum, entryTyp)\n")
+	fmt.Fprintf(fg.body, "\t\t\t\t\t\tif skipErr != nil {\n\t\t\t\t\t\t\treturn skipErr\n\t\t\t\t\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\t\t\t\t\tentryData = entryData[skipN:]\n")
+	fmt.Fprintf(fg.body, "\t\t\t\t\t\tcontinue\n")
+	fmt.Fprintf(fg.body, "\t\t\t\t\t}\n")
+}
+
+func (fg *FileGenerator) emitMapEntryFieldUnmarshal(varName string, fd protoreflect.FieldDescriptor, indent string) {
+	kind := fd.Kind()
+	switch kind {
+	case protoreflect.BoolKind:
+		fmt.Fprintf(fg.body, "%stmpVal, tmpN := protowire.ConsumeVarint(entryData)\n", indent)
+		fmt.Fprintf(fg.body, "%sif tmpN < 0 {\n%s\treturn fmt.Errorf(\"invalid varint\")\n%s}\n", indent, indent, indent)
+		fmt.Fprintf(fg.body, "%s%s = tmpVal != 0\n", indent, varName)
+		fmt.Fprintf(fg.body, "%sentryData = entryData[tmpN:]\n", indent)
+
+	case protoreflect.Int32Kind:
+		fmt.Fprintf(fg.body, "%stmpVal, tmpN := protowire.ConsumeVarint(entryData)\n", indent)
+		fmt.Fprintf(fg.body, "%sif tmpN < 0 {\n%s\treturn fmt.Errorf(\"invalid varint\")\n%s}\n", indent, indent, indent)
+		fmt.Fprintf(fg.body, "%s%s = int32(tmpVal)\n", indent, varName)
+		fmt.Fprintf(fg.body, "%sentryData = entryData[tmpN:]\n", indent)
+
+	case protoreflect.Sint32Kind:
+		fmt.Fprintf(fg.body, "%stmpVal, tmpN := protowire.ConsumeVarint(entryData)\n", indent)
+		fmt.Fprintf(fg.body, "%sif tmpN < 0 {\n%s\treturn fmt.Errorf(\"invalid varint\")\n%s}\n", indent, indent, indent)
+		fmt.Fprintf(fg.body, "%s%s = int32(protowire.DecodeZigZag(tmpVal))\n", indent, varName)
+		fmt.Fprintf(fg.body, "%sentryData = entryData[tmpN:]\n", indent)
+
+	case protoreflect.Uint32Kind:
+		fmt.Fprintf(fg.body, "%stmpVal, tmpN := protowire.ConsumeVarint(entryData)\n", indent)
+		fmt.Fprintf(fg.body, "%sif tmpN < 0 {\n%s\treturn fmt.Errorf(\"invalid varint\")\n%s}\n", indent, indent, indent)
+		fmt.Fprintf(fg.body, "%s%s = uint32(tmpVal)\n", indent, varName)
+		fmt.Fprintf(fg.body, "%sentryData = entryData[tmpN:]\n", indent)
+
+	case protoreflect.Int64Kind:
+		fmt.Fprintf(fg.body, "%stmpVal, tmpN := protowire.ConsumeVarint(entryData)\n", indent)
+		fmt.Fprintf(fg.body, "%sif tmpN < 0 {\n%s\treturn fmt.Errorf(\"invalid varint\")\n%s}\n", indent, indent, indent)
+		fmt.Fprintf(fg.body, "%s%s = int64(tmpVal)\n", indent, varName)
+		fmt.Fprintf(fg.body, "%sentryData = entryData[tmpN:]\n", indent)
+
+	case protoreflect.Sint64Kind:
+		fmt.Fprintf(fg.body, "%stmpVal, tmpN := protowire.ConsumeVarint(entryData)\n", indent)
+		fmt.Fprintf(fg.body, "%sif tmpN < 0 {\n%s\treturn fmt.Errorf(\"invalid varint\")\n%s}\n", indent, indent, indent)
+		fmt.Fprintf(fg.body, "%s%s = int64(protowire.DecodeZigZag(tmpVal))\n", indent, varName)
+		fmt.Fprintf(fg.body, "%sentryData = entryData[tmpN:]\n", indent)
+
+	case protoreflect.Uint64Kind:
+		fmt.Fprintf(fg.body, "%stmpVal, tmpN := protowire.ConsumeVarint(entryData)\n", indent)
+		fmt.Fprintf(fg.body, "%sif tmpN < 0 {\n%s\treturn fmt.Errorf(\"invalid varint\")\n%s}\n", indent, indent, indent)
+		fmt.Fprintf(fg.body, "%s%s = tmpVal\n", indent, varName)
+		fmt.Fprintf(fg.body, "%sentryData = entryData[tmpN:]\n", indent)
+
+	case protoreflect.EnumKind:
+		enumType := fg.imports.goEnumType(fd.Enum())
+		fmt.Fprintf(fg.body, "%stmpVal, tmpN := protowire.ConsumeVarint(entryData)\n", indent)
+		fmt.Fprintf(fg.body, "%sif tmpN < 0 {\n%s\treturn fmt.Errorf(\"invalid varint\")\n%s}\n", indent, indent, indent)
+		fmt.Fprintf(fg.body, "%s%s = %s(tmpVal)\n", indent, varName, enumType)
+		fmt.Fprintf(fg.body, "%sentryData = entryData[tmpN:]\n", indent)
+
+	case protoreflect.Fixed32Kind:
+		fmt.Fprintf(fg.body, "%stmpVal, tmpN := protowire.ConsumeFixed32(entryData)\n", indent)
+		fmt.Fprintf(fg.body, "%sif tmpN < 0 {\n%s\treturn fmt.Errorf(\"invalid fixed32\")\n%s}\n", indent, indent, indent)
+		fmt.Fprintf(fg.body, "%s%s = tmpVal\n", indent, varName)
+		fmt.Fprintf(fg.body, "%sentryData = entryData[tmpN:]\n", indent)
+
+	case protoreflect.Sfixed32Kind:
+		fmt.Fprintf(fg.body, "%stmpVal, tmpN := protowire.ConsumeFixed32(entryData)\n", indent)
+		fmt.Fprintf(fg.body, "%sif tmpN < 0 {\n%s\treturn fmt.Errorf(\"invalid fixed32\")\n%s}\n", indent, indent, indent)
+		fmt.Fprintf(fg.body, "%s%s = int32(tmpVal)\n", indent, varName)
+		fmt.Fprintf(fg.body, "%sentryData = entryData[tmpN:]\n", indent)
+
+	case protoreflect.FloatKind:
+		fg.imports.addImport("math", "")
+		fmt.Fprintf(fg.body, "%stmpVal, tmpN := protowire.ConsumeFixed32(entryData)\n", indent)
+		fmt.Fprintf(fg.body, "%sif tmpN < 0 {\n%s\treturn fmt.Errorf(\"invalid fixed32\")\n%s}\n", indent, indent, indent)
+		fmt.Fprintf(fg.body, "%s%s = math.Float32frombits(tmpVal)\n", indent, varName)
+		fmt.Fprintf(fg.body, "%sentryData = entryData[tmpN:]\n", indent)
+
+	case protoreflect.Fixed64Kind:
+		fmt.Fprintf(fg.body, "%stmpVal, tmpN := protowire.ConsumeFixed64(entryData)\n", indent)
+		fmt.Fprintf(fg.body, "%sif tmpN < 0 {\n%s\treturn fmt.Errorf(\"invalid fixed64\")\n%s}\n", indent, indent, indent)
+		fmt.Fprintf(fg.body, "%s%s = tmpVal\n", indent, varName)
+		fmt.Fprintf(fg.body, "%sentryData = entryData[tmpN:]\n", indent)
+
+	case protoreflect.Sfixed64Kind:
+		fmt.Fprintf(fg.body, "%stmpVal, tmpN := protowire.ConsumeFixed64(entryData)\n", indent)
+		fmt.Fprintf(fg.body, "%sif tmpN < 0 {\n%s\treturn fmt.Errorf(\"invalid fixed64\")\n%s}\n", indent, indent, indent)
+		fmt.Fprintf(fg.body, "%s%s = int64(tmpVal)\n", indent, varName)
+		fmt.Fprintf(fg.body, "%sentryData = entryData[tmpN:]\n", indent)
+
+	case protoreflect.DoubleKind:
+		fg.imports.addImport("math", "")
+		fmt.Fprintf(fg.body, "%stmpVal, tmpN := protowire.ConsumeFixed64(entryData)\n", indent)
+		fmt.Fprintf(fg.body, "%sif tmpN < 0 {\n%s\treturn fmt.Errorf(\"invalid fixed64\")\n%s}\n", indent, indent, indent)
+		fmt.Fprintf(fg.body, "%s%s = math.Float64frombits(tmpVal)\n", indent, varName)
+		fmt.Fprintf(fg.body, "%sentryData = entryData[tmpN:]\n", indent)
+
+	case protoreflect.StringKind:
+		fmt.Fprintf(fg.body, "%stmpVal, tmpN := protowire.ConsumeString(entryData)\n", indent)
+		fmt.Fprintf(fg.body, "%sif tmpN < 0 {\n%s\treturn fmt.Errorf(\"invalid string\")\n%s}\n", indent, indent, indent)
+		fmt.Fprintf(fg.body, "%s%s = tmpVal\n", indent, varName)
+		fmt.Fprintf(fg.body, "%sentryData = entryData[tmpN:]\n", indent)
+
+	case protoreflect.BytesKind:
+		fmt.Fprintf(fg.body, "%stmpVal, tmpN := protowire.ConsumeBytes(entryData)\n", indent)
+		fmt.Fprintf(fg.body, "%sif tmpN < 0 {\n%s\treturn fmt.Errorf(\"invalid bytes\")\n%s}\n", indent, indent, indent)
+		fmt.Fprintf(fg.body, "%s%s = append(%s[:0], tmpVal...)\n", indent, varName, varName)
+		fmt.Fprintf(fg.body, "%sentryData = entryData[tmpN:]\n", indent)
+
+	case protoreflect.MessageKind:
+		fmt.Fprintf(fg.body, "%stmpVal, tmpN := protowire.ConsumeBytes(entryData)\n", indent)
+		fmt.Fprintf(fg.body, "%sif tmpN < 0 {\n%s\treturn fmt.Errorf(\"invalid bytes\")\n%s}\n", indent, indent, indent)
+		msgPkg := string(fd.Message().ParentFile().Package())
+		if msgPkg == fg.imports.selfPkg {
+			fmt.Fprintf(fg.body, "%sif err := %s.unmarshal(tmpVal, depth+1); err != nil {\n%s\treturn err\n%s}\n", indent, varName, indent, indent)
+		} else {
+			fmt.Fprintf(fg.body, "%sif err := %s.Unmarshal(tmpVal); err != nil {\n%s\treturn err\n%s}\n", indent, varName, indent, indent)
+		}
+		fmt.Fprintf(fg.body, "%sentryData = entryData[tmpN:]\n", indent)
 	}
 }
 

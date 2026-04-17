@@ -26,7 +26,7 @@ All commands are available via `make`:
 | `make test` | Run correctness tests |
 | `make fuzz` | Fuzz `Unmarshal` methods (30s) — feeds random bytes to verify errors, not panics |
 | `make generate` | Regenerate all code (ours + vtproto + gogoproto). Requires `protoc`, `protoc-gen-go`, `protoc-gen-go-vtproto`, `protoc-gen-gogofast` |
-| `make generate-ours` | Regenerate only our code from protos |
+| `make generate-ours` | Regenerate only our code from protos (OTel + kitchen sink test) |
 | `make bench` | Run comparative benchmarks (5 iterations) |
 | `make bench-compare` | Run per-library benchmarks and compare with `benchstat`. Accepts `COUNT=-count=N` |
 | `make conformance` | Run Google protobuf conformance tests in Docker |
@@ -44,13 +44,13 @@ All commands are available via `make`:
 
 ## Supported proto3 features
 
-Messages, nested messages, enums (top-level and nested), oneof, optional, repeated (packed + non-packed), reserved fields, cross-file imports, fully-qualified type references. Scalar types: string, bool, int32, int64, uint32, uint64, sint32, sint64, float, double, bytes, fixed32, fixed64, sfixed32, sfixed64.
+Messages, nested messages, enums (top-level and nested), oneof, optional, repeated (packed + non-packed), maps, reserved fields, cross-file imports, fully-qualified type references. Scalar types: string, bool, int32, int64, uint32, uint64, sint32, sint64, float, double, bytes, fixed32, fixed64, sfixed32, sfixed64. Map keys: all scalar types except float/double/bytes. Map values: all scalars, enums, messages.
 
-Not supported (not needed for OTel protos): maps, services/RPCs, extensions, well-known types, proto2.
+Not supported (not needed for OTel protos): services/RPCs, extensions, well-known types, proto2.
 
 ## Conformance test status
 
-563 passing, 130 expected failures (120 maps, 10 semantic: sint normalization, message merge, unknown field preservation, overlong varint tags). Run with `make conformance`.
+682 passing, 11 expected failures (4 sint normalization, 4 message merge, 1 overlong varint tag, 2 unknown field preservation). Run with `make conformance`.
 
 **Updating the failure list:** The conformance runner silently ignores failure list entries that no longer match any test (e.g. after a bug fix resolves a previously-failing test). It does not report "unexpected passes." After changing supported features or fixing conformance-related bugs, run without the failure list to get the true failure set:
 
