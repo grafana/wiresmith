@@ -3980,6 +3980,137 @@ func (m *AllMaps) unmarshal(b []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
 	}
+	if len(b) >= 256 {
+		tmp := b
+		var field1count int
+		var field2count int
+		var field3count int
+		var field4count int
+		var field5count int
+		var field6count int
+		var field7count int
+		var field8count int
+		var field9count int
+		var field10count int
+		var field11count int
+		var field12count int
+		var field13count int
+		var field14count int
+		var field15count int
+		var field16count int
+		var field17count int
+		for len(tmp) > 0 {
+			num, typ, tagLen := protowire.ConsumeTag(tmp)
+			if tagLen < 0 {
+				break
+			}
+			tmp = tmp[tagLen:]
+			switch num {
+			case 1:
+				field1count++
+			case 2:
+				field2count++
+			case 3:
+				field3count++
+			case 4:
+				field4count++
+			case 5:
+				field5count++
+			case 6:
+				field6count++
+			case 7:
+				field7count++
+			case 8:
+				field8count++
+			case 9:
+				field9count++
+			case 10:
+				field10count++
+			case 11:
+				field11count++
+			case 12:
+				field12count++
+			case 13:
+				field13count++
+			case 14:
+				field14count++
+			case 15:
+				field15count++
+			case 16:
+				field16count++
+			case 17:
+				field17count++
+			}
+			var skip int
+			switch typ {
+			case protowire.VarintType:
+				_, skip = protowire.ConsumeVarint(tmp)
+			case protowire.Fixed32Type:
+				skip = 4
+			case protowire.Fixed64Type:
+				skip = 8
+			case protowire.BytesType:
+				_, skip = protowire.ConsumeBytes(tmp)
+			case protowire.StartGroupType:
+				_, skip = protowire.ConsumeGroup(num, tmp)
+			}
+			if skip < 0 || skip > len(tmp) {
+				break
+			}
+			tmp = tmp[skip:]
+		}
+		if field1count > 0 {
+			m.MapInt32Int32 = make(map[int32]int32, field1count)
+		}
+		if field2count > 0 {
+			m.MapInt64Int64 = make(map[int64]int64, field2count)
+		}
+		if field3count > 0 {
+			m.MapUint32Uint32 = make(map[uint32]uint32, field3count)
+		}
+		if field4count > 0 {
+			m.MapUint64Uint64 = make(map[uint64]uint64, field4count)
+		}
+		if field5count > 0 {
+			m.MapSint32Sint32 = make(map[int32]int32, field5count)
+		}
+		if field6count > 0 {
+			m.MapSint64Sint64 = make(map[int64]int64, field6count)
+		}
+		if field7count > 0 {
+			m.MapFixed32Fixed32 = make(map[uint32]uint32, field7count)
+		}
+		if field8count > 0 {
+			m.MapFixed64Fixed64 = make(map[uint64]uint64, field8count)
+		}
+		if field9count > 0 {
+			m.MapSfixed32Sfixed32 = make(map[int32]int32, field9count)
+		}
+		if field10count > 0 {
+			m.MapSfixed64Sfixed64 = make(map[int64]int64, field10count)
+		}
+		if field11count > 0 {
+			m.MapBoolBool = make(map[bool]bool, field11count)
+		}
+		if field12count > 0 {
+			m.MapStringString = make(map[string]string, field12count)
+		}
+		if field13count > 0 {
+			m.MapStringBytes = make(map[string][]byte, field13count)
+		}
+		if field14count > 0 {
+			m.MapInt32Float = make(map[int32]float32, field14count)
+		}
+		if field15count > 0 {
+			m.MapInt32Double = make(map[int32]float64, field15count)
+		}
+		if field16count > 0 {
+			m.MapStringMessage = make(map[string]Inner, field16count)
+		}
+		if field17count > 0 {
+			m.MapStringEnum = make(map[string]Color, field17count)
+		}
+	}
 	for len(b) > 0 {
 		num, typ, tagLen := protowire.ConsumeTag(b)
 		if tagLen < 0 {

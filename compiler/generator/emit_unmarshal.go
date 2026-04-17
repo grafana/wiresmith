@@ -36,14 +36,19 @@ func (fg *FileGenerator) emitSkipFieldHelper() {
 	fmt.Fprintf(fg.body, "}\n\n")
 }
 
-// repeatedFieldsForPreScan returns list fields whose element count can be
-// determined by counting wire-format field-number occurrences (messages,
-// strings, bytes). Packed scalars are excluded because one wire occurrence
-// contains many elements.
-func repeatedFieldsForPreScan(md protoreflect.MessageDescriptor) []protoreflect.FieldDescriptor {
+// fieldsForPreScan returns fields whose element count can be determined by
+// counting wire-format field-number occurrences. This includes repeated
+// message/string/bytes fields (packed scalars are excluded because one wire
+// occurrence contains many elements) and map fields (each wire occurrence
+// is one map entry).
+func fieldsForPreScan(md protoreflect.MessageDescriptor) []protoreflect.FieldDescriptor {
 	var fields []protoreflect.FieldDescriptor
 	for i := 0; i < md.Fields().Len(); i++ {
 		fd := md.Fields().Get(i)
+		if fd.IsMap() {
+			fields = append(fields, fd)
+			continue
+		}
 		if !fd.IsList() {
 			continue
 		}
@@ -67,7 +72,7 @@ const preScanMinBytes = 256
 // slices during the main unmarshal loop. Gated on len(b) to skip small messages
 // where the overhead isn't justified.
 func (fg *FileGenerator) emitPreScan(md protoreflect.MessageDescriptor) {
-	fields := repeatedFieldsForPreScan(md)
+	fields := fieldsForPreScan(md)
 	if len(fields) == 0 {
 		return
 	}
@@ -108,9 +113,13 @@ func (fg *FileGenerator) emitPreScan(md protoreflect.MessageDescriptor) {
 
 	for _, fd := range fields {
 		goName := snakeToPascal(string(fd.Name()))
-		sliceType := fg.imports.goType(fd)
+		goType := fg.imports.goType(fd)
 		fmt.Fprintf(fg.body, "\t\tif field%dcount > 0 {\n", fd.Number())
-		fmt.Fprintf(fg.body, "\t\t\tm.%s = make(%s, 0, field%dcount)\n", goName, sliceType, fd.Number())
+		if fd.IsMap() {
+			fmt.Fprintf(fg.body, "\t\t\tm.%s = make(%s, field%dcount)\n", goName, goType, fd.Number())
+		} else {
+			fmt.Fprintf(fg.body, "\t\t\tm.%s = make(%s, 0, field%dcount)\n", goName, goType, fd.Number())
+		}
 		fmt.Fprintf(fg.body, "\t\t}\n")
 	}
 

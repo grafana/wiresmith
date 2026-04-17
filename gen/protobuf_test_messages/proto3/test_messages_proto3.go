@@ -2117,6 +2117,25 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 		var field49count int
 		var field54count int
 		var field55count int
+		var field56count int
+		var field57count int
+		var field58count int
+		var field59count int
+		var field60count int
+		var field61count int
+		var field62count int
+		var field63count int
+		var field64count int
+		var field65count int
+		var field66count int
+		var field67count int
+		var field68count int
+		var field69count int
+		var field70count int
+		var field71count int
+		var field72count int
+		var field73count int
+		var field74count int
 		for len(tmp) > 0 {
 			num, typ, tagLen := protowire.ConsumeTag(tmp)
 			if tagLen < 0 {
@@ -2136,6 +2155,44 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				field54count++
 			case 55:
 				field55count++
+			case 56:
+				field56count++
+			case 57:
+				field57count++
+			case 58:
+				field58count++
+			case 59:
+				field59count++
+			case 60:
+				field60count++
+			case 61:
+				field61count++
+			case 62:
+				field62count++
+			case 63:
+				field63count++
+			case 64:
+				field64count++
+			case 65:
+				field65count++
+			case 66:
+				field66count++
+			case 67:
+				field67count++
+			case 68:
+				field68count++
+			case 69:
+				field69count++
+			case 70:
+				field70count++
+			case 71:
+				field71count++
+			case 72:
+				field72count++
+			case 73:
+				field73count++
+			case 74:
+				field74count++
 			}
 			var skip int
 			switch typ {
@@ -2172,6 +2229,63 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 		}
 		if field55count > 0 {
 			m.RepeatedCord = make([]string, 0, field55count)
+		}
+		if field56count > 0 {
+			m.MapInt32Int32 = make(map[int32]int32, field56count)
+		}
+		if field57count > 0 {
+			m.MapInt64Int64 = make(map[int64]int64, field57count)
+		}
+		if field58count > 0 {
+			m.MapUint32Uint32 = make(map[uint32]uint32, field58count)
+		}
+		if field59count > 0 {
+			m.MapUint64Uint64 = make(map[uint64]uint64, field59count)
+		}
+		if field60count > 0 {
+			m.MapSint32Sint32 = make(map[int32]int32, field60count)
+		}
+		if field61count > 0 {
+			m.MapSint64Sint64 = make(map[int64]int64, field61count)
+		}
+		if field62count > 0 {
+			m.MapFixed32Fixed32 = make(map[uint32]uint32, field62count)
+		}
+		if field63count > 0 {
+			m.MapFixed64Fixed64 = make(map[uint64]uint64, field63count)
+		}
+		if field64count > 0 {
+			m.MapSfixed32Sfixed32 = make(map[int32]int32, field64count)
+		}
+		if field65count > 0 {
+			m.MapSfixed64Sfixed64 = make(map[int64]int64, field65count)
+		}
+		if field66count > 0 {
+			m.MapInt32Float = make(map[int32]float32, field66count)
+		}
+		if field67count > 0 {
+			m.MapInt32Double = make(map[int32]float64, field67count)
+		}
+		if field68count > 0 {
+			m.MapBoolBool = make(map[bool]bool, field68count)
+		}
+		if field69count > 0 {
+			m.MapStringString = make(map[string]string, field69count)
+		}
+		if field70count > 0 {
+			m.MapStringBytes = make(map[string][]byte, field70count)
+		}
+		if field71count > 0 {
+			m.MapStringNestedMessage = make(map[string]TestAllTypesProto3_NestedMessage, field71count)
+		}
+		if field72count > 0 {
+			m.MapStringForeignMessage = make(map[string]ForeignMessage, field72count)
+		}
+		if field73count > 0 {
+			m.MapStringNestedEnum = make(map[string]TestAllTypesProto3_NestedEnum, field73count)
+		}
+		if field74count > 0 {
+			m.MapStringForeignEnum = make(map[string]ForeignEnum, field74count)
 		}
 	}
 	for len(b) > 0 {
