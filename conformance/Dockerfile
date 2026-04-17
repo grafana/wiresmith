@@ -9,7 +9,7 @@
 #   docker run --rm wiresmith-conformance
 
 # --- Stage 1: Build conformance_test_runner ---
-FROM debian:trixie-slim AS runner-builder
+FROM debian:trixie-slim@sha256:4ffb3a1511099754cddc70eb1b12e50ffdb67619aa0ab6c13fcd800a78ef7c7a AS runner-builder
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     cmake make g++ git ca-certificates \
@@ -26,7 +26,7 @@ RUN cmake . \
  && cmake --build . --target conformance_test_runner -- -j"$(nproc)"
 
 # --- Stage 2: Build Go testee ---
-FROM golang:1.26 AS testee-builder
+FROM golang:1.26@sha256:5f3787b7f902c07c7ec4f3aa91a301a3eda8133aa32661a3b3a3a86ab3a68a36 AS testee-builder
 
 WORKDIR /src
 COPY go.mod go.sum ./
@@ -35,7 +35,7 @@ COPY . .
 RUN CGO_ENABLED=0 go build -o /testee ./conformance/testee/
 
 # --- Stage 3: Run conformance tests ---
-FROM debian:trixie-slim
+FROM debian:trixie-slim@sha256:4ffb3a1511099754cddc70eb1b12e50ffdb67619aa0ab6c13fcd800a78ef7c7a
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libjsoncpp26 \
