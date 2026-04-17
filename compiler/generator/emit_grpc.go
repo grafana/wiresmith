@@ -97,15 +97,23 @@ func (fg *FileGenerator) emitGRPCServer(sd protoreflect.ServiceDescriptor, svcNa
 		methodName := string(md.Name())
 		outType := fg.grpcMessageType(md.Output())
 
-		if md.IsStreamingServer() {
+		if md.IsStreamingClient() && md.IsStreamingServer() {
+			// Bidirectional streaming: takes only stream.
+			streamType := svcName + "_" + methodName + "Server"
+			fmt.Fprintf(fg.body, "func (*Unimplemented%sServer) %s(%s) error {\n",
+				svcName, methodName, streamType)
+			fmt.Fprintf(fg.body, "\treturn status.Errorf(codes.Unimplemented, \"method %s not implemented\")\n", methodName)
+		} else if md.IsStreamingServer() {
+			// Server-only streaming: takes request + stream.
 			streamType := svcName + "_" + methodName + "Server"
 			fmt.Fprintf(fg.body, "func (*Unimplemented%sServer) %s(*%s, %s) error {\n",
 				svcName, methodName, fg.grpcMessageType(md.Input()), streamType)
+			fmt.Fprintf(fg.body, "\treturn status.Errorf(codes.Unimplemented, \"method %s not implemented\")\n", methodName)
 		} else {
 			fmt.Fprintf(fg.body, "func (*Unimplemented%sServer) %s(ctx context.Context, req *%s) (*%s, error) {\n",
 				svcName, methodName, fg.grpcMessageType(md.Input()), outType)
+			fmt.Fprintf(fg.body, "\treturn nil, status.Errorf(codes.Unimplemented, \"method %s not implemented\")\n", methodName)
 		}
-		fmt.Fprintf(fg.body, "\treturn nil, status.Errorf(codes.Unimplemented, \"method %s not implemented\")\n", methodName)
 		fmt.Fprintf(fg.body, "}\n\n")
 	}
 
@@ -192,27 +200,52 @@ func (fg *FileGenerator) emitStreamingClientMethod(sd protoreflect.ServiceDescri
 	inType := fg.grpcMessageType(md.Input())
 	streamType := svcName + "_" + methodName + "Client"
 
-	fmt.Fprintf(fg.body, "func (c *%sClient) %s(ctx context.Context, in *%s, opts ...grpc.CallOption) (%s, error) {\n",
-		lowerSvcName, methodName, inType, streamType)
-	fmt.Fprintf(fg.body, "\tstream, err := c.cc.NewStream(ctx, &_%s_serviceDesc.Streams[%d], %q, opts...)\n",
-		svcName, fg.streamIndex(sd, md), fullMethod)
-	fmt.Fprintf(fg.body, "\tif err != nil {\n\t\treturn nil, err\n\t}\n")
-	fmt.Fprintf(fg.body, "\tx := &%s{stream}\n", toLowerFirst(streamType))
-	fmt.Fprintf(fg.body, "\tif err := x.ClientStream.SendMsg(in); err != nil {\n\t\treturn nil, err\n\t}\n")
-	fmt.Fprintf(fg.body, "\tif err := x.ClientStream.CloseSend(); err != nil {\n\t\treturn nil, err\n\t}\n")
-	fmt.Fprintf(fg.body, "\treturn x, nil\n")
-	fmt.Fprintf(fg.body, "}\n\n")
+	if md.IsStreamingClient() {
+		// Bidirectional streaming: no initial message, client sends later.
+		fmt.Fprintf(fg.body, "func (c *%sClient) %s(ctx context.Context, opts ...grpc.CallOption) (%s, error) {\n",
+			lowerSvcName, methodName, streamType)
+		fmt.Fprintf(fg.body, "\tstream, err := c.cc.NewStream(ctx, &_%s_serviceDesc.Streams[%d], %q, opts...)\n",
+			svcName, fg.streamIndex(sd, md), fullMethod)
+		fmt.Fprintf(fg.body, "\tif err != nil {\n\t\treturn nil, err\n\t}\n")
+		fmt.Fprintf(fg.body, "\tx := &%s{stream}\n", toLowerFirst(streamType))
+		fmt.Fprintf(fg.body, "\treturn x, nil\n")
+		fmt.Fprintf(fg.body, "}\n\n")
+	} else {
+		// Server-only streaming: send initial message then receive stream.
+		fmt.Fprintf(fg.body, "func (c *%sClient) %s(ctx context.Context, in *%s, opts ...grpc.CallOption) (%s, error) {\n",
+			lowerSvcName, methodName, inType, streamType)
+		fmt.Fprintf(fg.body, "\tstream, err := c.cc.NewStream(ctx, &_%s_serviceDesc.Streams[%d], %q, opts...)\n",
+			svcName, fg.streamIndex(sd, md), fullMethod)
+		fmt.Fprintf(fg.body, "\tif err != nil {\n\t\treturn nil, err\n\t}\n")
+		fmt.Fprintf(fg.body, "\tx := &%s{stream}\n", toLowerFirst(streamType))
+		fmt.Fprintf(fg.body, "\tif err := x.ClientStream.SendMsg(in); err != nil {\n\t\treturn nil, err\n\t}\n")
+		fmt.Fprintf(fg.body, "\tif err := x.ClientStream.CloseSend(); err != nil {\n\t\treturn nil, err\n\t}\n")
+		fmt.Fprintf(fg.body, "\treturn x, nil\n")
+		fmt.Fprintf(fg.body, "}\n\n")
+	}
 
 	// Stream interface
 	outType := fg.grpcMessageType(md.Output())
 	fmt.Fprintf(fg.body, "type %s interface {\n", streamType)
+	if md.IsStreamingClient() {
+		fmt.Fprintf(fg.body, "\tSend(*%s) error\n", inType)
+	}
 	fmt.Fprintf(fg.body, "\tRecv() (*%s, error)\n", outType)
+	if md.IsStreamingClient() {
+		fmt.Fprintf(fg.body, "\tCloseSend() error\n")
+	}
 	fmt.Fprintf(fg.body, "\tgrpc.ClientStream\n")
 	fmt.Fprintf(fg.body, "}\n\n")
 
 	fmt.Fprintf(fg.body, "type %s struct {\n", toLowerFirst(streamType))
 	fmt.Fprintf(fg.body, "\tgrpc.ClientStream\n")
 	fmt.Fprintf(fg.body, "}\n\n")
+
+	if md.IsStreamingClient() {
+		fmt.Fprintf(fg.body, "func (x *%s) Send(m *%s) error {\n", toLowerFirst(streamType), inType)
+		fmt.Fprintf(fg.body, "\treturn x.ClientStream.SendMsg(m)\n")
+		fmt.Fprintf(fg.body, "}\n\n")
+	}
 
 	fmt.Fprintf(fg.body, "func (x *%s) Recv() (*%s, error) {\n", toLowerFirst(streamType), outType)
 	fmt.Fprintf(fg.body, "\tm := new(%s)\n", outType)
@@ -229,14 +262,23 @@ func (fg *FileGenerator) emitStreamingServerHandler(sd protoreflect.ServiceDescr
 
 	handlerName := fmt.Sprintf("_%s_%s_Handler", svcName, methodName)
 	fmt.Fprintf(fg.body, "func %s(srv interface{}, stream grpc.ServerStream) error {\n", handlerName)
-	fmt.Fprintf(fg.body, "\tm := new(%s)\n", inType)
-	fmt.Fprintf(fg.body, "\tif err := stream.RecvMsg(m); err != nil {\n\t\treturn err\n\t}\n")
-	fmt.Fprintf(fg.body, "\treturn srv.(%sServer).%s(m, &%s{stream})\n", svcName, methodName, toLowerFirst(streamType))
+	if md.IsStreamingClient() {
+		// Bidirectional streaming: no initial message receive.
+		fmt.Fprintf(fg.body, "\treturn srv.(%sServer).%s(&%s{stream})\n", svcName, methodName, toLowerFirst(streamType))
+	} else {
+		// Server-only streaming: receive initial message then stream responses.
+		fmt.Fprintf(fg.body, "\tm := new(%s)\n", inType)
+		fmt.Fprintf(fg.body, "\tif err := stream.RecvMsg(m); err != nil {\n\t\treturn err\n\t}\n")
+		fmt.Fprintf(fg.body, "\treturn srv.(%sServer).%s(m, &%s{stream})\n", svcName, methodName, toLowerFirst(streamType))
+	}
 	fmt.Fprintf(fg.body, "}\n\n")
 
 	// Server stream interface
 	fmt.Fprintf(fg.body, "type %s interface {\n", streamType)
 	fmt.Fprintf(fg.body, "\tSend(*%s) error\n", outType)
+	if md.IsStreamingClient() {
+		fmt.Fprintf(fg.body, "\tRecv() (*%s, error)\n", inType)
+	}
 	fmt.Fprintf(fg.body, "\tgrpc.ServerStream\n")
 	fmt.Fprintf(fg.body, "}\n\n")
 
@@ -247,6 +289,14 @@ func (fg *FileGenerator) emitStreamingServerHandler(sd protoreflect.ServiceDescr
 	fmt.Fprintf(fg.body, "func (x *%s) Send(m *%s) error {\n", toLowerFirst(streamType), outType)
 	fmt.Fprintf(fg.body, "\treturn x.ServerStream.SendMsg(m)\n")
 	fmt.Fprintf(fg.body, "}\n\n")
+
+	if md.IsStreamingClient() {
+		fmt.Fprintf(fg.body, "func (x *%s) Recv() (*%s, error) {\n", toLowerFirst(streamType), inType)
+		fmt.Fprintf(fg.body, "\tm := new(%s)\n", inType)
+		fmt.Fprintf(fg.body, "\tif err := x.ServerStream.RecvMsg(m); err != nil {\n\t\treturn nil, err\n\t}\n")
+		fmt.Fprintf(fg.body, "\treturn m, nil\n")
+		fmt.Fprintf(fg.body, "}\n\n")
+	}
 }
 
 // Helper functions
@@ -267,7 +317,10 @@ func (fg *FileGenerator) emitClientMethodSignature(md protoreflect.MethodDescrip
 	outType := fg.grpcMessageType(md.Output())
 	svcName := string(md.Parent().(protoreflect.ServiceDescriptor).Name())
 
-	if md.IsStreamingServer() {
+	if md.IsStreamingClient() && md.IsStreamingServer() {
+		streamType := svcName + "_" + methodName + "Client"
+		fmt.Fprintf(fg.body, "%s%s(ctx context.Context, opts ...grpc.CallOption) (%s, error)", indent, methodName, streamType)
+	} else if md.IsStreamingServer() {
 		streamType := svcName + "_" + methodName + "Client"
 		fmt.Fprintf(fg.body, "%s%s(ctx context.Context, in *%s, opts ...grpc.CallOption) (%s, error)", indent, methodName, inType, streamType)
 	} else {
@@ -281,7 +334,11 @@ func (fg *FileGenerator) emitServerMethodSignature(md protoreflect.MethodDescrip
 	outType := fg.grpcMessageType(md.Output())
 	svcName := string(md.Parent().(protoreflect.ServiceDescriptor).Name())
 
-	if md.IsStreamingServer() {
+	if md.IsStreamingClient() && md.IsStreamingServer() {
+		// Bidirectional streaming.
+		streamType := svcName + "_" + methodName + "Server"
+		fmt.Fprintf(fg.body, "%s%s(%s) error", indent, methodName, streamType)
+	} else if md.IsStreamingServer() {
 		streamType := svcName + "_" + methodName + "Server"
 		fmt.Fprintf(fg.body, "%s%s(*%s, %s) error", indent, methodName, inType, streamType)
 	} else {
