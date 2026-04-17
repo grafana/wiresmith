@@ -3265,6 +3265,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				entryData = entryData[entryTagLen:]
 				switch entryNum {
 				case 1:
+					if entryTyp != protowire.VarintType {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid varint")
@@ -3272,6 +3280,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					mapkey = int32(tmpVal)
 					entryData = entryData[tmpN:]
 				case 2:
+					if entryTyp != protowire.VarintType {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid varint")
@@ -3315,6 +3331,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				entryData = entryData[entryTagLen:]
 				switch entryNum {
 				case 1:
+					if entryTyp != protowire.VarintType {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid varint")
@@ -3322,6 +3346,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					mapkey = int64(tmpVal)
 					entryData = entryData[tmpN:]
 				case 2:
+					if entryTyp != protowire.VarintType {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid varint")
@@ -3365,6 +3397,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				entryData = entryData[entryTagLen:]
 				switch entryNum {
 				case 1:
+					if entryTyp != protowire.VarintType {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid varint")
@@ -3372,6 +3412,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					mapkey = uint32(tmpVal)
 					entryData = entryData[tmpN:]
 				case 2:
+					if entryTyp != protowire.VarintType {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid varint")
@@ -3415,6 +3463,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				entryData = entryData[entryTagLen:]
 				switch entryNum {
 				case 1:
+					if entryTyp != protowire.VarintType {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid varint")
@@ -3422,6 +3478,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					mapkey = tmpVal
 					entryData = entryData[tmpN:]
 				case 2:
+					if entryTyp != protowire.VarintType {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid varint")
@@ -3465,6 +3529,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				entryData = entryData[entryTagLen:]
 				switch entryNum {
 				case 1:
+					if entryTyp != protowire.VarintType {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid varint")
@@ -3472,6 +3544,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					mapkey = int32(protowire.DecodeZigZag(tmpVal))
 					entryData = entryData[tmpN:]
 				case 2:
+					if entryTyp != protowire.VarintType {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid varint")
@@ -3515,6 +3595,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				entryData = entryData[entryTagLen:]
 				switch entryNum {
 				case 1:
+					if entryTyp != protowire.VarintType {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid varint")
@@ -3522,6 +3610,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					mapkey = int64(protowire.DecodeZigZag(tmpVal))
 					entryData = entryData[tmpN:]
 				case 2:
+					if entryTyp != protowire.VarintType {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid varint")
@@ -3565,6 +3661,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				entryData = entryData[entryTagLen:]
 				switch entryNum {
 				case 1:
+					if entryTyp != protowire.Fixed32Type {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeFixed32(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid fixed32")
@@ -3572,6 +3676,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					mapkey = tmpVal
 					entryData = entryData[tmpN:]
 				case 2:
+					if entryTyp != protowire.Fixed32Type {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeFixed32(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid fixed32")
@@ -3615,6 +3727,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				entryData = entryData[entryTagLen:]
 				switch entryNum {
 				case 1:
+					if entryTyp != protowire.Fixed64Type {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeFixed64(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid fixed64")
@@ -3622,6 +3742,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					mapkey = tmpVal
 					entryData = entryData[tmpN:]
 				case 2:
+					if entryTyp != protowire.Fixed64Type {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeFixed64(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid fixed64")
@@ -3665,6 +3793,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				entryData = entryData[entryTagLen:]
 				switch entryNum {
 				case 1:
+					if entryTyp != protowire.Fixed32Type {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeFixed32(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid fixed32")
@@ -3672,6 +3808,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					mapkey = int32(tmpVal)
 					entryData = entryData[tmpN:]
 				case 2:
+					if entryTyp != protowire.Fixed32Type {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeFixed32(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid fixed32")
@@ -3715,6 +3859,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				entryData = entryData[entryTagLen:]
 				switch entryNum {
 				case 1:
+					if entryTyp != protowire.Fixed64Type {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeFixed64(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid fixed64")
@@ -3722,6 +3874,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					mapkey = int64(tmpVal)
 					entryData = entryData[tmpN:]
 				case 2:
+					if entryTyp != protowire.Fixed64Type {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeFixed64(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid fixed64")
@@ -3765,6 +3925,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				entryData = entryData[entryTagLen:]
 				switch entryNum {
 				case 1:
+					if entryTyp != protowire.VarintType {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid varint")
@@ -3772,6 +3940,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					mapkey = int32(tmpVal)
 					entryData = entryData[tmpN:]
 				case 2:
+					if entryTyp != protowire.Fixed32Type {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeFixed32(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid fixed32")
@@ -3815,6 +3991,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				entryData = entryData[entryTagLen:]
 				switch entryNum {
 				case 1:
+					if entryTyp != protowire.VarintType {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid varint")
@@ -3822,6 +4006,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					mapkey = int32(tmpVal)
 					entryData = entryData[tmpN:]
 				case 2:
+					if entryTyp != protowire.Fixed64Type {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeFixed64(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid fixed64")
@@ -3865,6 +4057,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				entryData = entryData[entryTagLen:]
 				switch entryNum {
 				case 1:
+					if entryTyp != protowire.VarintType {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid varint")
@@ -3872,6 +4072,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					mapkey = tmpVal != 0
 					entryData = entryData[tmpN:]
 				case 2:
+					if entryTyp != protowire.VarintType {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid varint")
@@ -3915,6 +4123,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				entryData = entryData[entryTagLen:]
 				switch entryNum {
 				case 1:
+					if entryTyp != protowire.BytesType {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeString(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid string")
@@ -3922,6 +4138,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					mapkey = tmpVal
 					entryData = entryData[tmpN:]
 				case 2:
+					if entryTyp != protowire.BytesType {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeString(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid string")
@@ -3965,6 +4189,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				entryData = entryData[entryTagLen:]
 				switch entryNum {
 				case 1:
+					if entryTyp != protowire.BytesType {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeString(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid string")
@@ -3972,6 +4204,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					mapkey = tmpVal
 					entryData = entryData[tmpN:]
 				case 2:
+					if entryTyp != protowire.BytesType {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeBytes(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid bytes")
@@ -4015,6 +4255,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				entryData = entryData[entryTagLen:]
 				switch entryNum {
 				case 1:
+					if entryTyp != protowire.BytesType {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeString(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid string")
@@ -4022,6 +4270,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					mapkey = tmpVal
 					entryData = entryData[tmpN:]
 				case 2:
+					if entryTyp != protowire.BytesType {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeBytes(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid bytes")
@@ -4067,6 +4323,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				entryData = entryData[entryTagLen:]
 				switch entryNum {
 				case 1:
+					if entryTyp != protowire.BytesType {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeString(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid string")
@@ -4074,6 +4338,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					mapkey = tmpVal
 					entryData = entryData[tmpN:]
 				case 2:
+					if entryTyp != protowire.BytesType {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeBytes(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid bytes")
@@ -4119,6 +4391,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				entryData = entryData[entryTagLen:]
 				switch entryNum {
 				case 1:
+					if entryTyp != protowire.BytesType {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeString(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid string")
@@ -4126,6 +4406,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					mapkey = tmpVal
 					entryData = entryData[tmpN:]
 				case 2:
+					if entryTyp != protowire.VarintType {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid varint")
@@ -4169,6 +4457,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				entryData = entryData[entryTagLen:]
 				switch entryNum {
 				case 1:
+					if entryTyp != protowire.BytesType {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeString(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid string")
@@ -4176,6 +4472,14 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					mapkey = tmpVal
 					entryData = entryData[tmpN:]
 				case 2:
+					if entryTyp != protowire.VarintType {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid varint")

@@ -4,7 +4,11 @@ Custom protobuf compiler that generates high-performance Go code from OpenTeleme
 
 ## Project structure
 
-- `proto/` - Source OpenTelemetry .proto files (common, resource, metrics, trace, logs, profiles)
+- `proto/` - All .proto source files, organized by purpose:
+  - `otlp/` - OpenTelemetry protos (common, resource, metrics, trace, logs, profiles)
+  - `test/` - Test protos (kitchen_sink)
+  - `bench/` - Benchmark protos (maps)
+  - `conformance/` - Conformance protos (protocol envelope + test messages)
 - `compiler/generator/` - Code generator: reads proto descriptors via `bufbuild/protocompile`, emits Go structs + marshal/unmarshal/size methods
 - `cmd/wiresmith/` - CLI entry point
 - `gen/otlp/` - Generated Go packages (one per proto file)
@@ -14,7 +18,6 @@ Custom protobuf compiler that generates high-performance Go code from OpenTeleme
 - `test/` - Round-trip correctness tests against official `google.golang.org/protobuf`
 - `bench/` - Comparative benchmarks (ours vs official protobuf vs vtproto vs gogoproto)
 - `conformance/` - Google protobuf conformance tests (Docker-based), see [conformance/AGENTS.md](conformance/AGENTS.md)
-- `gen/protobuf_test_messages/proto3/` - wiresmith-generated code for conformance test messages
 
 ## Commands
 
@@ -26,11 +29,10 @@ All commands are available via `make`:
 | `make test` | Run correctness tests |
 | `make fuzz` | Fuzz `Unmarshal` methods (30s) — feeds random bytes to verify errors, not panics |
 | `make generate` | Regenerate all code (ours + vtproto + gogoproto). Requires `protoc`, `protoc-gen-go`, `protoc-gen-go-vtproto`, `protoc-gen-gogofast` |
-| `make generate-ours` | Regenerate only our code from protos (OTel + kitchen sink test) |
+| `make generate-ours` | Regenerate all wiresmith + conformance code. Requires `protoc`, `protoc-gen-go` |
 | `make bench` | Run comparative benchmarks (5 iterations) |
 | `make bench-compare` | Run per-library benchmarks and compare with `benchstat`. Accepts `COUNT=-count=N` |
 | `make conformance` | Run Google protobuf conformance tests in Docker |
-| `make generate-conformance` | Regenerate conformance protocol + test message code |
 | `make clean` | Remove all generated code under `gen/` |
 
 ## Design decisions

@@ -18,7 +18,7 @@ All benchmarks use identical wire-format bytes generated once via official proto
 - `vtproto_bench_test.go` — vtprotobuf benchmarks
 - `gogoproto_bench_test.go` — gogoproto benchmarks
 - `map_bench_test.go` — Map field benchmarks (all four implementations)
-- `mapproto/maps.proto` — Proto definition for map benchmarks
+- `../proto/bench/maps.proto` — Proto definition for map benchmarks
 
 ## Running
 
@@ -49,7 +49,7 @@ All generated code lives under `gen/`:
 - `gen/otlp/` — Our generated code (`go run ./cmd/wiresmith/`)
 - `gen/vtpb/` — vtproto (`protoc` + `protoc-gen-go` + `protoc-gen-go-vtproto`)
 - `gen/gogopb/` — gogoproto (`protoc` + `protoc-gen-gogofast`)
-- `gen/bench/` — Map benchmark code (all four implementations from `bench/mapproto/maps.proto`)
+- `gen/bench/` — Map benchmark code (all four implementations from `proto/bench/maps.proto`)
 
 Regenerate all at once:
 ```bash

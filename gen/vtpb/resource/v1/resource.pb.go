@@ -23,10 +23,10 @@ package v1
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	v1 "wiresmith/gen/vtpb/common/v1"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
+	v1 "wiresmith/gen/vtpb/common/v1"
 )
 
 const (

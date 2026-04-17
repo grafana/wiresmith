@@ -30,7 +30,7 @@ func repoRoot(t *testing.T) string {
 
 func TestGeneratorDeterminism(t *testing.T) {
 	root := repoRoot(t)
-	protoDir := filepath.Join(root, "proto")
+	protoDir := filepath.Join(root, "proto", "otlp")
 
 	const iterations = 5
 	for i := 0; i < iterations; i++ {
