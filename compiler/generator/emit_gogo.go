@@ -74,7 +74,10 @@ func (fg *FileGenerator) emitGogoMethods(md protoreflect.MessageDescriptor) {
 
 // emitRegistration generates init() functions for proto.RegisterType and proto.RegisterFile.
 func (fg *FileGenerator) emitRegistration(fd protoreflect.FileDescriptor) {
-	fg.imports.addImport("github.com/gogo/protobuf/proto", "proto")
+	hasRegistrations := fd.Messages().Len() > 0 || fd.Enums().Len() > 0
+	if hasRegistrations {
+		fg.imports.addImport("github.com/gogo/protobuf/proto", "proto")
+	}
 
 	// RegisterType for each message.
 	for i := 0; i < fd.Messages().Len(); i++ {

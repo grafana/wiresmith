@@ -140,6 +140,11 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 	fg.emitAllMarshalMethods(fd)
 	fg.emitAllUnmarshalMethods(fd)
 
+	// gRPC service stubs.
+	if g.GogoCompat && fd.Services().Len() > 0 {
+		fg.emitAllGRPCServices(fd)
+	}
+
 	if g.GogoCompat {
 		if !isFileOptionFalse(fd, 63001) { // gogoproto.goproto_getters_all
 			fg.emitAllGetters(fd)
