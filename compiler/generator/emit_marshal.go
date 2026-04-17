@@ -66,6 +66,12 @@ func (fg *FileGenerator) emitFieldMarshalReverse(fd protoreflect.FieldDescriptor
 	access := "m." + goName
 	num := protowire.Number(fd.Number())
 
+	// Map fields.
+	if fd.IsMap() {
+		fg.emitMapMarshalReverse(access, fd, num)
+		return
+	}
+
 	// stdduration/stdtime fields use gogo helper functions for marshaling.
 	if isStdDuration(fd) || isStdTime(fd) {
 		fg.emitStdWKTMarshalReverse(access, fd, num)
@@ -502,4 +508,51 @@ func (fg *FileGenerator) emitStdWKTMarshalReverse(access string, fd protoreflect
 		fg.reverseTag("\t\t", num, protowire.BytesType)
 		fmt.Fprintf(fg.body, "\t}\n")
 	}
+}
+
+// emitMapMarshalReverse emits marshal code for map fields.
+func (fg *FileGenerator) emitMapMarshalReverse(access string, fd protoreflect.FieldDescriptor, num protowire.Number) {
+	valFd := fd.Message().Fields().ByNumber(2)
+
+	fmt.Fprintf(fg.body, "\tif len(%s) > 0 {\n", access)
+	fmt.Fprintf(fg.body, "\t\tfor k := range %s {\n", access)
+	fmt.Fprintf(fg.body, "\t\t\tv := %s[k]\n", access)
+	fmt.Fprintf(fg.body, "\t\t\tbaseI := i\n")
+
+	// Marshal value (field 2)
+	switch valFd.Kind() {
+	case protoreflect.MessageKind:
+		fmt.Fprintf(fg.body, "\t\t\tif v != nil {\n")
+		fmt.Fprintf(fg.body, "\t\t\t\t{\n")
+		fmt.Fprintf(fg.body, "\t\t\t\t\tsize, err := v.MarshalToSizedBuffer(dAtA[:i])\n")
+		fmt.Fprintf(fg.body, "\t\t\t\t\tif err != nil {\n\t\t\t\t\t\treturn 0, err\n\t\t\t\t\t}\n")
+		fmt.Fprintf(fg.body, "\t\t\t\t\ti -= size\n")
+		fmt.Fprintf(fg.body, "\t\t\t\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(size))\n")
+		fmt.Fprintf(fg.body, "\t\t\t\t}\n")
+		fmt.Fprintf(fg.body, "\t\t\t\ti--\n\t\t\t\tdAtA[i] = 0x12\n")
+		fmt.Fprintf(fg.body, "\t\t\t}\n")
+	case protoreflect.StringKind:
+		fmt.Fprintf(fg.body, "\t\t\ti -= len(v)\n\t\t\tcopy(dAtA[i:], v)\n")
+		fmt.Fprintf(fg.body, "\t\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(len(v)))\n")
+		fmt.Fprintf(fg.body, "\t\t\ti--\n\t\t\tdAtA[i] = 0x12\n")
+	default:
+		fmt.Fprintf(fg.body, "\t\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(v))\n")
+		fmt.Fprintf(fg.body, "\t\t\ti--\n\t\t\tdAtA[i] = 0x10\n")
+	}
+
+	// Marshal key (field 1)
+	switch fd.MapKey().Kind() {
+	case protoreflect.StringKind:
+		fmt.Fprintf(fg.body, "\t\t\ti -= len(k)\n\t\t\tcopy(dAtA[i:], k)\n")
+		fmt.Fprintf(fg.body, "\t\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(len(k)))\n")
+		fmt.Fprintf(fg.body, "\t\t\ti--\n\t\t\tdAtA[i] = 0x0a\n")
+	default:
+		fmt.Fprintf(fg.body, "\t\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(k))\n")
+		fmt.Fprintf(fg.body, "\t\t\ti--\n\t\t\tdAtA[i] = 0x08\n")
+	}
+
+	fmt.Fprintf(fg.body, "\t\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(baseI-i))\n")
+	fg.reverseTag("\t\t\t", num, protowire.BytesType)
+	fmt.Fprintf(fg.body, "\t\t}\n")
+	fmt.Fprintf(fg.body, "\t}\n")
 }

@@ -38,6 +38,12 @@ func (fg *FileGenerator) emitFieldSize(fd protoreflect.FieldDescriptor) {
 	access := "m." + goName
 	tagSize := protowire.SizeTag(protowire.Number(fd.Number()))
 
+	// Map fields.
+	if fd.IsMap() {
+		fg.emitMapSize(access, fd, tagSize)
+		return
+	}
+
 	// stdduration/stdtime fields use gogo helper functions.
 	if isStdDuration(fd) || isStdTime(fd) {
 		fg.emitStdWKTSize(access, fd, tagSize)
@@ -208,5 +214,38 @@ func (fg *FileGenerator) emitOneofSize(md protoreflect.MessageDescriptor, oo pro
 		}
 	}
 
+	fmt.Fprintf(fg.body, "\t}\n")
+}
+
+func (fg *FileGenerator) emitMapSize(access string, fd protoreflect.FieldDescriptor, tagSize int) {
+	valFd := fd.Message().Fields().ByNumber(2)
+	keyFd := fd.MapKey()
+
+	fmt.Fprintf(fg.body, "\tfor k, v := range %s {\n", access)
+	fmt.Fprintf(fg.body, "\t\t_ = k\n\t\t_ = v\n")
+	fmt.Fprintf(fg.body, "\t\tvar mapEntrySize int\n")
+
+	// Key size
+	switch keyFd.Kind() {
+	case protoreflect.StringKind:
+		fmt.Fprintf(fg.body, "\t\tmapEntrySize += 1 + protowire.SizeVarint(uint64(len(k))) + len(k)\n")
+	default:
+		fmt.Fprintf(fg.body, "\t\tmapEntrySize += 1 + protowire.SizeVarint(uint64(k))\n")
+	}
+
+	// Value size
+	switch valFd.Kind() {
+	case protoreflect.MessageKind:
+		fmt.Fprintf(fg.body, "\t\tif v != nil {\n")
+		fmt.Fprintf(fg.body, "\t\t\tl := v.Size()\n")
+		fmt.Fprintf(fg.body, "\t\t\tmapEntrySize += 1 + protowire.SizeVarint(uint64(l)) + l\n")
+		fmt.Fprintf(fg.body, "\t\t}\n")
+	case protoreflect.StringKind:
+		fmt.Fprintf(fg.body, "\t\tmapEntrySize += 1 + protowire.SizeVarint(uint64(len(v))) + len(v)\n")
+	default:
+		fmt.Fprintf(fg.body, "\t\tmapEntrySize += 1 + protowire.SizeVarint(uint64(v))\n")
+	}
+
+	fmt.Fprintf(fg.body, "\t\tn += %d + protowire.SizeVarint(uint64(mapEntrySize)) + mapEntrySize\n", tagSize)
 	fmt.Fprintf(fg.body, "\t}\n")
 }

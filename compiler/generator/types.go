@@ -127,6 +127,19 @@ func (it *ImportTracker) goType(fd protoreflect.FieldDescriptor) string {
 		return goType
 	}
 
+	// Map fields.
+	if fd.IsMap() {
+		keyType := it.goSingularType(fd.MapKey())
+		valFd := fd.Message().Fields().ByNumber(2)
+		var valType string
+		if valFd.Kind() == protoreflect.MessageKind {
+			valType = "*" + it.goSingularType(valFd)
+		} else {
+			valType = it.goSingularType(valFd)
+		}
+		return "map[" + keyType + "]" + valType
+	}
+
 	if fd.IsList() {
 		elemType := it.goSingularType(fd)
 		// In gogo compat mode, repeated message fields default to pointer slices

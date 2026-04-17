@@ -174,6 +174,13 @@ func (fg *FileGenerator) emitFieldUnmarshal(md protoreflect.MessageDescriptor, f
 		return
 	}
 
+	// Map fields.
+	if fd.IsMap() {
+		fg.emitWireTypeCheck(protoreflect.MessageKind)
+		fg.emitMapUnmarshal("m."+goName, fd)
+		return
+	}
+
 	// stdduration/stdtime fields use gogo helper unmarshal functions.
 	if isStdDuration(fd) || isStdTime(fd) {
 		fg.emitWireTypeCheck(protoreflect.MessageKind)
@@ -763,5 +770,89 @@ func (fg *FileGenerator) emitStdWKTUnmarshal(access string, fd protoreflect.Fiel
 	} else {
 		fmt.Fprintf(fg.body, "\t\t\tif err := %s(&%s, v); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n", unmarshalFunc, access)
 	}
+	fg.emitAdvanceBytes()
+}
+
+// emitMapUnmarshal emits unmarshal code for map fields.
+func (fg *FileGenerator) emitMapUnmarshal(access string, fd protoreflect.FieldDescriptor) {
+	keyFd := fd.MapKey()
+	valFd := fd.Message().Fields().ByNumber(2)
+
+	fg.emitConsumeBytes()
+
+	// Initialize map if nil
+	fmt.Fprintf(fg.body, "\t\t\tif %s == nil {\n\t\t\t\t%s = make(%s)\n\t\t\t}\n", access, access, fg.imports.goType(fd))
+
+	// Declare key and value variables
+	switch keyFd.Kind() {
+	case protoreflect.StringKind:
+		fmt.Fprintf(fg.body, "\t\t\tvar mapkey string\n")
+	default:
+		fmt.Fprintf(fg.body, "\t\t\tvar mapkey %s\n", fg.imports.goSingularType(keyFd))
+	}
+
+	switch valFd.Kind() {
+	case protoreflect.MessageKind:
+		valType := fg.imports.goSingularType(valFd)
+		fmt.Fprintf(fg.body, "\t\t\tvar mapvalue *%s\n", valType)
+	case protoreflect.StringKind:
+		fmt.Fprintf(fg.body, "\t\t\tvar mapvalue string\n")
+	default:
+		fmt.Fprintf(fg.body, "\t\t\tvar mapvalue %s\n", fg.imports.goSingularType(valFd))
+	}
+
+	// Parse the entry bytes
+	fmt.Fprintf(fg.body, "\t\t\tfor len(v) > 0 {\n")
+	fmt.Fprintf(fg.body, "\t\t\t\tentryNum, entryTyp, entryTagLen := protowire.ConsumeTag(v)\n")
+	fmt.Fprintf(fg.body, "\t\t\t\tif entryTagLen < 0 {\n\t\t\t\t\treturn fmt.Errorf(\"invalid map entry tag\")\n\t\t\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\t\t\tv = v[entryTagLen:]\n")
+	fmt.Fprintf(fg.body, "\t\t\t\tswitch entryNum {\n")
+
+	// Key (field 1)
+	fmt.Fprintf(fg.body, "\t\t\t\tcase 1:\n")
+	switch keyFd.Kind() {
+	case protoreflect.StringKind:
+		fmt.Fprintf(fg.body, "\t\t\t\t\tval, valLen := protowire.ConsumeString(v)\n")
+		fmt.Fprintf(fg.body, "\t\t\t\t\tif valLen < 0 {\n\t\t\t\t\t\treturn fmt.Errorf(\"invalid map key\")\n\t\t\t\t\t}\n")
+		fmt.Fprintf(fg.body, "\t\t\t\t\tmapkey = val\n")
+		fmt.Fprintf(fg.body, "\t\t\t\t\tv = v[valLen:]\n")
+	default:
+		fmt.Fprintf(fg.body, "\t\t\t\t\tval, valLen := protowire.ConsumeVarint(v)\n")
+		fmt.Fprintf(fg.body, "\t\t\t\t\tif valLen < 0 {\n\t\t\t\t\t\treturn fmt.Errorf(\"invalid map key\")\n\t\t\t\t\t}\n")
+		fmt.Fprintf(fg.body, "\t\t\t\t\tmapkey = %s(val)\n", fg.imports.goSingularType(keyFd))
+		fmt.Fprintf(fg.body, "\t\t\t\t\tv = v[valLen:]\n")
+	}
+
+	// Value (field 2)
+	fmt.Fprintf(fg.body, "\t\t\t\tcase 2:\n")
+	switch valFd.Kind() {
+	case protoreflect.MessageKind:
+		valType := fg.imports.goSingularType(valFd)
+		fmt.Fprintf(fg.body, "\t\t\t\t\tdata, dataLen := protowire.ConsumeBytes(v)\n")
+		fmt.Fprintf(fg.body, "\t\t\t\t\tif dataLen < 0 {\n\t\t\t\t\t\treturn fmt.Errorf(\"invalid map value\")\n\t\t\t\t\t}\n")
+		fmt.Fprintf(fg.body, "\t\t\t\t\tmapvalue = &%s{}\n", valType)
+		fmt.Fprintf(fg.body, "\t\t\t\t\tif err := mapvalue.Unmarshal(data); err != nil {\n\t\t\t\t\t\treturn err\n\t\t\t\t\t}\n")
+		fmt.Fprintf(fg.body, "\t\t\t\t\tv = v[dataLen:]\n")
+	case protoreflect.StringKind:
+		fmt.Fprintf(fg.body, "\t\t\t\t\tval, valLen := protowire.ConsumeString(v)\n")
+		fmt.Fprintf(fg.body, "\t\t\t\t\tif valLen < 0 {\n\t\t\t\t\t\treturn fmt.Errorf(\"invalid map value\")\n\t\t\t\t\t}\n")
+		fmt.Fprintf(fg.body, "\t\t\t\t\tmapvalue = val\n")
+		fmt.Fprintf(fg.body, "\t\t\t\t\tv = v[valLen:]\n")
+	default:
+		fmt.Fprintf(fg.body, "\t\t\t\t\tval, valLen := protowire.ConsumeVarint(v)\n")
+		fmt.Fprintf(fg.body, "\t\t\t\t\tif valLen < 0 {\n\t\t\t\t\t\treturn fmt.Errorf(\"invalid map value\")\n\t\t\t\t\t}\n")
+		fmt.Fprintf(fg.body, "\t\t\t\t\tmapvalue = %s(val)\n", fg.imports.goSingularType(valFd))
+		fmt.Fprintf(fg.body, "\t\t\t\t\tv = v[valLen:]\n")
+	}
+
+	// Skip unknown fields
+	fmt.Fprintf(fg.body, "\t\t\t\tdefault:\n")
+	fmt.Fprintf(fg.body, "\t\t\t\t\tskipN, err := %s(v, entryNum, entryTyp)\n", fg.skipFieldFuncName())
+	fmt.Fprintf(fg.body, "\t\t\t\t\tif err != nil {\n\t\t\t\t\t\treturn err\n\t\t\t\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\t\t\t\tv = v[skipN:]\n")
+	fmt.Fprintf(fg.body, "\t\t\t\t}\n") // end switch
+	fmt.Fprintf(fg.body, "\t\t\t}\n")   // end for
+
+	fmt.Fprintf(fg.body, "\t\t\t%s[mapkey] = mapvalue\n", access)
 	fg.emitAdvanceBytes()
 }

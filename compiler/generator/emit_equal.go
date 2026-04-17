@@ -82,6 +82,25 @@ func (fg *FileGenerator) emitFieldEqual(fd protoreflect.FieldDescriptor, goName 
 		return
 	}
 
+	// Map fields: compare lengths and individual entries.
+	if fd.IsMap() {
+		fmt.Fprintf(fg.body, "\tif len(this.%s) != len(that1.%s) {\n\t\treturn false\n\t}\n", goName, goName)
+		fmt.Fprintf(fg.body, "\tfor k, v := range this.%s {\n", goName)
+		fmt.Fprintf(fg.body, "\t\tv2, ok := that1.%s[k]\n", goName)
+		fmt.Fprintf(fg.body, "\t\tif !ok {\n\t\t\treturn false\n\t\t}\n")
+		valFd := fd.Message().Fields().ByNumber(2)
+		switch valFd.Kind() {
+		case protoreflect.MessageKind:
+			fmt.Fprintf(fg.body, "\t\tif !v.Equal(v2) {\n\t\t\treturn false\n\t\t}\n")
+		case protoreflect.BytesKind:
+			fmt.Fprintf(fg.body, "\t\tif !bytes.Equal(v, v2) {\n\t\t\treturn false\n\t\t}\n")
+		default:
+			fmt.Fprintf(fg.body, "\t\tif v != v2 {\n\t\t\treturn false\n\t\t}\n")
+		}
+		fmt.Fprintf(fg.body, "\t}\n")
+		return
+	}
+
 	// stdduration/stdtime: compare with !=
 	if isStdDuration(fd) || isStdTime(fd) {
 		if isFieldNullable(fd) {
