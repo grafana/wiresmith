@@ -595,15 +595,12 @@ func (fg *FileGenerator) emitMapFieldUnmarshal(goName string, fd protoreflect.Fi
 	fmt.Fprintf(fg.body, "\t\t\t\tentryData = entryData[entryTagLen:]\n")
 	fmt.Fprintf(fg.body, "\t\t\t\tswitch entryNum {\n")
 
-	// Known fields decode without a wire-type guard: the entry is bounded by
-	// the outer length prefix so a mismatched type produces a parse error, not
-	// a buffer overread. Both vtprotobuf and gogoproto take the same approach
-	// for the same performance reason — an extra branch per field is measurable
-	// on the hot path.
 	fmt.Fprintf(fg.body, "\t\t\t\tcase 1:\n")
+	fg.emitMapEntryWireTypeCheck(keyFd.Kind())
 	fg.emitMapEntryFieldUnmarshal("mapkey", keyFd, "\t\t\t\t\t")
 
 	fmt.Fprintf(fg.body, "\t\t\t\tcase 2:\n")
+	fg.emitMapEntryWireTypeCheck(valFd.Kind())
 	fg.emitMapEntryFieldUnmarshal("mapvalue", valFd, "\t\t\t\t\t")
 
 	// Unknown fields — skip
@@ -617,6 +614,18 @@ func (fg *FileGenerator) emitMapFieldUnmarshal(goName string, fd protoreflect.Fi
 	fmt.Fprintf(fg.body, "\t\t\t%s[mapkey] = mapvalue\n", access)
 
 	fg.emitAdvanceBytes()
+}
+
+// emitMapEntryWireTypeCheck emits a wire-type check for a map entry field,
+// skipping on mismatch to match the behavior of non-map field parsing.
+func (fg *FileGenerator) emitMapEntryWireTypeCheck(kind protoreflect.Kind) {
+	wt := expectedWireType(kind)
+	fmt.Fprintf(fg.body, "\t\t\t\t\tif entryTyp != %s {\n", wt)
+	fmt.Fprintf(fg.body, "\t\t\t\t\t\tskipN, skipErr := skipField(entryData, entryNum, entryTyp)\n")
+	fmt.Fprintf(fg.body, "\t\t\t\t\t\tif skipErr != nil {\n\t\t\t\t\t\t\treturn skipErr\n\t\t\t\t\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\t\t\t\t\tentryData = entryData[skipN:]\n")
+	fmt.Fprintf(fg.body, "\t\t\t\t\t\tcontinue\n")
+	fmt.Fprintf(fg.body, "\t\t\t\t\t}\n")
 }
 
 func (fg *FileGenerator) emitMapEntryFieldUnmarshal(varName string, fd protoreflect.FieldDescriptor, indent string) {

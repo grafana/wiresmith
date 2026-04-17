@@ -297,6 +297,14 @@ func (m *MapBench) unmarshal(b []byte, depth int) error {
 				entryData = entryData[entryTagLen:]
 				switch entryNum {
 				case 1:
+					if entryTyp != protowire.BytesType {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeString(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid string")
@@ -304,6 +312,14 @@ func (m *MapBench) unmarshal(b []byte, depth int) error {
 					mapkey = tmpVal
 					entryData = entryData[tmpN:]
 				case 2:
+					if entryTyp != protowire.BytesType {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeString(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid string")
@@ -347,6 +363,14 @@ func (m *MapBench) unmarshal(b []byte, depth int) error {
 				entryData = entryData[entryTagLen:]
 				switch entryNum {
 				case 1:
+					if entryTyp != protowire.VarintType {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid varint")
@@ -354,6 +378,14 @@ func (m *MapBench) unmarshal(b []byte, depth int) error {
 					mapkey = int64(tmpVal)
 					entryData = entryData[tmpN:]
 				case 2:
+					if entryTyp != protowire.VarintType {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid varint")
@@ -397,6 +429,14 @@ func (m *MapBench) unmarshal(b []byte, depth int) error {
 				entryData = entryData[entryTagLen:]
 				switch entryNum {
 				case 1:
+					if entryTyp != protowire.BytesType {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeString(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid string")
@@ -404,6 +444,14 @@ func (m *MapBench) unmarshal(b []byte, depth int) error {
 					mapkey = tmpVal
 					entryData = entryData[tmpN:]
 				case 2:
+					if entryTyp != protowire.BytesType {
+						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
+						if skipErr != nil {
+							return skipErr
+						}
+						entryData = entryData[skipN:]
+						continue
+					}
 					tmpVal, tmpN := protowire.ConsumeBytes(entryData)
 					if tmpN < 0 {
 						return fmt.Errorf("invalid bytes")
