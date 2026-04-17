@@ -50,4 +50,4 @@ Not supported (not needed for OTel protos): maps, services/RPCs, extensions, wel
 
 ## Conformance test status
 
-537 passing, 130 expected failures (120 maps, 10 semantic: sint normalization, message merge, unknown field preservation, overlong varint tags). Run with `make conformance`.
+563 passing, 130 expected failures (120 maps, 10 semantic: sint normalization, message merge, unknown field preservation, overlong varint tags). Run with `make conformance`.
