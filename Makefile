@@ -18,7 +18,7 @@ define mflags
 $(foreach p,$(ALL_PROTOS),--$(2)=M$(p)=$(MODULE)/$(1)/$(patsubst opentelemetry/proto/%,%,$(dir $(p))))
 endef
 
-.PHONY: help build test fuzz generate bench bench-compare clean
+.PHONY: help build test fuzz generate bench bench-compare clean conformance generate-conformance
 
 help: ## Print this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-20s %s\n", $$1, $$2}'
@@ -58,8 +58,12 @@ bench-compare: ## Run per-library benchmarks and compare with benchstat
 		"VTProto=$(TMPDIR)/VTProto.txt" \
 		"GogoProto=$(TMPDIR)/GogoProto.txt"
 
+conformance: ## Run conformance tests (requires Docker)
+	docker build -f conformance/Dockerfile -t wiresmith-conformance .
+	docker run --rm wiresmith-conformance
+
 clean: ## Remove all generated code under gen/
-	rm -rf gen/otlp gen/vtpb gen/gogopb
+	rm -rf gen/otlp gen/vtpb gen/gogopb gen/protobuf_test_messages
 
 # ── Generate targets ─────────────────────────────────────────────────────────
 
@@ -77,6 +81,14 @@ define setup_proto_root
 	@cp proto/logs.proto     "$(PROTO_ROOT)/opentelemetry/proto/logs/v1/"
 	@cp proto/profiles.proto "$(PROTO_ROOT)/opentelemetry/proto/profiles/v1development/"
 endef
+
+generate-conformance: ## Regenerate conformance test code
+	@echo "==> Generating conformance protocol code → conformance/internal/conformancepb/"
+	protoc -I conformance/proto \
+		--go_out=. --go_opt=module=$(MODULE) \
+		conformance/proto/conformance.proto
+	@echo "==> Generating wiresmith code for test messages → gen/protobuf_test_messages/"
+	go run ./cmd/wiresmith/ --proto_path=conformance/testmsg --out=gen --module=$(MODULE)
 
 generate-ours:
 	@echo "==> Generating wiresmith code → gen/otlp/"
