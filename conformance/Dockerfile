@@ -31,7 +31,12 @@ FROM golang:1.26@sha256:5f3787b7f902c07c7ec4f3aa91a301a3eda8133aa32661a3b3a3a86a
 WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
-COPY . .
+# Copy only what the testee binary needs so the cache invalidates precisely
+# when dependencies change, not on unrelated file edits.
+COPY gen/protohelpers/ gen/protohelpers/
+COPY gen/protobuf_test_messages/ gen/protobuf_test_messages/
+COPY conformance/internal/ conformance/internal/
+COPY conformance/testee/ conformance/testee/
 RUN CGO_ENABLED=0 go build -o /testee ./conformance/testee/
 
 # --- Stage 3: Run conformance tests ---
