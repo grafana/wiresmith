@@ -38,6 +38,12 @@ func (fg *FileGenerator) emitFieldSize(fd protoreflect.FieldDescriptor) {
 	access := "m." + goName
 	tagSize := protowire.SizeTag(protowire.Number(fd.Number()))
 
+	// stdduration/stdtime fields use gogo helper functions.
+	if isStdDuration(fd) || isStdTime(fd) {
+		fg.emitStdWKTSize(access, fd, tagSize)
+		return
+	}
+
 	if fd.IsList() {
 		fg.emitRepeatedFieldSize(access, fd, tagSize)
 		return
@@ -47,6 +53,31 @@ func (fg *FileGenerator) emitFieldSize(fd protoreflect.FieldDescriptor) {
 		return
 	}
 	fg.emitSingularFieldSize(access, fd, tagSize)
+}
+
+func (fg *FileGenerator) emitStdWKTSize(access string, fd protoreflect.FieldDescriptor, tagSize int) {
+	gogoTypes := fg.imports.addImport("github.com/gogo/protobuf/types", "types")
+
+	var sizeFunc string
+	if isStdDuration(fd) {
+		sizeFunc = gogoTypes + ".SizeOfStdDuration"
+	} else {
+		sizeFunc = gogoTypes + ".SizeOfStdTime"
+	}
+
+	nullable := isFieldNullable(fd)
+
+	if nullable {
+		fmt.Fprintf(fg.body, "\tif %s != nil {\n", access)
+		fmt.Fprintf(fg.body, "\t\tl := %s(*%s)\n", sizeFunc, access)
+		fmt.Fprintf(fg.body, "\t\tn += %d + protowire.SizeVarint(uint64(l)) + l\n", tagSize)
+		fmt.Fprintf(fg.body, "\t}\n")
+	} else {
+		fmt.Fprintf(fg.body, "\t{\n")
+		fmt.Fprintf(fg.body, "\t\tl := %s(%s)\n", sizeFunc, access)
+		fmt.Fprintf(fg.body, "\t\tn += %d + protowire.SizeVarint(uint64(l)) + l\n", tagSize)
+		fmt.Fprintf(fg.body, "\t}\n")
+	}
 }
 
 func (fg *FileGenerator) emitSingularFieldSize(access string, fd protoreflect.FieldDescriptor, tagSize int) {

@@ -82,6 +82,16 @@ func (fg *FileGenerator) emitFieldEqual(fd protoreflect.FieldDescriptor, goName 
 		return
 	}
 
+	// stdduration/stdtime: compare with !=
+	if isStdDuration(fd) || isStdTime(fd) {
+		if isFieldNullable(fd) {
+			fg.emitOptionalFieldEqual(fd, goName)
+		} else {
+			fmt.Fprintf(fg.body, "\tif this.%s != that1.%s {\n\t\treturn false\n\t}\n", goName, goName)
+		}
+		return
+	}
+
 	switch fd.Kind() {
 	case protoreflect.BytesKind:
 		fmt.Fprintf(fg.body, "\tif !bytes.Equal(this.%s, that1.%s) {\n\t\treturn false\n\t}\n", goName, goName)

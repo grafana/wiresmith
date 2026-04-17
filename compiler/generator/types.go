@@ -51,6 +51,11 @@ func (it *ImportTracker) addProtoFileImport(fd protoreflect.FileDescriptor) stri
 	protoPkg := string(fd.Package())
 
 	if it.gen != nil && it.gen.GogoCompat {
+		// Map google.protobuf well-known types to gogo/protobuf/types.
+		if string(fd.Package()) == "google.protobuf" {
+			return it.addImport("github.com/gogo/protobuf/types", "types")
+		}
+
 		// In gogo compat mode, derive Go import path from proto file path.
 		// E.g., "github.com/grafana/mimir/pkg/planning/core/core.proto"
 		// → import "github.com/grafana/mimir/pkg/planning/core"
@@ -80,13 +85,34 @@ func (it *ImportTracker) addStdImport(path string) {
 }
 
 func (it *ImportTracker) goType(fd protoreflect.FieldDescriptor) string {
+	// Check for stdduration — maps google.protobuf.Duration to time.Duration.
+	if isStdDuration(fd) {
+		it.addStdImport("time")
+		if fd.IsList() {
+			return "[]time.Duration"
+		}
+		return "time.Duration"
+	}
+
+	// Check for stdtime — maps google.protobuf.Timestamp to *time.Time.
+	if isStdTime(fd) {
+		it.addStdImport("time")
+		if fd.IsList() {
+			if isFieldNullable(fd) {
+				return "[]*time.Time"
+			}
+			return "[]time.Time"
+		}
+		if isFieldNullable(fd) {
+			return "*time.Time"
+		}
+		return "time.Time"
+	}
+
 	// Check for customtype override — completely replaces the Go type.
 	if ct := getCustomType(fd); ct != "" {
 		goType := it.resolveGoTypePath(ct)
 		if fd.IsList() {
-			if isFieldNullable(fd) {
-				return "[]" + goType
-			}
 			return "[]" + goType
 		}
 		return goType
@@ -190,6 +216,29 @@ func getFieldStringOption(fd protoreflect.FieldDescriptor, fieldNum protoreflect
 // getCustomType returns the gogoproto.customtype value for a field, or empty string.
 func getCustomType(fd protoreflect.FieldDescriptor) string {
 	return getFieldStringOption(fd, 65003)
+}
+
+// isStdDuration returns true if the field has (gogoproto.stdduration) = true.
+func isStdDuration(fd protoreflect.FieldDescriptor) bool {
+	return isFieldOptionTrue(fd, 65011)
+}
+
+// isStdTime returns true if the field has (gogoproto.stdtime) = true.
+func isStdTime(fd protoreflect.FieldDescriptor) bool {
+	return isFieldOptionTrue(fd, 65010)
+}
+
+// isFieldOptionTrue checks if a boolean field option is set to true (value 1).
+func isFieldOptionTrue(fd protoreflect.FieldDescriptor, fieldNum protoreflect.FieldNumber) bool {
+	opts, ok := fd.Options().(*descriptorpb.FieldOptions)
+	if !ok || opts == nil {
+		return false
+	}
+	b, err := proto.Marshal(opts)
+	if err != nil {
+		return false
+	}
+	return containsVarintField(b, fieldNum, 1)
 }
 
 // getCastType returns the gogoproto.casttype value for a field, or empty string.

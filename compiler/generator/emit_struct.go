@@ -110,8 +110,11 @@ func (fg *FileGenerator) protoTag(fd protoreflect.FieldDescriptor) string {
 	}
 	// gogoslick uses the proto field name (snake_case), not the JSON name (camelCase).
 	jsonName := string(fd.Name())
-	// gogoslick omits omitempty for non-nullable repeated message/bytes fields.
-	if fd.IsList() && !isFieldNullable(fd) && (fd.Kind() == protoreflect.MessageKind || fd.Kind() == protoreflect.BytesKind) {
+	// gogoslick omits omitempty for non-nullable message/bytes/stdduration/stdtime fields.
+	if !isFieldNullable(fd) && (fd.Kind() == protoreflect.MessageKind || isStdDuration(fd) || isStdTime(fd)) {
+		return protoTag + fmt.Sprintf(` json:"%s"`, jsonName)
+	}
+	if fd.IsList() && !isFieldNullable(fd) && fd.Kind() == protoreflect.BytesKind {
 		return protoTag + fmt.Sprintf(` json:"%s"`, jsonName)
 	}
 	return protoTag + fmt.Sprintf(` json:"%s,omitempty"`, jsonName)
@@ -223,6 +226,16 @@ func (fg *FileGenerator) zeroValueFor(fd protoreflect.FieldDescriptor) string {
 	}
 	if fd.HasOptionalKeyword() {
 		return "nil"
+	}
+	if isStdDuration(fd) {
+		return "0"
+	}
+	if isStdTime(fd) {
+		if isFieldNullable(fd) {
+			return "nil"
+		}
+		fg.imports.addStdImport("time")
+		return "time.Time{}"
 	}
 	if fd.Kind() == protoreflect.MessageKind {
 		if isGogoPointerField(fg.gen, fd) {

@@ -66,6 +66,12 @@ func (fg *FileGenerator) emitFieldMarshalReverse(fd protoreflect.FieldDescriptor
 	access := "m." + goName
 	num := protowire.Number(fd.Number())
 
+	// stdduration/stdtime fields use gogo helper functions for marshaling.
+	if isStdDuration(fd) || isStdTime(fd) {
+		fg.emitStdWKTMarshalReverse(access, fd, num)
+		return
+	}
+
 	// customtype fields use MarshalTo (forward) instead of MarshalToSizedBuffer (reverse).
 	if ct := getCustomType(fd); ct != "" {
 		if fd.IsList() {
@@ -460,4 +466,40 @@ func (fg *FileGenerator) emitOneofMarshalReverse(md protoreflect.MessageDescript
 	}
 
 	fmt.Fprintf(fg.body, "\t}\n")
+}
+
+// emitStdWKTMarshalReverse emits marshal code for stdduration/stdtime fields.
+func (fg *FileGenerator) emitStdWKTMarshalReverse(access string, fd protoreflect.FieldDescriptor, num protowire.Number) {
+	gogoTypes := fg.imports.addImport("github.com/gogo/protobuf/types", "types")
+
+	var marshalFunc, sizeFunc string
+	if isStdDuration(fd) {
+		marshalFunc = gogoTypes + ".StdDurationMarshalTo"
+		sizeFunc = gogoTypes + ".SizeOfStdDuration"
+	} else {
+		marshalFunc = gogoTypes + ".StdTimeMarshalTo"
+		sizeFunc = gogoTypes + ".SizeOfStdTime"
+	}
+
+	nullable := isFieldNullable(fd)
+
+	if nullable {
+		fmt.Fprintf(fg.body, "\tif %s != nil {\n", access)
+		fmt.Fprintf(fg.body, "\t\tn, err := %s(*%s, dAtA[i-%s(*%s):])\n", marshalFunc, access, sizeFunc, access)
+		fmt.Fprintf(fg.body, "\t\tif err != nil {\n\t\t\treturn 0, err\n\t\t}\n")
+		fmt.Fprintf(fg.body, "\t\ti -= n\n")
+		fmt.Fprintf(fg.body, "\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(n))\n")
+		fg.reverseTag("\t\t", num, protowire.BytesType)
+		fmt.Fprintf(fg.body, "\t}\n")
+	} else {
+		// Use a block scope to avoid variable redeclaration when multiple
+		// stdduration/stdtime fields exist in the same message.
+		fmt.Fprintf(fg.body, "\t{\n")
+		fmt.Fprintf(fg.body, "\t\tn, err := %s(%s, dAtA[i-%s(%s):])\n", marshalFunc, access, sizeFunc, access)
+		fmt.Fprintf(fg.body, "\t\tif err != nil {\n\t\t\treturn 0, err\n\t\t}\n")
+		fmt.Fprintf(fg.body, "\t\ti -= n\n")
+		fmt.Fprintf(fg.body, "\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(n))\n")
+		fg.reverseTag("\t\t", num, protowire.BytesType)
+		fmt.Fprintf(fg.body, "\t}\n")
+	}
 }

@@ -174,6 +174,13 @@ func (fg *FileGenerator) emitFieldUnmarshal(md protoreflect.MessageDescriptor, f
 		return
 	}
 
+	// stdduration/stdtime fields use gogo helper unmarshal functions.
+	if isStdDuration(fd) || isStdTime(fd) {
+		fg.emitWireTypeCheck(protoreflect.MessageKind)
+		fg.emitStdWKTUnmarshal("m."+goName, fd)
+		return
+	}
+
 	// All other fields have exactly one expected wire type.
 	fg.emitWireTypeCheck(kind)
 
@@ -229,6 +236,15 @@ func expectedWireType(kind protoreflect.Kind) string {
 func (fg *FileGenerator) emitSingularFieldUnmarshal(goName string, fd protoreflect.FieldDescriptor, kind protoreflect.Kind) {
 	access := "m." + goName
 
+	// For casttype, wrap the value cast with the custom type.
+	castPrefix := ""
+	castSuffix := ""
+	if ct := getCastType(fd); ct != "" {
+		goType := fg.imports.resolveGoTypePath(ct)
+		castPrefix = goType + "("
+		castSuffix = ")"
+	}
+
 	switch kind {
 	case protoreflect.BoolKind:
 		fg.emitConsumeVarint()
@@ -237,7 +253,7 @@ func (fg *FileGenerator) emitSingularFieldUnmarshal(goName string, fd protorefle
 
 	case protoreflect.Int32Kind:
 		fg.emitConsumeVarint()
-		fmt.Fprintf(fg.body, "\t\t\t%s = int32(v)\n", access)
+		fmt.Fprintf(fg.body, "\t\t\t%s = %sint32(v)%s\n", access, castPrefix, castSuffix)
 		fg.emitAdvanceBytes()
 
 	case protoreflect.Sint32Kind:
@@ -247,22 +263,26 @@ func (fg *FileGenerator) emitSingularFieldUnmarshal(goName string, fd protorefle
 
 	case protoreflect.Uint32Kind:
 		fg.emitConsumeVarint()
-		fmt.Fprintf(fg.body, "\t\t\t%s = uint32(v)\n", access)
+		fmt.Fprintf(fg.body, "\t\t\t%s = %suint32(v)%s\n", access, castPrefix, castSuffix)
 		fg.emitAdvanceBytes()
 
 	case protoreflect.Int64Kind:
 		fg.emitConsumeVarint()
-		fmt.Fprintf(fg.body, "\t\t\t%s = int64(v)\n", access)
+		fmt.Fprintf(fg.body, "\t\t\t%s = %sint64(v)%s\n", access, castPrefix, castSuffix)
 		fg.emitAdvanceBytes()
 
 	case protoreflect.Sint64Kind:
 		fg.emitConsumeVarint()
-		fmt.Fprintf(fg.body, "\t\t\t%s = int64(protowire.DecodeZigZag(v))\n", access)
+		fmt.Fprintf(fg.body, "\t\t\t%s = %sint64(protowire.DecodeZigZag(v))%s\n", access, castPrefix, castSuffix)
 		fg.emitAdvanceBytes()
 
 	case protoreflect.Uint64Kind:
 		fg.emitConsumeVarint()
-		fmt.Fprintf(fg.body, "\t\t\t%s = v\n", access)
+		if castPrefix != "" {
+			fmt.Fprintf(fg.body, "\t\t\t%s = %sv%s\n", access, castPrefix, castSuffix)
+		} else {
+			fmt.Fprintf(fg.body, "\t\t\t%s = v\n", access)
+		}
 		fg.emitAdvanceBytes()
 
 	case protoreflect.EnumKind:
@@ -713,4 +733,35 @@ func (fg *FileGenerator) emitConsumeString() {
 
 func (fg *FileGenerator) emitAdvanceBytes() {
 	fmt.Fprintf(fg.body, "\t\t\tb = b[n:]\n")
+}
+
+// emitStdWKTUnmarshal emits unmarshal code for stdduration/stdtime fields.
+func (fg *FileGenerator) emitStdWKTUnmarshal(access string, fd protoreflect.FieldDescriptor) {
+	gogoTypes := fg.imports.addImport("github.com/gogo/protobuf/types", "types")
+
+	var unmarshalFunc string
+	if isStdDuration(fd) {
+		unmarshalFunc = gogoTypes + ".StdDurationUnmarshal"
+	} else {
+		unmarshalFunc = gogoTypes + ".StdTimeUnmarshal"
+	}
+
+	nullable := isFieldNullable(fd)
+
+	fg.emitConsumeBytes()
+	if nullable {
+		fg.imports.addStdImport("time")
+		if isStdTime(fd) {
+			fmt.Fprintf(fg.body, "\t\t\tvar t time.Time\n")
+			fmt.Fprintf(fg.body, "\t\t\tif err := %s(&t, v); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n", unmarshalFunc)
+			fmt.Fprintf(fg.body, "\t\t\t%s = &t\n", access)
+		} else {
+			fmt.Fprintf(fg.body, "\t\t\tvar d time.Duration\n")
+			fmt.Fprintf(fg.body, "\t\t\tif err := %s(&d, v); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n", unmarshalFunc)
+			fmt.Fprintf(fg.body, "\t\t\t%s = &d\n", access)
+		}
+	} else {
+		fmt.Fprintf(fg.body, "\t\t\tif err := %s(&%s, v); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n", unmarshalFunc, access)
+	}
+	fg.emitAdvanceBytes()
 }
