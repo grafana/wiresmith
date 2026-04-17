@@ -459,82 +459,33 @@ func (m *TestAllTypesProto3) Size() int {
 		}
 		n += 2 + protowire.SizeVarint(uint64(dataLen)) + dataLen
 	}
-	if len(m.UnpackedInt32) > 0 {
-		var dataLen int
-		for _, v := range m.UnpackedInt32 {
-			dataLen += protowire.SizeVarint(uint64(v))
-		}
-		n += 2 + protowire.SizeVarint(uint64(dataLen)) + dataLen
+	for _, v := range m.UnpackedInt32 {
+		n += 2 + protowire.SizeVarint(uint64(v))
 	}
-	if len(m.UnpackedInt64) > 0 {
-		var dataLen int
-		for _, v := range m.UnpackedInt64 {
-			dataLen += protowire.SizeVarint(uint64(v))
-		}
-		n += 2 + protowire.SizeVarint(uint64(dataLen)) + dataLen
+	for _, v := range m.UnpackedInt64 {
+		n += 2 + protowire.SizeVarint(uint64(v))
 	}
-	if len(m.UnpackedUint32) > 0 {
-		var dataLen int
-		for _, v := range m.UnpackedUint32 {
-			dataLen += protowire.SizeVarint(uint64(v))
-		}
-		n += 2 + protowire.SizeVarint(uint64(dataLen)) + dataLen
+	for _, v := range m.UnpackedUint32 {
+		n += 2 + protowire.SizeVarint(uint64(v))
 	}
-	if len(m.UnpackedUint64) > 0 {
-		var dataLen int
-		for _, v := range m.UnpackedUint64 {
-			dataLen += protowire.SizeVarint(uint64(v))
-		}
-		n += 2 + protowire.SizeVarint(uint64(dataLen)) + dataLen
+	for _, v := range m.UnpackedUint64 {
+		n += 2 + protowire.SizeVarint(uint64(v))
 	}
-	if len(m.UnpackedSint32) > 0 {
-		var dataLen int
-		for _, v := range m.UnpackedSint32 {
-			dataLen += protowire.SizeVarint(protowire.EncodeZigZag(int64(v)))
-		}
-		n += 2 + protowire.SizeVarint(uint64(dataLen)) + dataLen
+	for _, v := range m.UnpackedSint32 {
+		n += 2 + protowire.SizeVarint(protowire.EncodeZigZag(int64(v)))
 	}
-	if len(m.UnpackedSint64) > 0 {
-		var dataLen int
-		for _, v := range m.UnpackedSint64 {
-			dataLen += protowire.SizeVarint(protowire.EncodeZigZag(v))
-		}
-		n += 2 + protowire.SizeVarint(uint64(dataLen)) + dataLen
+	for _, v := range m.UnpackedSint64 {
+		n += 2 + protowire.SizeVarint(protowire.EncodeZigZag(v))
 	}
-	if len(m.UnpackedFixed32) > 0 {
-		dataLen := len(m.UnpackedFixed32) * 4
-		n += 2 + protowire.SizeVarint(uint64(dataLen)) + dataLen
-	}
-	if len(m.UnpackedFixed64) > 0 {
-		dataLen := len(m.UnpackedFixed64) * 8
-		n += 2 + protowire.SizeVarint(uint64(dataLen)) + dataLen
-	}
-	if len(m.UnpackedSfixed32) > 0 {
-		dataLen := len(m.UnpackedSfixed32) * 4
-		n += 2 + protowire.SizeVarint(uint64(dataLen)) + dataLen
-	}
-	if len(m.UnpackedSfixed64) > 0 {
-		dataLen := len(m.UnpackedSfixed64) * 8
-		n += 2 + protowire.SizeVarint(uint64(dataLen)) + dataLen
-	}
-	if len(m.UnpackedFloat) > 0 {
-		dataLen := len(m.UnpackedFloat) * 4
-		n += 2 + protowire.SizeVarint(uint64(dataLen)) + dataLen
-	}
-	if len(m.UnpackedDouble) > 0 {
-		dataLen := len(m.UnpackedDouble) * 8
-		n += 2 + protowire.SizeVarint(uint64(dataLen)) + dataLen
-	}
-	if len(m.UnpackedBool) > 0 {
-		dataLen := len(m.UnpackedBool)
-		n += 2 + protowire.SizeVarint(uint64(dataLen)) + dataLen
-	}
-	if len(m.UnpackedNestedEnum) > 0 {
-		var dataLen int
-		for _, v := range m.UnpackedNestedEnum {
-			dataLen += protowire.SizeVarint(uint64(v))
-		}
-		n += 2 + protowire.SizeVarint(uint64(dataLen)) + dataLen
+	n += len(m.UnpackedFixed32) * 6
+	n += len(m.UnpackedFixed64) * 10
+	n += len(m.UnpackedSfixed32) * 6
+	n += len(m.UnpackedSfixed64) * 10
+	n += len(m.UnpackedFloat) * 6
+	n += len(m.UnpackedDouble) * 10
+	n += len(m.UnpackedBool) * 3
+	for _, v := range m.UnpackedNestedEnum {
+		n += 2 + protowire.SizeVarint(uint64(v))
 	}
 	switch v := m.OneofField.(type) {
 	case *TestAllTypesProto3_OneofUint32:
@@ -883,172 +834,114 @@ func (m *TestAllTypesProto3) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0xf8
 	}
-	if len(m.UnpackedNestedEnum) > 0 {
-		var j int
-		pStart := i
-		for j = len(m.UnpackedNestedEnum) - 1; j >= 0; j-- {
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(m.UnpackedNestedEnum[j]))
-		}
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(pStart-i))
+	for iNdEx := len(m.UnpackedNestedEnum) - 1; iNdEx >= 0; iNdEx-- {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.UnpackedNestedEnum[iNdEx]))
 		i--
 		dAtA[i] = 0x06
 		i--
-		dAtA[i] = 0xb2
+		dAtA[i] = 0xb0
 	}
-	if len(m.UnpackedBool) > 0 {
-		var j int
-		pStart := i
-		for j = len(m.UnpackedBool) - 1; j >= 0; j-- {
-			i--
-			if m.UnpackedBool[j] {
-				dAtA[i] = 1
-			} else {
-				dAtA[i] = 0
-			}
+	for iNdEx := len(m.UnpackedBool) - 1; iNdEx >= 0; iNdEx-- {
+		i--
+		if m.UnpackedBool[iNdEx] {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
 		}
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(pStart-i))
 		i--
 		dAtA[i] = 0x06
 		i--
-		dAtA[i] = 0xaa
+		dAtA[i] = 0xa8
 	}
-	if len(m.UnpackedDouble) > 0 {
-		for iNdEx := len(m.UnpackedDouble) - 1; iNdEx >= 0; iNdEx-- {
-			i -= 8
-			binary.LittleEndian.PutUint64(dAtA[i:], math.Float64bits(m.UnpackedDouble[iNdEx]))
-		}
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.UnpackedDouble)*8))
+	for iNdEx := len(m.UnpackedDouble) - 1; iNdEx >= 0; iNdEx-- {
+		i -= 8
+		binary.LittleEndian.PutUint64(dAtA[i:], math.Float64bits(m.UnpackedDouble[iNdEx]))
 		i--
 		dAtA[i] = 0x06
 		i--
-		dAtA[i] = 0xa2
+		dAtA[i] = 0xa1
 	}
-	if len(m.UnpackedFloat) > 0 {
-		for iNdEx := len(m.UnpackedFloat) - 1; iNdEx >= 0; iNdEx-- {
-			i -= 4
-			binary.LittleEndian.PutUint32(dAtA[i:], math.Float32bits(m.UnpackedFloat[iNdEx]))
-		}
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.UnpackedFloat)*4))
+	for iNdEx := len(m.UnpackedFloat) - 1; iNdEx >= 0; iNdEx-- {
+		i -= 4
+		binary.LittleEndian.PutUint32(dAtA[i:], math.Float32bits(m.UnpackedFloat[iNdEx]))
 		i--
 		dAtA[i] = 0x06
 		i--
-		dAtA[i] = 0x9a
+		dAtA[i] = 0x9d
 	}
-	if len(m.UnpackedSfixed64) > 0 {
-		for iNdEx := len(m.UnpackedSfixed64) - 1; iNdEx >= 0; iNdEx-- {
-			i -= 8
-			binary.LittleEndian.PutUint64(dAtA[i:], uint64(m.UnpackedSfixed64[iNdEx]))
-		}
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.UnpackedSfixed64)*8))
+	for iNdEx := len(m.UnpackedSfixed64) - 1; iNdEx >= 0; iNdEx-- {
+		i -= 8
+		binary.LittleEndian.PutUint64(dAtA[i:], uint64(m.UnpackedSfixed64[iNdEx]))
 		i--
 		dAtA[i] = 0x06
 		i--
-		dAtA[i] = 0x92
+		dAtA[i] = 0x91
 	}
-	if len(m.UnpackedSfixed32) > 0 {
-		for iNdEx := len(m.UnpackedSfixed32) - 1; iNdEx >= 0; iNdEx-- {
-			i -= 4
-			binary.LittleEndian.PutUint32(dAtA[i:], uint32(m.UnpackedSfixed32[iNdEx]))
-		}
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.UnpackedSfixed32)*4))
+	for iNdEx := len(m.UnpackedSfixed32) - 1; iNdEx >= 0; iNdEx-- {
+		i -= 4
+		binary.LittleEndian.PutUint32(dAtA[i:], uint32(m.UnpackedSfixed32[iNdEx]))
 		i--
 		dAtA[i] = 0x06
 		i--
-		dAtA[i] = 0x8a
+		dAtA[i] = 0x8d
 	}
-	if len(m.UnpackedFixed64) > 0 {
-		for iNdEx := len(m.UnpackedFixed64) - 1; iNdEx >= 0; iNdEx-- {
-			i -= 8
-			binary.LittleEndian.PutUint64(dAtA[i:], m.UnpackedFixed64[iNdEx])
-		}
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.UnpackedFixed64)*8))
+	for iNdEx := len(m.UnpackedFixed64) - 1; iNdEx >= 0; iNdEx-- {
+		i -= 8
+		binary.LittleEndian.PutUint64(dAtA[i:], m.UnpackedFixed64[iNdEx])
 		i--
 		dAtA[i] = 0x06
 		i--
-		dAtA[i] = 0x82
+		dAtA[i] = 0x81
 	}
-	if len(m.UnpackedFixed32) > 0 {
-		for iNdEx := len(m.UnpackedFixed32) - 1; iNdEx >= 0; iNdEx-- {
-			i -= 4
-			binary.LittleEndian.PutUint32(dAtA[i:], m.UnpackedFixed32[iNdEx])
-		}
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.UnpackedFixed32)*4))
+	for iNdEx := len(m.UnpackedFixed32) - 1; iNdEx >= 0; iNdEx-- {
+		i -= 4
+		binary.LittleEndian.PutUint32(dAtA[i:], m.UnpackedFixed32[iNdEx])
 		i--
 		dAtA[i] = 0x05
 		i--
-		dAtA[i] = 0xfa
+		dAtA[i] = 0xfd
 	}
-	if len(m.UnpackedSint64) > 0 {
-		var j int
-		pStart := i
-		for j = len(m.UnpackedSint64) - 1; j >= 0; j-- {
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(uint64(m.UnpackedSint64[j]<<1)^uint64(int64(m.UnpackedSint64[j])>>63)))
-		}
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(pStart-i))
+	for iNdEx := len(m.UnpackedSint64) - 1; iNdEx >= 0; iNdEx-- {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(uint64(m.UnpackedSint64[iNdEx]<<1)^uint64(int64(m.UnpackedSint64[iNdEx])>>63)))
 		i--
 		dAtA[i] = 0x05
 		i--
-		dAtA[i] = 0xf2
+		dAtA[i] = 0xf0
 	}
-	if len(m.UnpackedSint32) > 0 {
-		var j int
-		pStart := i
-		for j = len(m.UnpackedSint32) - 1; j >= 0; j-- {
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(uint32(m.UnpackedSint32[j]<<1)^uint32(int32(m.UnpackedSint32[j])>>31)))
-		}
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(pStart-i))
+	for iNdEx := len(m.UnpackedSint32) - 1; iNdEx >= 0; iNdEx-- {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(uint32(m.UnpackedSint32[iNdEx]<<1)^uint32(int32(m.UnpackedSint32[iNdEx])>>31)))
 		i--
 		dAtA[i] = 0x05
 		i--
-		dAtA[i] = 0xea
+		dAtA[i] = 0xe8
 	}
-	if len(m.UnpackedUint64) > 0 {
-		var j int
-		pStart := i
-		for j = len(m.UnpackedUint64) - 1; j >= 0; j-- {
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(m.UnpackedUint64[j]))
-		}
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(pStart-i))
+	for iNdEx := len(m.UnpackedUint64) - 1; iNdEx >= 0; iNdEx-- {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.UnpackedUint64[iNdEx]))
 		i--
 		dAtA[i] = 0x05
 		i--
-		dAtA[i] = 0xe2
+		dAtA[i] = 0xe0
 	}
-	if len(m.UnpackedUint32) > 0 {
-		var j int
-		pStart := i
-		for j = len(m.UnpackedUint32) - 1; j >= 0; j-- {
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(m.UnpackedUint32[j]))
-		}
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(pStart-i))
+	for iNdEx := len(m.UnpackedUint32) - 1; iNdEx >= 0; iNdEx-- {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.UnpackedUint32[iNdEx]))
 		i--
 		dAtA[i] = 0x05
 		i--
-		dAtA[i] = 0xda
+		dAtA[i] = 0xd8
 	}
-	if len(m.UnpackedInt64) > 0 {
-		var j int
-		pStart := i
-		for j = len(m.UnpackedInt64) - 1; j >= 0; j-- {
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(m.UnpackedInt64[j]))
-		}
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(pStart-i))
+	for iNdEx := len(m.UnpackedInt64) - 1; iNdEx >= 0; iNdEx-- {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.UnpackedInt64[iNdEx]))
 		i--
 		dAtA[i] = 0x05
 		i--
-		dAtA[i] = 0xd2
+		dAtA[i] = 0xd0
 	}
-	if len(m.UnpackedInt32) > 0 {
-		var j int
-		pStart := i
-		for j = len(m.UnpackedInt32) - 1; j >= 0; j-- {
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(m.UnpackedInt32[j]))
-		}
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(pStart-i))
+	for iNdEx := len(m.UnpackedInt32) - 1; iNdEx >= 0; iNdEx-- {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.UnpackedInt32[iNdEx]))
 		i--
 		dAtA[i] = 0x05
 		i--
-		dAtA[i] = 0xca
+		dAtA[i] = 0xc8
 	}
 	if len(m.PackedNestedEnum) > 0 {
 		var j int

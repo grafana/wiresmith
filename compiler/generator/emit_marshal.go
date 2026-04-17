@@ -274,7 +274,7 @@ func (fg *FileGenerator) emitRepeatedFieldMarshalReverse(access string, fd proto
 		fg.reverseTag("\t\t", num, protowire.BytesType)
 		fmt.Fprintf(fg.body, "\t}\n")
 
-	case isPackable(kind):
+	case isPackable(kind) && fd.IsPacked():
 		fmt.Fprintf(fg.body, "\tif len(%s) > 0 {\n", access)
 
 		if isFixed64Kind(kind) {
@@ -299,6 +299,9 @@ func (fg *FileGenerator) emitRepeatedFieldMarshalReverse(access string, fd proto
 
 		fg.reverseTag("\t\t", num, protowire.BytesType)
 		fmt.Fprintf(fg.body, "\t}\n")
+
+	case isPackable(kind) && !fd.IsPacked():
+		fg.emitUnpackedRepeatedMarshalReverse(access, fd)
 	}
 }
 
@@ -336,6 +339,61 @@ func (fg *FileGenerator) emitPackedVarintElementReverse(indent string, kind prot
 	default:
 		fmt.Fprintf(fg.body, "%si = protohelpers.EncodeVarint(dAtA, i, uint64(%s))\n", indent, access)
 	}
+}
+
+func (fg *FileGenerator) emitUnpackedRepeatedMarshalReverse(access string, fd protoreflect.FieldDescriptor) {
+	kind := fd.Kind()
+	num := protowire.Number(fd.Number())
+	fg.needsBinaryImport(kind)
+
+	fmt.Fprintf(fg.body, "\tfor iNdEx := len(%s) - 1; iNdEx >= 0; iNdEx-- {\n", access)
+	elem := access + "[iNdEx]"
+
+	switch kind {
+	case protoreflect.BoolKind:
+		fmt.Fprintf(fg.body, "\t\ti--\n\t\tif %s {\n\t\t\tdAtA[i] = 1\n\t\t} else {\n\t\t\tdAtA[i] = 0\n\t\t}\n", elem)
+		fg.reverseTag("\t\t", num, protowire.VarintType)
+
+	case protoreflect.Sint32Kind:
+		fmt.Fprintf(fg.body, "\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(uint32(%s<<1)^uint32(int32(%s)>>31)))\n", elem, elem)
+		fg.reverseTag("\t\t", num, protowire.VarintType)
+
+	case protoreflect.Sint64Kind:
+		fmt.Fprintf(fg.body, "\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(uint64(%s<<1)^uint64(int64(%s)>>63)))\n", elem, elem)
+		fg.reverseTag("\t\t", num, protowire.VarintType)
+
+	case protoreflect.Int32Kind, protoreflect.Uint32Kind, protoreflect.Int64Kind, protoreflect.Uint64Kind, protoreflect.EnumKind:
+		fmt.Fprintf(fg.body, "\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(%s))\n", elem)
+		fg.reverseTag("\t\t", num, protowire.VarintType)
+
+	case protoreflect.Fixed32Kind:
+		fmt.Fprintf(fg.body, "\t\ti -= 4\n\t\tbinary.LittleEndian.PutUint32(dAtA[i:], %s)\n", elem)
+		fg.reverseTag("\t\t", num, protowire.Fixed32Type)
+
+	case protoreflect.Sfixed32Kind:
+		fmt.Fprintf(fg.body, "\t\ti -= 4\n\t\tbinary.LittleEndian.PutUint32(dAtA[i:], uint32(%s))\n", elem)
+		fg.reverseTag("\t\t", num, protowire.Fixed32Type)
+
+	case protoreflect.FloatKind:
+		fg.imports.addImport("math", "")
+		fmt.Fprintf(fg.body, "\t\ti -= 4\n\t\tbinary.LittleEndian.PutUint32(dAtA[i:], math.Float32bits(%s))\n", elem)
+		fg.reverseTag("\t\t", num, protowire.Fixed32Type)
+
+	case protoreflect.Fixed64Kind:
+		fmt.Fprintf(fg.body, "\t\ti -= 8\n\t\tbinary.LittleEndian.PutUint64(dAtA[i:], %s)\n", elem)
+		fg.reverseTag("\t\t", num, protowire.Fixed64Type)
+
+	case protoreflect.Sfixed64Kind:
+		fmt.Fprintf(fg.body, "\t\ti -= 8\n\t\tbinary.LittleEndian.PutUint64(dAtA[i:], uint64(%s))\n", elem)
+		fg.reverseTag("\t\t", num, protowire.Fixed64Type)
+
+	case protoreflect.DoubleKind:
+		fg.imports.addImport("math", "")
+		fmt.Fprintf(fg.body, "\t\ti -= 8\n\t\tbinary.LittleEndian.PutUint64(dAtA[i:], math.Float64bits(%s))\n", elem)
+		fg.reverseTag("\t\t", num, protowire.Fixed64Type)
+	}
+
+	fmt.Fprintf(fg.body, "\t}\n")
 }
 
 func (fg *FileGenerator) emitOneofMarshalReverse(md protoreflect.MessageDescriptor, oo protoreflect.OneofDescriptor) {

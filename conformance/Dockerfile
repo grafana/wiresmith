@@ -15,7 +15,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     cmake make g++ git ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 
-RUN git clone --depth 1 https://github.com/protocolbuffers/protobuf.git /protobuf
+ARG PROTOBUF_REF=v34.1
+RUN git clone --depth 1 --branch ${PROTOBUF_REF} https://github.com/protocolbuffers/protobuf.git /protobuf
 
 WORKDIR /protobuf
 RUN cmake . \
