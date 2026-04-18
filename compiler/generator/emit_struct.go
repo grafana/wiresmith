@@ -141,20 +141,23 @@ func protoWireTypeName(fd protoreflect.FieldDescriptor) string {
 }
 
 // emitAllGetters generates Get* accessor methods for all messages.
-func (fg *FileGenerator) emitAllGetters(fd protoreflect.FileDescriptor) {
+// When skipFieldGetters is true, only oneof getters are generated (matching
+// gogoproto.goproto_getters_all = false behavior where field getters are skipped
+// but oneof getters are still needed).
+func (fg *FileGenerator) emitAllGetters(fd protoreflect.FileDescriptor, skipFieldGetters bool) {
 	for i := 0; i < fd.Messages().Len(); i++ {
-		fg.emitGetterMethods(fd.Messages().Get(i))
+		fg.emitGetterMethods(fd.Messages().Get(i), skipFieldGetters)
 	}
 }
 
-func (fg *FileGenerator) emitGetterMethods(md protoreflect.MessageDescriptor) {
+func (fg *FileGenerator) emitGetterMethods(md protoreflect.MessageDescriptor, skipFieldGetters bool) {
 	for i := 0; i < md.Messages().Len(); i++ {
-		fg.emitGetterMethods(md.Messages().Get(i))
+		fg.emitGetterMethods(md.Messages().Get(i), skipFieldGetters)
 	}
 
 	name := goMessageTypeName(md)
 
-	// Emit oneof interface getters first (e.g., GetMessage() returns the oneof interface).
+	// Always emit oneof interface getters (e.g., GetResult() returns the oneof interface).
 	seenOneofs := map[string]bool{}
 	for i := 0; i < md.Fields().Len(); i++ {
 		fd := md.Fields().Get(i)
@@ -172,11 +175,22 @@ func (fg *FileGenerator) emitGetterMethods(md protoreflect.MessageDescriptor) {
 		}
 	}
 
+	// Always emit oneof variant getters.
+	for i := 0; i < md.Fields().Len(); i++ {
+		fd := md.Fields().Get(i)
+		if isRealOneof(fd) {
+			fg.emitOneofGetter(md, fd)
+		}
+	}
+
+	if skipFieldGetters {
+		return
+	}
+
 	for i := 0; i < md.Fields().Len(); i++ {
 		fd := md.Fields().Get(i)
 
 		if isRealOneof(fd) {
-			fg.emitOneofGetter(md, fd)
 			continue
 		}
 

@@ -146,9 +146,8 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 	}
 
 	if g.GogoCompat {
-		if !isFileOptionFalse(fd, 63001) { // gogoproto.goproto_getters_all
-			fg.emitAllGetters(fd)
-		}
+		skipGetters := isFileOptionFalse(fd, 63001) // gogoproto.goproto_getters_all
+		fg.emitAllGetters(fd, skipGetters)
 		if !isFileOptionFalse(fd, 63013) { // gogoproto.equal_all
 			fg.emitAllEqualMethods(fd)
 		}
