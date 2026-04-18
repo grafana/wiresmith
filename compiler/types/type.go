@@ -63,8 +63,16 @@ type FieldContext struct {
 var registry [30]Type
 
 // Get returns the Type for a protoreflect.Kind.
+// It panics with a clear error if the kind is unsupported or unregistered.
 func Get(kind protoreflect.Kind) Type {
-	return registry[kind]
+	if int(kind) >= len(registry) {
+		panic(fmt.Sprintf("unsupported protoreflect.Kind: %v", kind))
+	}
+	t := registry[kind]
+	if t == nil {
+		panic(fmt.Sprintf("unregistered protoreflect.Kind: %v", kind))
+	}
+	return t
 }
 
 func register(kind protoreflect.Kind, t Type) {

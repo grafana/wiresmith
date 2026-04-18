@@ -4963,7 +4963,7 @@ func (m *AllMaps) unmarshal(b []byte, depth int) error {
 					if tmpN < 0 {
 						return fmt.Errorf("invalid bytes")
 					}
-					mapvalue = append(mapvalue[:0], tmpVal...)
+					mapvalue = append([]byte(nil), tmpVal...)
 					entryData = entryData[tmpN:]
 				default:
 					skipN, skipErr := skipField(entryData, entryNum, entryTyp)
