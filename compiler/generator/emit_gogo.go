@@ -2,6 +2,7 @@ package generator
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"google.golang.org/protobuf/reflect/protoreflect"
@@ -77,6 +78,95 @@ func (fg *FileGenerator) emitRegistration(fd protoreflect.FileDescriptor) {
 	hasRegistrations := fd.Messages().Len() > 0 || fd.Enums().Len() > 0
 	if hasRegistrations {
 		fg.imports.addImport("github.com/gogo/protobuf/proto", "proto")
+	}
+
+	// Generate gogoslick-compatible helper functions.
+	// Hand-written code may reference these.
+	if fd.Messages().Len() > 0 {
+		suffix := snakeToPascal(strings.TrimSuffix(filepath.Base(fd.Path()), ".proto"))
+		fg.imports.addStdImport("math/bits")
+		fg.imports.addStdImport("fmt")
+
+		// Varint size helpers
+		fmt.Fprintf(fg.body, "func sov%s(x uint64) (n int) {\n", suffix)
+		fmt.Fprintf(fg.body, "\treturn (bits.Len64(x|1) + 6) / 7\n")
+		fmt.Fprintf(fg.body, "}\n\n")
+		fmt.Fprintf(fg.body, "func soz%s(x uint64) (n int) {\n", suffix)
+		fmt.Fprintf(fg.body, "\treturn sov%s(uint64((x << 1) ^ uint64((int64(x) >> 63))))\n", suffix)
+		fmt.Fprintf(fg.body, "}\n\n")
+
+		// Varint encode helper (reverse-write)
+		fmt.Fprintf(fg.body, "func encodeVarint%s(dAtA []byte, offset int, v uint64) int {\n", suffix)
+		fmt.Fprintf(fg.body, "\toffset -= sov%s(v)\n", suffix)
+		fmt.Fprintf(fg.body, "\tbase := offset\n")
+		fmt.Fprintf(fg.body, "\tfor v >= 1<<7 {\n")
+		fmt.Fprintf(fg.body, "\t\tdAtA[offset] = uint8(v&0x7f | 0x80)\n")
+		fmt.Fprintf(fg.body, "\t\tv >>= 7\n")
+		fmt.Fprintf(fg.body, "\t\toffset++\n")
+		fmt.Fprintf(fg.body, "\t}\n")
+		fmt.Fprintf(fg.body, "\tdAtA[offset] = uint8(v)\n")
+		fmt.Fprintf(fg.body, "\treturn base\n")
+		fmt.Fprintf(fg.body, "}\n\n")
+
+		// Skip function alias matching gogoslick convention
+		fmt.Fprintf(fg.body, "func skip%s(dAtA []byte) (n int, err error) {\n", suffix)
+		fmt.Fprintf(fg.body, "\tl := len(dAtA)\n")
+		fmt.Fprintf(fg.body, "\tiNdEx := 0\n")
+		fmt.Fprintf(fg.body, "\tfor iNdEx < l {\n")
+		fmt.Fprintf(fg.body, "\t\tvar wire uint64\n")
+		fmt.Fprintf(fg.body, "\t\tfor shift := uint(0); ; shift += 7 {\n")
+		fmt.Fprintf(fg.body, "\t\t\tif iNdEx >= l { return 0, fmt.Errorf(\"proto: unexpected EOF\") }\n")
+		fmt.Fprintf(fg.body, "\t\t\tb := dAtA[iNdEx]; iNdEx++\n")
+		fmt.Fprintf(fg.body, "\t\t\twire |= uint64(b&0x7F) << shift\n")
+		fmt.Fprintf(fg.body, "\t\t\tif b < 0x80 { break }\n")
+		fmt.Fprintf(fg.body, "\t\t}\n")
+		fmt.Fprintf(fg.body, "\t\twireType := int(wire & 0x7)\n")
+		fmt.Fprintf(fg.body, "\t\tswitch wireType {\n")
+		fmt.Fprintf(fg.body, "\t\tcase 0:\n")
+		fmt.Fprintf(fg.body, "\t\t\tfor shift := uint(0); ; shift += 7 {\n")
+		fmt.Fprintf(fg.body, "\t\t\t\tif iNdEx >= l { return 0, fmt.Errorf(\"proto: unexpected EOF\") }\n")
+		fmt.Fprintf(fg.body, "\t\t\t\tiNdEx++\n")
+		fmt.Fprintf(fg.body, "\t\t\t\tif dAtA[iNdEx-1] < 0x80 { break }\n")
+		fmt.Fprintf(fg.body, "\t\t\t}\n")
+		fmt.Fprintf(fg.body, "\t\tcase 1: iNdEx += 8\n")
+		fmt.Fprintf(fg.body, "\t\tcase 2:\n")
+		fmt.Fprintf(fg.body, "\t\t\tvar length int\n")
+		fmt.Fprintf(fg.body, "\t\t\tfor shift := uint(0); ; shift += 7 {\n")
+		fmt.Fprintf(fg.body, "\t\t\t\tif iNdEx >= l { return 0, fmt.Errorf(\"proto: unexpected EOF\") }\n")
+		fmt.Fprintf(fg.body, "\t\t\t\tb := dAtA[iNdEx]; iNdEx++\n")
+		fmt.Fprintf(fg.body, "\t\t\t\tlength |= (int(b) & 0x7F) << shift\n")
+		fmt.Fprintf(fg.body, "\t\t\t\tif b < 0x80 { break }\n")
+		fmt.Fprintf(fg.body, "\t\t\t}\n")
+		fmt.Fprintf(fg.body, "\t\t\tif length < 0 { return 0, ErrInvalidLength%s }\n", suffix)
+		fmt.Fprintf(fg.body, "\t\t\tiNdEx += length\n")
+		fmt.Fprintf(fg.body, "\t\tcase 3:\n")
+		fmt.Fprintf(fg.body, "\t\t\tfor { var innerWire uint64\n")
+		fmt.Fprintf(fg.body, "\t\t\t\tfor shift := uint(0); ; shift += 7 {\n")
+		fmt.Fprintf(fg.body, "\t\t\t\t\tif iNdEx >= l { return 0, fmt.Errorf(\"proto: unexpected EOF\") }\n")
+		fmt.Fprintf(fg.body, "\t\t\t\t\tb := dAtA[iNdEx]; iNdEx++\n")
+		fmt.Fprintf(fg.body, "\t\t\t\t\tinnerWire |= uint64(b&0x7F) << shift\n")
+		fmt.Fprintf(fg.body, "\t\t\t\t\tif b < 0x80 { break }\n")
+		fmt.Fprintf(fg.body, "\t\t\t\t}\n")
+		fmt.Fprintf(fg.body, "\t\t\t\tif int(innerWire&0x7) == 4 { break }\n")
+		fmt.Fprintf(fg.body, "\t\t\t\tnext, err := skip%s(dAtA[iNdEx:])\n", suffix)
+		fmt.Fprintf(fg.body, "\t\t\t\tif err != nil { return 0, err }\n")
+		fmt.Fprintf(fg.body, "\t\t\t\tiNdEx += next\n")
+		fmt.Fprintf(fg.body, "\t\t\t}\n")
+		fmt.Fprintf(fg.body, "\t\tcase 5: iNdEx += 4\n")
+		fmt.Fprintf(fg.body, "\t\tdefault: return 0, fmt.Errorf(\"proto: illegal wireType %%d\", wireType)\n")
+		fmt.Fprintf(fg.body, "\t\t}\n")
+		fmt.Fprintf(fg.body, "\t\tif iNdEx < 0 { return 0, ErrInvalidLength%s }\n", suffix)
+		fmt.Fprintf(fg.body, "\t\treturn iNdEx, nil\n")
+		fmt.Fprintf(fg.body, "\t}\n")
+		fmt.Fprintf(fg.body, "\treturn 0, fmt.Errorf(\"proto: unexpected EOF\")\n")
+		fmt.Fprintf(fg.body, "}\n\n")
+
+		// Error variables
+		fmt.Fprintf(fg.body, "var (\n")
+		fmt.Fprintf(fg.body, "\tErrInvalidLength%s = fmt.Errorf(\"proto: negative length found during unmarshaling\")\n", suffix)
+		fmt.Fprintf(fg.body, "\tErrIntOverflow%s   = fmt.Errorf(\"proto: integer overflow\")\n", suffix)
+		fmt.Fprintf(fg.body, "\tErrUnexpectedEndOfGroup%s = fmt.Errorf(\"proto: unexpected end of group\")\n", suffix)
+		fmt.Fprintf(fg.body, ")\n\n")
 	}
 
 	// RegisterType for each message.

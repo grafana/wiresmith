@@ -30,7 +30,7 @@ func (fg *FileGenerator) emitStruct(md protoreflect.MessageDescriptor) {
 					fg.body.WriteString(indentComment(c))
 				}
 				goName := snakeToPascal(ooName)
-				ifaceName := oneofInterfaceName(md, oo)
+				ifaceName := fg.resolveOneofInterfaceName(md, oo)
 				if fg.gen.GogoCompat {
 					fmt.Fprintf(fg.body, "\t%s %s `protobuf_oneof:\"%s\"`\n", goName, ifaceName, ooName)
 				} else {
@@ -122,6 +122,13 @@ func (fg *FileGenerator) protoTag(fd protoreflect.FieldDescriptor) string {
 
 // protoWireTypeName returns the protobuf wire type name for struct tags.
 func protoWireTypeName(fd protoreflect.FieldDescriptor) string {
+	// Sint types use zigzag encoding.
+	switch fd.Kind() {
+	case protoreflect.Sint32Kind, protoreflect.Sfixed32Kind:
+		return "zigzag32"
+	case protoreflect.Sint64Kind, protoreflect.Sfixed64Kind:
+		return "zigzag64"
+	}
 	wt := wireTypeForKind(fd.Kind())
 	switch wt {
 	case protowire.VarintType:
@@ -166,7 +173,7 @@ func (fg *FileGenerator) emitGetterMethods(md protoreflect.MessageDescriptor, sk
 			if !seenOneofs[ooName] {
 				seenOneofs[ooName] = true
 				goName := snakeToPascal(ooName)
-				ifaceName := oneofInterfaceName(md, oo)
+				ifaceName := fg.resolveOneofInterfaceName(md, oo)
 				fmt.Fprintf(fg.body, "func (m *%s) Get%s() %s {\n", name, goName, ifaceName)
 				fmt.Fprintf(fg.body, "\tif m != nil {\n\t\treturn m.%s\n\t}\n", goName)
 				fmt.Fprintf(fg.body, "\treturn nil\n")

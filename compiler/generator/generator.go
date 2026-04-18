@@ -381,6 +381,19 @@ func oneofInterfaceName(md protoreflect.MessageDescriptor, oo protoreflect.Oneof
 	return goMessageTypeName(md) + "_" + snakeToPascal(string(oo.Name()))
 }
 
+// gogoOneofInterfaceName returns the gogo-compat interface name with "is" prefix.
+func gogoOneofInterfaceName(md protoreflect.MessageDescriptor, oo protoreflect.OneofDescriptor) string {
+	return "is" + goMessageTypeName(md) + "_" + snakeToPascal(string(oo.Name()))
+}
+
+// resolveOneofInterfaceName returns the interface name, using "is" prefix in gogo compat mode.
+func (fg *FileGenerator) resolveOneofInterfaceName(md protoreflect.MessageDescriptor, oo protoreflect.OneofDescriptor) string {
+	if fg.gen != nil && fg.gen.GogoCompat {
+		return gogoOneofInterfaceName(md, oo)
+	}
+	return oneofInterfaceName(md, oo)
+}
+
 // oneofVariantName returns the Go struct name for a oneof variant.
 func oneofVariantName(md protoreflect.MessageDescriptor, fd protoreflect.FieldDescriptor) string {
 	return goMessageTypeName(md) + "_" + snakeToPascal(string(fd.Name()))

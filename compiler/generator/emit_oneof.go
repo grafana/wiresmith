@@ -7,8 +7,15 @@ import (
 )
 
 func (fg *FileGenerator) emitOneof(md protoreflect.MessageDescriptor, oo protoreflect.OneofDescriptor) {
-	ifaceName := oneofInterfaceName(md, oo)
-	markerMethod := "is" + ifaceName
+	ifaceName := fg.resolveOneofInterfaceName(md, oo)
+	// In gogo compat mode, the interface name IS the marker method (both have "is" prefix).
+	// In default mode, the marker is "is" + interface name.
+	var markerMethod string
+	if fg.gen != nil && fg.gen.GogoCompat {
+		markerMethod = ifaceName
+	} else {
+		markerMethod = "is" + ifaceName
+	}
 
 	// Interface
 	fmt.Fprintf(fg.body, "type %s interface {\n", ifaceName)
