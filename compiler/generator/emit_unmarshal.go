@@ -348,7 +348,7 @@ func (fg *FileGenerator) emitSingularFieldUnmarshal(goName string, fd protorefle
 			elemType = fg.imports.goSingularType(fd)
 		}
 		fg.emitConsumeBytes()
-		if isGogoPointerField(fg.gen, fd) && getCustomType(fd) == "" {
+		if isGogoPointerField(fg.gen, fd) || isGogoPointerCustomType(fg.gen, fd) {
 			fmt.Fprintf(fg.body, "\t\t\tif %s == nil {\n\t\t\t\t%s = &%s{}\n\t\t\t}\n", access, access, elemType)
 		}
 		fmt.Fprintf(fg.body, "\t\t\tif err := %s.Unmarshal(v); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n", access)

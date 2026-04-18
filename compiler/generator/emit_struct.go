@@ -252,7 +252,7 @@ func (fg *FileGenerator) zeroValueFor(fd protoreflect.FieldDescriptor) string {
 		return "time.Time{}"
 	}
 	if fd.Kind() == protoreflect.MessageKind {
-		if isGogoPointerField(fg.gen, fd) {
+		if isGogoPointerField(fg.gen, fd) || isGogoPointerCustomType(fg.gen, fd) {
 			return "nil"
 		}
 		return fg.imports.goMessageType(fd.Message()) + "{}"

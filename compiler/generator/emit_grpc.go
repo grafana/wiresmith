@@ -97,8 +97,8 @@ func (fg *FileGenerator) emitGRPCServer(sd protoreflect.ServiceDescriptor, svcNa
 		methodName := string(md.Name())
 		outType := fg.grpcMessageType(md.Output())
 
-		if md.IsStreamingClient() && md.IsStreamingServer() {
-			// Bidirectional streaming: takes only stream.
+		if md.IsStreamingClient() {
+			// Client-streaming or bidi: takes only stream.
 			streamType := svcName + "_" + methodName + "Server"
 			fmt.Fprintf(fg.body, "func (*Unimplemented%sServer) %s(%s) error {\n",
 				svcName, methodName, streamType)
@@ -129,7 +129,7 @@ func (fg *FileGenerator) emitGRPCHandlers(sd protoreflect.ServiceDescriptor, svc
 		methodName := string(md.Name())
 		inType := fg.grpcMessageType(md.Input())
 
-		if md.IsStreamingServer() {
+		if md.IsStreamingServer() || md.IsStreamingClient() {
 			fg.emitStreamingServerHandler(sd, md, svcName)
 			continue
 		}
@@ -224,14 +224,21 @@ func (fg *FileGenerator) emitStreamingClientMethod(sd protoreflect.ServiceDescri
 		fmt.Fprintf(fg.body, "}\n\n")
 	}
 
-	// Stream interface
+	// Stream client interface and implementation
 	outType := fg.grpcMessageType(md.Output())
 	fmt.Fprintf(fg.body, "type %s interface {\n", streamType)
 	if md.IsStreamingClient() {
 		fmt.Fprintf(fg.body, "\tSend(*%s) error\n", inType)
 	}
-	fmt.Fprintf(fg.body, "\tRecv() (*%s, error)\n", outType)
-	if md.IsStreamingClient() {
+	if md.IsStreamingClient() && !md.IsStreamingServer() {
+		// Client-streaming only: CloseAndRecv
+		fmt.Fprintf(fg.body, "\tCloseAndRecv() (*%s, error)\n", outType)
+	}
+	if md.IsStreamingServer() {
+		// Server or bidi streaming: Recv
+		fmt.Fprintf(fg.body, "\tRecv() (*%s, error)\n", outType)
+	}
+	if md.IsStreamingClient() && md.IsStreamingServer() {
 		fmt.Fprintf(fg.body, "\tCloseSend() error\n")
 	}
 	fmt.Fprintf(fg.body, "\tgrpc.ClientStream\n")
@@ -247,11 +254,24 @@ func (fg *FileGenerator) emitStreamingClientMethod(sd protoreflect.ServiceDescri
 		fmt.Fprintf(fg.body, "}\n\n")
 	}
 
-	fmt.Fprintf(fg.body, "func (x *%s) Recv() (*%s, error) {\n", toLowerFirst(streamType), outType)
-	fmt.Fprintf(fg.body, "\tm := new(%s)\n", outType)
-	fmt.Fprintf(fg.body, "\tif err := x.ClientStream.RecvMsg(m); err != nil {\n\t\treturn nil, err\n\t}\n")
-	fmt.Fprintf(fg.body, "\treturn m, nil\n")
-	fmt.Fprintf(fg.body, "}\n\n")
+	if md.IsStreamingClient() && !md.IsStreamingServer() {
+		// Client-streaming only: CloseAndRecv
+		fmt.Fprintf(fg.body, "func (x *%s) CloseAndRecv() (*%s, error) {\n", toLowerFirst(streamType), outType)
+		fmt.Fprintf(fg.body, "\tif err := x.ClientStream.CloseSend(); err != nil {\n\t\treturn nil, err\n\t}\n")
+		fmt.Fprintf(fg.body, "\tm := new(%s)\n", outType)
+		fmt.Fprintf(fg.body, "\tif err := x.ClientStream.RecvMsg(m); err != nil {\n\t\treturn nil, err\n\t}\n")
+		fmt.Fprintf(fg.body, "\treturn m, nil\n")
+		fmt.Fprintf(fg.body, "}\n\n")
+	}
+
+	if md.IsStreamingServer() {
+		// Server or bidi streaming: Recv
+		fmt.Fprintf(fg.body, "func (x *%s) Recv() (*%s, error) {\n", toLowerFirst(streamType), outType)
+		fmt.Fprintf(fg.body, "\tm := new(%s)\n", outType)
+		fmt.Fprintf(fg.body, "\tif err := x.ClientStream.RecvMsg(m); err != nil {\n\t\treturn nil, err\n\t}\n")
+		fmt.Fprintf(fg.body, "\treturn m, nil\n")
+		fmt.Fprintf(fg.body, "}\n\n")
+	}
 }
 
 func (fg *FileGenerator) emitStreamingServerHandler(sd protoreflect.ServiceDescriptor, md protoreflect.MethodDescriptor, svcName string) {
@@ -275,8 +295,16 @@ func (fg *FileGenerator) emitStreamingServerHandler(sd protoreflect.ServiceDescr
 
 	// Server stream interface
 	fmt.Fprintf(fg.body, "type %s interface {\n", streamType)
-	fmt.Fprintf(fg.body, "\tSend(*%s) error\n", outType)
+	if md.IsStreamingClient() && !md.IsStreamingServer() {
+		// Client-streaming only: server sends single response
+		fmt.Fprintf(fg.body, "\tSendAndClose(*%s) error\n", outType)
+	}
+	if md.IsStreamingServer() {
+		// Server or bidi: server sends multiple messages
+		fmt.Fprintf(fg.body, "\tSend(*%s) error\n", outType)
+	}
 	if md.IsStreamingClient() {
+		// Client or bidi: server receives multiple messages
 		fmt.Fprintf(fg.body, "\tRecv() (*%s, error)\n", inType)
 	}
 	fmt.Fprintf(fg.body, "\tgrpc.ServerStream\n")
@@ -286,11 +314,22 @@ func (fg *FileGenerator) emitStreamingServerHandler(sd protoreflect.ServiceDescr
 	fmt.Fprintf(fg.body, "\tgrpc.ServerStream\n")
 	fmt.Fprintf(fg.body, "}\n\n")
 
-	fmt.Fprintf(fg.body, "func (x *%s) Send(m *%s) error {\n", toLowerFirst(streamType), outType)
-	fmt.Fprintf(fg.body, "\treturn x.ServerStream.SendMsg(m)\n")
-	fmt.Fprintf(fg.body, "}\n\n")
+	if md.IsStreamingClient() && !md.IsStreamingServer() {
+		// Client-streaming only: SendAndClose
+		fmt.Fprintf(fg.body, "func (x *%s) SendAndClose(m *%s) error {\n", toLowerFirst(streamType), outType)
+		fmt.Fprintf(fg.body, "\treturn x.ServerStream.SendMsg(m)\n")
+		fmt.Fprintf(fg.body, "}\n\n")
+	}
+
+	if md.IsStreamingServer() {
+		// Server or bidi: Send
+		fmt.Fprintf(fg.body, "func (x *%s) Send(m *%s) error {\n", toLowerFirst(streamType), outType)
+		fmt.Fprintf(fg.body, "\treturn x.ServerStream.SendMsg(m)\n")
+		fmt.Fprintf(fg.body, "}\n\n")
+	}
 
 	if md.IsStreamingClient() {
+		// Client or bidi: Recv
 		fmt.Fprintf(fg.body, "func (x *%s) Recv() (*%s, error) {\n", toLowerFirst(streamType), inType)
 		fmt.Fprintf(fg.body, "\tm := new(%s)\n", inType)
 		fmt.Fprintf(fg.body, "\tif err := x.ServerStream.RecvMsg(m); err != nil {\n\t\treturn nil, err\n\t}\n")
@@ -317,10 +356,12 @@ func (fg *FileGenerator) emitClientMethodSignature(md protoreflect.MethodDescrip
 	outType := fg.grpcMessageType(md.Output())
 	svcName := string(md.Parent().(protoreflect.ServiceDescriptor).Name())
 
-	if md.IsStreamingClient() && md.IsStreamingServer() {
+	if md.IsStreamingClient() {
+		// Client-streaming or bidi: no initial message param.
 		streamType := svcName + "_" + methodName + "Client"
 		fmt.Fprintf(fg.body, "%s%s(ctx context.Context, opts ...grpc.CallOption) (%s, error)", indent, methodName, streamType)
 	} else if md.IsStreamingServer() {
+		// Server-streaming: takes initial message.
 		streamType := svcName + "_" + methodName + "Client"
 		fmt.Fprintf(fg.body, "%s%s(ctx context.Context, in *%s, opts ...grpc.CallOption) (%s, error)", indent, methodName, inType, streamType)
 	} else {
@@ -334,13 +375,15 @@ func (fg *FileGenerator) emitServerMethodSignature(md protoreflect.MethodDescrip
 	outType := fg.grpcMessageType(md.Output())
 	svcName := string(md.Parent().(protoreflect.ServiceDescriptor).Name())
 
-	if md.IsStreamingClient() && md.IsStreamingServer() {
-		// Bidirectional streaming.
+	if md.IsStreamingClient() || md.IsStreamingServer() {
 		streamType := svcName + "_" + methodName + "Server"
-		fmt.Fprintf(fg.body, "%s%s(%s) error", indent, methodName, streamType)
-	} else if md.IsStreamingServer() {
-		streamType := svcName + "_" + methodName + "Server"
-		fmt.Fprintf(fg.body, "%s%s(*%s, %s) error", indent, methodName, inType, streamType)
+		if md.IsStreamingClient() {
+			// Client-streaming or bidi: server method takes only stream
+			fmt.Fprintf(fg.body, "%s%s(%s) error", indent, methodName, streamType)
+		} else {
+			// Server-streaming only: takes request + stream
+			fmt.Fprintf(fg.body, "%s%s(*%s, %s) error", indent, methodName, inType, streamType)
+		}
 	} else {
 		fmt.Fprintf(fg.body, "%s%s(context.Context, *%s) (*%s, error)", indent, methodName, inType, outType)
 	}

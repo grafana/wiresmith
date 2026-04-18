@@ -115,6 +115,11 @@ func (it *ImportTracker) goType(fd protoreflect.FieldDescriptor) string {
 		if fd.IsList() {
 			return "[]" + goType
 		}
+		// In gogo compat mode, customtype on message-kind fields uses pointer
+		// when nullable (default), matching gogoslick behavior.
+		if it.gen != nil && it.gen.GogoCompat && fd.Kind() == protoreflect.MessageKind && isFieldNullable(fd) {
+			return "*" + goType
+		}
 		return goType
 	}
 
@@ -192,7 +197,12 @@ func (it *ImportTracker) resolveGoTypePath(fullPath string) string {
 
 // isGogoPointerField returns true if the field should be a pointer in gogo compat mode.
 func isGogoPointerField(gen *Generator, fd protoreflect.FieldDescriptor) bool {
-	return gen != nil && gen.GogoCompat && fd.Kind() == protoreflect.MessageKind && isFieldNullable(fd)
+	return gen != nil && gen.GogoCompat && fd.Kind() == protoreflect.MessageKind && isFieldNullable(fd) && getCustomType(fd) == ""
+}
+
+// isGogoPointerCustomType returns true if the field is a customtype pointer in gogo compat mode.
+func isGogoPointerCustomType(gen *Generator, fd protoreflect.FieldDescriptor) bool {
+	return gen != nil && gen.GogoCompat && fd.Kind() == protoreflect.MessageKind && isFieldNullable(fd) && getCustomType(fd) != ""
 }
 
 // isFieldNullable checks the gogoproto.nullable field option (extension 65001).

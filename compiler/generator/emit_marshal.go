@@ -90,6 +90,17 @@ func (fg *FileGenerator) emitFieldMarshalReverse(fd protoreflect.FieldDescriptor
 			fg.reverseTag("\t\t\t", num, protowire.BytesType)
 			fmt.Fprintf(fg.body, "\t\t}\n")
 			fmt.Fprintf(fg.body, "\t}\n")
+		} else if isGogoPointerCustomType(fg.gen, fd) {
+			// Nullable customtype pointer: nil check
+			fmt.Fprintf(fg.body, "\tif %s != nil {\n", access)
+			fmt.Fprintf(fg.body, "\t\t{\n")
+			fmt.Fprintf(fg.body, "\t\t\tsize := %s.Size()\n", access)
+			fmt.Fprintf(fg.body, "\t\t\ti -= size\n")
+			fmt.Fprintf(fg.body, "\t\t\tif _, err := %s.MarshalTo(dAtA[i:]); err != nil {\n\t\t\t\treturn 0, err\n\t\t\t}\n", access)
+			fmt.Fprintf(fg.body, "\t\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(size))\n")
+			fg.reverseTag("\t\t\t", num, protowire.BytesType)
+			fmt.Fprintf(fg.body, "\t\t}\n")
+			fmt.Fprintf(fg.body, "\t}\n")
 		} else {
 			fmt.Fprintf(fg.body, "\t{\n")
 			fmt.Fprintf(fg.body, "\t\tsize := %s.Size()\n", access)
