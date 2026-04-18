@@ -15,8 +15,8 @@ func (fg *FileGenerator) emitMarshal(md protoreflect.MessageDescriptor) {
 	// Marshal allocates and returns the encoded bytes.
 	fmt.Fprintf(fg.body, "func (m *%s) Marshal() (dAtA []byte, err error) {\n", name)
 	fmt.Fprintf(fg.body, "\tsize := m.Size()\n")
-	fmt.Fprintf(fg.body, "\tif size == 0 {\n\t\treturn nil, nil\n\t}\n")
 	fmt.Fprintf(fg.body, "\tdAtA = make([]byte, size)\n")
+	fmt.Fprintf(fg.body, "\tif size == 0 {\n\t\treturn dAtA, nil\n\t}\n")
 	fmt.Fprintf(fg.body, "\tn, err := m.MarshalToSizedBuffer(dAtA[:size])\n")
 	fmt.Fprintf(fg.body, "\tif err != nil {\n\t\treturn nil, err\n\t}\n")
 	fmt.Fprintf(fg.body, "\treturn dAtA[:n], nil\n")
