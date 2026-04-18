@@ -10,9 +10,11 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"wiresmith/compiler/types"
 
 	"github.com/bufbuild/protocompile"
 	"github.com/bufbuild/protocompile/reporter"
+	"google.golang.org/protobuf/encoding/protowire"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
@@ -27,6 +29,34 @@ type FileGenerator struct {
 	module  string
 	imports *ImportTracker
 	body    *bytes.Buffer
+}
+
+// Emitter interface implementation for FileGenerator.
+
+func (fg *FileGenerator) Writef(format string, args ...any) {
+	fmt.Fprintf(fg.body, format, args...)
+}
+
+func (fg *FileGenerator) ReverseTag(indent string, num protowire.Number, wt protowire.Type) {
+	fg.reverseTag(indent, num, wt)
+}
+
+func (fg *FileGenerator) AddImport(path, alias string) {
+	fg.imports.addImport(path, alias)
+}
+
+// fieldContext builds a FieldContext from a field descriptor.
+func (fg *FileGenerator) fieldContext(fd protoreflect.FieldDescriptor) types.FieldContext {
+	ctx := types.FieldContext{}
+	if fd.Kind() == protoreflect.EnumKind {
+		ctx.EnumType = fg.imports.goEnumType(fd.Enum())
+	}
+	if fd.Kind() == protoreflect.MessageKind {
+		ctx.MessageType = fg.imports.goSingularType(fd)
+		msgPkg := string(fd.Message().ParentFile().Package())
+		ctx.IsSamePackage = (msgPkg == fg.imports.selfPkg)
+	}
+	return ctx
 }
 
 func (g *Generator) Generate(ctx context.Context) error {

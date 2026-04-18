@@ -2253,8 +2253,7 @@ func (m *AllOptionalScalars) unmarshal(b []byte, depth int) error {
 			if n < 0 {
 				return fmt.Errorf("invalid varint")
 			}
-			tmp := v
-			m.FieldUint64 = &tmp
+			m.FieldUint64 = &v
 			b = b[n:]
 		case 7: // field_sint32
 			if typ != protowire.VarintType {

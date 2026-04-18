@@ -10,6 +10,7 @@ Custom protobuf compiler that generates high-performance Go code from OpenTeleme
   - `bench/` - Benchmark protos (maps)
   - `conformance/` - Conformance protos (protocol envelope + test messages)
 - `compiler/generator/` - Code generator: reads proto descriptors via `bufbuild/protocompile`, emits Go structs + marshal/unmarshal/size methods
+- `compiler/types/` - Per-kind type dispatch for code emission, see [compiler/types/AGENTS.md](compiler/types/AGENTS.md)
 - `cmd/wiresmith/` - CLI entry point
 - `gen/otlp/` - Generated Go packages (one per proto file)
 - `gen/vtpb/` - vtproto-generated code for benchmark comparison

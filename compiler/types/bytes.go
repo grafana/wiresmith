@@ -1,0 +1,84 @@
+package types
+
+import (
+	"google.golang.org/protobuf/encoding/protowire"
+	"google.golang.org/protobuf/reflect/protoreflect"
+)
+
+// BytesType implements Type for proto bytes fields.
+// Length-delimited, non-packable. Similar to StringType but uses []byte
+// copy semantics and ConsumeBytes instead of ConsumeString.
+type BytesType struct{}
+
+func (BytesType) WireType() string          { return "protowire.BytesType" }
+func (BytesType) IsPackable() bool          { return false }
+func (BytesType) IsFixed32() bool           { return false }
+func (BytesType) IsFixed64() bool           { return false }
+func (BytesType) FixedSize() int            { return 0 }
+func (BytesType) SizeByIndex() bool         { return false }
+func (BytesType) RequiredImports() []string { return nil }
+
+// OptionalAccess returns access unchanged because []byte is already nullable.
+func (BytesType) OptionalAccess(access string) string {
+	return access
+}
+
+func (BytesType) VarintSizeExpr(access string) string {
+	panicNotPackable("VarintSizeExpr")
+	return ""
+}
+
+// --- Size ---
+
+func (BytesType) EmitSize(e Emitter, access string, tagSize int) {
+	e.Writef("\tif len(%s) > 0 {\n\t\tn += %d + protowire.SizeVarint(uint64(len(%s))) + len(%s)\n\t}\n", access, tagSize, access, access)
+}
+
+func (BytesType) EmitValueSize(e Emitter, indent, access string, tagSize int, target string) {
+	e.Writef("%s%s += %d + protowire.SizeVarint(uint64(len(%s))) + len(%s)\n", indent, target, tagSize, access, access)
+}
+
+// --- Marshal ---
+
+func (BytesType) EmitMarshal(e Emitter, access string, num protowire.Number) {
+	e.Writef("\tif len(%s) > 0 {\n", access)
+	e.Writef("\t\ti -= len(%s)\n\t\tcopy(dAtA[i:], %s)\n", access, access)
+	e.Writef("\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(len(%s)))\n", access)
+	e.ReverseTag("\t\t", num, protowire.BytesType)
+	e.Writef("\t}\n")
+}
+
+func (BytesType) EmitEncode(e Emitter, indent, access string) {
+	e.Writef("%si -= len(%s)\n%scopy(dAtA[i:], %s)\n", indent, access, indent, access)
+	e.Writef("%si = protohelpers.EncodeVarint(dAtA, i, uint64(len(%s)))\n", indent, access)
+}
+
+func (b BytesType) EmitValueMarshal(e Emitter, indent, access string, num protowire.Number) {
+	b.EmitEncode(e, indent, access)
+	e.ReverseTag(indent, num, protowire.BytesType)
+}
+
+// --- Unmarshal ---
+
+func (BytesType) EmitConsume(e Emitter) { emitConsumeBytes(e) }
+
+func (BytesType) CastExpr(varName string, ctx FieldContext) string {
+	return "append([]byte(nil), " + varName + "...)"
+}
+
+func (BytesType) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
+	emitConsumeBytes(e)
+	e.Writef("\t\t\t%s = append(%s[:0], v...)\n", access, access)
+	emitAdvanceBytes(e)
+}
+
+func (BytesType) EmitMapEntryUnmarshal(e Emitter, varName, indent string, ctx FieldContext) {
+	e.Writef("%stmpVal, tmpN := protowire.ConsumeBytes(entryData)\n", indent)
+	e.Writef("%sif tmpN < 0 {\n%s\treturn fmt.Errorf(\"invalid bytes\")\n%s}\n", indent, indent, indent)
+	e.Writef("%s%s = append(%s[:0], tmpVal...)\n", indent, varName, varName)
+	e.Writef("%sentryData = entryData[tmpN:]\n", indent)
+}
+
+func init() {
+	register(protoreflect.BytesKind, &BytesType{})
+}
