@@ -12,13 +12,24 @@ ALL_PROTOS := \
 
 PROTO_DIRS := common/v1 resource/v1 metrics/v1 trace/v1 logs/v1 profiles/v1development
 
+# Go package suffix for a proto path: opentelemetry/proto/common/v1/common.proto → common/v1
+pkgsuffix = $(patsubst %/,%,$(patsubst opentelemetry/proto/%,%,$(dir $(1))))
+
 # Map proto import paths to Go packages for a given output prefix.
 # Usage: $(call mflags,gen/vtpb,go_opt)
+# Produces: --go_opt=Mcommon.proto=wiresmith/gen/vtpb/common/v1 --go_opt=M...
 define mflags
-$(foreach p,$(ALL_PROTOS),--$(2)=M$(p)=$(MODULE)/$(1)/$(patsubst opentelemetry/proto/%,%,$(dir $(p))))
+$(foreach p,$(ALL_PROTOS),--$(2)=M$(p)=$(MODULE)/$(1)/$(call pkgsuffix,$(p)))
 endef
 
-.PHONY: help build test fuzz generate bench bench-compare clean conformance generate-conformance
+# Comma-separated M-flags for gogoproto (no spaces — $(foreach) joins with spaces
+# so we strip them to produce the single token gogofast_out= expects).
+empty :=
+space := $(empty) $(empty)
+comma := ,
+gogo_mflags = $(subst $(space),,$(foreach p,$(ALL_PROTOS),M$(p)=$(MODULE)/$(1)/$(call pkgsuffix,$(p))$(comma)))
+
+.PHONY: help build test fuzz generate bench bench-compare clean conformance
 
 help: ## Print this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-20s %s\n", $$1, $$2}'
@@ -67,38 +78,47 @@ conformance: ## Run conformance tests (requires Docker)
 	docker run --rm wiresmith-conformance
 
 clean: ## Remove all generated code under gen/
-	rm -rf gen/otlp gen/vtpb gen/gogopb gen/protobuf_test_messages
+	rm -rf gen/otlp gen/vtpb gen/gogopb gen/protobuf_test_messages gen/test gen/bench
 
 # ── Generate targets ─────────────────────────────────────────────────────────
 
-.PHONY: generate-ours generate-vtproto generate-gogoproto proto-root
+.PHONY: generate-ours generate-vtproto generate-gogoproto
 
 # Build the canonical proto directory layout that matches import paths.
 # Sets PROTO_ROOT as a temp directory and copies proto files into it.
 define setup_proto_root
 	$(eval PROTO_ROOT := $(shell mktemp -d))
 	@mkdir -p $(foreach d,$(PROTO_DIRS),"$(PROTO_ROOT)/opentelemetry/proto/$(d)")
-	@cp proto/common.proto   "$(PROTO_ROOT)/opentelemetry/proto/common/v1/"
-	@cp proto/resource.proto "$(PROTO_ROOT)/opentelemetry/proto/resource/v1/"
-	@cp proto/metrics.proto  "$(PROTO_ROOT)/opentelemetry/proto/metrics/v1/"
-	@cp proto/trace.proto    "$(PROTO_ROOT)/opentelemetry/proto/trace/v1/"
-	@cp proto/logs.proto     "$(PROTO_ROOT)/opentelemetry/proto/logs/v1/"
-	@cp proto/profiles.proto "$(PROTO_ROOT)/opentelemetry/proto/profiles/v1development/"
+	@cp proto/otlp/common.proto   "$(PROTO_ROOT)/opentelemetry/proto/common/v1/"
+	@cp proto/otlp/resource.proto "$(PROTO_ROOT)/opentelemetry/proto/resource/v1/"
+	@cp proto/otlp/metrics.proto  "$(PROTO_ROOT)/opentelemetry/proto/metrics/v1/"
+	@cp proto/otlp/trace.proto    "$(PROTO_ROOT)/opentelemetry/proto/trace/v1/"
+	@cp proto/otlp/logs.proto     "$(PROTO_ROOT)/opentelemetry/proto/logs/v1/"
+	@cp proto/otlp/profiles.proto "$(PROTO_ROOT)/opentelemetry/proto/profiles/v1development/"
 endef
 
-generate-conformance: ## Regenerate conformance test code
-	@echo "==> Generating conformance protocol code → conformance/internal/conformancepb/"
-	protoc -I conformance/proto \
-		--go_out=. --go_opt=module=$(MODULE) \
-		conformance/proto/conformance.proto
-	@echo "==> Generating wiresmith code for test messages → gen/protobuf_test_messages/"
-	go run ./cmd/wiresmith/ --proto_path=conformance/testmsg --out=gen --module=$(MODULE)
-
-generate-ours:
+generate-ours: ## Regenerate all wiresmith + conformance code
+	$(eval WIRESMITH := $(shell go build -o /tmp/wiresmith-gen ./cmd/wiresmith/ && echo /tmp/wiresmith-gen))
 	@echo "==> Generating wiresmith code → gen/otlp/"
-	go run ./cmd/wiresmith/ --proto_path=proto --out=gen --module=$(MODULE)
+	$(WIRESMITH) --proto_path=proto/otlp --out=gen --module=$(MODULE)
 	@echo "==> Generating wiresmith code → gen/test/kitchensink/"
-	go run ./cmd/wiresmith/ --proto_path=test/testdata --out=gen --module=$(MODULE)
+	$(WIRESMITH) --proto_path=proto/test --out=gen --module=$(MODULE)
+	@echo "==> Generating wiresmith code → gen/bench/maps/"
+	$(WIRESMITH) --proto_path=proto/bench --out=gen --module=$(MODULE)
+	@echo "==> Generating wiresmith conformance test messages → gen/protobuf_test_messages/"
+	$(eval CONF_TMP := $(shell mktemp -d))
+	@cp proto/conformance/test_messages_proto3.proto "$(CONF_TMP)/"
+	$(WIRESMITH) --proto_path="$(CONF_TMP)" --out=gen --module=$(MODULE)
+	@rm -rf "$(CONF_TMP)"
+	@echo "==> Generating conformance protocol code → conformance/internal/conformancepb/"
+	protoc -I proto/conformance \
+		--go_out=. --go_opt=module=$(MODULE) \
+		proto/conformance/conformance.proto
+	@echo "==> Generating official proto bench code → gen/bench/official/"
+	protoc -I proto/bench \
+		--go_out=. --go_opt=module=$(MODULE) \
+		--go_opt=Mmaps.proto=wiresmith/gen/bench/official \
+		proto/bench/maps.proto
 
 generate-vtproto:
 	$(setup_proto_root)
@@ -111,6 +131,14 @@ generate-vtproto:
 		$(call mflags,gen/vtpb,go-vtproto_opt) \
 		$(ALL_PROTOS)
 	@rm -rf "$(PROTO_ROOT)"
+	@echo "==> Generating vtproto bench code → gen/bench/vtpb/"
+	protoc -I proto/bench \
+		--go_out=. --go_opt=module=$(MODULE) \
+		--go_opt=Mmaps.proto=wiresmith/gen/bench/vtpb \
+		--go-vtproto_out=. --go-vtproto_opt=module=$(MODULE) \
+		--go-vtproto_opt=features=marshal+unmarshal+size \
+		--go-vtproto_opt=Mmaps.proto=wiresmith/gen/bench/vtpb \
+		proto/bench/maps.proto
 
 generate-gogoproto:
 	$(setup_proto_root)
@@ -122,15 +150,20 @@ generate-gogoproto:
 	@find "$(GOGO_ROOT)" -name '*.proto' -exec sed -i '' 's/^  optional /  /g' {} +
 	@# Rewrite go_package to target gen/gogopb/.
 	@$(foreach p,$(ALL_PROTOS),\
-		sed -i '' 's|option go_package = .*|option go_package = "$(MODULE)/gen/gogopb/$(patsubst opentelemetry/proto/%,%,$(dir $(p)))";|' \
+		sed -i '' 's|option go_package = .*|option go_package = "$(MODULE)/gen/gogopb/$(call pkgsuffix,$(p))";|' \
 			"$(GOGO_ROOT)/$(p)";)
 	@$(foreach p,$(ALL_PROTOS),\
 		protoc -I "$(GOGO_ROOT)" \
-			--gogofast_out=$(foreach gp,$(ALL_PROTOS),M$(gp)=$(MODULE)/gen/gogopb/$(patsubst opentelemetry/proto/%,%,$(dir $(gp)))$(comma)):"$(GOGO_OUT)" \
+			--gogofast_out=$(call gogo_mflags,gen/gogopb):"$(GOGO_OUT)" \
 			$(p);)
 	@rm -rf gen/gogopb
 	@mv "$(GOGO_OUT)/$(MODULE)/gen/gogopb" gen/gogopb
+	@echo "==> Generating gogoproto bench code → gen/bench/gogopb/"
+	@cp proto/bench/maps.proto "$(GOGO_ROOT)/maps.proto"
+	@sed -i '' 's|option go_package = .*|option go_package = "$(MODULE)/gen/bench/gogopb";|' "$(GOGO_ROOT)/maps.proto"
+	@protoc -I "$(GOGO_ROOT)" \
+		--gogofast_out=Mmaps.proto=$(MODULE)/gen/bench/gogopb$(comma):"$(GOGO_OUT)" \
+		maps.proto
+	@rm -rf gen/bench/gogopb
+	@mv "$(GOGO_OUT)/$(MODULE)/gen/bench/gogopb" gen/bench/gogopb
 	@rm -rf "$(PROTO_ROOT)" "$(GOGO_ROOT)" "$(GOGO_OUT)"
-
-# Needed for comma in $(foreach) expansions.
-comma := ,

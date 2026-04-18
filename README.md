@@ -79,7 +79,7 @@ Messages, nested messages, enums (top-level and nested), oneof, optional, repeat
 
 Scalar types: `string`, `bool`, `int32`, `int64`, `uint32`, `uint64`, `sint32`, `double`, `bytes`, `fixed32`, `fixed64`, `sfixed64`.
 
-Not supported (not needed for OTel protos): maps, services/RPCs, extensions, well-known types, proto2.
+Not supported (not needed for OTel protos): services/RPCs, extensions, well-known types, proto2.
 
 ## Usage
 
