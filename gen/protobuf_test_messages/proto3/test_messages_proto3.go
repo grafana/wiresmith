@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"google.golang.org/protobuf/encoding/protowire"
 	"math"
+	"slices"
 	"wiresmith/gen/protohelpers"
 )
 
@@ -4216,7 +4217,7 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					if tmpN < 0 {
 						return fmt.Errorf("invalid bytes")
 					}
-					mapvalue = append([]byte(nil), tmpVal...)
+					mapvalue = slices.Clone(tmpVal)
 					entryData = entryData[tmpN:]
 				default:
 					skipN, skipErr := skipField(entryData, entryNum, entryTyp)
