@@ -32,6 +32,13 @@ func (fg *FileGenerator) emitStruct(md protoreflect.MessageDescriptor) {
 				goName := snakeToPascal(ooName)
 				ifaceName := fg.resolveOneofInterfaceName(md, oo)
 				if fg.gen.GogoCompat {
+					// Emit "Types that are valid to be assigned to" comment.
+					fmt.Fprintf(fg.body, "\t// Types that are valid to be assigned to %s:\n", goName)
+					fmt.Fprintf(fg.body, "\t//\n")
+					for j := 0; j < oo.Fields().Len(); j++ {
+						varName := oneofVariantName(md, oo.Fields().Get(j))
+						fmt.Fprintf(fg.body, "\t//\t*%s\n", varName)
+					}
 					fmt.Fprintf(fg.body, "\t%s %s `protobuf_oneof:\"%s\"`\n", goName, ifaceName, ooName)
 				} else {
 					fmt.Fprintf(fg.body, "\t%s %s\n", goName, ifaceName)
