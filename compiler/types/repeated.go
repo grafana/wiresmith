@@ -41,13 +41,12 @@ func (r *RepeatedField) EmitSize(e Emitter, access string, tagSize int) {
 
 func (r *RepeatedField) emitPackedSize(e Emitter, access string, tagSize int) {
 	e.Writef("\tif len(%s) > 0 {\n", access)
-	fs := r.Inner.FixedSize()
-	switch {
-	case fs == 8:
+	switch r.Inner.FixedSize() {
+	case 8:
 		e.Writef("\t\tdataLen := len(%s) * 8\n", access)
-	case fs == 4:
+	case 4:
 		e.Writef("\t\tdataLen := len(%s) * 4\n", access)
-	case fs == 1:
+	case 1:
 		e.Writef("\t\tdataLen := len(%s)\n", access)
 	default:
 		e.Writef("\t\tvar dataLen int\n")
@@ -60,13 +59,12 @@ func (r *RepeatedField) emitPackedSize(e Emitter, access string, tagSize int) {
 }
 
 func (r *RepeatedField) emitUnpackedSize(e Emitter, access string, tagSize int) {
-	fs := r.Inner.FixedSize()
-	switch {
-	case fs == 8:
+	switch r.Inner.FixedSize() {
+	case 8:
 		e.Writef("\tn += len(%s) * %d\n", access, tagSize+8)
-	case fs == 4:
+	case 4:
 		e.Writef("\tn += len(%s) * %d\n", access, tagSize+4)
-	case fs == 1:
+	case 1:
 		e.Writef("\tn += len(%s) * %d\n", access, tagSize+1)
 	default:
 		e.Writef("\tfor _, v := range %s {\n", access)
@@ -143,17 +141,16 @@ func (r *RepeatedField) emitPackedUnmarshal(e Emitter, access string, ctx FieldC
 	e.Writef("\t\t\t\tif n < 0 {\n\t\t\t\t\treturn fmt.Errorf(\"invalid packed field\")\n\t\t\t\t}\n")
 
 	// Pre-allocate with exact capacity
-	fs := r.Inner.FixedSize()
-	switch {
-	case fs == 8:
+	switch r.Inner.FixedSize() {
+	case 8:
 		e.Writef("\t\t\t\tif elementCount := len(data) / 8; elementCount != 0 && len(%s) == 0 {\n", access)
 		e.Writef("\t\t\t\t\t%s = make(%s, 0, elementCount)\n", access, ctx.SliceType)
 		e.Writef("\t\t\t\t}\n")
-	case fs == 4:
+	case 4:
 		e.Writef("\t\t\t\tif elementCount := len(data) / 4; elementCount != 0 && len(%s) == 0 {\n", access)
 		e.Writef("\t\t\t\t\t%s = make(%s, 0, elementCount)\n", access, ctx.SliceType)
 		e.Writef("\t\t\t\t}\n")
-	case fs == 1:
+	case 1:
 		e.Writef("\t\t\t\tif elementCount := len(data); elementCount != 0 && len(%s) == 0 {\n", access)
 		e.Writef("\t\t\t\t\t%s = make(%s, 0, elementCount)\n", access, ctx.SliceType)
 		e.Writef("\t\t\t\t}\n")
