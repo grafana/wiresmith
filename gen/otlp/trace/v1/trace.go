@@ -899,6 +899,7 @@ func (m *Status) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 func skipTrace(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0
+	depth := 0
 	for iNdEx < l {
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
@@ -943,6 +944,13 @@ func skipTrace(dAtA []byte) (n int, err error) {
 				return 0, fmt.Errorf("negative length")
 			}
 			iNdEx += length
+		case 3:
+			depth++
+		case 4:
+			if depth == 0 {
+				return 0, fmt.Errorf("proto: unexpected end of group")
+			}
+			depth--
 		case 5:
 			iNdEx += 4
 		default:
@@ -951,7 +959,9 @@ func skipTrace(dAtA []byte) (n int, err error) {
 		if iNdEx < 0 {
 			return 0, fmt.Errorf("negative index")
 		}
-		return iNdEx, nil
+		if depth == 0 {
+			return iNdEx, nil
+		}
 	}
 	return 0, io.ErrUnexpectedEOF
 }
@@ -1038,6 +1048,12 @@ func (m *TracesData) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: TracesData: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: TracesData: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
 		switch fieldNum {
 		case 1: // resource_spans
 			if wireType != 2 {
@@ -1177,6 +1193,12 @@ func (m *ResourceSpans) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ResourceSpans: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ResourceSpans: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
 		switch fieldNum {
 		case 1: // resource
 			if wireType != 2 {
@@ -1382,6 +1404,12 @@ func (m *ScopeSpans) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ScopeSpans: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ScopeSpans: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
 		switch fieldNum {
 		case 1: // scope
 			if wireType != 2 {
@@ -1587,6 +1615,12 @@ func (m *Span_Event) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Span_Event: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Span_Event: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
 		switch fieldNum {
 		case 1: // time_unix_nano
 			if wireType != 1 {
@@ -1787,6 +1821,12 @@ func (m *Span_Link) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Span_Link: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Span_Link: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
 		switch fieldNum {
 		case 1: // trace_id
 			if wireType != 2 {
@@ -2063,6 +2103,12 @@ func (m *Span) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Span: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Span: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
 		switch fieldNum {
 		case 1: // trace_id
 			if wireType != 2 {
@@ -2514,6 +2560,12 @@ func (m *Status) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Status: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Status: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
 		switch fieldNum {
 		case 2: // message
 			if wireType != 2 {

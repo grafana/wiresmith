@@ -96,6 +96,7 @@ func (m *Resource) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 func skipResource(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0
+	depth := 0
 	for iNdEx < l {
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
@@ -140,6 +141,13 @@ func skipResource(dAtA []byte) (n int, err error) {
 				return 0, fmt.Errorf("negative length")
 			}
 			iNdEx += length
+		case 3:
+			depth++
+		case 4:
+			if depth == 0 {
+				return 0, fmt.Errorf("proto: unexpected end of group")
+			}
+			depth--
 		case 5:
 			iNdEx += 4
 		default:
@@ -148,7 +156,9 @@ func skipResource(dAtA []byte) (n int, err error) {
 		if iNdEx < 0 {
 			return 0, fmt.Errorf("negative index")
 		}
-		return iNdEx, nil
+		if depth == 0 {
+			return iNdEx, nil
+		}
 	}
 	return 0, io.ErrUnexpectedEOF
 }
@@ -241,6 +251,12 @@ func (m *Resource) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Resource: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Resource: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
 		switch fieldNum {
 		case 1: // attributes
 			if wireType != 2 {

@@ -1994,6 +1994,7 @@ func (m *Exemplar) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 func skipMetrics(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0
+	depth := 0
 	for iNdEx < l {
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
@@ -2038,6 +2039,13 @@ func skipMetrics(dAtA []byte) (n int, err error) {
 				return 0, fmt.Errorf("negative length")
 			}
 			iNdEx += length
+		case 3:
+			depth++
+		case 4:
+			if depth == 0 {
+				return 0, fmt.Errorf("proto: unexpected end of group")
+			}
+			depth--
 		case 5:
 			iNdEx += 4
 		default:
@@ -2046,7 +2054,9 @@ func skipMetrics(dAtA []byte) (n int, err error) {
 		if iNdEx < 0 {
 			return 0, fmt.Errorf("negative index")
 		}
-		return iNdEx, nil
+		if depth == 0 {
+			return iNdEx, nil
+		}
 	}
 	return 0, io.ErrUnexpectedEOF
 }
@@ -2133,6 +2143,12 @@ func (m *MetricsData) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MetricsData: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MetricsData: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
 		switch fieldNum {
 		case 1: // resource_metrics
 			if wireType != 2 {
@@ -2272,6 +2288,12 @@ func (m *ResourceMetrics) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ResourceMetrics: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ResourceMetrics: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
 		switch fieldNum {
 		case 1: // resource
 			if wireType != 2 {
@@ -2477,6 +2499,12 @@ func (m *ScopeMetrics) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ScopeMetrics: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ScopeMetrics: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
 		switch fieldNum {
 		case 1: // scope
 			if wireType != 2 {
@@ -2682,6 +2710,12 @@ func (m *Metric) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Metric: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Metric: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
 		switch fieldNum {
 		case 1: // name
 			if wireType != 2 {
@@ -3097,6 +3131,12 @@ func (m *Gauge) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Gauge: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Gauge: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
 		switch fieldNum {
 		case 1: // data_points
 			if wireType != 2 {
@@ -3236,6 +3276,12 @@ func (m *Sum) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Sum: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Sum: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
 		switch fieldNum {
 		case 1: // data_points
 			if wireType != 2 {
@@ -3415,6 +3461,12 @@ func (m *Histogram) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Histogram: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Histogram: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
 		switch fieldNum {
 		case 1: // data_points
 			if wireType != 2 {
@@ -3574,6 +3626,12 @@ func (m *ExponentialHistogram) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ExponentialHistogram: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ExponentialHistogram: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
 		switch fieldNum {
 		case 1: // data_points
 			if wireType != 2 {
@@ -3733,6 +3791,12 @@ func (m *Summary) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Summary: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Summary: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
 		switch fieldNum {
 		case 1: // data_points
 			if wireType != 2 {
@@ -3878,6 +3942,12 @@ func (m *NumberDataPoint) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: NumberDataPoint: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: NumberDataPoint: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
 		switch fieldNum {
 		case 7: // attributes
 			if wireType != 2 {
@@ -4110,6 +4180,12 @@ func (m *HistogramDataPoint) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: HistogramDataPoint: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: HistogramDataPoint: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
 		switch fieldNum {
 		case 9: // attributes
 			if wireType != 2 {
@@ -4416,6 +4492,12 @@ func (m *ExponentialHistogramDataPoint_Buckets) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ExponentialHistogramDataPoint_Buckets: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ExponentialHistogramDataPoint_Buckets: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
 		switch fieldNum {
 		case 1: // offset
 			if wireType != 0 {
@@ -4612,6 +4694,12 @@ func (m *ExponentialHistogramDataPoint) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ExponentialHistogramDataPoint: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ExponentialHistogramDataPoint: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
 		switch fieldNum {
 		case 1: // attributes
 			if wireType != 2 {
@@ -4910,6 +4998,12 @@ func (m *SummaryDataPoint_ValueAtQuantile) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: SummaryDataPoint_ValueAtQuantile: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: SummaryDataPoint_ValueAtQuantile: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
 		switch fieldNum {
 		case 1: // quantile
 			if wireType != 1 {
@@ -5038,6 +5132,12 @@ func (m *SummaryDataPoint) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: SummaryDataPoint: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: SummaryDataPoint: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
 		switch fieldNum {
 		case 7: // attributes
 			if wireType != 2 {
@@ -5268,6 +5368,12 @@ func (m *Exemplar) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Exemplar: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Exemplar: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
 		switch fieldNum {
 		case 7: // filtered_attributes
 			if wireType != 2 {

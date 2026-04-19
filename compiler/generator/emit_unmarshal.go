@@ -18,6 +18,7 @@ func (fg *FileGenerator) emitGogoSkipHelper() {
 	fmt.Fprintf(fg.body, "func %s(dAtA []byte) (n int, err error) {\n", funcName)
 	fmt.Fprintf(fg.body, "\tl := len(dAtA)\n")
 	fmt.Fprintf(fg.body, "\tiNdEx := 0\n")
+	fmt.Fprintf(fg.body, "\tdepth := 0\n")
 	fmt.Fprintf(fg.body, "\tfor iNdEx < l {\n")
 	fmt.Fprintf(fg.body, "\t\tvar wire uint64\n")
 	fmt.Fprintf(fg.body, "\t\tfor shift := uint(0); ; shift += 7 {\n")
@@ -45,11 +46,16 @@ func (fg *FileGenerator) emitGogoSkipHelper() {
 	fmt.Fprintf(fg.body, "\t\t\t}\n")
 	fmt.Fprintf(fg.body, "\t\t\tif length < 0 { return 0, fmt.Errorf(\"negative length\") }\n")
 	fmt.Fprintf(fg.body, "\t\t\tiNdEx += length\n")
+	fmt.Fprintf(fg.body, "\t\tcase 3:\n")
+	fmt.Fprintf(fg.body, "\t\t\tdepth++\n")
+	fmt.Fprintf(fg.body, "\t\tcase 4:\n")
+	fmt.Fprintf(fg.body, "\t\t\tif depth == 0 { return 0, fmt.Errorf(\"proto: unexpected end of group\") }\n")
+	fmt.Fprintf(fg.body, "\t\t\tdepth--\n")
 	fmt.Fprintf(fg.body, "\t\tcase 5: iNdEx += 4\n")
 	fmt.Fprintf(fg.body, "\t\tdefault: return 0, fmt.Errorf(\"proto: illegal wireType %%d\", wireType)\n")
 	fmt.Fprintf(fg.body, "\t\t}\n")
 	fmt.Fprintf(fg.body, "\t\tif iNdEx < 0 { return 0, fmt.Errorf(\"negative index\") }\n")
-	fmt.Fprintf(fg.body, "\t\treturn iNdEx, nil\n")
+	fmt.Fprintf(fg.body, "\t\tif depth == 0 { return iNdEx, nil }\n")
 	fmt.Fprintf(fg.body, "\t}\n")
 	fmt.Fprintf(fg.body, "\treturn 0, io.ErrUnexpectedEOF\n")
 	fmt.Fprintf(fg.body, "}\n\n")
@@ -215,6 +221,8 @@ func (fg *FileGenerator) emitUnmarshal(md protoreflect.MessageDescriptor) {
 
 	fmt.Fprintf(fg.body, "\t\tfieldNum := int32(wire >> 3)\n")
 	fmt.Fprintf(fg.body, "\t\twireType := int(wire & 0x7)\n")
+	fmt.Fprintf(fg.body, "\t\tif wireType == 4 {\n\t\t\treturn fmt.Errorf(\"proto: %s: wiretype end group for non-group\")\n\t\t}\n", name)
+	fmt.Fprintf(fg.body, "\t\tif fieldNum <= 0 {\n\t\t\treturn fmt.Errorf(\"proto: %s: illegal tag %%d (wire type %%d)\", fieldNum, wire)\n\t\t}\n", name)
 
 	fmt.Fprintf(fg.body, "\t\tswitch fieldNum {\n")
 
@@ -225,7 +233,6 @@ func (fg *FileGenerator) emitUnmarshal(md protoreflect.MessageDescriptor) {
 
 	fmt.Fprintf(fg.body, "\t\tdefault:\n")
 	fmt.Fprintf(fg.body, "\t\t\tiNdEx = preIndex\n")
-	// Use the gogoslick-style skip function which takes (dAtA []byte) (int, error)
 	skipFunc := fg.gogoSkipFuncName()
 	fmt.Fprintf(fg.body, "\t\t\tskippy, err := %s(dAtA[iNdEx:])\n", skipFunc)
 	fmt.Fprintf(fg.body, "\t\t\tif err != nil {\n\t\t\t\treturn err\n\t\t\t}\n")

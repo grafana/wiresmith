@@ -524,6 +524,7 @@ func (m *LogRecord) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 func skipLogs(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0
+	depth := 0
 	for iNdEx < l {
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
@@ -568,6 +569,13 @@ func skipLogs(dAtA []byte) (n int, err error) {
 				return 0, fmt.Errorf("negative length")
 			}
 			iNdEx += length
+		case 3:
+			depth++
+		case 4:
+			if depth == 0 {
+				return 0, fmt.Errorf("proto: unexpected end of group")
+			}
+			depth--
 		case 5:
 			iNdEx += 4
 		default:
@@ -576,7 +584,9 @@ func skipLogs(dAtA []byte) (n int, err error) {
 		if iNdEx < 0 {
 			return 0, fmt.Errorf("negative index")
 		}
-		return iNdEx, nil
+		if depth == 0 {
+			return iNdEx, nil
+		}
 	}
 	return 0, io.ErrUnexpectedEOF
 }
@@ -663,6 +673,12 @@ func (m *LogsData) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: LogsData: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: LogsData: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
 		switch fieldNum {
 		case 1: // resource_logs
 			if wireType != 2 {
@@ -802,6 +818,12 @@ func (m *ResourceLogs) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ResourceLogs: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ResourceLogs: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
 		switch fieldNum {
 		case 1: // resource
 			if wireType != 2 {
@@ -1007,6 +1029,12 @@ func (m *ScopeLogs) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ScopeLogs: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ScopeLogs: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
 		switch fieldNum {
 		case 1: // scope
 			if wireType != 2 {
@@ -1212,6 +1240,12 @@ func (m *LogRecord) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: LogRecord: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: LogRecord: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
 		switch fieldNum {
 		case 1: // time_unix_nano
 			if wireType != 1 {

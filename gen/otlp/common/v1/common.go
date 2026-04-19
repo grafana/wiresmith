@@ -563,6 +563,7 @@ func (m *EntityRef) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 func skipCommon(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0
+	depth := 0
 	for iNdEx < l {
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
@@ -607,6 +608,13 @@ func skipCommon(dAtA []byte) (n int, err error) {
 				return 0, fmt.Errorf("negative length")
 			}
 			iNdEx += length
+		case 3:
+			depth++
+		case 4:
+			if depth == 0 {
+				return 0, fmt.Errorf("proto: unexpected end of group")
+			}
+			depth--
 		case 5:
 			iNdEx += 4
 		default:
@@ -615,7 +623,9 @@ func skipCommon(dAtA []byte) (n int, err error) {
 		if iNdEx < 0 {
 			return 0, fmt.Errorf("negative index")
 		}
-		return iNdEx, nil
+		if depth == 0 {
+			return iNdEx, nil
+		}
 	}
 	return 0, io.ErrUnexpectedEOF
 }
@@ -643,6 +653,12 @@ func (m *AnyValue) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: AnyValue: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: AnyValue: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
 		switch fieldNum {
 		case 1: // string_value
 			if wireType != 2 {
@@ -953,6 +969,12 @@ func (m *ArrayValue) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ArrayValue: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ArrayValue: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
 		switch fieldNum {
 		case 1: // values
 			if wireType != 2 {
@@ -1092,6 +1114,12 @@ func (m *KeyValueList) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: KeyValueList: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: KeyValueList: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
 		switch fieldNum {
 		case 1: // values
 			if wireType != 2 {
@@ -1172,6 +1200,12 @@ func (m *KeyValue) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: KeyValue: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: KeyValue: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
 		switch fieldNum {
 		case 1: // key
 			if wireType != 2 {
@@ -1362,6 +1396,12 @@ func (m *InstrumentationScope) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: InstrumentationScope: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: InstrumentationScope: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
 		switch fieldNum {
 		case 1: // name
 			if wireType != 2 {
@@ -1591,6 +1631,12 @@ func (m *EntityRef) Unmarshal(dAtA []byte) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EntityRef: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EntityRef: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
 		switch fieldNum {
 		case 1: // schema_url
 			if wireType != 2 {
