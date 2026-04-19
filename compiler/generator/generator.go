@@ -304,8 +304,8 @@ func (fg *FileGenerator) emitMarshalMethods(md protoreflect.MessageDescriptor) {
 }
 
 func (fg *FileGenerator) emitAllUnmarshalMethods(fd protoreflect.FileDescriptor) {
-	// Emit the skipField helper once per package
-	fg.emitSkipFieldHelper()
+	// Emit the gogoslick-style skip function (used by inline unmarshal).
+	fg.emitGogoSkipHelper()
 	for i := 0; i < fd.Messages().Len(); i++ {
 		fg.emitUnmarshalMethods(fd.Messages().Get(i))
 	}
