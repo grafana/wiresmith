@@ -8,6 +8,11 @@ import (
 
 func (fg *FileGenerator) emitStruct(md protoreflect.MessageDescriptor) {
 	name := goMessageTypeName(md)
+
+	if c := leadingComment(md); c != "" {
+		fg.body.WriteString(c)
+	}
+
 	fmt.Fprintf(fg.body, "type %s struct {\n", name)
 
 	seenOneofs := map[string]bool{}
@@ -15,6 +20,9 @@ func (fg *FileGenerator) emitStruct(md protoreflect.MessageDescriptor) {
 		fd := md.Fields().Get(i)
 
 		if fd.IsMap() {
+			if c := leadingComment(fd); c != "" {
+				fg.body.WriteString(indentComment(c))
+			}
 			goName := snakeToPascal(string(fd.Name()))
 			goType := fg.imports.goType(fd)
 			fmt.Fprintf(fg.body, "\t%s %s\n", goName, goType)
@@ -25,6 +33,9 @@ func (fg *FileGenerator) emitStruct(md protoreflect.MessageDescriptor) {
 			ooName := string(oo.Name())
 			if !seenOneofs[ooName] {
 				seenOneofs[ooName] = true
+				if c := leadingComment(oo); c != "" {
+					fg.body.WriteString(indentComment(c))
+				}
 				goName := snakeToPascal(ooName)
 				ifaceName := oneofInterfaceName(md, oo)
 				fmt.Fprintf(fg.body, "\t%s %s\n", goName, ifaceName)
@@ -32,6 +43,9 @@ func (fg *FileGenerator) emitStruct(md protoreflect.MessageDescriptor) {
 			continue
 		}
 
+		if c := leadingComment(fd); c != "" {
+			fg.body.WriteString(indentComment(c))
+		}
 		goName := snakeToPascal(string(fd.Name()))
 		goType := fg.imports.goType(fd)
 		fmt.Fprintf(fg.body, "\t%s %s\n", goName, goType)

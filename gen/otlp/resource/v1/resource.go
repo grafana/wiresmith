@@ -10,10 +10,22 @@ import (
 	"wiresmith/gen/protohelpers"
 )
 
+// Resource information.
 type Resource struct {
-	Attributes             []commonv1.KeyValue
+	// Set of attributes that describe the resource.
+	// Attribute keys MUST be unique (it is not allowed to have more than one
+	// attribute with the same key).
+	// The behavior of software that receives duplicated keys can be unpredictable.
+	Attributes []commonv1.KeyValue
+	// The number of dropped attributes. If the value is 0, then
+	// no attributes were dropped.
 	DroppedAttributesCount uint32
-	EntityRefs             []commonv1.EntityRef
+	// Set of entities that participate in this Resource.
+	//
+	// Note: keys in the references MUST exist in attributes of this message.
+	//
+	// Status: [Development]
+	EntityRefs []commonv1.EntityRef
 }
 
 func (m *Resource) Size() int {
@@ -34,10 +46,10 @@ func (m *Resource) Size() int {
 
 func (m *Resource) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
-	if size == 0 {
-		return nil, nil
-	}
 	dAtA = make([]byte, size)
+	if size == 0 {
+		return dAtA, nil
+	}
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
@@ -233,4 +245,45 @@ func (m *Resource) unmarshal(b []byte, depth int) error {
 		}
 	}
 	return nil
+}
+
+func (this *Resource) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*Resource)
+	if !ok {
+		that2, ok := that.(Resource)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if len(this.Attributes) != len(that1.Attributes) {
+		return false
+	}
+	for i := range this.Attributes {
+		if !this.Attributes[i].Equal(that1.Attributes[i]) {
+			return false
+		}
+	}
+	if this.DroppedAttributesCount != that1.DroppedAttributesCount {
+		return false
+	}
+	if len(this.EntityRefs) != len(that1.EntityRefs) {
+		return false
+	}
+	for i := range this.EntityRefs {
+		if !this.EntityRefs[i].Equal(that1.EntityRefs[i]) {
+			return false
+		}
+	}
+	return true
 }
