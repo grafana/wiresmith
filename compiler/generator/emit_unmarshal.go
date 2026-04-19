@@ -1499,7 +1499,7 @@ func (fg *FileGenerator) emitMapUnmarshalInline(access string, fd protoreflect.F
 	}
 
 	fmt.Fprintf(fg.body, "%sfor len(v) > 0 {\n", indent)
-	fmt.Fprintf(fg.body, "%s\tentryNum, entryTyp, entryTagLen := protowire.ConsumeTag(v)\n", indent)
+	fmt.Fprintf(fg.body, "%s\tentryNum, _, entryTagLen := protowire.ConsumeTag(v)\n", indent)
 	fmt.Fprintf(fg.body, "%s\tif entryTagLen < 0 { return fmt.Errorf(\"invalid map entry tag\") }\n", indent)
 	fmt.Fprintf(fg.body, "%s\tv = v[entryTagLen:]\n", indent)
 	fmt.Fprintf(fg.body, "%s\tswitch entryNum {\n", indent)
@@ -1540,7 +1540,7 @@ func (fg *FileGenerator) emitMapUnmarshalInline(access string, fd protoreflect.F
 	}
 
 	fmt.Fprintf(fg.body, "%s\tdefault:\n", indent)
-	fmt.Fprintf(fg.body, "%s\t\tskipN, err := %s(v)\n", indent, fg.skipFieldFuncName())
+	fmt.Fprintf(fg.body, "%s\t\tskipN, err := %s(v)\n", indent, fg.gogoSkipFuncName())
 	fmt.Fprintf(fg.body, "%s\t\tif err != nil { return err }\n", indent)
 	fmt.Fprintf(fg.body, "%s\t\tv = v[skipN:]\n", indent)
 	fmt.Fprintf(fg.body, "%s\t}\n", indent) // end switch
