@@ -29,11 +29,30 @@ func (fg *FileGenerator) emitGogoMethods(md protoreflect.MessageDescriptor) {
 	// ProtoMessage is a marker method.
 	fmt.Fprintf(fg.body, "func (*%s) ProtoMessage() {}\n", name)
 
-	// String returns a text representation.
+	// String returns a text representation matching gogoslick's format.
 	fg.imports.addStdImport("fmt")
-	fmt.Fprintf(fg.body, "func (m *%s) String() string {\n", name)
-	fmt.Fprintf(fg.body, "\tif m == nil {\n\t\treturn \"nil\"\n\t}\n")
-	fmt.Fprintf(fg.body, "\treturn fmt.Sprintf(\"%%v\", *m)\n")
+	fg.imports.addStdImport("strings")
+	fmt.Fprintf(fg.body, "func (this *%s) String() string {\n", name)
+	fmt.Fprintf(fg.body, "\tif this == nil {\n\t\treturn \"nil\"\n\t}\n")
+	fmt.Fprintf(fg.body, "\ts := strings.Join([]string{`&%s{`,\n", name)
+	seenOneofs := map[string]bool{}
+	for i := 0; i < md.Fields().Len(); i++ {
+		fd := md.Fields().Get(i)
+		if oo := fd.ContainingOneof(); oo != nil && !oo.IsSynthetic() {
+			ooName := string(oo.Name())
+			if !seenOneofs[ooName] {
+				seenOneofs[ooName] = true
+				goName := snakeToPascal(ooName)
+				fmt.Fprintf(fg.body, "\t\t`%s:` + fmt.Sprintf(\"%%v\", this.%s) + `,`,\n", goName, goName)
+			}
+			continue
+		}
+		goName := snakeToPascal(string(fd.Name()))
+		fmt.Fprintf(fg.body, "\t\t`%s:` + fmt.Sprintf(\"%%v\", this.%s) + `,`,\n", goName, goName)
+	}
+	fmt.Fprintf(fg.body, "\t\t`}`,\n")
+	fmt.Fprintf(fg.body, "\t}, \"\")\n")
+	fmt.Fprintf(fg.body, "\treturn s\n")
 	fmt.Fprintf(fg.body, "}\n\n")
 
 	// XXX_Unmarshal delegates to Unmarshal.
