@@ -7,6 +7,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"google.golang.org/protobuf/encoding/protowire"
+	"io"
 	"math"
 	"slices"
 	"wiresmith/gen/protohelpers"
@@ -2061,43 +2062,123 @@ func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) 
 	}
 }
 
+func skipValue(dAtA []byte, wireType int) (int, error) {
+	iNdEx := 0
+	l := len(dAtA)
+	switch wireType {
+	case 0:
+		for {
+			if iNdEx >= l {
+				return 0, io.ErrUnexpectedEOF
+			}
+			iNdEx++
+			if dAtA[iNdEx-1] < 0x80 {
+				break
+			}
+		}
+	case 1:
+		if (iNdEx + 8) > l {
+			return 0, io.ErrUnexpectedEOF
+		}
+		iNdEx += 8
+	case 2:
+		var length uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return 0, fmt.Errorf("proto: integer overflow")
+			}
+			if iNdEx >= l {
+				return 0, io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			length |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		if int(length) < 0 {
+			return 0, fmt.Errorf("proto: negative length")
+		}
+		iNdEx += int(length)
+		if iNdEx < 0 || iNdEx > l {
+			return 0, io.ErrUnexpectedEOF
+		}
+	case 5:
+		if (iNdEx + 4) > l {
+			return 0, io.ErrUnexpectedEOF
+		}
+		iNdEx += 4
+	default:
+		return 0, fmt.Errorf("unknown wire type %d", wireType)
+	}
+	return iNdEx, nil
+}
+
 func (m *TestAllTypesProto3_NestedMessage) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
-func (m *TestAllTypesProto3_NestedMessage) unmarshal(b []byte, depth int) error {
+func (m *TestAllTypesProto3_NestedMessage) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
 	}
-	for len(b) > 0 {
-		num, typ, tagLen := protowire.ConsumeTag(b)
-		if tagLen < 0 {
-			return fmt.Errorf("invalid tag")
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return fmt.Errorf("proto: integer overflow")
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
 		}
-		b = b[tagLen:]
-		switch num {
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		switch fieldNum {
 		case 1: // a
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 			m.A = int32(v)
-			b = b[n:]
 		default:
-			n, err := skipField(b, num, typ)
+			n, err := skipValue(dAtA[iNdEx:], wireType)
 			if err != nil {
 				return err
 			}
-			b = b[n:]
+			iNdEx += n
 		}
+	}
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
 	}
 	return nil
 }
@@ -2106,12 +2187,14 @@ func (m *TestAllTypesProto3) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
-func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
+func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
 	}
-	if len(b) >= 256 {
-		tmp := b
+	l := len(dAtA)
+	iNdEx := 0
+	if l >= 256 {
+		var preIdx int
 		var field44count int
 		var field45count int
 		var field48count int
@@ -2137,13 +2220,22 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 		var field72count int
 		var field73count int
 		var field74count int
-		for len(tmp) > 0 {
-			num, typ, tagLen := protowire.ConsumeTag(tmp)
-			if tagLen < 0 {
-				break
+		for preIdx < l {
+			var preWire uint64
+			for shift := uint(0); ; shift += 7 {
+				if preIdx >= l {
+					break
+				}
+				b := dAtA[preIdx]
+				preIdx++
+				preWire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
-			tmp = tmp[tagLen:]
-			switch num {
+			preNum := int32(preWire >> 3)
+			preTyp := int(preWire & 0x7)
+			switch preNum {
 			case 44:
 				field44count++
 			case 45:
@@ -2195,23 +2287,38 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 			case 74:
 				field74count++
 			}
-			var skip int
-			switch typ {
-			case protowire.VarintType:
-				_, skip = protowire.ConsumeVarint(tmp)
-			case protowire.Fixed32Type:
-				skip = 4
-			case protowire.Fixed64Type:
-				skip = 8
-			case protowire.BytesType:
-				_, skip = protowire.ConsumeBytes(tmp)
-			case protowire.StartGroupType:
-				_, skip = protowire.ConsumeGroup(num, tmp)
-			}
-			if skip < 0 || skip > len(tmp) {
+			switch preTyp {
+			case 0:
+				for preIdx < l {
+					preIdx++
+					if dAtA[preIdx-1] < 0x80 {
+						break
+					}
+				}
+			case 1:
+				preIdx += 8
+			case 2:
+				var preLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if preIdx >= l {
+						break
+					}
+					b := dAtA[preIdx]
+					preIdx++
+					preLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				preIdx += int(preLen)
+			case 5:
+				preIdx += 4
+			default:
 				break
 			}
-			tmp = tmp[skip:]
+			if preIdx < 0 || preIdx > l {
+				break
+			}
 		}
 		if field44count > 0 {
 			m.RepeatedString = make([]string, 0, field44count)
@@ -2289,338 +2396,595 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 			m.MapStringForeignEnum = make(map[string]ForeignEnum, field74count)
 		}
 	}
-	for len(b) > 0 {
-		num, typ, tagLen := protowire.ConsumeTag(b)
-		if tagLen < 0 {
-			return fmt.Errorf("invalid tag")
+	for iNdEx < l {
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return fmt.Errorf("proto: integer overflow")
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
 		}
-		b = b[tagLen:]
-		switch num {
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		switch fieldNum {
 		case 1: // optional_int32
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 			m.OptionalInt32 = int32(v)
-			b = b[n:]
 		case 2: // optional_int64
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 			m.OptionalInt64 = int64(v)
-			b = b[n:]
 		case 3: // optional_uint32
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 			m.OptionalUint32 = uint32(v)
-			b = b[n:]
 		case 4: // optional_uint64
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 			m.OptionalUint64 = v
-			b = b[n:]
 		case 5: // optional_sint32
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
-			m.OptionalSint32 = int32(protowire.DecodeZigZag(v))
-			b = b[n:]
+			m.OptionalSint32 = int32(v>>1) ^ int32(v)<<31>>31
 		case 6: // optional_sint64
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
-			m.OptionalSint64 = int64(protowire.DecodeZigZag(v))
-			b = b[n:]
+			m.OptionalSint64 = int64(v>>1) ^ int64(v)<<63>>63
 		case 7: // optional_fixed32
-			if typ != protowire.Fixed32Type {
-				n, err := skipField(b, num, typ)
+			if wireType != 5 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeFixed32(b)
-			if n < 0 {
-				return fmt.Errorf("invalid fixed32")
+			if (iNdEx + 4) > l {
+				return io.ErrUnexpectedEOF
 			}
+			v := binary.LittleEndian.Uint32(dAtA[iNdEx:])
+			iNdEx += 4
 			m.OptionalFixed32 = v
-			b = b[n:]
 		case 8: // optional_fixed64
-			if typ != protowire.Fixed64Type {
-				n, err := skipField(b, num, typ)
+			if wireType != 1 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeFixed64(b)
-			if n < 0 {
-				return fmt.Errorf("invalid fixed64")
+			if (iNdEx + 8) > l {
+				return io.ErrUnexpectedEOF
 			}
+			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
+			iNdEx += 8
 			m.OptionalFixed64 = v
-			b = b[n:]
 		case 9: // optional_sfixed32
-			if typ != protowire.Fixed32Type {
-				n, err := skipField(b, num, typ)
+			if wireType != 5 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeFixed32(b)
-			if n < 0 {
-				return fmt.Errorf("invalid fixed32")
+			if (iNdEx + 4) > l {
+				return io.ErrUnexpectedEOF
 			}
+			v := binary.LittleEndian.Uint32(dAtA[iNdEx:])
+			iNdEx += 4
 			m.OptionalSfixed32 = int32(v)
-			b = b[n:]
 		case 10: // optional_sfixed64
-			if typ != protowire.Fixed64Type {
-				n, err := skipField(b, num, typ)
+			if wireType != 1 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeFixed64(b)
-			if n < 0 {
-				return fmt.Errorf("invalid fixed64")
+			if (iNdEx + 8) > l {
+				return io.ErrUnexpectedEOF
 			}
+			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
+			iNdEx += 8
 			m.OptionalSfixed64 = int64(v)
-			b = b[n:]
 		case 11: // optional_float
-			if typ != protowire.Fixed32Type {
-				n, err := skipField(b, num, typ)
+			if wireType != 5 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeFixed32(b)
-			if n < 0 {
-				return fmt.Errorf("invalid fixed32")
+			if (iNdEx + 4) > l {
+				return io.ErrUnexpectedEOF
 			}
+			v := binary.LittleEndian.Uint32(dAtA[iNdEx:])
+			iNdEx += 4
 			m.OptionalFloat = math.Float32frombits(v)
-			b = b[n:]
 		case 12: // optional_double
-			if typ != protowire.Fixed64Type {
-				n, err := skipField(b, num, typ)
+			if wireType != 1 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeFixed64(b)
-			if n < 0 {
-				return fmt.Errorf("invalid fixed64")
+			if (iNdEx + 8) > l {
+				return io.ErrUnexpectedEOF
 			}
+			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
+			iNdEx += 8
 			m.OptionalDouble = math.Float64frombits(v)
-			b = b[n:]
 		case 13: // optional_bool
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 			m.OptionalBool = v != 0
-			b = b[n:]
 		case 14: // optional_string
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeString(b)
-			if n < 0 {
-				return fmt.Errorf("invalid string")
+			var byteLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
-			m.OptionalString = v
-			b = b[n:]
+			intByteLen := int(byteLen)
+			if intByteLen < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.OptionalString = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
 		case 15: // optional_bytes
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeBytes(b)
-			if n < 0 {
-				return fmt.Errorf("invalid bytes")
+			var byteLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
-			m.OptionalBytes = append(m.OptionalBytes[:0], v...)
-			b = b[n:]
+			intByteLen := int(byteLen)
+			if intByteLen < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.OptionalBytes = append(m.OptionalBytes[:0], dAtA[iNdEx:postIndex]...)
+			iNdEx = postIndex
 		case 18: // optional_nested_message
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeBytes(b)
-			if n < 0 {
-				return fmt.Errorf("invalid bytes")
+			var byteLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
-			if err := m.OptionalNestedMessage.unmarshal(v, depth+1); err != nil {
+			intByteLen := int(byteLen)
+			if intByteLen < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.OptionalNestedMessage.unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
-			b = b[n:]
+			iNdEx = postIndex
 		case 19: // optional_foreign_message
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeBytes(b)
-			if n < 0 {
-				return fmt.Errorf("invalid bytes")
+			var byteLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
-			if err := m.OptionalForeignMessage.unmarshal(v, depth+1); err != nil {
+			intByteLen := int(byteLen)
+			if intByteLen < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.OptionalForeignMessage.unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
-			b = b[n:]
+			iNdEx = postIndex
 		case 21: // optional_nested_enum
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 			m.OptionalNestedEnum = TestAllTypesProto3_NestedEnum(v)
-			b = b[n:]
 		case 22: // optional_foreign_enum
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 			m.OptionalForeignEnum = ForeignEnum(v)
-			b = b[n:]
 		case 24: // optional_string_piece
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeString(b)
-			if n < 0 {
-				return fmt.Errorf("invalid string")
+			var byteLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
-			m.OptionalStringPiece = v
-			b = b[n:]
+			intByteLen := int(byteLen)
+			if intByteLen < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.OptionalStringPiece = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
 		case 25: // optional_cord
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeString(b)
-			if n < 0 {
-				return fmt.Errorf("invalid string")
-			}
-			m.OptionalCord = v
-			b = b[n:]
-		case 31: // repeated_int32
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			var byteLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
 				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intByteLen := int(byteLen)
+			if intByteLen < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.OptionalCord = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 31: // repeated_int32
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				var elementCount int
 				for _, b := range data {
 					if b < 128 {
@@ -2638,27 +3002,60 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					m.RepeatedInt32 = append(m.RepeatedInt32, int32(v))
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.VarintType {
-				v, n := protowire.ConsumeVarint(b)
-				if n < 0 {
-					return fmt.Errorf("invalid varint")
+				iNdEx = postIndex
+			} else if wireType == 0 {
+				var v uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
 				m.RepeatedInt32 = append(m.RepeatedInt32, int32(v))
-				b = b[n:]
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 32: // repeated_int64
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				var elementCount int
 				for _, b := range data {
 					if b < 128 {
@@ -2676,27 +3073,60 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					m.RepeatedInt64 = append(m.RepeatedInt64, int64(v))
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.VarintType {
-				v, n := protowire.ConsumeVarint(b)
-				if n < 0 {
-					return fmt.Errorf("invalid varint")
+				iNdEx = postIndex
+			} else if wireType == 0 {
+				var v uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
 				m.RepeatedInt64 = append(m.RepeatedInt64, int64(v))
-				b = b[n:]
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 33: // repeated_uint32
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				var elementCount int
 				for _, b := range data {
 					if b < 128 {
@@ -2714,27 +3144,60 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					m.RepeatedUint32 = append(m.RepeatedUint32, uint32(v))
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.VarintType {
-				v, n := protowire.ConsumeVarint(b)
-				if n < 0 {
-					return fmt.Errorf("invalid varint")
+				iNdEx = postIndex
+			} else if wireType == 0 {
+				var v uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
 				m.RepeatedUint32 = append(m.RepeatedUint32, uint32(v))
-				b = b[n:]
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 34: // repeated_uint64
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				var elementCount int
 				for _, b := range data {
 					if b < 128 {
@@ -2752,27 +3215,60 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					m.RepeatedUint64 = append(m.RepeatedUint64, v)
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.VarintType {
-				v, n := protowire.ConsumeVarint(b)
-				if n < 0 {
-					return fmt.Errorf("invalid varint")
+				iNdEx = postIndex
+			} else if wireType == 0 {
+				var v uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
 				m.RepeatedUint64 = append(m.RepeatedUint64, v)
-				b = b[n:]
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 35: // repeated_sint32
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				var elementCount int
 				for _, b := range data {
 					if b < 128 {
@@ -2787,30 +3283,63 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					if vn < 0 {
 						return fmt.Errorf("invalid packed varint")
 					}
-					m.RepeatedSint32 = append(m.RepeatedSint32, int32(protowire.DecodeZigZag(v)))
+					m.RepeatedSint32 = append(m.RepeatedSint32, int32(v>>1)^int32(v)<<31>>31)
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.VarintType {
-				v, n := protowire.ConsumeVarint(b)
-				if n < 0 {
-					return fmt.Errorf("invalid varint")
+				iNdEx = postIndex
+			} else if wireType == 0 {
+				var v uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
-				m.RepeatedSint32 = append(m.RepeatedSint32, int32(protowire.DecodeZigZag(v)))
-				b = b[n:]
+				m.RepeatedSint32 = append(m.RepeatedSint32, int32(v>>1)^int32(v)<<31>>31)
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 36: // repeated_sint64
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				var elementCount int
 				for _, b := range data {
 					if b < 128 {
@@ -2825,30 +3354,63 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					if vn < 0 {
 						return fmt.Errorf("invalid packed varint")
 					}
-					m.RepeatedSint64 = append(m.RepeatedSint64, int64(protowire.DecodeZigZag(v)))
+					m.RepeatedSint64 = append(m.RepeatedSint64, int64(v>>1)^int64(v)<<63>>63)
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.VarintType {
-				v, n := protowire.ConsumeVarint(b)
-				if n < 0 {
-					return fmt.Errorf("invalid varint")
+				iNdEx = postIndex
+			} else if wireType == 0 {
+				var v uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
-				m.RepeatedSint64 = append(m.RepeatedSint64, int64(protowire.DecodeZigZag(v)))
-				b = b[n:]
+				m.RepeatedSint64 = append(m.RepeatedSint64, int64(v>>1)^int64(v)<<63>>63)
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 37: // repeated_fixed32
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				if elementCount := len(data) / 4; elementCount != 0 && len(m.RepeatedFixed32) == 0 {
 					m.RepeatedFixed32 = make([]uint32, 0, elementCount)
 				}
@@ -2860,27 +3422,50 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					m.RepeatedFixed32 = append(m.RepeatedFixed32, v)
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.Fixed32Type {
-				v, n := protowire.ConsumeFixed32(b)
-				if n < 0 {
-					return fmt.Errorf("invalid fixed32")
+				iNdEx = postIndex
+			} else if wireType == 5 {
+				if (iNdEx + 4) > l {
+					return io.ErrUnexpectedEOF
 				}
+				v := binary.LittleEndian.Uint32(dAtA[iNdEx:])
+				iNdEx += 4
 				m.RepeatedFixed32 = append(m.RepeatedFixed32, v)
-				b = b[n:]
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 38: // repeated_fixed64
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				if elementCount := len(data) / 8; elementCount != 0 && len(m.RepeatedFixed64) == 0 {
 					m.RepeatedFixed64 = make([]uint64, 0, elementCount)
 				}
@@ -2892,27 +3477,50 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					m.RepeatedFixed64 = append(m.RepeatedFixed64, v)
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.Fixed64Type {
-				v, n := protowire.ConsumeFixed64(b)
-				if n < 0 {
-					return fmt.Errorf("invalid fixed64")
+				iNdEx = postIndex
+			} else if wireType == 1 {
+				if (iNdEx + 8) > l {
+					return io.ErrUnexpectedEOF
 				}
+				v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
+				iNdEx += 8
 				m.RepeatedFixed64 = append(m.RepeatedFixed64, v)
-				b = b[n:]
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 39: // repeated_sfixed32
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				if elementCount := len(data) / 4; elementCount != 0 && len(m.RepeatedSfixed32) == 0 {
 					m.RepeatedSfixed32 = make([]int32, 0, elementCount)
 				}
@@ -2924,27 +3532,50 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					m.RepeatedSfixed32 = append(m.RepeatedSfixed32, int32(v))
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.Fixed32Type {
-				v, n := protowire.ConsumeFixed32(b)
-				if n < 0 {
-					return fmt.Errorf("invalid fixed32")
+				iNdEx = postIndex
+			} else if wireType == 5 {
+				if (iNdEx + 4) > l {
+					return io.ErrUnexpectedEOF
 				}
+				v := binary.LittleEndian.Uint32(dAtA[iNdEx:])
+				iNdEx += 4
 				m.RepeatedSfixed32 = append(m.RepeatedSfixed32, int32(v))
-				b = b[n:]
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 40: // repeated_sfixed64
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				if elementCount := len(data) / 8; elementCount != 0 && len(m.RepeatedSfixed64) == 0 {
 					m.RepeatedSfixed64 = make([]int64, 0, elementCount)
 				}
@@ -2956,27 +3587,50 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					m.RepeatedSfixed64 = append(m.RepeatedSfixed64, int64(v))
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.Fixed64Type {
-				v, n := protowire.ConsumeFixed64(b)
-				if n < 0 {
-					return fmt.Errorf("invalid fixed64")
+				iNdEx = postIndex
+			} else if wireType == 1 {
+				if (iNdEx + 8) > l {
+					return io.ErrUnexpectedEOF
 				}
+				v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
+				iNdEx += 8
 				m.RepeatedSfixed64 = append(m.RepeatedSfixed64, int64(v))
-				b = b[n:]
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 41: // repeated_float
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				if elementCount := len(data) / 4; elementCount != 0 && len(m.RepeatedFloat) == 0 {
 					m.RepeatedFloat = make([]float32, 0, elementCount)
 				}
@@ -2988,27 +3642,50 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					m.RepeatedFloat = append(m.RepeatedFloat, math.Float32frombits(v))
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.Fixed32Type {
-				v, n := protowire.ConsumeFixed32(b)
-				if n < 0 {
-					return fmt.Errorf("invalid fixed32")
+				iNdEx = postIndex
+			} else if wireType == 5 {
+				if (iNdEx + 4) > l {
+					return io.ErrUnexpectedEOF
 				}
+				v := binary.LittleEndian.Uint32(dAtA[iNdEx:])
+				iNdEx += 4
 				m.RepeatedFloat = append(m.RepeatedFloat, math.Float32frombits(v))
-				b = b[n:]
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 42: // repeated_double
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				if elementCount := len(data) / 8; elementCount != 0 && len(m.RepeatedDouble) == 0 {
 					m.RepeatedDouble = make([]float64, 0, elementCount)
 				}
@@ -3020,27 +3697,50 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					m.RepeatedDouble = append(m.RepeatedDouble, math.Float64frombits(v))
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.Fixed64Type {
-				v, n := protowire.ConsumeFixed64(b)
-				if n < 0 {
-					return fmt.Errorf("invalid fixed64")
+				iNdEx = postIndex
+			} else if wireType == 1 {
+				if (iNdEx + 8) > l {
+					return io.ErrUnexpectedEOF
 				}
+				v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
+				iNdEx += 8
 				m.RepeatedDouble = append(m.RepeatedDouble, math.Float64frombits(v))
-				b = b[n:]
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 43: // repeated_bool
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				if elementCount := len(data); elementCount != 0 && len(m.RepeatedBool) == 0 {
 					m.RepeatedBool = make([]bool, 0, elementCount)
 				}
@@ -3052,93 +3752,214 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					m.RepeatedBool = append(m.RepeatedBool, v != 0)
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.VarintType {
-				v, n := protowire.ConsumeVarint(b)
-				if n < 0 {
-					return fmt.Errorf("invalid varint")
+				iNdEx = postIndex
+			} else if wireType == 0 {
+				var v uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
 				m.RepeatedBool = append(m.RepeatedBool, v != 0)
-				b = b[n:]
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 44: // repeated_string
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeString(b)
-			if n < 0 {
-				return fmt.Errorf("invalid string")
+			var byteLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
-			m.RepeatedString = append(m.RepeatedString, v)
-			b = b[n:]
+			intByteLen := int(byteLen)
+			if intByteLen < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.RepeatedString = append(m.RepeatedString, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
 		case 45: // repeated_bytes
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeBytes(b)
-			if n < 0 {
-				return fmt.Errorf("invalid bytes")
+			var byteLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
-			m.RepeatedBytes = append(m.RepeatedBytes, append([]byte(nil), v...))
-			b = b[n:]
+			intByteLen := int(byteLen)
+			if intByteLen < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.RepeatedBytes = append(m.RepeatedBytes, append([]byte(nil), dAtA[iNdEx:postIndex]...))
+			iNdEx = postIndex
 		case 48: // repeated_nested_message
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeBytes(b)
-			if n < 0 {
-				return fmt.Errorf("invalid bytes")
+			var byteLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intByteLen := int(byteLen)
+			if intByteLen < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
 			}
 			m.RepeatedNestedMessage = append(m.RepeatedNestedMessage, TestAllTypesProto3_NestedMessage{})
-			if err := m.RepeatedNestedMessage[len(m.RepeatedNestedMessage)-1].unmarshal(v, depth+1); err != nil {
+			if err := m.RepeatedNestedMessage[len(m.RepeatedNestedMessage)-1].unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
-			b = b[n:]
+			iNdEx = postIndex
 		case 49: // repeated_foreign_message
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeBytes(b)
-			if n < 0 {
-				return fmt.Errorf("invalid bytes")
+			var byteLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intByteLen := int(byteLen)
+			if intByteLen < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
 			}
 			m.RepeatedForeignMessage = append(m.RepeatedForeignMessage, ForeignMessage{})
-			if err := m.RepeatedForeignMessage[len(m.RepeatedForeignMessage)-1].unmarshal(v, depth+1); err != nil {
+			if err := m.RepeatedForeignMessage[len(m.RepeatedForeignMessage)-1].unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
-			b = b[n:]
+			iNdEx = postIndex
 		case 51: // repeated_nested_enum
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				var elementCount int
 				for _, b := range data {
 					if b < 128 {
@@ -3156,27 +3977,60 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					m.RepeatedNestedEnum = append(m.RepeatedNestedEnum, TestAllTypesProto3_NestedEnum(v))
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.VarintType {
-				v, n := protowire.ConsumeVarint(b)
-				if n < 0 {
-					return fmt.Errorf("invalid varint")
+				iNdEx = postIndex
+			} else if wireType == 0 {
+				var v uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
 				m.RepeatedNestedEnum = append(m.RepeatedNestedEnum, TestAllTypesProto3_NestedEnum(v))
-				b = b[n:]
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 52: // repeated_foreign_enum
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				var elementCount int
 				for _, b := range data {
 					if b < 128 {
@@ -3194,70 +4048,146 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					m.RepeatedForeignEnum = append(m.RepeatedForeignEnum, ForeignEnum(v))
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.VarintType {
-				v, n := protowire.ConsumeVarint(b)
-				if n < 0 {
-					return fmt.Errorf("invalid varint")
+				iNdEx = postIndex
+			} else if wireType == 0 {
+				var v uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
 				m.RepeatedForeignEnum = append(m.RepeatedForeignEnum, ForeignEnum(v))
-				b = b[n:]
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 54: // repeated_string_piece
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeString(b)
-			if n < 0 {
-				return fmt.Errorf("invalid string")
+			var byteLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
-			m.RepeatedStringPiece = append(m.RepeatedStringPiece, v)
-			b = b[n:]
+			intByteLen := int(byteLen)
+			if intByteLen < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.RepeatedStringPiece = append(m.RepeatedStringPiece, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
 		case 55: // repeated_cord
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeString(b)
-			if n < 0 {
-				return fmt.Errorf("invalid string")
+			var byteLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
-			m.RepeatedCord = append(m.RepeatedCord, v)
-			b = b[n:]
+			intByteLen := int(byteLen)
+			if intByteLen < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.RepeatedCord = append(m.RepeatedCord, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
 		case 56: // map_int32_int32
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeBytes(b)
-			if n < 0 {
-				return fmt.Errorf("invalid bytes")
+			var byteLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intByteLen := int(byteLen)
+			if intByteLen < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
 			}
 			if m.MapInt32Int32 == nil {
 				m.MapInt32Int32 = make(map[int32]int32)
 			}
 			var mapkey int32
 			var mapvalue int32
-			entryData := v
+			entryData := dAtA[iNdEx:postIndex]
 			for len(entryData) > 0 {
 				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
 				if entryTagLen < 0 {
@@ -3304,26 +4234,48 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				}
 			}
 			m.MapInt32Int32[mapkey] = mapvalue
-			b = b[n:]
+			iNdEx = postIndex
 		case 57: // map_int64_int64
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeBytes(b)
-			if n < 0 {
-				return fmt.Errorf("invalid bytes")
+			var byteLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intByteLen := int(byteLen)
+			if intByteLen < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
 			}
 			if m.MapInt64Int64 == nil {
 				m.MapInt64Int64 = make(map[int64]int64)
 			}
 			var mapkey int64
 			var mapvalue int64
-			entryData := v
+			entryData := dAtA[iNdEx:postIndex]
 			for len(entryData) > 0 {
 				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
 				if entryTagLen < 0 {
@@ -3370,26 +4322,48 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				}
 			}
 			m.MapInt64Int64[mapkey] = mapvalue
-			b = b[n:]
+			iNdEx = postIndex
 		case 58: // map_uint32_uint32
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeBytes(b)
-			if n < 0 {
-				return fmt.Errorf("invalid bytes")
+			var byteLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intByteLen := int(byteLen)
+			if intByteLen < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
 			}
 			if m.MapUint32Uint32 == nil {
 				m.MapUint32Uint32 = make(map[uint32]uint32)
 			}
 			var mapkey uint32
 			var mapvalue uint32
-			entryData := v
+			entryData := dAtA[iNdEx:postIndex]
 			for len(entryData) > 0 {
 				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
 				if entryTagLen < 0 {
@@ -3436,26 +4410,48 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				}
 			}
 			m.MapUint32Uint32[mapkey] = mapvalue
-			b = b[n:]
+			iNdEx = postIndex
 		case 59: // map_uint64_uint64
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeBytes(b)
-			if n < 0 {
-				return fmt.Errorf("invalid bytes")
+			var byteLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intByteLen := int(byteLen)
+			if intByteLen < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
 			}
 			if m.MapUint64Uint64 == nil {
 				m.MapUint64Uint64 = make(map[uint64]uint64)
 			}
 			var mapkey uint64
 			var mapvalue uint64
-			entryData := v
+			entryData := dAtA[iNdEx:postIndex]
 			for len(entryData) > 0 {
 				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
 				if entryTagLen < 0 {
@@ -3502,26 +4498,48 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				}
 			}
 			m.MapUint64Uint64[mapkey] = mapvalue
-			b = b[n:]
+			iNdEx = postIndex
 		case 60: // map_sint32_sint32
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeBytes(b)
-			if n < 0 {
-				return fmt.Errorf("invalid bytes")
+			var byteLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intByteLen := int(byteLen)
+			if intByteLen < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
 			}
 			if m.MapSint32Sint32 == nil {
 				m.MapSint32Sint32 = make(map[int32]int32)
 			}
 			var mapkey int32
 			var mapvalue int32
-			entryData := v
+			entryData := dAtA[iNdEx:postIndex]
 			for len(entryData) > 0 {
 				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
 				if entryTagLen < 0 {
@@ -3542,7 +4560,7 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					if tmpN < 0 {
 						return fmt.Errorf("invalid varint")
 					}
-					mapkey = int32(protowire.DecodeZigZag(tmpVal))
+					mapkey = int32(tmpVal>>1) ^ int32(tmpVal)<<31>>31
 					entryData = entryData[tmpN:]
 				case 2:
 					if entryTyp != protowire.VarintType {
@@ -3557,7 +4575,7 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					if tmpN < 0 {
 						return fmt.Errorf("invalid varint")
 					}
-					mapvalue = int32(protowire.DecodeZigZag(tmpVal))
+					mapvalue = int32(tmpVal>>1) ^ int32(tmpVal)<<31>>31
 					entryData = entryData[tmpN:]
 				default:
 					skipN, skipErr := skipField(entryData, entryNum, entryTyp)
@@ -3568,26 +4586,48 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				}
 			}
 			m.MapSint32Sint32[mapkey] = mapvalue
-			b = b[n:]
+			iNdEx = postIndex
 		case 61: // map_sint64_sint64
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeBytes(b)
-			if n < 0 {
-				return fmt.Errorf("invalid bytes")
+			var byteLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intByteLen := int(byteLen)
+			if intByteLen < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
 			}
 			if m.MapSint64Sint64 == nil {
 				m.MapSint64Sint64 = make(map[int64]int64)
 			}
 			var mapkey int64
 			var mapvalue int64
-			entryData := v
+			entryData := dAtA[iNdEx:postIndex]
 			for len(entryData) > 0 {
 				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
 				if entryTagLen < 0 {
@@ -3608,7 +4648,7 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					if tmpN < 0 {
 						return fmt.Errorf("invalid varint")
 					}
-					mapkey = int64(protowire.DecodeZigZag(tmpVal))
+					mapkey = int64(tmpVal>>1) ^ int64(tmpVal)<<63>>63
 					entryData = entryData[tmpN:]
 				case 2:
 					if entryTyp != protowire.VarintType {
@@ -3623,7 +4663,7 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					if tmpN < 0 {
 						return fmt.Errorf("invalid varint")
 					}
-					mapvalue = int64(protowire.DecodeZigZag(tmpVal))
+					mapvalue = int64(tmpVal>>1) ^ int64(tmpVal)<<63>>63
 					entryData = entryData[tmpN:]
 				default:
 					skipN, skipErr := skipField(entryData, entryNum, entryTyp)
@@ -3634,26 +4674,48 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				}
 			}
 			m.MapSint64Sint64[mapkey] = mapvalue
-			b = b[n:]
+			iNdEx = postIndex
 		case 62: // map_fixed32_fixed32
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeBytes(b)
-			if n < 0 {
-				return fmt.Errorf("invalid bytes")
+			var byteLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intByteLen := int(byteLen)
+			if intByteLen < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
 			}
 			if m.MapFixed32Fixed32 == nil {
 				m.MapFixed32Fixed32 = make(map[uint32]uint32)
 			}
 			var mapkey uint32
 			var mapvalue uint32
-			entryData := v
+			entryData := dAtA[iNdEx:postIndex]
 			for len(entryData) > 0 {
 				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
 				if entryTagLen < 0 {
@@ -3700,26 +4762,48 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				}
 			}
 			m.MapFixed32Fixed32[mapkey] = mapvalue
-			b = b[n:]
+			iNdEx = postIndex
 		case 63: // map_fixed64_fixed64
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeBytes(b)
-			if n < 0 {
-				return fmt.Errorf("invalid bytes")
+			var byteLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intByteLen := int(byteLen)
+			if intByteLen < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
 			}
 			if m.MapFixed64Fixed64 == nil {
 				m.MapFixed64Fixed64 = make(map[uint64]uint64)
 			}
 			var mapkey uint64
 			var mapvalue uint64
-			entryData := v
+			entryData := dAtA[iNdEx:postIndex]
 			for len(entryData) > 0 {
 				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
 				if entryTagLen < 0 {
@@ -3766,26 +4850,48 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				}
 			}
 			m.MapFixed64Fixed64[mapkey] = mapvalue
-			b = b[n:]
+			iNdEx = postIndex
 		case 64: // map_sfixed32_sfixed32
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeBytes(b)
-			if n < 0 {
-				return fmt.Errorf("invalid bytes")
+			var byteLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intByteLen := int(byteLen)
+			if intByteLen < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
 			}
 			if m.MapSfixed32Sfixed32 == nil {
 				m.MapSfixed32Sfixed32 = make(map[int32]int32)
 			}
 			var mapkey int32
 			var mapvalue int32
-			entryData := v
+			entryData := dAtA[iNdEx:postIndex]
 			for len(entryData) > 0 {
 				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
 				if entryTagLen < 0 {
@@ -3832,26 +4938,48 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				}
 			}
 			m.MapSfixed32Sfixed32[mapkey] = mapvalue
-			b = b[n:]
+			iNdEx = postIndex
 		case 65: // map_sfixed64_sfixed64
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeBytes(b)
-			if n < 0 {
-				return fmt.Errorf("invalid bytes")
+			var byteLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intByteLen := int(byteLen)
+			if intByteLen < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
 			}
 			if m.MapSfixed64Sfixed64 == nil {
 				m.MapSfixed64Sfixed64 = make(map[int64]int64)
 			}
 			var mapkey int64
 			var mapvalue int64
-			entryData := v
+			entryData := dAtA[iNdEx:postIndex]
 			for len(entryData) > 0 {
 				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
 				if entryTagLen < 0 {
@@ -3898,26 +5026,48 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				}
 			}
 			m.MapSfixed64Sfixed64[mapkey] = mapvalue
-			b = b[n:]
+			iNdEx = postIndex
 		case 66: // map_int32_float
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeBytes(b)
-			if n < 0 {
-				return fmt.Errorf("invalid bytes")
+			var byteLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intByteLen := int(byteLen)
+			if intByteLen < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
 			}
 			if m.MapInt32Float == nil {
 				m.MapInt32Float = make(map[int32]float32)
 			}
 			var mapkey int32
 			var mapvalue float32
-			entryData := v
+			entryData := dAtA[iNdEx:postIndex]
 			for len(entryData) > 0 {
 				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
 				if entryTagLen < 0 {
@@ -3964,26 +5114,48 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				}
 			}
 			m.MapInt32Float[mapkey] = mapvalue
-			b = b[n:]
+			iNdEx = postIndex
 		case 67: // map_int32_double
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeBytes(b)
-			if n < 0 {
-				return fmt.Errorf("invalid bytes")
+			var byteLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intByteLen := int(byteLen)
+			if intByteLen < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
 			}
 			if m.MapInt32Double == nil {
 				m.MapInt32Double = make(map[int32]float64)
 			}
 			var mapkey int32
 			var mapvalue float64
-			entryData := v
+			entryData := dAtA[iNdEx:postIndex]
 			for len(entryData) > 0 {
 				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
 				if entryTagLen < 0 {
@@ -4030,26 +5202,48 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				}
 			}
 			m.MapInt32Double[mapkey] = mapvalue
-			b = b[n:]
+			iNdEx = postIndex
 		case 68: // map_bool_bool
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeBytes(b)
-			if n < 0 {
-				return fmt.Errorf("invalid bytes")
+			var byteLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intByteLen := int(byteLen)
+			if intByteLen < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
 			}
 			if m.MapBoolBool == nil {
 				m.MapBoolBool = make(map[bool]bool)
 			}
 			var mapkey bool
 			var mapvalue bool
-			entryData := v
+			entryData := dAtA[iNdEx:postIndex]
 			for len(entryData) > 0 {
 				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
 				if entryTagLen < 0 {
@@ -4096,26 +5290,48 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				}
 			}
 			m.MapBoolBool[mapkey] = mapvalue
-			b = b[n:]
+			iNdEx = postIndex
 		case 69: // map_string_string
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeBytes(b)
-			if n < 0 {
-				return fmt.Errorf("invalid bytes")
+			var byteLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intByteLen := int(byteLen)
+			if intByteLen < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
 			}
 			if m.MapStringString == nil {
 				m.MapStringString = make(map[string]string)
 			}
 			var mapkey string
 			var mapvalue string
-			entryData := v
+			entryData := dAtA[iNdEx:postIndex]
 			for len(entryData) > 0 {
 				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
 				if entryTagLen < 0 {
@@ -4162,26 +5378,48 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				}
 			}
 			m.MapStringString[mapkey] = mapvalue
-			b = b[n:]
+			iNdEx = postIndex
 		case 70: // map_string_bytes
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeBytes(b)
-			if n < 0 {
-				return fmt.Errorf("invalid bytes")
+			var byteLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intByteLen := int(byteLen)
+			if intByteLen < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
 			}
 			if m.MapStringBytes == nil {
 				m.MapStringBytes = make(map[string][]byte)
 			}
 			var mapkey string
 			var mapvalue []byte
-			entryData := v
+			entryData := dAtA[iNdEx:postIndex]
 			for len(entryData) > 0 {
 				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
 				if entryTagLen < 0 {
@@ -4228,26 +5466,48 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				}
 			}
 			m.MapStringBytes[mapkey] = mapvalue
-			b = b[n:]
+			iNdEx = postIndex
 		case 71: // map_string_nested_message
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeBytes(b)
-			if n < 0 {
-				return fmt.Errorf("invalid bytes")
+			var byteLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intByteLen := int(byteLen)
+			if intByteLen < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
 			}
 			if m.MapStringNestedMessage == nil {
 				m.MapStringNestedMessage = make(map[string]TestAllTypesProto3_NestedMessage)
 			}
 			var mapkey string
 			var mapvalue TestAllTypesProto3_NestedMessage
-			entryData := v
+			entryData := dAtA[iNdEx:postIndex]
 			for len(entryData) > 0 {
 				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
 				if entryTagLen < 0 {
@@ -4296,26 +5556,48 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				}
 			}
 			m.MapStringNestedMessage[mapkey] = mapvalue
-			b = b[n:]
+			iNdEx = postIndex
 		case 72: // map_string_foreign_message
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeBytes(b)
-			if n < 0 {
-				return fmt.Errorf("invalid bytes")
+			var byteLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intByteLen := int(byteLen)
+			if intByteLen < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
 			}
 			if m.MapStringForeignMessage == nil {
 				m.MapStringForeignMessage = make(map[string]ForeignMessage)
 			}
 			var mapkey string
 			var mapvalue ForeignMessage
-			entryData := v
+			entryData := dAtA[iNdEx:postIndex]
 			for len(entryData) > 0 {
 				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
 				if entryTagLen < 0 {
@@ -4364,26 +5646,48 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				}
 			}
 			m.MapStringForeignMessage[mapkey] = mapvalue
-			b = b[n:]
+			iNdEx = postIndex
 		case 73: // map_string_nested_enum
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeBytes(b)
-			if n < 0 {
-				return fmt.Errorf("invalid bytes")
+			var byteLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intByteLen := int(byteLen)
+			if intByteLen < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
 			}
 			if m.MapStringNestedEnum == nil {
 				m.MapStringNestedEnum = make(map[string]TestAllTypesProto3_NestedEnum)
 			}
 			var mapkey string
 			var mapvalue TestAllTypesProto3_NestedEnum
-			entryData := v
+			entryData := dAtA[iNdEx:postIndex]
 			for len(entryData) > 0 {
 				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
 				if entryTagLen < 0 {
@@ -4430,26 +5734,48 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				}
 			}
 			m.MapStringNestedEnum[mapkey] = mapvalue
-			b = b[n:]
+			iNdEx = postIndex
 		case 74: // map_string_foreign_enum
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeBytes(b)
-			if n < 0 {
-				return fmt.Errorf("invalid bytes")
+			var byteLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intByteLen := int(byteLen)
+			if intByteLen < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
 			}
 			if m.MapStringForeignEnum == nil {
 				m.MapStringForeignEnum = make(map[string]ForeignEnum)
 			}
 			var mapkey string
 			var mapvalue ForeignEnum
-			entryData := v
+			entryData := dAtA[iNdEx:postIndex]
 			for len(entryData) > 0 {
 				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
 				if entryTagLen < 0 {
@@ -4496,13 +5822,36 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 				}
 			}
 			m.MapStringForeignEnum[mapkey] = mapvalue
-			b = b[n:]
+			iNdEx = postIndex
 		case 75: // packed_int32
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				var elementCount int
 				for _, b := range data {
 					if b < 128 {
@@ -4520,27 +5869,60 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					m.PackedInt32 = append(m.PackedInt32, int32(v))
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.VarintType {
-				v, n := protowire.ConsumeVarint(b)
-				if n < 0 {
-					return fmt.Errorf("invalid varint")
+				iNdEx = postIndex
+			} else if wireType == 0 {
+				var v uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
 				m.PackedInt32 = append(m.PackedInt32, int32(v))
-				b = b[n:]
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 76: // packed_int64
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				var elementCount int
 				for _, b := range data {
 					if b < 128 {
@@ -4558,27 +5940,60 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					m.PackedInt64 = append(m.PackedInt64, int64(v))
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.VarintType {
-				v, n := protowire.ConsumeVarint(b)
-				if n < 0 {
-					return fmt.Errorf("invalid varint")
+				iNdEx = postIndex
+			} else if wireType == 0 {
+				var v uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
 				m.PackedInt64 = append(m.PackedInt64, int64(v))
-				b = b[n:]
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 77: // packed_uint32
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				var elementCount int
 				for _, b := range data {
 					if b < 128 {
@@ -4596,27 +6011,60 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					m.PackedUint32 = append(m.PackedUint32, uint32(v))
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.VarintType {
-				v, n := protowire.ConsumeVarint(b)
-				if n < 0 {
-					return fmt.Errorf("invalid varint")
+				iNdEx = postIndex
+			} else if wireType == 0 {
+				var v uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
 				m.PackedUint32 = append(m.PackedUint32, uint32(v))
-				b = b[n:]
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 78: // packed_uint64
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				var elementCount int
 				for _, b := range data {
 					if b < 128 {
@@ -4634,27 +6082,60 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					m.PackedUint64 = append(m.PackedUint64, v)
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.VarintType {
-				v, n := protowire.ConsumeVarint(b)
-				if n < 0 {
-					return fmt.Errorf("invalid varint")
+				iNdEx = postIndex
+			} else if wireType == 0 {
+				var v uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
 				m.PackedUint64 = append(m.PackedUint64, v)
-				b = b[n:]
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 79: // packed_sint32
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				var elementCount int
 				for _, b := range data {
 					if b < 128 {
@@ -4669,30 +6150,63 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					if vn < 0 {
 						return fmt.Errorf("invalid packed varint")
 					}
-					m.PackedSint32 = append(m.PackedSint32, int32(protowire.DecodeZigZag(v)))
+					m.PackedSint32 = append(m.PackedSint32, int32(v>>1)^int32(v)<<31>>31)
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.VarintType {
-				v, n := protowire.ConsumeVarint(b)
-				if n < 0 {
-					return fmt.Errorf("invalid varint")
+				iNdEx = postIndex
+			} else if wireType == 0 {
+				var v uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
-				m.PackedSint32 = append(m.PackedSint32, int32(protowire.DecodeZigZag(v)))
-				b = b[n:]
+				m.PackedSint32 = append(m.PackedSint32, int32(v>>1)^int32(v)<<31>>31)
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 80: // packed_sint64
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				var elementCount int
 				for _, b := range data {
 					if b < 128 {
@@ -4707,30 +6221,63 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					if vn < 0 {
 						return fmt.Errorf("invalid packed varint")
 					}
-					m.PackedSint64 = append(m.PackedSint64, int64(protowire.DecodeZigZag(v)))
+					m.PackedSint64 = append(m.PackedSint64, int64(v>>1)^int64(v)<<63>>63)
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.VarintType {
-				v, n := protowire.ConsumeVarint(b)
-				if n < 0 {
-					return fmt.Errorf("invalid varint")
+				iNdEx = postIndex
+			} else if wireType == 0 {
+				var v uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
-				m.PackedSint64 = append(m.PackedSint64, int64(protowire.DecodeZigZag(v)))
-				b = b[n:]
+				m.PackedSint64 = append(m.PackedSint64, int64(v>>1)^int64(v)<<63>>63)
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 81: // packed_fixed32
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				if elementCount := len(data) / 4; elementCount != 0 && len(m.PackedFixed32) == 0 {
 					m.PackedFixed32 = make([]uint32, 0, elementCount)
 				}
@@ -4742,27 +6289,50 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					m.PackedFixed32 = append(m.PackedFixed32, v)
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.Fixed32Type {
-				v, n := protowire.ConsumeFixed32(b)
-				if n < 0 {
-					return fmt.Errorf("invalid fixed32")
+				iNdEx = postIndex
+			} else if wireType == 5 {
+				if (iNdEx + 4) > l {
+					return io.ErrUnexpectedEOF
 				}
+				v := binary.LittleEndian.Uint32(dAtA[iNdEx:])
+				iNdEx += 4
 				m.PackedFixed32 = append(m.PackedFixed32, v)
-				b = b[n:]
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 82: // packed_fixed64
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				if elementCount := len(data) / 8; elementCount != 0 && len(m.PackedFixed64) == 0 {
 					m.PackedFixed64 = make([]uint64, 0, elementCount)
 				}
@@ -4774,27 +6344,50 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					m.PackedFixed64 = append(m.PackedFixed64, v)
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.Fixed64Type {
-				v, n := protowire.ConsumeFixed64(b)
-				if n < 0 {
-					return fmt.Errorf("invalid fixed64")
+				iNdEx = postIndex
+			} else if wireType == 1 {
+				if (iNdEx + 8) > l {
+					return io.ErrUnexpectedEOF
 				}
+				v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
+				iNdEx += 8
 				m.PackedFixed64 = append(m.PackedFixed64, v)
-				b = b[n:]
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 83: // packed_sfixed32
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				if elementCount := len(data) / 4; elementCount != 0 && len(m.PackedSfixed32) == 0 {
 					m.PackedSfixed32 = make([]int32, 0, elementCount)
 				}
@@ -4806,27 +6399,50 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					m.PackedSfixed32 = append(m.PackedSfixed32, int32(v))
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.Fixed32Type {
-				v, n := protowire.ConsumeFixed32(b)
-				if n < 0 {
-					return fmt.Errorf("invalid fixed32")
+				iNdEx = postIndex
+			} else if wireType == 5 {
+				if (iNdEx + 4) > l {
+					return io.ErrUnexpectedEOF
 				}
+				v := binary.LittleEndian.Uint32(dAtA[iNdEx:])
+				iNdEx += 4
 				m.PackedSfixed32 = append(m.PackedSfixed32, int32(v))
-				b = b[n:]
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 84: // packed_sfixed64
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				if elementCount := len(data) / 8; elementCount != 0 && len(m.PackedSfixed64) == 0 {
 					m.PackedSfixed64 = make([]int64, 0, elementCount)
 				}
@@ -4838,27 +6454,50 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					m.PackedSfixed64 = append(m.PackedSfixed64, int64(v))
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.Fixed64Type {
-				v, n := protowire.ConsumeFixed64(b)
-				if n < 0 {
-					return fmt.Errorf("invalid fixed64")
+				iNdEx = postIndex
+			} else if wireType == 1 {
+				if (iNdEx + 8) > l {
+					return io.ErrUnexpectedEOF
 				}
+				v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
+				iNdEx += 8
 				m.PackedSfixed64 = append(m.PackedSfixed64, int64(v))
-				b = b[n:]
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 85: // packed_float
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				if elementCount := len(data) / 4; elementCount != 0 && len(m.PackedFloat) == 0 {
 					m.PackedFloat = make([]float32, 0, elementCount)
 				}
@@ -4870,27 +6509,50 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					m.PackedFloat = append(m.PackedFloat, math.Float32frombits(v))
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.Fixed32Type {
-				v, n := protowire.ConsumeFixed32(b)
-				if n < 0 {
-					return fmt.Errorf("invalid fixed32")
+				iNdEx = postIndex
+			} else if wireType == 5 {
+				if (iNdEx + 4) > l {
+					return io.ErrUnexpectedEOF
 				}
+				v := binary.LittleEndian.Uint32(dAtA[iNdEx:])
+				iNdEx += 4
 				m.PackedFloat = append(m.PackedFloat, math.Float32frombits(v))
-				b = b[n:]
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 86: // packed_double
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				if elementCount := len(data) / 8; elementCount != 0 && len(m.PackedDouble) == 0 {
 					m.PackedDouble = make([]float64, 0, elementCount)
 				}
@@ -4902,27 +6564,50 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					m.PackedDouble = append(m.PackedDouble, math.Float64frombits(v))
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.Fixed64Type {
-				v, n := protowire.ConsumeFixed64(b)
-				if n < 0 {
-					return fmt.Errorf("invalid fixed64")
+				iNdEx = postIndex
+			} else if wireType == 1 {
+				if (iNdEx + 8) > l {
+					return io.ErrUnexpectedEOF
 				}
+				v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
+				iNdEx += 8
 				m.PackedDouble = append(m.PackedDouble, math.Float64frombits(v))
-				b = b[n:]
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 87: // packed_bool
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				if elementCount := len(data); elementCount != 0 && len(m.PackedBool) == 0 {
 					m.PackedBool = make([]bool, 0, elementCount)
 				}
@@ -4934,27 +6619,60 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					m.PackedBool = append(m.PackedBool, v != 0)
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.VarintType {
-				v, n := protowire.ConsumeVarint(b)
-				if n < 0 {
-					return fmt.Errorf("invalid varint")
+				iNdEx = postIndex
+			} else if wireType == 0 {
+				var v uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
 				m.PackedBool = append(m.PackedBool, v != 0)
-				b = b[n:]
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 88: // packed_nested_enum
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				var elementCount int
 				for _, b := range data {
 					if b < 128 {
@@ -4972,27 +6690,60 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					m.PackedNestedEnum = append(m.PackedNestedEnum, TestAllTypesProto3_NestedEnum(v))
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.VarintType {
-				v, n := protowire.ConsumeVarint(b)
-				if n < 0 {
-					return fmt.Errorf("invalid varint")
+				iNdEx = postIndex
+			} else if wireType == 0 {
+				var v uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
 				m.PackedNestedEnum = append(m.PackedNestedEnum, TestAllTypesProto3_NestedEnum(v))
-				b = b[n:]
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 89: // unpacked_int32
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				var elementCount int
 				for _, b := range data {
 					if b < 128 {
@@ -5010,27 +6761,60 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					m.UnpackedInt32 = append(m.UnpackedInt32, int32(v))
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.VarintType {
-				v, n := protowire.ConsumeVarint(b)
-				if n < 0 {
-					return fmt.Errorf("invalid varint")
+				iNdEx = postIndex
+			} else if wireType == 0 {
+				var v uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
 				m.UnpackedInt32 = append(m.UnpackedInt32, int32(v))
-				b = b[n:]
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 90: // unpacked_int64
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				var elementCount int
 				for _, b := range data {
 					if b < 128 {
@@ -5048,27 +6832,60 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					m.UnpackedInt64 = append(m.UnpackedInt64, int64(v))
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.VarintType {
-				v, n := protowire.ConsumeVarint(b)
-				if n < 0 {
-					return fmt.Errorf("invalid varint")
+				iNdEx = postIndex
+			} else if wireType == 0 {
+				var v uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
 				m.UnpackedInt64 = append(m.UnpackedInt64, int64(v))
-				b = b[n:]
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 91: // unpacked_uint32
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				var elementCount int
 				for _, b := range data {
 					if b < 128 {
@@ -5086,27 +6903,60 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					m.UnpackedUint32 = append(m.UnpackedUint32, uint32(v))
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.VarintType {
-				v, n := protowire.ConsumeVarint(b)
-				if n < 0 {
-					return fmt.Errorf("invalid varint")
+				iNdEx = postIndex
+			} else if wireType == 0 {
+				var v uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
 				m.UnpackedUint32 = append(m.UnpackedUint32, uint32(v))
-				b = b[n:]
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 92: // unpacked_uint64
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				var elementCount int
 				for _, b := range data {
 					if b < 128 {
@@ -5124,27 +6974,60 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					m.UnpackedUint64 = append(m.UnpackedUint64, v)
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.VarintType {
-				v, n := protowire.ConsumeVarint(b)
-				if n < 0 {
-					return fmt.Errorf("invalid varint")
+				iNdEx = postIndex
+			} else if wireType == 0 {
+				var v uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
 				m.UnpackedUint64 = append(m.UnpackedUint64, v)
-				b = b[n:]
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 93: // unpacked_sint32
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				var elementCount int
 				for _, b := range data {
 					if b < 128 {
@@ -5159,30 +7042,63 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					if vn < 0 {
 						return fmt.Errorf("invalid packed varint")
 					}
-					m.UnpackedSint32 = append(m.UnpackedSint32, int32(protowire.DecodeZigZag(v)))
+					m.UnpackedSint32 = append(m.UnpackedSint32, int32(v>>1)^int32(v)<<31>>31)
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.VarintType {
-				v, n := protowire.ConsumeVarint(b)
-				if n < 0 {
-					return fmt.Errorf("invalid varint")
+				iNdEx = postIndex
+			} else if wireType == 0 {
+				var v uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
-				m.UnpackedSint32 = append(m.UnpackedSint32, int32(protowire.DecodeZigZag(v)))
-				b = b[n:]
+				m.UnpackedSint32 = append(m.UnpackedSint32, int32(v>>1)^int32(v)<<31>>31)
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 94: // unpacked_sint64
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				var elementCount int
 				for _, b := range data {
 					if b < 128 {
@@ -5197,30 +7113,63 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					if vn < 0 {
 						return fmt.Errorf("invalid packed varint")
 					}
-					m.UnpackedSint64 = append(m.UnpackedSint64, int64(protowire.DecodeZigZag(v)))
+					m.UnpackedSint64 = append(m.UnpackedSint64, int64(v>>1)^int64(v)<<63>>63)
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.VarintType {
-				v, n := protowire.ConsumeVarint(b)
-				if n < 0 {
-					return fmt.Errorf("invalid varint")
+				iNdEx = postIndex
+			} else if wireType == 0 {
+				var v uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
-				m.UnpackedSint64 = append(m.UnpackedSint64, int64(protowire.DecodeZigZag(v)))
-				b = b[n:]
+				m.UnpackedSint64 = append(m.UnpackedSint64, int64(v>>1)^int64(v)<<63>>63)
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 95: // unpacked_fixed32
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				if elementCount := len(data) / 4; elementCount != 0 && len(m.UnpackedFixed32) == 0 {
 					m.UnpackedFixed32 = make([]uint32, 0, elementCount)
 				}
@@ -5232,27 +7181,50 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					m.UnpackedFixed32 = append(m.UnpackedFixed32, v)
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.Fixed32Type {
-				v, n := protowire.ConsumeFixed32(b)
-				if n < 0 {
-					return fmt.Errorf("invalid fixed32")
+				iNdEx = postIndex
+			} else if wireType == 5 {
+				if (iNdEx + 4) > l {
+					return io.ErrUnexpectedEOF
 				}
+				v := binary.LittleEndian.Uint32(dAtA[iNdEx:])
+				iNdEx += 4
 				m.UnpackedFixed32 = append(m.UnpackedFixed32, v)
-				b = b[n:]
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 96: // unpacked_fixed64
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				if elementCount := len(data) / 8; elementCount != 0 && len(m.UnpackedFixed64) == 0 {
 					m.UnpackedFixed64 = make([]uint64, 0, elementCount)
 				}
@@ -5264,27 +7236,50 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					m.UnpackedFixed64 = append(m.UnpackedFixed64, v)
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.Fixed64Type {
-				v, n := protowire.ConsumeFixed64(b)
-				if n < 0 {
-					return fmt.Errorf("invalid fixed64")
+				iNdEx = postIndex
+			} else if wireType == 1 {
+				if (iNdEx + 8) > l {
+					return io.ErrUnexpectedEOF
 				}
+				v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
+				iNdEx += 8
 				m.UnpackedFixed64 = append(m.UnpackedFixed64, v)
-				b = b[n:]
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 97: // unpacked_sfixed32
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				if elementCount := len(data) / 4; elementCount != 0 && len(m.UnpackedSfixed32) == 0 {
 					m.UnpackedSfixed32 = make([]int32, 0, elementCount)
 				}
@@ -5296,27 +7291,50 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					m.UnpackedSfixed32 = append(m.UnpackedSfixed32, int32(v))
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.Fixed32Type {
-				v, n := protowire.ConsumeFixed32(b)
-				if n < 0 {
-					return fmt.Errorf("invalid fixed32")
+				iNdEx = postIndex
+			} else if wireType == 5 {
+				if (iNdEx + 4) > l {
+					return io.ErrUnexpectedEOF
 				}
+				v := binary.LittleEndian.Uint32(dAtA[iNdEx:])
+				iNdEx += 4
 				m.UnpackedSfixed32 = append(m.UnpackedSfixed32, int32(v))
-				b = b[n:]
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 98: // unpacked_sfixed64
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				if elementCount := len(data) / 8; elementCount != 0 && len(m.UnpackedSfixed64) == 0 {
 					m.UnpackedSfixed64 = make([]int64, 0, elementCount)
 				}
@@ -5328,27 +7346,50 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					m.UnpackedSfixed64 = append(m.UnpackedSfixed64, int64(v))
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.Fixed64Type {
-				v, n := protowire.ConsumeFixed64(b)
-				if n < 0 {
-					return fmt.Errorf("invalid fixed64")
+				iNdEx = postIndex
+			} else if wireType == 1 {
+				if (iNdEx + 8) > l {
+					return io.ErrUnexpectedEOF
 				}
+				v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
+				iNdEx += 8
 				m.UnpackedSfixed64 = append(m.UnpackedSfixed64, int64(v))
-				b = b[n:]
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 99: // unpacked_float
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				if elementCount := len(data) / 4; elementCount != 0 && len(m.UnpackedFloat) == 0 {
 					m.UnpackedFloat = make([]float32, 0, elementCount)
 				}
@@ -5360,27 +7401,50 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					m.UnpackedFloat = append(m.UnpackedFloat, math.Float32frombits(v))
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.Fixed32Type {
-				v, n := protowire.ConsumeFixed32(b)
-				if n < 0 {
-					return fmt.Errorf("invalid fixed32")
+				iNdEx = postIndex
+			} else if wireType == 5 {
+				if (iNdEx + 4) > l {
+					return io.ErrUnexpectedEOF
 				}
+				v := binary.LittleEndian.Uint32(dAtA[iNdEx:])
+				iNdEx += 4
 				m.UnpackedFloat = append(m.UnpackedFloat, math.Float32frombits(v))
-				b = b[n:]
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 100: // unpacked_double
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				if elementCount := len(data) / 8; elementCount != 0 && len(m.UnpackedDouble) == 0 {
 					m.UnpackedDouble = make([]float64, 0, elementCount)
 				}
@@ -5392,27 +7456,50 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					m.UnpackedDouble = append(m.UnpackedDouble, math.Float64frombits(v))
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.Fixed64Type {
-				v, n := protowire.ConsumeFixed64(b)
-				if n < 0 {
-					return fmt.Errorf("invalid fixed64")
+				iNdEx = postIndex
+			} else if wireType == 1 {
+				if (iNdEx + 8) > l {
+					return io.ErrUnexpectedEOF
 				}
+				v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
+				iNdEx += 8
 				m.UnpackedDouble = append(m.UnpackedDouble, math.Float64frombits(v))
-				b = b[n:]
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 101: // unpacked_bool
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				if elementCount := len(data); elementCount != 0 && len(m.UnpackedBool) == 0 {
 					m.UnpackedBool = make([]bool, 0, elementCount)
 				}
@@ -5424,27 +7511,60 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					m.UnpackedBool = append(m.UnpackedBool, v != 0)
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.VarintType {
-				v, n := protowire.ConsumeVarint(b)
-				if n < 0 {
-					return fmt.Errorf("invalid varint")
+				iNdEx = postIndex
+			} else if wireType == 0 {
+				var v uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
 				m.UnpackedBool = append(m.UnpackedBool, v != 0)
-				b = b[n:]
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 102: // unpacked_nested_enum
-			if typ == protowire.BytesType {
-				data, n := protowire.ConsumeBytes(b)
-				if n < 0 {
-					return fmt.Errorf("invalid packed field")
+			if wireType == 2 {
+				var byteLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
+				intByteLen := int(byteLen)
+				if intByteLen < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				postIndex := iNdEx + intByteLen
+				if postIndex < 0 {
+					return fmt.Errorf("proto: negative length")
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				data := dAtA[iNdEx:postIndex]
 				var elementCount int
 				for _, b := range data {
 					if b < 128 {
@@ -5462,437 +7582,736 @@ func (m *TestAllTypesProto3) unmarshal(b []byte, depth int) error {
 					m.UnpackedNestedEnum = append(m.UnpackedNestedEnum, TestAllTypesProto3_NestedEnum(v))
 					data = data[vn:]
 				}
-				b = b[n:]
-			} else if typ == protowire.VarintType {
-				v, n := protowire.ConsumeVarint(b)
-				if n < 0 {
-					return fmt.Errorf("invalid varint")
+				iNdEx = postIndex
+			} else if wireType == 0 {
+				var v uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
 				m.UnpackedNestedEnum = append(m.UnpackedNestedEnum, TestAllTypesProto3_NestedEnum(v))
-				b = b[n:]
 			} else {
-				n, err := skipField(b, num, typ)
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 			}
 		case 111: // oneof_uint32
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 			m.OneofField = &TestAllTypesProto3_OneofUint32{OneofUint32: uint32(v)}
-			b = b[n:]
 		case 112: // oneof_nested_message
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeBytes(b)
-			if n < 0 {
-				return fmt.Errorf("invalid bytes")
+			var byteLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intByteLen := int(byteLen)
+			if intByteLen < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
 			}
 			var msg TestAllTypesProto3_NestedMessage
-			if err := msg.unmarshal(v, depth+1); err != nil {
+			if err := msg.unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
 			m.OneofField = &TestAllTypesProto3_OneofNestedMessage{OneofNestedMessage: msg}
-			b = b[n:]
+			iNdEx = postIndex
 		case 113: // oneof_string
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeString(b)
-			if n < 0 {
-				return fmt.Errorf("invalid string")
+			var byteLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
-			m.OneofField = &TestAllTypesProto3_OneofString{OneofString: v}
-			b = b[n:]
+			intByteLen := int(byteLen)
+			if intByteLen < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.OneofField = &TestAllTypesProto3_OneofString{OneofString: string(dAtA[iNdEx:postIndex])}
+			iNdEx = postIndex
 		case 114: // oneof_bytes
-			if typ != protowire.BytesType {
-				n, err := skipField(b, num, typ)
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeBytes(b)
-			if n < 0 {
-				return fmt.Errorf("invalid bytes")
+			var byteLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
-			m.OneofField = &TestAllTypesProto3_OneofBytes{OneofBytes: append([]byte(nil), v...)}
-			b = b[n:]
+			intByteLen := int(byteLen)
+			if intByteLen < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.OneofField = &TestAllTypesProto3_OneofBytes{OneofBytes: append([]byte(nil), dAtA[iNdEx:postIndex]...)}
+			iNdEx = postIndex
 		case 115: // oneof_bool
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 			m.OneofField = &TestAllTypesProto3_OneofBool{OneofBool: v != 0}
-			b = b[n:]
 		case 116: // oneof_uint64
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 			m.OneofField = &TestAllTypesProto3_OneofUint64{OneofUint64: v}
-			b = b[n:]
 		case 117: // oneof_float
-			if typ != protowire.Fixed32Type {
-				n, err := skipField(b, num, typ)
+			if wireType != 5 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeFixed32(b)
-			if n < 0 {
-				return fmt.Errorf("invalid fixed32")
+			if (iNdEx + 4) > l {
+				return io.ErrUnexpectedEOF
 			}
+			v := binary.LittleEndian.Uint32(dAtA[iNdEx:])
+			iNdEx += 4
 			m.OneofField = &TestAllTypesProto3_OneofFloat{OneofFloat: math.Float32frombits(v)}
-			b = b[n:]
 		case 118: // oneof_double
-			if typ != protowire.Fixed64Type {
-				n, err := skipField(b, num, typ)
+			if wireType != 1 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeFixed64(b)
-			if n < 0 {
-				return fmt.Errorf("invalid fixed64")
+			if (iNdEx + 8) > l {
+				return io.ErrUnexpectedEOF
 			}
+			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
+			iNdEx += 8
 			m.OneofField = &TestAllTypesProto3_OneofDouble{OneofDouble: math.Float64frombits(v)}
-			b = b[n:]
 		case 119: // oneof_enum
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 			m.OneofField = &TestAllTypesProto3_OneofEnum{OneofEnum: TestAllTypesProto3_NestedEnum(v)}
-			b = b[n:]
 		case 401: // fieldname1
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 			m.Fieldname1 = int32(v)
-			b = b[n:]
 		case 402: // field_name2
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 			m.FieldName2 = int32(v)
-			b = b[n:]
 		case 403: // _field_name3
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 			m.FieldName3 = int32(v)
-			b = b[n:]
 		case 404: // field__name4_
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 			m.FieldName4 = int32(v)
-			b = b[n:]
 		case 405: // field0name5
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 			m.Field0name5 = int32(v)
-			b = b[n:]
 		case 406: // field_0_name6
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 			m.Field0Name6 = int32(v)
-			b = b[n:]
 		case 407: // fieldName7
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 			m.FieldName7 = int32(v)
-			b = b[n:]
 		case 408: // FieldName8
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 			m.FieldName8 = int32(v)
-			b = b[n:]
 		case 409: // field_Name9
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 			m.FieldName9 = int32(v)
-			b = b[n:]
 		case 410: // Field_Name10
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 			m.FieldName10 = int32(v)
-			b = b[n:]
 		case 411: // FIELD_NAME11
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 			m.FIELDNAME11 = int32(v)
-			b = b[n:]
 		case 412: // FIELD_name12
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 			m.FIELDName12 = int32(v)
-			b = b[n:]
 		case 413: // _field_name13
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 			m.FieldName13 = int32(v)
-			b = b[n:]
 		case 414: // __field_name14
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 			m.FieldName14 = int32(v)
-			b = b[n:]
 		case 415: // field__name15
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 			m.FieldName15 = int32(v)
-			b = b[n:]
 		case 416: // field__Name16
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 			m.FieldName16 = int32(v)
-			b = b[n:]
 		case 417: // field_name17__
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 			m.FieldName17 = int32(v)
-			b = b[n:]
 		case 418: // Field_name18__
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 			m.FieldName18 = int32(v)
-			b = b[n:]
 		default:
-			n, err := skipField(b, num, typ)
+			n, err := skipValue(dAtA[iNdEx:], wireType)
 			if err != nil {
 				return err
 			}
-			b = b[n:]
+			iNdEx += n
 		}
+	}
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
 	}
 	return nil
 }
@@ -5901,39 +8320,66 @@ func (m *ForeignMessage) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
-func (m *ForeignMessage) unmarshal(b []byte, depth int) error {
+func (m *ForeignMessage) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
 	}
-	for len(b) > 0 {
-		num, typ, tagLen := protowire.ConsumeTag(b)
-		if tagLen < 0 {
-			return fmt.Errorf("invalid tag")
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return fmt.Errorf("proto: integer overflow")
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
 		}
-		b = b[tagLen:]
-		switch num {
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		switch fieldNum {
 		case 1: // c
-			if typ != protowire.VarintType {
-				n, err := skipField(b, num, typ)
+			if wireType != 0 {
+				n, err := skipValue(dAtA[iNdEx:], wireType)
 				if err != nil {
 					return err
 				}
-				b = b[n:]
+				iNdEx += n
 				continue
 			}
-			v, n := protowire.ConsumeVarint(b)
-			if n < 0 {
-				return fmt.Errorf("invalid varint")
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 			m.C = int32(v)
-			b = b[n:]
 		default:
-			n, err := skipField(b, num, typ)
+			n, err := skipValue(dAtA[iNdEx:], wireType)
 			if err != nil {
 				return err
 			}
-			b = b[n:]
+			iNdEx += n
 		}
+	}
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
 	}
 	return nil
 }
@@ -5942,24 +8388,41 @@ func (m *NullHypothesisProto3) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
-func (m *NullHypothesisProto3) unmarshal(b []byte, depth int) error {
+func (m *NullHypothesisProto3) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
 	}
-	for len(b) > 0 {
-		num, typ, tagLen := protowire.ConsumeTag(b)
-		if tagLen < 0 {
-			return fmt.Errorf("invalid tag")
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return fmt.Errorf("proto: integer overflow")
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
 		}
-		b = b[tagLen:]
-		switch num {
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		switch fieldNum {
 		default:
-			n, err := skipField(b, num, typ)
+			n, err := skipValue(dAtA[iNdEx:], wireType)
 			if err != nil {
 				return err
 			}
-			b = b[n:]
+			iNdEx += n
 		}
+	}
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
 	}
 	return nil
 }
@@ -5968,24 +8431,41 @@ func (m *EnumOnlyProto3) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
-func (m *EnumOnlyProto3) unmarshal(b []byte, depth int) error {
+func (m *EnumOnlyProto3) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
 	}
-	for len(b) > 0 {
-		num, typ, tagLen := protowire.ConsumeTag(b)
-		if tagLen < 0 {
-			return fmt.Errorf("invalid tag")
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return fmt.Errorf("proto: integer overflow")
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
 		}
-		b = b[tagLen:]
-		switch num {
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		switch fieldNum {
 		default:
-			n, err := skipField(b, num, typ)
+			n, err := skipValue(dAtA[iNdEx:], wireType)
 			if err != nil {
 				return err
 			}
-			b = b[n:]
+			iNdEx += n
 		}
+	}
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
 	}
 	return nil
 }

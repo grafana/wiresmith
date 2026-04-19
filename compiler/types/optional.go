@@ -30,12 +30,20 @@ func (o *OptionalField) EmitUnmarshal(e Emitter, access string, ctx FieldContext
 		return
 	}
 	o.Inner.EmitConsume(e)
-	cast := o.Inner.CastExpr("v", ctx)
-	if cast == "v" {
-		e.Writef("\t\t\t%s = &v\n", access)
-	} else {
+	if o.Inner.WireType() == "protowire.BytesType" {
+		// Length-delimited: EmitConsume set postIndex.
+		cast := o.Inner.CastExpr("dAtA[iNdEx:postIndex]", ctx)
 		e.Writef("\t\t\ttmp := %s\n", cast)
 		e.Writef("\t\t\t%s = &tmp\n", access)
+		e.Writef("\t\t\tiNdEx = postIndex\n")
+	} else {
+		// Value types: EmitConsume set v.
+		cast := o.Inner.CastExpr("v", ctx)
+		if cast == "v" {
+			e.Writef("\t\t\t%s = &v\n", access)
+		} else {
+			e.Writef("\t\t\ttmp := %s\n", cast)
+			e.Writef("\t\t\t%s = &tmp\n", access)
+		}
 	}
-	emitAdvanceBytes(e)
 }

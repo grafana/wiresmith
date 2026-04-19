@@ -106,41 +106,98 @@ func AddTypeImports(e Emitter, ft FieldType) {
 	}
 }
 
-// unexported helpers for emit methods
-func emitConsumeVarint(e Emitter) {
-	e.Writef("\t\t\tv, n := protowire.ConsumeVarint(b)\n")
-	e.Writef("\t\t\tif n < 0 {\n\t\t\t\treturn fmt.Errorf(\"invalid varint\")\n\t\t\t}\n")
+// --- Inline consume helpers ---
+// These emit inline decoding using the iNdEx/dAtA/l variables that are
+// in scope in the generated unmarshal method. They replace the old
+// protowire.ConsumeXxx function calls to eliminate call overhead.
+
+// emitConsumeVarintAt emits an inline varint decode loop at the given indent.
+// Sets v (uint64) in generated code, advances iNdEx.
+func emitConsumeVarintAt(e Emitter, indent string) {
+	e.AddImport("io", "")
+	e.Writef("%svar v uint64\n", indent)
+	e.Writef("%sfor shift := uint(0); ; shift += 7 {\n", indent)
+	e.Writef("%s\tif shift >= 64 {\n%s\t\treturn fmt.Errorf(\"proto: integer overflow\")\n%s\t}\n", indent, indent, indent)
+	e.Writef("%s\tif iNdEx >= l {\n%s\t\treturn io.ErrUnexpectedEOF\n%s\t}\n", indent, indent, indent)
+	e.Writef("%s\tb := dAtA[iNdEx]\n", indent)
+	e.Writef("%s\tiNdEx++\n", indent)
+	e.Writef("%s\tv |= uint64(b&0x7F) << shift\n", indent)
+	e.Writef("%s\tif b < 0x80 {\n%s\t\tbreak\n%s\t}\n", indent, indent, indent)
+	e.Writef("%s}\n", indent)
 }
 
-func emitConsumeFixed32(e Emitter) {
-	e.Writef("\t\t\tv, n := protowire.ConsumeFixed32(b)\n")
-	e.Writef("\t\t\tif n < 0 {\n\t\t\t\treturn fmt.Errorf(\"invalid fixed32\")\n\t\t\t}\n")
+func emitConsumeVarint(e Emitter) { emitConsumeVarintAt(e, "\t\t\t") }
+
+// emitConsumeFixed32At emits inline fixed32 decoding at the given indent.
+// Sets v (uint32) in generated code, advances iNdEx by 4.
+func emitConsumeFixed32At(e Emitter, indent string) {
+	e.AddImport("io", "")
+	e.AddImport("encoding/binary", "")
+	e.Writef("%sif (iNdEx + 4) > l {\n%s\treturn io.ErrUnexpectedEOF\n%s}\n", indent, indent, indent)
+	e.Writef("%sv := binary.LittleEndian.Uint32(dAtA[iNdEx:])\n", indent)
+	e.Writef("%siNdEx += 4\n", indent)
 }
 
-func emitConsumeFixed64(e Emitter) {
-	e.Writef("\t\t\tv, n := protowire.ConsumeFixed64(b)\n")
-	e.Writef("\t\t\tif n < 0 {\n\t\t\t\treturn fmt.Errorf(\"invalid fixed64\")\n\t\t\t}\n")
+func emitConsumeFixed32(e Emitter) { emitConsumeFixed32At(e, "\t\t\t") }
+
+// emitConsumeFixed64At emits inline fixed64 decoding at the given indent.
+// Sets v (uint64) in generated code, advances iNdEx by 8.
+func emitConsumeFixed64At(e Emitter, indent string) {
+	e.AddImport("io", "")
+	e.AddImport("encoding/binary", "")
+	e.Writef("%sif (iNdEx + 8) > l {\n%s\treturn io.ErrUnexpectedEOF\n%s}\n", indent, indent, indent)
+	e.Writef("%sv := binary.LittleEndian.Uint64(dAtA[iNdEx:])\n", indent)
+	e.Writef("%siNdEx += 8\n", indent)
 }
 
-func emitConsumeBytes(e Emitter) {
-	e.Writef("\t\t\tv, n := protowire.ConsumeBytes(b)\n")
-	e.Writef("\t\t\tif n < 0 {\n\t\t\t\treturn fmt.Errorf(\"invalid bytes\")\n\t\t\t}\n")
+func emitConsumeFixed64(e Emitter) { emitConsumeFixed64At(e, "\t\t\t") }
+
+// emitConsumeBytesLenAt emits inline length-delimited header decoding.
+// Sets postIndex in generated code. Caller uses dAtA[iNdEx:postIndex]
+// for the payload, then advances with iNdEx = postIndex.
+func emitConsumeBytesLenAt(e Emitter, indent string) {
+	e.AddImport("io", "")
+	e.Writef("%svar byteLen uint64\n", indent)
+	e.Writef("%sfor shift := uint(0); ; shift += 7 {\n", indent)
+	e.Writef("%s\tif shift >= 64 {\n%s\t\treturn fmt.Errorf(\"proto: integer overflow\")\n%s\t}\n", indent, indent, indent)
+	e.Writef("%s\tif iNdEx >= l {\n%s\t\treturn io.ErrUnexpectedEOF\n%s\t}\n", indent, indent, indent)
+	e.Writef("%s\tb := dAtA[iNdEx]\n", indent)
+	e.Writef("%s\tiNdEx++\n", indent)
+	e.Writef("%s\tbyteLen |= uint64(b&0x7F) << shift\n", indent)
+	e.Writef("%s\tif b < 0x80 {\n%s\t\tbreak\n%s\t}\n", indent, indent, indent)
+	e.Writef("%s}\n", indent)
+	e.Writef("%sintByteLen := int(byteLen)\n", indent)
+	e.Writef("%sif intByteLen < 0 {\n%s\treturn fmt.Errorf(\"proto: negative length\")\n%s}\n", indent, indent, indent)
+	e.Writef("%spostIndex := iNdEx + intByteLen\n", indent)
+	e.Writef("%sif postIndex < 0 {\n%s\treturn fmt.Errorf(\"proto: negative length\")\n%s}\n", indent, indent, indent)
+	e.Writef("%sif postIndex > l {\n%s\treturn io.ErrUnexpectedEOF\n%s}\n", indent, indent, indent)
 }
 
-func emitConsumeString(e Emitter) {
-	e.Writef("\t\t\tv, n := protowire.ConsumeString(b)\n")
-	e.Writef("\t\t\tif n < 0 {\n\t\t\t\treturn fmt.Errorf(\"invalid string\")\n\t\t\t}\n")
-}
-
-func emitAdvanceBytes(e Emitter) {
-	e.Writef("\t\t\tb = b[n:]\n")
-}
+func emitConsumeBytesLen(e Emitter) { emitConsumeBytesLenAt(e, "\t\t\t") }
 
 func emitUnmarshalCall(e Emitter, access string, isSamePackage bool) {
 	if isSamePackage {
-		e.Writef("\t\t\tif err := %s.unmarshal(v, depth+1); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n", access)
+		e.Writef("\t\t\tif err := %s.unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n", access)
 	} else {
-		e.Writef("\t\t\tif err := %s.Unmarshal(v); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n", access)
+		e.Writef("\t\t\tif err := %s.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n", access)
+	}
+}
+
+// WireTypeInt returns the protobuf wire type number for a kind.
+func WireTypeInt(kind protoreflect.Kind) int {
+	switch kind {
+	case protoreflect.BoolKind, protoreflect.EnumKind,
+		protoreflect.Int32Kind, protoreflect.Sint32Kind, protoreflect.Uint32Kind,
+		protoreflect.Int64Kind, protoreflect.Sint64Kind, protoreflect.Uint64Kind:
+		return 0 // varint
+	case protoreflect.Fixed64Kind, protoreflect.Sfixed64Kind, protoreflect.DoubleKind:
+		return 1 // fixed64
+	case protoreflect.StringKind, protoreflect.BytesKind, protoreflect.MessageKind:
+		return 2 // length-delimited
+	case protoreflect.Fixed32Kind, protoreflect.Sfixed32Kind, protoreflect.FloatKind:
+		return 5 // fixed32
+	default:
+		return 2
 	}
 }
 

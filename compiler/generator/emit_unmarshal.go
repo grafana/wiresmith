@@ -11,6 +11,8 @@ func (fg *FileGenerator) emitSkipFieldHelper() {
 	fg.imports.addImport("google.golang.org/protobuf/encoding/protowire", "")
 	fg.imports.addImport("fmt", "")
 
+	// skipField is used by map entry parsing and other sub-slice contexts
+	// that still use protowire-based decoding.
 	fmt.Fprintf(fg.body, "func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) {\n")
 	fmt.Fprintf(fg.body, "\tswitch typ {\n")
 	fmt.Fprintf(fg.body, "\tcase protowire.VarintType:\n")
@@ -34,6 +36,49 @@ func (fg *FileGenerator) emitSkipFieldHelper() {
 	fmt.Fprintf(fg.body, "\tdefault:\n")
 	fmt.Fprintf(fg.body, "\t\treturn 0, fmt.Errorf(\"unknown wire type %%d\", typ)\n")
 	fmt.Fprintf(fg.body, "\t}\n")
+	fmt.Fprintf(fg.body, "}\n\n")
+}
+
+// emitSkipValueHelper emits an inline skip function that skips a field value
+// given its wire type. Used by the main unmarshal loop for unknown fields and
+// wire type mismatches where the tag has already been decoded.
+func (fg *FileGenerator) emitSkipValueHelper() {
+	fg.imports.addImport("io", "")
+	fg.imports.addImport("fmt", "")
+
+	fmt.Fprintf(fg.body, "func skipValue(dAtA []byte, wireType int) (int, error) {\n")
+	fmt.Fprintf(fg.body, "\tiNdEx := 0\n")
+	fmt.Fprintf(fg.body, "\tl := len(dAtA)\n")
+	fmt.Fprintf(fg.body, "\tswitch wireType {\n")
+	fmt.Fprintf(fg.body, "\tcase 0:\n") // varint
+	fmt.Fprintf(fg.body, "\t\tfor {\n")
+	fmt.Fprintf(fg.body, "\t\t\tif iNdEx >= l {\n\t\t\t\treturn 0, io.ErrUnexpectedEOF\n\t\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\t\tiNdEx++\n")
+	fmt.Fprintf(fg.body, "\t\t\tif dAtA[iNdEx-1] < 0x80 {\n\t\t\t\tbreak\n\t\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\t}\n")
+	fmt.Fprintf(fg.body, "\tcase 1:\n") // fixed64
+	fmt.Fprintf(fg.body, "\t\tif (iNdEx + 8) > l {\n\t\t\treturn 0, io.ErrUnexpectedEOF\n\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\tiNdEx += 8\n")
+	fmt.Fprintf(fg.body, "\tcase 2:\n") // length-delimited
+	fmt.Fprintf(fg.body, "\t\tvar length uint64\n")
+	fmt.Fprintf(fg.body, "\t\tfor shift := uint(0); ; shift += 7 {\n")
+	fmt.Fprintf(fg.body, "\t\t\tif shift >= 64 {\n\t\t\t\treturn 0, fmt.Errorf(\"proto: integer overflow\")\n\t\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\t\tif iNdEx >= l {\n\t\t\t\treturn 0, io.ErrUnexpectedEOF\n\t\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\t\tb := dAtA[iNdEx]\n")
+	fmt.Fprintf(fg.body, "\t\t\tiNdEx++\n")
+	fmt.Fprintf(fg.body, "\t\t\tlength |= uint64(b&0x7F) << shift\n")
+	fmt.Fprintf(fg.body, "\t\t\tif b < 0x80 {\n\t\t\t\tbreak\n\t\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\tif int(length) < 0 {\n\t\t\treturn 0, fmt.Errorf(\"proto: negative length\")\n\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\tiNdEx += int(length)\n")
+	fmt.Fprintf(fg.body, "\t\tif iNdEx < 0 || iNdEx > l {\n\t\t\treturn 0, io.ErrUnexpectedEOF\n\t\t}\n")
+	fmt.Fprintf(fg.body, "\tcase 5:\n") // fixed32
+	fmt.Fprintf(fg.body, "\t\tif (iNdEx + 4) > l {\n\t\t\treturn 0, io.ErrUnexpectedEOF\n\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\tiNdEx += 4\n")
+	fmt.Fprintf(fg.body, "\tdefault:\n")
+	fmt.Fprintf(fg.body, "\t\treturn 0, fmt.Errorf(\"unknown wire type %%d\", wireType)\n")
+	fmt.Fprintf(fg.body, "\t}\n")
+	fmt.Fprintf(fg.body, "\treturn iNdEx, nil\n")
 	fmt.Fprintf(fg.body, "}\n\n")
 }
 
@@ -62,54 +107,65 @@ func fieldsForPreScan(md protoreflect.MessageDescriptor) []protoreflect.FieldDes
 }
 
 // preScanMinBytes is the minimum message size for the pre-scan to run.
-// Small messages (individual spans, data points) have few repeated elements
-// so the scanning overhead outweighs the pre-allocation savings. Large
-// container messages (ScopeSpans with many spans) benefit significantly.
 const preScanMinBytes = 256
 
 // emitPreScan emits a lightweight tag-scanning loop that counts occurrences of
 // repeated message/string/bytes fields, then pre-allocates their slices with
-// exact capacity. This avoids expensive realloc+copy cycles for value-type
-// slices during the main unmarshal loop. Gated on len(b) to skip small messages
-// where the overhead isn't justified.
+// exact capacity. Uses inline varint decoding for performance.
 func (fg *FileGenerator) emitPreScan(md protoreflect.MessageDescriptor) {
 	fields := fieldsForPreScan(md)
 	if len(fields) == 0 {
 		return
 	}
 
-	fmt.Fprintf(fg.body, "\tif len(b) >= %d {\n", preScanMinBytes)
-	fmt.Fprintf(fg.body, "\t\ttmp := b\n")
+	fmt.Fprintf(fg.body, "\tif l >= %d {\n", preScanMinBytes)
+	fmt.Fprintf(fg.body, "\t\tvar preIdx int\n")
 	for _, fd := range fields {
 		fmt.Fprintf(fg.body, "\t\tvar field%dcount int\n", fd.Number())
 	}
-	fmt.Fprintf(fg.body, "\t\tfor len(tmp) > 0 {\n")
-	fmt.Fprintf(fg.body, "\t\t\tnum, typ, tagLen := protowire.ConsumeTag(tmp)\n")
-	fmt.Fprintf(fg.body, "\t\t\tif tagLen < 0 {\n\t\t\t\tbreak\n\t\t\t}\n")
-	fmt.Fprintf(fg.body, "\t\t\ttmp = tmp[tagLen:]\n")
+	fmt.Fprintf(fg.body, "\t\tfor preIdx < l {\n")
 
-	fmt.Fprintf(fg.body, "\t\t\tswitch num {\n")
+	// Inline tag decode
+	fmt.Fprintf(fg.body, "\t\t\tvar preWire uint64\n")
+	fmt.Fprintf(fg.body, "\t\t\tfor shift := uint(0); ; shift += 7 {\n")
+	fmt.Fprintf(fg.body, "\t\t\t\tif preIdx >= l {\n\t\t\t\t\tbreak\n\t\t\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\t\t\tb := dAtA[preIdx]\n")
+	fmt.Fprintf(fg.body, "\t\t\t\tpreIdx++\n")
+	fmt.Fprintf(fg.body, "\t\t\t\tpreWire |= uint64(b&0x7F) << shift\n")
+	fmt.Fprintf(fg.body, "\t\t\t\tif b < 0x80 {\n\t\t\t\t\tbreak\n\t\t\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\t\tpreNum := int32(preWire >> 3)\n")
+	fmt.Fprintf(fg.body, "\t\t\tpreTyp := int(preWire & 0x7)\n")
+
+	fmt.Fprintf(fg.body, "\t\t\tswitch preNum {\n")
 	for _, fd := range fields {
 		fmt.Fprintf(fg.body, "\t\t\tcase %d:\n", fd.Number())
 		fmt.Fprintf(fg.body, "\t\t\t\tfield%dcount++\n", fd.Number())
 	}
 	fmt.Fprintf(fg.body, "\t\t\t}\n")
 
-	fmt.Fprintf(fg.body, "\t\t\tvar skip int\n")
-	fmt.Fprintf(fg.body, "\t\t\tswitch typ {\n")
-	fmt.Fprintf(fg.body, "\t\t\tcase protowire.VarintType:\n")
-	fmt.Fprintf(fg.body, "\t\t\t\t_, skip = protowire.ConsumeVarint(tmp)\n")
-	fmt.Fprintf(fg.body, "\t\t\tcase protowire.Fixed32Type:\n")
-	fmt.Fprintf(fg.body, "\t\t\t\tskip = 4\n")
-	fmt.Fprintf(fg.body, "\t\t\tcase protowire.Fixed64Type:\n")
-	fmt.Fprintf(fg.body, "\t\t\t\tskip = 8\n")
-	fmt.Fprintf(fg.body, "\t\t\tcase protowire.BytesType:\n")
-	fmt.Fprintf(fg.body, "\t\t\t\t_, skip = protowire.ConsumeBytes(tmp)\n")
-	fmt.Fprintf(fg.body, "\t\t\tcase protowire.StartGroupType:\n")
-	fmt.Fprintf(fg.body, "\t\t\t\t_, skip = protowire.ConsumeGroup(num, tmp)\n")
+	// Skip field value
+	fmt.Fprintf(fg.body, "\t\t\tswitch preTyp {\n")
+	fmt.Fprintf(fg.body, "\t\t\tcase 0:\n") // varint
+	fmt.Fprintf(fg.body, "\t\t\t\tfor preIdx < l {\n\t\t\t\t\tpreIdx++\n\t\t\t\t\tif dAtA[preIdx-1] < 0x80 {\n\t\t\t\t\t\tbreak\n\t\t\t\t\t}\n\t\t\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\t\tcase 1:\n") // fixed64
+	fmt.Fprintf(fg.body, "\t\t\t\tpreIdx += 8\n")
+	fmt.Fprintf(fg.body, "\t\t\tcase 2:\n") // bytes
+	fmt.Fprintf(fg.body, "\t\t\t\tvar preLen uint64\n")
+	fmt.Fprintf(fg.body, "\t\t\t\tfor shift := uint(0); ; shift += 7 {\n")
+	fmt.Fprintf(fg.body, "\t\t\t\t\tif preIdx >= l {\n\t\t\t\t\t\tbreak\n\t\t\t\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\t\t\t\tb := dAtA[preIdx]\n")
+	fmt.Fprintf(fg.body, "\t\t\t\t\tpreIdx++\n")
+	fmt.Fprintf(fg.body, "\t\t\t\t\tpreLen |= uint64(b&0x7F) << shift\n")
+	fmt.Fprintf(fg.body, "\t\t\t\t\tif b < 0x80 {\n\t\t\t\t\t\tbreak\n\t\t\t\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\t\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\t\t\tpreIdx += int(preLen)\n")
+	fmt.Fprintf(fg.body, "\t\t\tcase 5:\n") // fixed32
+	fmt.Fprintf(fg.body, "\t\t\t\tpreIdx += 4\n")
+	fmt.Fprintf(fg.body, "\t\t\tdefault:\n")
+	fmt.Fprintf(fg.body, "\t\t\t\tbreak\n")
 	fmt.Fprintf(fg.body, "\t\t\t}\n")
-	fmt.Fprintf(fg.body, "\t\t\tif skip < 0 || skip > len(tmp) {\n\t\t\t\tbreak\n\t\t\t}\n")
-	fmt.Fprintf(fg.body, "\t\t\ttmp = tmp[skip:]\n")
+	fmt.Fprintf(fg.body, "\t\t\tif preIdx < 0 || preIdx > l {\n\t\t\t\tbreak\n\t\t\t}\n")
 	fmt.Fprintf(fg.body, "\t\t}\n")
 
 	for _, fd := range fields {
@@ -129,25 +185,42 @@ func (fg *FileGenerator) emitPreScan(md protoreflect.MessageDescriptor) {
 
 func (fg *FileGenerator) emitUnmarshal(md protoreflect.MessageDescriptor) {
 	name := goMessageTypeName(md)
-	fg.imports.addImport("google.golang.org/protobuf/encoding/protowire", "")
 	fg.imports.addImport("fmt", "")
+	fg.imports.addImport("io", "")
 
 	// Public wrapper that starts depth tracking at zero.
 	fmt.Fprintf(fg.body, "func (m *%s) Unmarshal(b []byte) error {\n", name)
 	fmt.Fprintf(fg.body, "\treturn m.unmarshal(b, 0)\n")
 	fmt.Fprintf(fg.body, "}\n\n")
 
-	// Private implementation with recursion depth limit.
-	fmt.Fprintf(fg.body, "func (m *%s) unmarshal(b []byte, depth int) error {\n", name)
+	// Private implementation with inline varint decoding (iNdEx/dAtA pattern).
+	fmt.Fprintf(fg.body, "func (m *%s) unmarshal(dAtA []byte, depth int) error {\n", name)
 	fmt.Fprintf(fg.body, "\tif depth > maxUnmarshalDepth {\n")
 	fmt.Fprintf(fg.body, "\t\treturn fmt.Errorf(\"exceeded max recursion depth\")\n")
 	fmt.Fprintf(fg.body, "\t}\n")
+	fmt.Fprintf(fg.body, "\tl := len(dAtA)\n")
+	fmt.Fprintf(fg.body, "\tiNdEx := 0\n")
+
 	fg.emitPreScan(md)
-	fmt.Fprintf(fg.body, "\tfor len(b) > 0 {\n")
-	fmt.Fprintf(fg.body, "\t\tnum, typ, tagLen := protowire.ConsumeTag(b)\n")
-	fmt.Fprintf(fg.body, "\t\tif tagLen < 0 {\n\t\t\treturn fmt.Errorf(\"invalid tag\")\n\t\t}\n")
-	fmt.Fprintf(fg.body, "\t\tb = b[tagLen:]\n")
-	fmt.Fprintf(fg.body, "\t\tswitch num {\n")
+
+	// Main parse loop with inline tag decoding.
+	fmt.Fprintf(fg.body, "\tfor iNdEx < l {\n")
+
+	// Inline tag decode
+	fmt.Fprintf(fg.body, "\t\tvar wire uint64\n")
+	fmt.Fprintf(fg.body, "\t\tfor shift := uint(0); ; shift += 7 {\n")
+	fmt.Fprintf(fg.body, "\t\t\tif shift >= 64 {\n\t\t\t\treturn fmt.Errorf(\"proto: integer overflow\")\n\t\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\t\tif iNdEx >= l {\n\t\t\t\treturn io.ErrUnexpectedEOF\n\t\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\t\tb := dAtA[iNdEx]\n")
+	fmt.Fprintf(fg.body, "\t\t\tiNdEx++\n")
+	fmt.Fprintf(fg.body, "\t\t\twire |= uint64(b&0x7F) << shift\n")
+	fmt.Fprintf(fg.body, "\t\t\tif b < 0x80 {\n\t\t\t\tbreak\n\t\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\t}\n")
+
+	fmt.Fprintf(fg.body, "\t\tfieldNum := int32(wire >> 3)\n")
+	fmt.Fprintf(fg.body, "\t\twireType := int(wire & 0x7)\n")
+
+	fmt.Fprintf(fg.body, "\t\tswitch fieldNum {\n")
 
 	for i := 0; i < md.Fields().Len(); i++ {
 		fd := md.Fields().Get(i)
@@ -155,11 +228,12 @@ func (fg *FileGenerator) emitUnmarshal(md protoreflect.MessageDescriptor) {
 	}
 
 	fmt.Fprintf(fg.body, "\t\tdefault:\n")
-	fmt.Fprintf(fg.body, "\t\t\tn, err := skipField(b, num, typ)\n")
+	fmt.Fprintf(fg.body, "\t\t\tn, err := skipValue(dAtA[iNdEx:], wireType)\n")
 	fmt.Fprintf(fg.body, "\t\t\tif err != nil {\n\t\t\t\treturn err\n\t\t\t}\n")
-	fmt.Fprintf(fg.body, "\t\t\tb = b[n:]\n")
+	fmt.Fprintf(fg.body, "\t\t\tiNdEx += n\n")
 	fmt.Fprintf(fg.body, "\t\t}\n") // end switch
 	fmt.Fprintf(fg.body, "\t}\n")   // end for
+	fmt.Fprintf(fg.body, "\tif iNdEx > l {\n\t\treturn io.ErrUnexpectedEOF\n\t}\n")
 	fmt.Fprintf(fg.body, "\treturn nil\n")
 	fmt.Fprintf(fg.body, "}\n\n")
 }
@@ -218,18 +292,26 @@ func (fg *FileGenerator) emitFieldUnmarshal(md protoreflect.MessageDescriptor, f
 		fieldName := snakeToPascal(string(fd.Name()))
 		types.AddTypeImports(fg, t)
 		t.EmitConsume(fg)
-		if kind == protoreflect.MessageKind {
+
+		switch kind {
+		case protoreflect.MessageKind:
+			// EmitConsume set postIndex for length-delimited types.
 			fmt.Fprintf(fg.body, "\t\t\tvar msg %s\n", ctx.MessageType)
 			if ctx.IsSamePackage {
-				fmt.Fprintf(fg.body, "\t\t\tif err := msg.unmarshal(v, depth+1); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n")
+				fmt.Fprintf(fg.body, "\t\t\tif err := msg.unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n")
 			} else {
-				fmt.Fprintf(fg.body, "\t\t\tif err := msg.Unmarshal(v); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n")
+				fmt.Fprintf(fg.body, "\t\t\tif err := msg.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n")
 			}
 			fmt.Fprintf(fg.body, "\t\t\tm.%s = &%s{%s: msg}\n", ooFieldName, variantName, fieldName)
-		} else {
+			fmt.Fprintf(fg.body, "\t\t\tiNdEx = postIndex\n")
+		case protoreflect.StringKind, protoreflect.BytesKind:
+			// EmitConsume set postIndex for length-delimited types.
+			fmt.Fprintf(fg.body, "\t\t\tm.%s = &%s{%s: %s}\n", ooFieldName, variantName, fieldName, t.CastExpr("dAtA[iNdEx:postIndex]", ctx))
+			fmt.Fprintf(fg.body, "\t\t\tiNdEx = postIndex\n")
+		default:
+			// EmitConsume set v for value types (varint/fixed).
 			fmt.Fprintf(fg.body, "\t\t\tm.%s = &%s{%s: %s}\n", ooFieldName, variantName, fieldName, t.CastExpr("v", ctx))
 		}
-		fmt.Fprintf(fg.body, "\t\t\tb = b[n:]\n")
 		return
 	}
 
@@ -247,11 +329,11 @@ func (fg *FileGenerator) emitFieldUnmarshal(md protoreflect.MessageDescriptor, f
 // emitWireTypeCheck emits a check that the wire type matches the expected type
 // for a given proto kind, skipping the field if it doesn't match.
 func (fg *FileGenerator) emitWireTypeCheck(kind protoreflect.Kind) {
-	wt := types.Get(kind).WireType()
-	fmt.Fprintf(fg.body, "\t\t\tif typ != %s {\n", wt)
-	fmt.Fprintf(fg.body, "\t\t\t\tn, err := skipField(b, num, typ)\n")
+	wtInt := types.WireTypeInt(kind)
+	fmt.Fprintf(fg.body, "\t\t\tif wireType != %d {\n", wtInt)
+	fmt.Fprintf(fg.body, "\t\t\t\tn, err := skipValue(dAtA[iNdEx:], wireType)\n")
 	fmt.Fprintf(fg.body, "\t\t\t\tif err != nil {\n\t\t\t\t\treturn err\n\t\t\t\t}\n")
-	fmt.Fprintf(fg.body, "\t\t\t\tb = b[n:]\n")
+	fmt.Fprintf(fg.body, "\t\t\t\tiNdEx += n\n")
 	fmt.Fprintf(fg.body, "\t\t\t\tcontinue\n")
 	fmt.Fprintf(fg.body, "\t\t\t}\n")
 }

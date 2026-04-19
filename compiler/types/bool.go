@@ -60,7 +60,6 @@ func (BoolType) CastExpr(varName string, ctx FieldContext) string { return varNa
 func (BoolType) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
 	emitConsumeVarint(e)
 	e.Writef("\t\t\t%s = v != 0\n", access)
-	emitAdvanceBytes(e)
 }
 
 func (BoolType) EmitMapEntryUnmarshal(e Emitter, varName, indent string, ctx FieldContext) {

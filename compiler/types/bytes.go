@@ -60,16 +60,16 @@ func (b BytesType) EmitValueMarshal(e Emitter, indent, access string, num protow
 
 // --- Unmarshal ---
 
-func (BytesType) EmitConsume(e Emitter) { emitConsumeBytes(e) }
+func (BytesType) EmitConsume(e Emitter) { emitConsumeBytesLen(e) }
 
 func (BytesType) CastExpr(varName string, ctx FieldContext) string {
 	return "append([]byte(nil), " + varName + "...)"
 }
 
 func (BytesType) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
-	emitConsumeBytes(e)
-	e.Writef("\t\t\t%s = append(%s[:0], v...)\n", access, access)
-	emitAdvanceBytes(e)
+	emitConsumeBytesLen(e)
+	e.Writef("\t\t\t%s = append(%s[:0], dAtA[iNdEx:postIndex]...)\n", access, access)
+	e.Writef("\t\t\tiNdEx = postIndex\n")
 }
 
 func (BytesType) EmitMapEntryUnmarshal(e Emitter, varName, indent string, ctx FieldContext) {
