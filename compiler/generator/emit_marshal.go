@@ -2,15 +2,30 @@ package generator
 
 import (
 	"fmt"
+	"path/filepath"
 	"sort"
+	"strings"
 
 	"google.golang.org/protobuf/encoding/protowire"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
+// encodeVarintCall returns the function call string for varint encoding.
+// In gogo compat mode, uses the same-package function for better inlining.
+func (fg *FileGenerator) encodeVarintCall() string {
+	if fg.gen != nil && fg.gen.GogoCompat {
+		base := filepath.Base(fg.fd.Path())
+		base = strings.TrimSuffix(base, ".proto")
+		return "encodeVarint" + snakeToPascal(base)
+	}
+	return "protohelpers.EncodeVarint"
+}
+
 func (fg *FileGenerator) emitMarshal(md protoreflect.MessageDescriptor) {
 	name := goMessageTypeName(md)
-	fg.imports.addImport(fg.gen.helpersImportPath(), "protohelpers")
+	if fg.gen == nil || !fg.gen.GogoCompat {
+		fg.imports.addImport(fg.gen.helpersImportPath(), "protohelpers")
+	}
 
 	// Marshal allocates and returns the encoded bytes.
 	fmt.Fprintf(fg.body, "func (m *%s) Marshal() (dAtA []byte, err error) {\n", name)
@@ -86,7 +101,7 @@ func (fg *FileGenerator) emitFieldMarshalReverse(fd protoreflect.FieldDescriptor
 			fmt.Fprintf(fg.body, "\t\t\tsize := %s[iNdEx].Size()\n", access)
 			fmt.Fprintf(fg.body, "\t\t\ti -= size\n")
 			fmt.Fprintf(fg.body, "\t\t\tif _, err := %s[iNdEx].MarshalTo(dAtA[i:]); err != nil {\n\t\t\t\treturn 0, err\n\t\t\t}\n", access)
-			fmt.Fprintf(fg.body, "\t\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(size))\n")
+			fmt.Fprintf(fg.body, "\t\t\ti = " + fg.encodeVarintCall() + "(dAtA, i, uint64(size))\n")
 			fg.reverseTag("\t\t\t", num, protowire.BytesType)
 			fmt.Fprintf(fg.body, "\t\t}\n")
 			fmt.Fprintf(fg.body, "\t}\n")
@@ -97,7 +112,7 @@ func (fg *FileGenerator) emitFieldMarshalReverse(fd protoreflect.FieldDescriptor
 			fmt.Fprintf(fg.body, "\t\t\tsize := %s.Size()\n", access)
 			fmt.Fprintf(fg.body, "\t\t\ti -= size\n")
 			fmt.Fprintf(fg.body, "\t\t\tif _, err := %s.MarshalTo(dAtA[i:]); err != nil {\n\t\t\t\treturn 0, err\n\t\t\t}\n", access)
-			fmt.Fprintf(fg.body, "\t\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(size))\n")
+			fmt.Fprintf(fg.body, "\t\t\ti = " + fg.encodeVarintCall() + "(dAtA, i, uint64(size))\n")
 			fg.reverseTag("\t\t\t", num, protowire.BytesType)
 			fmt.Fprintf(fg.body, "\t\t}\n")
 			fmt.Fprintf(fg.body, "\t}\n")
@@ -107,7 +122,7 @@ func (fg *FileGenerator) emitFieldMarshalReverse(fd protoreflect.FieldDescriptor
 			fmt.Fprintf(fg.body, "\t\tif size > 0 {\n")
 			fmt.Fprintf(fg.body, "\t\t\ti -= size\n")
 			fmt.Fprintf(fg.body, "\t\t\tif _, err := %s.MarshalTo(dAtA[i:]); err != nil {\n\t\t\t\treturn 0, err\n\t\t\t}\n", access)
-			fmt.Fprintf(fg.body, "\t\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(size))\n")
+			fmt.Fprintf(fg.body, "\t\t\ti = " + fg.encodeVarintCall() + "(dAtA, i, uint64(size))\n")
 			fg.reverseTag("\t\t\t", num, protowire.BytesType)
 			fmt.Fprintf(fg.body, "\t\t}\n")
 			fmt.Fprintf(fg.body, "\t}\n")
@@ -154,19 +169,19 @@ func (fg *FileGenerator) emitSingularFieldMarshalReverse(access string, fd proto
 
 	case protoreflect.Int32Kind, protoreflect.Uint32Kind, protoreflect.Int64Kind, protoreflect.Uint64Kind, protoreflect.EnumKind:
 		fmt.Fprintf(fg.body, "\tif %s != 0 {\n", access)
-		fmt.Fprintf(fg.body, "\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(%s))\n", access)
+		fmt.Fprintf(fg.body, "\t\ti = " + fg.encodeVarintCall() + "(dAtA, i, uint64(%s))\n", access)
 		fg.reverseTag("\t\t", num, protowire.VarintType)
 		fmt.Fprintf(fg.body, "\t}\n")
 
 	case protoreflect.Sint32Kind:
 		fmt.Fprintf(fg.body, "\tif %s != 0 {\n", access)
-		fmt.Fprintf(fg.body, "\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(uint32(%s<<1)^uint32(int32(%s)>>31)))\n", access, access)
+		fmt.Fprintf(fg.body, "\t\ti = " + fg.encodeVarintCall() + "(dAtA, i, uint64(uint32(%s<<1)^uint32(int32(%s)>>31)))\n", access, access)
 		fg.reverseTag("\t\t", num, protowire.VarintType)
 		fmt.Fprintf(fg.body, "\t}\n")
 
 	case protoreflect.Sint64Kind:
 		fmt.Fprintf(fg.body, "\tif %s != 0 {\n", access)
-		fmt.Fprintf(fg.body, "\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(uint64(%s<<1)^uint64(int64(%s)>>63)))\n", access, access)
+		fmt.Fprintf(fg.body, "\t\ti = " + fg.encodeVarintCall() + "(dAtA, i, uint64(uint64(%s<<1)^uint64(int64(%s)>>63)))\n", access, access)
 		fg.reverseTag("\t\t", num, protowire.VarintType)
 		fmt.Fprintf(fg.body, "\t}\n")
 
@@ -211,14 +226,14 @@ func (fg *FileGenerator) emitSingularFieldMarshalReverse(access string, fd proto
 	case protoreflect.StringKind:
 		fmt.Fprintf(fg.body, "\tif len(%s) > 0 {\n", access)
 		fmt.Fprintf(fg.body, "\t\ti -= len(%s)\n\t\tcopy(dAtA[i:], %s)\n", access, access)
-		fmt.Fprintf(fg.body, "\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(len(%s)))\n", access)
+		fmt.Fprintf(fg.body, "\t\ti = " + fg.encodeVarintCall() + "(dAtA, i, uint64(len(%s)))\n", access)
 		fg.reverseTag("\t\t", num, protowire.BytesType)
 		fmt.Fprintf(fg.body, "\t}\n")
 
 	case protoreflect.BytesKind:
 		fmt.Fprintf(fg.body, "\tif len(%s) > 0 {\n", access)
 		fmt.Fprintf(fg.body, "\t\ti -= len(%s)\n\t\tcopy(dAtA[i:], %s)\n", access, access)
-		fmt.Fprintf(fg.body, "\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(len(%s)))\n", access)
+		fmt.Fprintf(fg.body, "\t\ti = " + fg.encodeVarintCall() + "(dAtA, i, uint64(len(%s)))\n", access)
 		fg.reverseTag("\t\t", num, protowire.BytesType)
 		fmt.Fprintf(fg.body, "\t}\n")
 
@@ -228,7 +243,7 @@ func (fg *FileGenerator) emitSingularFieldMarshalReverse(access string, fd proto
 			fmt.Fprintf(fg.body, "\t\tsize, err := %s.MarshalToSizedBuffer(dAtA[:i])\n", access)
 			fmt.Fprintf(fg.body, "\t\tif err != nil {\n\t\t\treturn 0, err\n\t\t}\n")
 			fmt.Fprintf(fg.body, "\t\ti -= size\n")
-			fmt.Fprintf(fg.body, "\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(size))\n")
+			fmt.Fprintf(fg.body, "\t\ti = " + fg.encodeVarintCall() + "(dAtA, i, uint64(size))\n")
 			fg.reverseTag("\t\t", num, protowire.BytesType)
 			fmt.Fprintf(fg.body, "\t}\n")
 		} else {
@@ -237,7 +252,7 @@ func (fg *FileGenerator) emitSingularFieldMarshalReverse(access string, fd proto
 			fmt.Fprintf(fg.body, "\t\tif err != nil {\n\t\t\treturn 0, err\n\t\t}\n")
 			fmt.Fprintf(fg.body, "\t\tif size > 0 {\n")
 			fmt.Fprintf(fg.body, "\t\t\ti -= size\n")
-			fmt.Fprintf(fg.body, "\t\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(size))\n")
+			fmt.Fprintf(fg.body, "\t\t\ti = " + fg.encodeVarintCall() + "(dAtA, i, uint64(size))\n")
 			fg.reverseTag("\t\t\t", num, protowire.BytesType)
 			fmt.Fprintf(fg.body, "\t\t}\n")
 			fmt.Fprintf(fg.body, "\t}\n")
@@ -258,17 +273,17 @@ func (fg *FileGenerator) emitOptionalFieldMarshalReverse(access string, fd proto
 		fg.reverseTag("\t\t", num, protowire.VarintType)
 
 	case protoreflect.Int32Kind, protoreflect.Uint32Kind, protoreflect.Int64Kind, protoreflect.Uint64Kind, protoreflect.EnumKind:
-		fmt.Fprintf(fg.body, "\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(*%s))\n", access)
+		fmt.Fprintf(fg.body, "\t\ti = " + fg.encodeVarintCall() + "(dAtA, i, uint64(*%s))\n", access)
 		fg.reverseTag("\t\t", num, protowire.VarintType)
 
 	case protoreflect.Sint32Kind:
 		fmt.Fprintf(fg.body, "\t\tv := *%s\n", access)
-		fmt.Fprintf(fg.body, "\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(uint32(v<<1)^uint32(int32(v)>>31)))\n")
+		fmt.Fprintf(fg.body, "\t\ti = " + fg.encodeVarintCall() + "(dAtA, i, uint64(uint32(v<<1)^uint32(int32(v)>>31)))\n")
 		fg.reverseTag("\t\t", num, protowire.VarintType)
 
 	case protoreflect.Sint64Kind:
 		fmt.Fprintf(fg.body, "\t\tv := *%s\n", access)
-		fmt.Fprintf(fg.body, "\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(uint64(v<<1)^uint64(int64(v)>>63)))\n")
+		fmt.Fprintf(fg.body, "\t\ti = " + fg.encodeVarintCall() + "(dAtA, i, uint64(uint64(v<<1)^uint64(int64(v)>>63)))\n")
 		fg.reverseTag("\t\t", num, protowire.VarintType)
 
 	case protoreflect.Fixed32Kind:
@@ -299,7 +314,7 @@ func (fg *FileGenerator) emitOptionalFieldMarshalReverse(access string, fd proto
 
 	case protoreflect.StringKind:
 		fmt.Fprintf(fg.body, "\t\ti -= len(*%s)\n\t\tcopy(dAtA[i:], *%s)\n", access, access)
-		fmt.Fprintf(fg.body, "\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(len(*%s)))\n", access)
+		fmt.Fprintf(fg.body, "\t\ti = " + fg.encodeVarintCall() + "(dAtA, i, uint64(len(*%s)))\n", access)
 		fg.reverseTag("\t\t", num, protowire.BytesType)
 	}
 
@@ -316,21 +331,21 @@ func (fg *FileGenerator) emitRepeatedFieldMarshalReverse(access string, fd proto
 		fmt.Fprintf(fg.body, "\t\tsize, err := %s[iNdEx].MarshalToSizedBuffer(dAtA[:i])\n", access)
 		fmt.Fprintf(fg.body, "\t\tif err != nil {\n\t\t\treturn 0, err\n\t\t}\n")
 		fmt.Fprintf(fg.body, "\t\ti -= size\n")
-		fmt.Fprintf(fg.body, "\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(size))\n")
+		fmt.Fprintf(fg.body, "\t\ti = " + fg.encodeVarintCall() + "(dAtA, i, uint64(size))\n")
 		fg.reverseTag("\t\t", num, protowire.BytesType)
 		fmt.Fprintf(fg.body, "\t}\n")
 
 	case kind == protoreflect.StringKind:
 		fmt.Fprintf(fg.body, "\tfor iNdEx := len(%s) - 1; iNdEx >= 0; iNdEx-- {\n", access)
 		fmt.Fprintf(fg.body, "\t\ti -= len(%s[iNdEx])\n\t\tcopy(dAtA[i:], %s[iNdEx])\n", access, access)
-		fmt.Fprintf(fg.body, "\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(len(%s[iNdEx])))\n", access)
+		fmt.Fprintf(fg.body, "\t\ti = " + fg.encodeVarintCall() + "(dAtA, i, uint64(len(%s[iNdEx])))\n", access)
 		fg.reverseTag("\t\t", num, protowire.BytesType)
 		fmt.Fprintf(fg.body, "\t}\n")
 
 	case kind == protoreflect.BytesKind:
 		fmt.Fprintf(fg.body, "\tfor iNdEx := len(%s) - 1; iNdEx >= 0; iNdEx-- {\n", access)
 		fmt.Fprintf(fg.body, "\t\ti -= len(%s[iNdEx])\n\t\tcopy(dAtA[i:], %s[iNdEx])\n", access, access)
-		fmt.Fprintf(fg.body, "\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(len(%s[iNdEx])))\n", access)
+		fmt.Fprintf(fg.body, "\t\ti = " + fg.encodeVarintCall() + "(dAtA, i, uint64(len(%s[iNdEx])))\n", access)
 		fg.reverseTag("\t\t", num, protowire.BytesType)
 		fmt.Fprintf(fg.body, "\t}\n")
 
@@ -341,12 +356,12 @@ func (fg *FileGenerator) emitRepeatedFieldMarshalReverse(access string, fd proto
 			fmt.Fprintf(fg.body, "\t\tfor iNdEx := len(%s) - 1; iNdEx >= 0; iNdEx-- {\n", access)
 			fg.emitPackedElementReverse("\t\t\t", kind, access+"[iNdEx]")
 			fmt.Fprintf(fg.body, "\t\t}\n")
-			fmt.Fprintf(fg.body, "\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(len(%s)*8))\n", access)
+			fmt.Fprintf(fg.body, "\t\ti = " + fg.encodeVarintCall() + "(dAtA, i, uint64(len(%s)*8))\n", access)
 		} else if isFixed32Kind(kind) {
 			fmt.Fprintf(fg.body, "\t\tfor iNdEx := len(%s) - 1; iNdEx >= 0; iNdEx-- {\n", access)
 			fg.emitPackedElementReverse("\t\t\t", kind, access+"[iNdEx]")
 			fmt.Fprintf(fg.body, "\t\t}\n")
-			fmt.Fprintf(fg.body, "\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(len(%s)*4))\n", access)
+			fmt.Fprintf(fg.body, "\t\ti = " + fg.encodeVarintCall() + "(dAtA, i, uint64(len(%s)*4))\n", access)
 		} else {
 			// Varint packed: write elements backwards, measure size from position difference
 			fmt.Fprintf(fg.body, "\t\tvar j int\n")
@@ -354,7 +369,7 @@ func (fg *FileGenerator) emitRepeatedFieldMarshalReverse(access string, fd proto
 			fmt.Fprintf(fg.body, "\t\tfor j = len(%s) - 1; j >= 0; j-- {\n", access)
 			fg.emitPackedVarintElementReverse("\t\t\t", kind, access+"[j]")
 			fmt.Fprintf(fg.body, "\t\t}\n")
-			fmt.Fprintf(fg.body, "\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(pStart-i))\n")
+			fmt.Fprintf(fg.body, "\t\ti = " + fg.encodeVarintCall() + "(dAtA, i, uint64(pStart-i))\n")
 		}
 
 		fg.reverseTag("\t\t", num, protowire.BytesType)
@@ -388,13 +403,13 @@ func (fg *FileGenerator) emitPackedVarintElementReverse(indent string, kind prot
 		fmt.Fprintf(fg.body, "%si--\n%sif %s {\n%s\tdAtA[i] = 1\n%s} else {\n%s\tdAtA[i] = 0\n%s}\n",
 			indent, indent, access, indent, indent, indent, indent)
 	case protoreflect.Sint32Kind:
-		fmt.Fprintf(fg.body, "%si = protohelpers.EncodeVarint(dAtA, i, uint64(uint32(%s<<1)^uint32(int32(%s)>>31)))\n",
+		fmt.Fprintf(fg.body, "%si = " + fg.encodeVarintCall() + "(dAtA, i, uint64(uint32(%s<<1)^uint32(int32(%s)>>31)))\n",
 			indent, access, access)
 	case protoreflect.Sint64Kind:
-		fmt.Fprintf(fg.body, "%si = protohelpers.EncodeVarint(dAtA, i, uint64(uint64(%s<<1)^uint64(int64(%s)>>63)))\n",
+		fmt.Fprintf(fg.body, "%si = " + fg.encodeVarintCall() + "(dAtA, i, uint64(uint64(%s<<1)^uint64(int64(%s)>>63)))\n",
 			indent, access, access)
 	default:
-		fmt.Fprintf(fg.body, "%si = protohelpers.EncodeVarint(dAtA, i, uint64(%s))\n", indent, access)
+		fmt.Fprintf(fg.body, "%si = " + fg.encodeVarintCall() + "(dAtA, i, uint64(%s))\n", indent, access)
 	}
 }
 
@@ -426,15 +441,15 @@ func (fg *FileGenerator) emitOneofMarshalReverse(md protoreflect.MessageDescript
 			fg.reverseTag("\t\t", num, protowire.VarintType)
 
 		case protoreflect.Int32Kind, protoreflect.Uint32Kind, protoreflect.Int64Kind, protoreflect.Uint64Kind, protoreflect.EnumKind:
-			fmt.Fprintf(fg.body, "\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(%s))\n", access)
+			fmt.Fprintf(fg.body, "\t\ti = " + fg.encodeVarintCall() + "(dAtA, i, uint64(%s))\n", access)
 			fg.reverseTag("\t\t", num, protowire.VarintType)
 
 		case protoreflect.Sint32Kind:
-			fmt.Fprintf(fg.body, "\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(uint32(%s<<1)^uint32(int32(%s)>>31)))\n", access, access)
+			fmt.Fprintf(fg.body, "\t\ti = " + fg.encodeVarintCall() + "(dAtA, i, uint64(uint32(%s<<1)^uint32(int32(%s)>>31)))\n", access, access)
 			fg.reverseTag("\t\t", num, protowire.VarintType)
 
 		case protoreflect.Sint64Kind:
-			fmt.Fprintf(fg.body, "\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(uint64(%s<<1)^uint64(int64(%s)>>63)))\n", access, access)
+			fmt.Fprintf(fg.body, "\t\ti = " + fg.encodeVarintCall() + "(dAtA, i, uint64(uint64(%s<<1)^uint64(int64(%s)>>63)))\n", access, access)
 			fg.reverseTag("\t\t", num, protowire.VarintType)
 
 		case protoreflect.Fixed32Kind:
@@ -465,19 +480,19 @@ func (fg *FileGenerator) emitOneofMarshalReverse(md protoreflect.MessageDescript
 
 		case protoreflect.StringKind:
 			fmt.Fprintf(fg.body, "\t\ti -= len(%s)\n\t\tcopy(dAtA[i:], %s)\n", access, access)
-			fmt.Fprintf(fg.body, "\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(len(%s)))\n", access)
+			fmt.Fprintf(fg.body, "\t\ti = " + fg.encodeVarintCall() + "(dAtA, i, uint64(len(%s)))\n", access)
 			fg.reverseTag("\t\t", num, protowire.BytesType)
 
 		case protoreflect.BytesKind:
 			fmt.Fprintf(fg.body, "\t\ti -= len(%s)\n\t\tcopy(dAtA[i:], %s)\n", access, access)
-			fmt.Fprintf(fg.body, "\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(len(%s)))\n", access)
+			fmt.Fprintf(fg.body, "\t\ti = " + fg.encodeVarintCall() + "(dAtA, i, uint64(len(%s)))\n", access)
 			fg.reverseTag("\t\t", num, protowire.BytesType)
 
 		case protoreflect.MessageKind:
 			fmt.Fprintf(fg.body, "\t\tsize, err := %s.MarshalToSizedBuffer(dAtA[:i])\n", access)
 			fmt.Fprintf(fg.body, "\t\tif err != nil {\n\t\t\treturn 0, err\n\t\t}\n")
 			fmt.Fprintf(fg.body, "\t\ti -= size\n")
-			fmt.Fprintf(fg.body, "\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(size))\n")
+			fmt.Fprintf(fg.body, "\t\ti = " + fg.encodeVarintCall() + "(dAtA, i, uint64(size))\n")
 			fg.reverseTag("\t\t", num, protowire.BytesType)
 		}
 	}
@@ -505,7 +520,7 @@ func (fg *FileGenerator) emitStdWKTMarshalReverse(access string, fd protoreflect
 		fmt.Fprintf(fg.body, "\t\tn, err := %s(*%s, dAtA[i-%s(*%s):])\n", marshalFunc, access, sizeFunc, access)
 		fmt.Fprintf(fg.body, "\t\tif err != nil {\n\t\t\treturn 0, err\n\t\t}\n")
 		fmt.Fprintf(fg.body, "\t\ti -= n\n")
-		fmt.Fprintf(fg.body, "\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(n))\n")
+		fmt.Fprintf(fg.body, "\t\ti = " + fg.encodeVarintCall() + "(dAtA, i, uint64(n))\n")
 		fg.reverseTag("\t\t", num, protowire.BytesType)
 		fmt.Fprintf(fg.body, "\t}\n")
 	} else {
@@ -515,7 +530,7 @@ func (fg *FileGenerator) emitStdWKTMarshalReverse(access string, fd protoreflect
 		fmt.Fprintf(fg.body, "\t\tn, err := %s(%s, dAtA[i-%s(%s):])\n", marshalFunc, access, sizeFunc, access)
 		fmt.Fprintf(fg.body, "\t\tif err != nil {\n\t\t\treturn 0, err\n\t\t}\n")
 		fmt.Fprintf(fg.body, "\t\ti -= n\n")
-		fmt.Fprintf(fg.body, "\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(n))\n")
+		fmt.Fprintf(fg.body, "\t\ti = " + fg.encodeVarintCall() + "(dAtA, i, uint64(n))\n")
 		fg.reverseTag("\t\t", num, protowire.BytesType)
 		fmt.Fprintf(fg.body, "\t}\n")
 	}
@@ -538,16 +553,16 @@ func (fg *FileGenerator) emitMapMarshalReverse(access string, fd protoreflect.Fi
 		fmt.Fprintf(fg.body, "\t\t\t\t\tsize, err := v.MarshalToSizedBuffer(dAtA[:i])\n")
 		fmt.Fprintf(fg.body, "\t\t\t\t\tif err != nil {\n\t\t\t\t\t\treturn 0, err\n\t\t\t\t\t}\n")
 		fmt.Fprintf(fg.body, "\t\t\t\t\ti -= size\n")
-		fmt.Fprintf(fg.body, "\t\t\t\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(size))\n")
+		fmt.Fprintf(fg.body, "\t\t\t\t\ti = " + fg.encodeVarintCall() + "(dAtA, i, uint64(size))\n")
 		fmt.Fprintf(fg.body, "\t\t\t\t}\n")
 		fmt.Fprintf(fg.body, "\t\t\t\ti--\n\t\t\t\tdAtA[i] = 0x12\n")
 		fmt.Fprintf(fg.body, "\t\t\t}\n")
 	case protoreflect.StringKind:
 		fmt.Fprintf(fg.body, "\t\t\ti -= len(v)\n\t\t\tcopy(dAtA[i:], v)\n")
-		fmt.Fprintf(fg.body, "\t\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(len(v)))\n")
+		fmt.Fprintf(fg.body, "\t\t\ti = " + fg.encodeVarintCall() + "(dAtA, i, uint64(len(v)))\n")
 		fmt.Fprintf(fg.body, "\t\t\ti--\n\t\t\tdAtA[i] = 0x12\n")
 	default:
-		fmt.Fprintf(fg.body, "\t\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(v))\n")
+		fmt.Fprintf(fg.body, "\t\t\ti = " + fg.encodeVarintCall() + "(dAtA, i, uint64(v))\n")
 		fmt.Fprintf(fg.body, "\t\t\ti--\n\t\t\tdAtA[i] = 0x10\n")
 	}
 
@@ -555,14 +570,14 @@ func (fg *FileGenerator) emitMapMarshalReverse(access string, fd protoreflect.Fi
 	switch fd.MapKey().Kind() {
 	case protoreflect.StringKind:
 		fmt.Fprintf(fg.body, "\t\t\ti -= len(k)\n\t\t\tcopy(dAtA[i:], k)\n")
-		fmt.Fprintf(fg.body, "\t\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(len(k)))\n")
+		fmt.Fprintf(fg.body, "\t\t\ti = " + fg.encodeVarintCall() + "(dAtA, i, uint64(len(k)))\n")
 		fmt.Fprintf(fg.body, "\t\t\ti--\n\t\t\tdAtA[i] = 0x0a\n")
 	default:
-		fmt.Fprintf(fg.body, "\t\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(k))\n")
+		fmt.Fprintf(fg.body, "\t\t\ti = " + fg.encodeVarintCall() + "(dAtA, i, uint64(k))\n")
 		fmt.Fprintf(fg.body, "\t\t\ti--\n\t\t\tdAtA[i] = 0x08\n")
 	}
 
-	fmt.Fprintf(fg.body, "\t\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(baseI-i))\n")
+	fmt.Fprintf(fg.body, "\t\t\ti = " + fg.encodeVarintCall() + "(dAtA, i, uint64(baseI-i))\n")
 	fg.reverseTag("\t\t\t", num, protowire.BytesType)
 	fmt.Fprintf(fg.body, "\t\t}\n")
 	fmt.Fprintf(fg.body, "\t}\n")
