@@ -31,6 +31,7 @@ All commands are available via `make`:
 | `make fuzz` | Fuzz `Unmarshal` methods (30s) — feeds random bytes to verify errors, not panics |
 | `make generate` | Regenerate all code (ours + vtproto + gogoproto). Requires `protoc`, `protoc-gen-go`, `protoc-gen-go-vtproto`, `protoc-gen-gogofast` |
 | `make generate-ours` | Regenerate all wiresmith + conformance code. Requires `protoc`, `protoc-gen-go` |
+| `make coverage` | Run tests with coverage report |
 | `make bench` | Run comparative benchmarks (5 iterations) |
 | `make bench-compare` | Run per-library benchmarks and compare with `benchstat`. Accepts `COUNT=-count=N` |
 | `make conformance` | Run Google protobuf conformance tests in Docker |
@@ -62,3 +63,7 @@ docker run --rm --entrypoint conformance_test_runner wiresmith-conformance /usr/
 ```
 
 Compare the `unexpected failures` output against `conformance/failure_list.txt` and remove entries that no longer appear. The expected failure count in the runner output should equal the number of entries in the file.
+
+## Known issues
+
+- `go test ./...` panics in `bench/` with `proto: file "maps.proto" is already registered` due to conflicting proto registrations between `gen/bench/official`, `gen/bench/vtpb`, and `gen/bench/gogopb`. Use `go test ./test/ ./compiler/...` to run tests without the bench package, or `GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn go test ./bench/` to run benchmarks.

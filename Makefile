@@ -29,7 +29,7 @@ space := $(empty) $(empty)
 comma := ,
 gogo_mflags = $(subst $(space),,$(foreach p,$(ALL_PROTOS),M$(p)=$(MODULE)/$(1)/$(call pkgsuffix,$(p))$(comma)))
 
-.PHONY: help build test fuzz generate bench bench-compare clean conformance
+.PHONY: help build test coverage fuzz generate bench bench-compare clean conformance
 
 help: ## Print this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-20s %s\n", $$1, $$2}'
@@ -39,6 +39,12 @@ build: ## Build all packages
 
 test: ## Run correctness tests
 	go test ./test/ -v
+
+coverage: ## Run tests with coverage report
+	go test ./test/ ./compiler/... -coverprofile=coverage.out
+	go tool cover -func=coverage.out
+	@echo ""
+	@echo "HTML report: go tool cover -html=coverage.out"
 
 fuzz: ## Fuzz all targets (30s each)
 	@for target in FuzzUnmarshal FuzzRoundTrip FuzzMarshalSize FuzzCrossLibrary FuzzStructuredTrace FuzzStructuredMetrics FuzzStructuredLogs; do \

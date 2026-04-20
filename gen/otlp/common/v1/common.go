@@ -4,6 +4,7 @@
 package commonv1
 
 import (
+	"bytes"
 	"encoding/binary"
 	"fmt"
 	"google.golang.org/protobuf/encoding/protowire"
@@ -64,35 +65,107 @@ type AnyValue_StringValueStrindex struct {
 
 func (*AnyValue_StringValueStrindex) isAnyValue_Value() {}
 
+// Represents any type of attribute value. AnyValue may contain a
+// primitive value such as a string or integer or it may contain an arbitrary nested
+// object containing arrays, key-value lists and primitives.
 type AnyValue struct {
+	// The value is one of the listed fields. It is valid for all values to be unspecified
+	// in which case this AnyValue is considered to be "empty".
 	Value AnyValue_Value
 }
 
+// ArrayValue is a list of AnyValue messages. We need ArrayValue as a message
+// since oneof in AnyValue does not allow repeated fields.
 type ArrayValue struct {
+	// Array of values. The array may be empty (contain 0 elements).
 	Values []AnyValue
 }
 
+// KeyValueList is a list of KeyValue messages. We need KeyValueList as a message
+// since `oneof` in AnyValue does not allow repeated fields. Everywhere else where we need
+// a list of KeyValue messages (e.g. in Span) we use `repeated KeyValue` directly to
+// avoid unnecessary extra wrapping (which slows down the protocol). The 2 approaches
+// are semantically equivalent.
 type KeyValueList struct {
+	// A collection of key/value pairs of key-value pairs. The list may be empty (may
+	// contain 0 elements).
+	//
+	// The keys MUST be unique (it is not allowed to have more than one
+	// value with the same key).
+	// The behavior of software that receives duplicated keys can be unpredictable.
 	Values []KeyValue
 }
 
+// Represents a key-value pair that is used to store Span attributes, Link
+// attributes, etc.
 type KeyValue struct {
-	Key         string
-	Value       AnyValue
+	// The key name of the pair.
+	// key_strindex MUST NOT be set if key is used.
+	Key string
+	// The value of the pair.
+	Value AnyValue
+	// Reference to the string key in ProfilesDictionary.string_table.
+	// key MUST NOT be set if key_strindex is used.
+	//
+	// Note: This is currently used exclusively in the Profiling signal.
+	// Implementers of OTLP receivers for signals other than Profiling should
+	// treat the presence of this key as a non-fatal issue.
+	// Log an error or warning indicating an unexpected field intended for the
+	// Profiling signal and process the data as if this value were absent or
+	// empty, ignoring its semantic content for the non-Profiling signal.
+	//
+	// Status: [Alpha]
 	KeyStrindex int32
 }
 
+// InstrumentationScope is a message representing the instrumentation scope information
+// such as the fully qualified name and version.
 type InstrumentationScope struct {
-	Name                   string
-	Version                string
-	Attributes             []KeyValue
+	// A name denoting the Instrumentation scope.
+	// An empty instrumentation scope name means the name is unknown.
+	Name string
+	// Defines the version of the instrumentation scope.
+	// An empty instrumentation scope version means the version is unknown.
+	Version string
+	// Additional attributes that describe the scope. [Optional].
+	// Attribute keys MUST be unique (it is not allowed to have more than one
+	// attribute with the same key).
+	// The behavior of software that receives duplicated keys can be unpredictable.
+	Attributes []KeyValue
+	// The number of attributes that were discarded. Attributes
+	// can be discarded because their keys are too long or because there are too many
+	// attributes. If this value is 0, then no attributes were dropped.
 	DroppedAttributesCount uint32
 }
 
+// A reference to an Entity.
+// Entity represents an object of interest associated with produced telemetry: e.g spans, metrics, profiles, or logs.
+//
+// Status: [Development]
 type EntityRef struct {
-	SchemaUrl       string
-	Type            string
-	IdKeys          []string
+	// The Schema URL, if known. This is the identifier of the Schema that the entity data
+	// is recorded in. To learn more about Schema URL see
+	// https://opentelemetry.io/docs/specs/otel/schemas/#schema-url
+	//
+	// This schema_url applies to the data in this message and to the Resource attributes
+	// referenced by id_keys and description_keys.
+	// TODO: discuss if we are happy with this somewhat complicated definition of what
+	// the schema_url applies to.
+	//
+	// This field obsoletes the schema_url field in ResourceMetrics/ResourceSpans/ResourceLogs.
+	SchemaUrl string
+	// Defines the type of the entity. MUST not change during the lifetime of the entity.
+	// For example: "service" or "host". This field is required and MUST not be empty
+	// for valid entities.
+	Type string
+	// Attribute Keys that identify the entity.
+	// MUST not change during the lifetime of the entity. The Id must contain at least one attribute.
+	// These keys MUST exist in the containing {message}.attributes.
+	IdKeys []string
+	// Descriptive (non-identifying) attribute keys of the entity.
+	// MAY change over the lifetime of the entity. MAY be empty.
+	// These attribute keys are not part of entity's identity.
+	// These keys MUST exist in the containing {message}.attributes.
 	DescriptionKeys []string
 }
 
@@ -197,10 +270,10 @@ func (m *EntityRef) Size() int {
 
 func (m *AnyValue) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
-	if size == 0 {
-		return nil, nil
-	}
 	dAtA = make([]byte, size)
+	if size == 0 {
+		return dAtA, nil
+	}
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
@@ -274,10 +347,10 @@ func (m *AnyValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 
 func (m *ArrayValue) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
-	if size == 0 {
-		return nil, nil
-	}
 	dAtA = make([]byte, size)
+	if size == 0 {
+		return dAtA, nil
+	}
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
@@ -307,10 +380,10 @@ func (m *ArrayValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 
 func (m *KeyValueList) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
-	if size == 0 {
-		return nil, nil
-	}
 	dAtA = make([]byte, size)
+	if size == 0 {
+		return dAtA, nil
+	}
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
@@ -340,10 +413,10 @@ func (m *KeyValueList) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 
 func (m *KeyValue) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
-	if size == 0 {
-		return nil, nil
-	}
 	dAtA = make([]byte, size)
+	if size == 0 {
+		return dAtA, nil
+	}
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
@@ -387,10 +460,10 @@ func (m *KeyValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 
 func (m *InstrumentationScope) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
-	if size == 0 {
-		return nil, nil
-	}
 	dAtA = make([]byte, size)
+	if size == 0 {
+		return dAtA, nil
+	}
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
@@ -439,10 +512,10 @@ func (m *InstrumentationScope) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 
 func (m *EntityRef) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
-	if size == 0 {
-		return nil, nil
-	}
 	dAtA = make([]byte, size)
+	if size == 0 {
+		return dAtA, nil
+	}
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
@@ -1817,4 +1890,273 @@ func (m *EntityRef) unmarshal(dAtA []byte, depth int) error {
 		return io.ErrUnexpectedEOF
 	}
 	return nil
+}
+
+func (this *AnyValue) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*AnyValue)
+	if !ok {
+		that2, ok := that.(AnyValue)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if (this.Value == nil) != (that1.Value == nil) {
+		return false
+	}
+	if this.Value != nil {
+		switch v := this.Value.(type) {
+		case *AnyValue_StringValue:
+			v2, ok := that1.Value.(*AnyValue_StringValue)
+			if !ok {
+				return false
+			}
+			if v.StringValue != v2.StringValue {
+				return false
+			}
+		case *AnyValue_BoolValue:
+			v2, ok := that1.Value.(*AnyValue_BoolValue)
+			if !ok {
+				return false
+			}
+			if v.BoolValue != v2.BoolValue {
+				return false
+			}
+		case *AnyValue_IntValue:
+			v2, ok := that1.Value.(*AnyValue_IntValue)
+			if !ok {
+				return false
+			}
+			if v.IntValue != v2.IntValue {
+				return false
+			}
+		case *AnyValue_DoubleValue:
+			v2, ok := that1.Value.(*AnyValue_DoubleValue)
+			if !ok {
+				return false
+			}
+			if v.DoubleValue != v2.DoubleValue {
+				return false
+			}
+		case *AnyValue_ArrayValue:
+			v2, ok := that1.Value.(*AnyValue_ArrayValue)
+			if !ok {
+				return false
+			}
+			if !v.ArrayValue.Equal(v2.ArrayValue) {
+				return false
+			}
+		case *AnyValue_KvlistValue:
+			v2, ok := that1.Value.(*AnyValue_KvlistValue)
+			if !ok {
+				return false
+			}
+			if !v.KvlistValue.Equal(v2.KvlistValue) {
+				return false
+			}
+		case *AnyValue_BytesValue:
+			v2, ok := that1.Value.(*AnyValue_BytesValue)
+			if !ok {
+				return false
+			}
+			if !bytes.Equal(v.BytesValue, v2.BytesValue) {
+				return false
+			}
+		case *AnyValue_StringValueStrindex:
+			v2, ok := that1.Value.(*AnyValue_StringValueStrindex)
+			if !ok {
+				return false
+			}
+			if v.StringValueStrindex != v2.StringValueStrindex {
+				return false
+			}
+		default:
+			return false
+		}
+	}
+	return true
+}
+
+func (this *ArrayValue) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*ArrayValue)
+	if !ok {
+		that2, ok := that.(ArrayValue)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if len(this.Values) != len(that1.Values) {
+		return false
+	}
+	for i := range this.Values {
+		if !this.Values[i].Equal(that1.Values[i]) {
+			return false
+		}
+	}
+	return true
+}
+
+func (this *KeyValueList) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*KeyValueList)
+	if !ok {
+		that2, ok := that.(KeyValueList)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if len(this.Values) != len(that1.Values) {
+		return false
+	}
+	for i := range this.Values {
+		if !this.Values[i].Equal(that1.Values[i]) {
+			return false
+		}
+	}
+	return true
+}
+
+func (this *KeyValue) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*KeyValue)
+	if !ok {
+		that2, ok := that.(KeyValue)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Key != that1.Key {
+		return false
+	}
+	if !this.Value.Equal(that1.Value) {
+		return false
+	}
+	if this.KeyStrindex != that1.KeyStrindex {
+		return false
+	}
+	return true
+}
+
+func (this *InstrumentationScope) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*InstrumentationScope)
+	if !ok {
+		that2, ok := that.(InstrumentationScope)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Name != that1.Name {
+		return false
+	}
+	if this.Version != that1.Version {
+		return false
+	}
+	if len(this.Attributes) != len(that1.Attributes) {
+		return false
+	}
+	for i := range this.Attributes {
+		if !this.Attributes[i].Equal(that1.Attributes[i]) {
+			return false
+		}
+	}
+	if this.DroppedAttributesCount != that1.DroppedAttributesCount {
+		return false
+	}
+	return true
+}
+
+func (this *EntityRef) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*EntityRef)
+	if !ok {
+		that2, ok := that.(EntityRef)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.SchemaUrl != that1.SchemaUrl {
+		return false
+	}
+	if this.Type != that1.Type {
+		return false
+	}
+	if len(this.IdKeys) != len(that1.IdKeys) {
+		return false
+	}
+	for i := range this.IdKeys {
+		if this.IdKeys[i] != that1.IdKeys[i] {
+			return false
+		}
+	}
+	if len(this.DescriptionKeys) != len(that1.DescriptionKeys) {
+		return false
+	}
+	for i := range this.DescriptionKeys {
+		if this.DescriptionKeys[i] != that1.DescriptionKeys[i] {
+			return false
+		}
+	}
+	return true
 }

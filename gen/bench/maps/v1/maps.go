@@ -4,6 +4,7 @@
 package mapsv1
 
 import (
+	"bytes"
 	"fmt"
 	"google.golang.org/protobuf/encoding/protowire"
 	"io"
@@ -62,10 +63,10 @@ func (m *Inner) Size() int {
 
 func (m *MapBench) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
-	if size == 0 {
-		return nil, nil
-	}
 	dAtA = make([]byte, size)
+	if size == 0 {
+		return dAtA, nil
+	}
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
@@ -132,10 +133,10 @@ func (m *MapBench) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 
 func (m *Inner) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
-	if size == 0 {
-		return nil, nil
-	}
 	dAtA = make([]byte, size)
+	if size == 0 {
+		return dAtA, nil
+	}
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
@@ -797,4 +798,93 @@ func (m *Inner) unmarshal(dAtA []byte, depth int) error {
 		return io.ErrUnexpectedEOF
 	}
 	return nil
+}
+
+func (this *MapBench) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*MapBench)
+	if !ok {
+		that2, ok := that.(MapBench)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if len(this.StringMap) != len(that1.StringMap) {
+		return false
+	}
+	for k, v := range this.StringMap {
+		v2, ok := that1.StringMap[k]
+		if !ok {
+			return false
+		}
+		if v != v2 {
+			return false
+		}
+	}
+	if len(this.IntMap) != len(that1.IntMap) {
+		return false
+	}
+	for k, v := range this.IntMap {
+		v2, ok := that1.IntMap[k]
+		if !ok {
+			return false
+		}
+		if v != v2 {
+			return false
+		}
+	}
+	if len(this.MessageMap) != len(that1.MessageMap) {
+		return false
+	}
+	for k, v := range this.MessageMap {
+		v2, ok := that1.MessageMap[k]
+		if !ok {
+			return false
+		}
+		if !v.Equal(v2) {
+			return false
+		}
+	}
+	return true
+}
+
+func (this *Inner) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*Inner)
+	if !ok {
+		that2, ok := that.(Inner)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Name != that1.Name {
+		return false
+	}
+	if this.Value != that1.Value {
+		return false
+	}
+	if !bytes.Equal(this.Data, that1.Data) {
+		return false
+	}
+	return true
 }

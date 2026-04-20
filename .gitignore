@@ -1,3 +1,4 @@
 *.prof
 *.test
 benchstat.txt
+coverage.out

@@ -72,3 +72,36 @@ func goEnumTypeName(ed protoreflect.EnumDescriptor) string {
 	}
 	return name
 }
+
+// leadingComment extracts the leading comment from a proto descriptor's
+// source location and formats it as a Go comment block.
+func leadingComment(d protoreflect.Descriptor) string {
+	loc := d.ParentFile().SourceLocations().ByDescriptor(d)
+	comment := strings.TrimSpace(loc.LeadingComments)
+	if comment == "" {
+		return ""
+	}
+	var b strings.Builder
+	for _, line := range strings.Split(comment, "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			b.WriteString("//\n")
+		} else {
+			b.WriteString("// ")
+			b.WriteString(line)
+			b.WriteString("\n")
+		}
+	}
+	return b.String()
+}
+
+// indentComment adds a tab prefix to each line of a Go comment block.
+func indentComment(comment string) string {
+	var b strings.Builder
+	for _, line := range strings.Split(strings.TrimSuffix(comment, "\n"), "\n") {
+		b.WriteByte('\t')
+		b.WriteString(line)
+		b.WriteByte('\n')
+	}
+	return b.String()
+}

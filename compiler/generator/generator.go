@@ -67,7 +67,8 @@ func (g *Generator) Generate(ctx context.Context) error {
 
 	resolver := &memResolver{files: mapping}
 	compiler := protocompile.Compiler{
-		Resolver: resolver,
+		Resolver:       resolver,
+		SourceInfoMode: protocompile.SourceInfoStandard,
 		Reporter: reporter.NewReporter(
 			func(err reporter.ErrorWithPos) error { return err },
 			nil,
@@ -101,6 +102,7 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 	fg.emitAllSizeMethods(fd)
 	fg.emitAllMarshalMethods(fd)
 	fg.emitAllUnmarshalMethods(fd)
+	fg.emitAllEqualMethods(fd)
 
 	var out bytes.Buffer
 	fg.emitHeader(&out)
