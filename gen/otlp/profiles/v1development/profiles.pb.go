@@ -2438,11 +2438,11 @@ func (m *ProfilesDictionary) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // mapping_table
 			if wireType != 2 {
@@ -2820,11 +2820,11 @@ func (m *ProfilesData) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // resource_profiles
 			if wireType != 2 {
@@ -3005,11 +3005,11 @@ func (m *ResourceProfiles) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // resource
 			if wireType != 2 {
@@ -3228,11 +3228,11 @@ func (m *ScopeProfiles) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // scope
 			if wireType != 2 {
@@ -3451,11 +3451,11 @@ func (m *Profile) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // sample_type
 			if wireType != 2 {
@@ -3896,11 +3896,11 @@ func (m *Link) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // trace_id
 			if wireType != 2 {
@@ -4018,11 +4018,11 @@ func (m *ValueType) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // type_strindex
 			if wireType != 0 {
@@ -4116,11 +4116,11 @@ func (m *Sample) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // stack_index
 			if wireType != 0 {
@@ -4411,11 +4411,11 @@ func (m *Mapping) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // memory_start
 			if wireType != 0 {
@@ -4632,11 +4632,11 @@ func (m *Stack) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // location_indices
 			if wireType == 2 {
@@ -4808,11 +4808,11 @@ func (m *Location) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // mapping_index
 			if wireType != 0 {
@@ -5017,11 +5017,11 @@ func (m *Line) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // function_index
 			if wireType != 0 {
@@ -5141,11 +5141,11 @@ func (m *Function) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // name_strindex
 			if wireType != 0 {
@@ -5291,11 +5291,11 @@ func (m *KeyValueAndUnit) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // key_strindex
 			if wireType != 0 {

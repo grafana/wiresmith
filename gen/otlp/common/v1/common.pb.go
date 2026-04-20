@@ -928,11 +928,11 @@ func (m *AnyValue) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // string_value
 			if wireType != 2 {
@@ -1285,11 +1285,11 @@ func (m *ArrayValue) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // values
 			if wireType != 2 {
@@ -1430,11 +1430,11 @@ func (m *KeyValueList) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // values
 			if wireType != 2 {
@@ -1516,11 +1516,11 @@ func (m *KeyValue) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // key
 			if wireType != 2 {
@@ -1725,11 +1725,11 @@ func (m *InstrumentationScope) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // name
 			if wireType != 2 {
@@ -1978,11 +1978,11 @@ func (m *EntityRef) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // schema_url
 			if wireType != 2 {

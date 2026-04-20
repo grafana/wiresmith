@@ -179,25 +179,9 @@ func (fg *FileGenerator) emitUnmarshal(md protoreflect.MessageDescriptor) {
 	// Main parse loop with inline tag decoding.
 	fmt.Fprintf(fg.body, "\tfor iNdEx < l {\n")
 
-	// Inline tag decode
-	fmt.Fprintf(fg.body, "\t\tvar wire uint64\n")
-	fmt.Fprintf(fg.body, "\t\tfor shift := uint(0); ; shift += 7 {\n")
-	fmt.Fprintf(fg.body, "\t\t\tif shift >= 35 {\n\t\t\t\treturn fmt.Errorf(\"proto: integer overflow\")\n\t\t\t}\n")
-	fmt.Fprintf(fg.body, "\t\t\tif iNdEx >= l {\n\t\t\t\treturn io.ErrUnexpectedEOF\n\t\t\t}\n")
-	fmt.Fprintf(fg.body, "\t\t\tb := dAtA[iNdEx]\n")
-	fmt.Fprintf(fg.body, "\t\t\tiNdEx++\n")
-	fmt.Fprintf(fg.body, "\t\t\twire |= uint64(b&0x7F) << shift\n")
-	fmt.Fprintf(fg.body, "\t\t\tif b < 0x80 {\n\t\t\t\tbreak\n\t\t\t}\n")
-	fmt.Fprintf(fg.body, "\t\t}\n")
-
+	types.EmitConsumeTagAt(fg, "\t\t", "wire")
 	fmt.Fprintf(fg.body, "\t\tfieldNum := int32(wire >> 3)\n")
 	fmt.Fprintf(fg.body, "\t\twireType := int(wire & 0x7)\n")
-
-	// Reject invalid field numbers: 0 is illegal, >2^29-1 is reserved.
-	// The int32 cast can alias high numbers to valid ones, so check before truncation.
-	fmt.Fprintf(fg.body, "\t\tif wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {\n")
-	fmt.Fprintf(fg.body, "\t\t\treturn fmt.Errorf(\"invalid field number\")\n")
-	fmt.Fprintf(fg.body, "\t\t}\n")
 
 	fmt.Fprintf(fg.body, "\t\tswitch fieldNum {\n")
 

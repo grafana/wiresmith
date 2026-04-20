@@ -1039,11 +1039,11 @@ func (m *LogsData) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // resource_logs
 			if wireType != 2 {
@@ -1184,11 +1184,11 @@ func (m *ResourceLogs) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // resource
 			if wireType != 2 {
@@ -1407,11 +1407,11 @@ func (m *ScopeLogs) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // scope
 			if wireType != 2 {
@@ -1630,11 +1630,11 @@ func (m *LogRecord) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // time_unix_nano
 			if wireType != 1 {
