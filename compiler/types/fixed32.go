@@ -79,10 +79,8 @@ func (f fixed32Base) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
 }
 
 func (f fixed32Base) EmitMapEntryUnmarshal(e Emitter, varName, indent string, ctx FieldContext) {
-	e.Writef("%stmpVal, tmpN := protowire.ConsumeFixed32(entryData)\n", indent)
-	e.Writef("%sif tmpN < 0 {\n%s\treturn fmt.Errorf(\"invalid fixed32\")\n%s}\n", indent, indent, indent)
-	e.Writef("%s%s = %s\n", indent, varName, f.get("tmpVal"))
-	e.Writef("%sentryData = entryData[tmpN:]\n", indent)
+	emitConsumeFixed32At(e, indent)
+	e.Writef("%s%s = %s\n", indent, varName, f.get("v"))
 }
 
 func (f fixed32Base) put(access string) string {

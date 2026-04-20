@@ -73,11 +73,9 @@ func (BytesType) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
 }
 
 func (BytesType) EmitMapEntryUnmarshal(e Emitter, varName, indent string, ctx FieldContext) {
-	e.Writef("%stmpVal, tmpN := protowire.ConsumeBytes(entryData)\n", indent)
-	e.Writef("%sif tmpN < 0 {\n%s\treturn fmt.Errorf(\"invalid bytes\")\n%s}\n", indent, indent, indent)
-	e.AddImport("slices", "")
-	e.Writef("%s%s = slices.Clone(tmpVal)\n", indent, varName)
-	e.Writef("%sentryData = entryData[tmpN:]\n", indent)
+	emitConsumeBytesLenAt(e, indent)
+	e.Writef("%s%s = append([]byte(nil), dAtA[iNdEx:postIndex]...)\n", indent, varName)
+	e.Writef("%siNdEx = postIndex\n", indent)
 }
 
 func init() {

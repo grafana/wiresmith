@@ -72,10 +72,8 @@ func (Sint32Type) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
 }
 
 func (Sint32Type) EmitMapEntryUnmarshal(e Emitter, varName, indent string, ctx FieldContext) {
-	e.Writef("%stmpVal, tmpN := protowire.ConsumeVarint(entryData)\n", indent)
-	e.Writef("%sif tmpN < 0 {\n%s\treturn fmt.Errorf(\"invalid varint\")\n%s}\n", indent, indent, indent)
-	e.Writef("%s%s = int32(uint32(tmpVal)>>1) ^ int32(uint32(tmpVal))<<31>>31\n", indent, varName)
-	e.Writef("%sentryData = entryData[tmpN:]\n", indent)
+	emitConsumeVarintAt(e, indent)
+	e.Writef("%s%s = int32(uint32(v)>>1) ^ int32(uint32(v))<<31>>31\n", indent, varName)
 }
 
 func init() {

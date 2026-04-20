@@ -7,38 +7,6 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
-func (fg *FileGenerator) emitSkipFieldHelper() {
-	fg.imports.addImport("google.golang.org/protobuf/encoding/protowire", "")
-	fg.imports.addImport("fmt", "")
-
-	// skipField is used by map entry parsing and other sub-slice contexts
-	// that still use protowire-based decoding.
-	fmt.Fprintf(fg.body, "func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) {\n")
-	fmt.Fprintf(fg.body, "\tswitch typ {\n")
-	fmt.Fprintf(fg.body, "\tcase protowire.VarintType:\n")
-	fmt.Fprintf(fg.body, "\t\t_, n := protowire.ConsumeVarint(b)\n")
-	fmt.Fprintf(fg.body, "\t\tif n < 0 {\n\t\t\treturn 0, fmt.Errorf(\"invalid varint\")\n\t\t}\n")
-	fmt.Fprintf(fg.body, "\t\treturn n, nil\n")
-	fmt.Fprintf(fg.body, "\tcase protowire.Fixed32Type:\n")
-	fmt.Fprintf(fg.body, "\t\tif len(b) < 4 {\n\t\t\treturn 0, fmt.Errorf(\"truncated fixed32\")\n\t\t}\n")
-	fmt.Fprintf(fg.body, "\t\treturn 4, nil\n")
-	fmt.Fprintf(fg.body, "\tcase protowire.Fixed64Type:\n")
-	fmt.Fprintf(fg.body, "\t\tif len(b) < 8 {\n\t\t\treturn 0, fmt.Errorf(\"truncated fixed64\")\n\t\t}\n")
-	fmt.Fprintf(fg.body, "\t\treturn 8, nil\n")
-	fmt.Fprintf(fg.body, "\tcase protowire.BytesType:\n")
-	fmt.Fprintf(fg.body, "\t\t_, n := protowire.ConsumeBytes(b)\n")
-	fmt.Fprintf(fg.body, "\t\tif n < 0 {\n\t\t\treturn 0, fmt.Errorf(\"invalid bytes\")\n\t\t}\n")
-	fmt.Fprintf(fg.body, "\t\treturn n, nil\n")
-	fmt.Fprintf(fg.body, "\tcase protowire.StartGroupType:\n")
-	fmt.Fprintf(fg.body, "\t\t_, n := protowire.ConsumeGroup(num, b)\n")
-	fmt.Fprintf(fg.body, "\t\tif n < 0 {\n\t\t\treturn 0, fmt.Errorf(\"invalid group\")\n\t\t}\n")
-	fmt.Fprintf(fg.body, "\t\treturn n, nil\n")
-	fmt.Fprintf(fg.body, "\tdefault:\n")
-	fmt.Fprintf(fg.body, "\t\treturn 0, fmt.Errorf(\"unknown wire type %%d\", typ)\n")
-	fmt.Fprintf(fg.body, "\t}\n")
-	fmt.Fprintf(fg.body, "}\n\n")
-}
-
 // emitSkipValueHelper emits an inline skip function that skips a field value
 // given its wire type. Used by the main unmarshal loop for unknown fields and
 // wire type mismatches where the tag has already been decoded.

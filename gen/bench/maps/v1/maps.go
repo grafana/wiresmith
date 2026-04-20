@@ -237,41 +237,6 @@ func (m *Inner) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 
 const maxUnmarshalDepth = 10000
 
-func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) {
-	switch typ {
-	case protowire.VarintType:
-		_, n := protowire.ConsumeVarint(b)
-		if n < 0 {
-			return 0, fmt.Errorf("invalid varint")
-		}
-		return n, nil
-	case protowire.Fixed32Type:
-		if len(b) < 4 {
-			return 0, fmt.Errorf("truncated fixed32")
-		}
-		return 4, nil
-	case protowire.Fixed64Type:
-		if len(b) < 8 {
-			return 0, fmt.Errorf("truncated fixed64")
-		}
-		return 8, nil
-	case protowire.BytesType:
-		_, n := protowire.ConsumeBytes(b)
-		if n < 0 {
-			return 0, fmt.Errorf("invalid bytes")
-		}
-		return n, nil
-	case protowire.StartGroupType:
-		_, n := protowire.ConsumeGroup(num, b)
-		if n < 0 {
-			return 0, fmt.Errorf("invalid group")
-		}
-		return n, nil
-	default:
-		return 0, fmt.Errorf("unknown wire type %d", typ)
-	}
-}
-
 func skipValue(dAtA []byte, wireType int, fieldNum int32) (int, error) {
 	iNdEx := 0
 	l := len(dAtA)
@@ -477,50 +442,100 @@ func (m *MapBench) unmarshal(dAtA []byte, depth int) error {
 			}
 			var mapkey string
 			var mapvalue string
-			entryData := dAtA[iNdEx:postIndex]
-			for len(entryData) > 0 {
-				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
-				if entryTagLen < 0 {
-					return fmt.Errorf("invalid map entry tag")
+			for iNdEx < postIndex {
+				var entryWire uint64
+				for shift := uint(0); ; shift += 7 {
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					entryWire |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
-				entryData = entryData[entryTagLen:]
-				switch entryNum {
+				switch int32(entryWire >> 3) {
 				case 1:
-					if entryTyp != protowire.BytesType {
-						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
-						if skipErr != nil {
-							return skipErr
+					if int(entryWire&0x7) != int(protowire.BytesType) {
+						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						if err != nil {
+							return err
 						}
-						entryData = entryData[skipN:]
+						iNdEx += n
 						continue
 					}
-					tmpVal, tmpN := protowire.ConsumeString(entryData)
-					if tmpN < 0 {
-						return fmt.Errorf("invalid string")
+					var byteLen uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						byteLen |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
 					}
-					mapkey = tmpVal
-					entryData = entryData[tmpN:]
+					intByteLen := int(byteLen)
+					if intByteLen < 0 {
+						return fmt.Errorf("proto: negative length")
+					}
+					postIndex := iNdEx + intByteLen
+					if postIndex < 0 {
+						return fmt.Errorf("proto: negative length")
+					}
+					if postIndex > l {
+						return io.ErrUnexpectedEOF
+					}
+					mapkey = string(dAtA[iNdEx:postIndex])
+					iNdEx = postIndex
 				case 2:
-					if entryTyp != protowire.BytesType {
-						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
-						if skipErr != nil {
-							return skipErr
+					if int(entryWire&0x7) != int(protowire.BytesType) {
+						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						if err != nil {
+							return err
 						}
-						entryData = entryData[skipN:]
+						iNdEx += n
 						continue
 					}
-					tmpVal, tmpN := protowire.ConsumeString(entryData)
-					if tmpN < 0 {
-						return fmt.Errorf("invalid string")
+					var byteLen uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						byteLen |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
 					}
-					mapvalue = tmpVal
-					entryData = entryData[tmpN:]
+					intByteLen := int(byteLen)
+					if intByteLen < 0 {
+						return fmt.Errorf("proto: negative length")
+					}
+					postIndex := iNdEx + intByteLen
+					if postIndex < 0 {
+						return fmt.Errorf("proto: negative length")
+					}
+					if postIndex > l {
+						return io.ErrUnexpectedEOF
+					}
+					mapvalue = string(dAtA[iNdEx:postIndex])
+					iNdEx = postIndex
 				default:
-					skipN, skipErr := skipField(entryData, entryNum, entryTyp)
-					if skipErr != nil {
-						return skipErr
+					n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+					if err != nil {
+						return err
 					}
-					entryData = entryData[skipN:]
+					iNdEx += n
 				}
 			}
 			m.StringMap[mapkey] = mapvalue
@@ -565,50 +580,76 @@ func (m *MapBench) unmarshal(dAtA []byte, depth int) error {
 			}
 			var mapkey int64
 			var mapvalue int64
-			entryData := dAtA[iNdEx:postIndex]
-			for len(entryData) > 0 {
-				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
-				if entryTagLen < 0 {
-					return fmt.Errorf("invalid map entry tag")
+			for iNdEx < postIndex {
+				var entryWire uint64
+				for shift := uint(0); ; shift += 7 {
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					entryWire |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
-				entryData = entryData[entryTagLen:]
-				switch entryNum {
+				switch int32(entryWire >> 3) {
 				case 1:
-					if entryTyp != protowire.VarintType {
-						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
-						if skipErr != nil {
-							return skipErr
+					if int(entryWire&0x7) != int(protowire.VarintType) {
+						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						if err != nil {
+							return err
 						}
-						entryData = entryData[skipN:]
+						iNdEx += n
 						continue
 					}
-					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
-					if tmpN < 0 {
-						return fmt.Errorf("invalid varint")
+					var v uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
 					}
-					mapkey = int64(tmpVal)
-					entryData = entryData[tmpN:]
+					mapkey = int64(v)
 				case 2:
-					if entryTyp != protowire.VarintType {
-						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
-						if skipErr != nil {
-							return skipErr
+					if int(entryWire&0x7) != int(protowire.VarintType) {
+						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						if err != nil {
+							return err
 						}
-						entryData = entryData[skipN:]
+						iNdEx += n
 						continue
 					}
-					tmpVal, tmpN := protowire.ConsumeVarint(entryData)
-					if tmpN < 0 {
-						return fmt.Errorf("invalid varint")
+					var v uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
 					}
-					mapvalue = int64(tmpVal)
-					entryData = entryData[tmpN:]
+					mapvalue = int64(v)
 				default:
-					skipN, skipErr := skipField(entryData, entryNum, entryTyp)
-					if skipErr != nil {
-						return skipErr
+					n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+					if err != nil {
+						return err
 					}
-					entryData = entryData[skipN:]
+					iNdEx += n
 				}
 			}
 			m.IntMap[mapkey] = mapvalue
@@ -654,53 +695,104 @@ func (m *MapBench) unmarshal(dAtA []byte, depth int) error {
 			var mapkey string
 			var mapvalue Inner
 			var mapValueBytes []byte
-			entryData := dAtA[iNdEx:postIndex]
-			for len(entryData) > 0 {
-				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
-				if entryTagLen < 0 {
-					return fmt.Errorf("invalid map entry tag")
+			for iNdEx < postIndex {
+				var entryWire uint64
+				for shift := uint(0); ; shift += 7 {
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					entryWire |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
-				entryData = entryData[entryTagLen:]
-				switch entryNum {
+				switch int32(entryWire >> 3) {
 				case 1:
-					if entryTyp != protowire.BytesType {
-						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
-						if skipErr != nil {
-							return skipErr
+					if int(entryWire&0x7) != int(protowire.BytesType) {
+						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						if err != nil {
+							return err
 						}
-						entryData = entryData[skipN:]
+						iNdEx += n
 						continue
 					}
-					tmpVal, tmpN := protowire.ConsumeString(entryData)
-					if tmpN < 0 {
-						return fmt.Errorf("invalid string")
+					var byteLen uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						byteLen |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
 					}
-					mapkey = tmpVal
-					entryData = entryData[tmpN:]
+					intByteLen := int(byteLen)
+					if intByteLen < 0 {
+						return fmt.Errorf("proto: negative length")
+					}
+					postIndex := iNdEx + intByteLen
+					if postIndex < 0 {
+						return fmt.Errorf("proto: negative length")
+					}
+					if postIndex > l {
+						return io.ErrUnexpectedEOF
+					}
+					mapkey = string(dAtA[iNdEx:postIndex])
+					iNdEx = postIndex
 				case 2:
-					if entryTyp != protowire.BytesType {
-						skipN, skipErr := skipField(entryData, entryNum, entryTyp)
-						if skipErr != nil {
-							return skipErr
+					if int(entryWire&0x7) != int(protowire.BytesType) {
+						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						if err != nil {
+							return err
 						}
-						entryData = entryData[skipN:]
+						iNdEx += n
 						continue
 					}
-					tmpVal, tmpN := protowire.ConsumeBytes(entryData)
-					if tmpN < 0 {
-						return fmt.Errorf("invalid bytes")
+					var byteLen uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						byteLen |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
 					}
-					if err := mapvalue.unmarshal(tmpVal, depth+1); err != nil {
+					intByteLen := int(byteLen)
+					if intByteLen < 0 {
+						return fmt.Errorf("proto: negative length")
+					}
+					postIndex := iNdEx + intByteLen
+					if postIndex < 0 {
+						return fmt.Errorf("proto: negative length")
+					}
+					if postIndex > l {
+						return io.ErrUnexpectedEOF
+					}
+					mapValueStart := iNdEx
+					if err := mapvalue.unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {
 						return err
 					}
-					entryData = entryData[tmpN:]
-					mapValueBytes = tmpVal
+					iNdEx = postIndex
+					mapValueBytes = dAtA[mapValueStart:iNdEx]
 				default:
-					skipN, skipErr := skipField(entryData, entryNum, entryTyp)
-					if skipErr != nil {
-						return skipErr
+					n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+					if err != nil {
+						return err
 					}
-					entryData = entryData[skipN:]
+					iNdEx += n
 				}
 			}
 			if existing, ok := m.MessageMap[mapkey]; ok && len(mapValueBytes) > 0 {
