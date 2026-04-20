@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"google.golang.org/protobuf/encoding/protowire"
 	"io"
+	"strconv"
 	commonv1 "wiresmith/gen/otlp/common/v1"
 	resourcev1 "wiresmith/gen/otlp/resource/v1"
 	"wiresmith/gen/protohelpers"
@@ -45,6 +46,69 @@ const (
 	SEVERITY_NUMBER_FATAL4      SeverityNumber = 24
 )
 
+var SeverityNumber_name = map[int32]string{
+	0:  "SEVERITY_NUMBER_UNSPECIFIED",
+	1:  "SEVERITY_NUMBER_TRACE",
+	2:  "SEVERITY_NUMBER_TRACE2",
+	3:  "SEVERITY_NUMBER_TRACE3",
+	4:  "SEVERITY_NUMBER_TRACE4",
+	5:  "SEVERITY_NUMBER_DEBUG",
+	6:  "SEVERITY_NUMBER_DEBUG2",
+	7:  "SEVERITY_NUMBER_DEBUG3",
+	8:  "SEVERITY_NUMBER_DEBUG4",
+	9:  "SEVERITY_NUMBER_INFO",
+	10: "SEVERITY_NUMBER_INFO2",
+	11: "SEVERITY_NUMBER_INFO3",
+	12: "SEVERITY_NUMBER_INFO4",
+	13: "SEVERITY_NUMBER_WARN",
+	14: "SEVERITY_NUMBER_WARN2",
+	15: "SEVERITY_NUMBER_WARN3",
+	16: "SEVERITY_NUMBER_WARN4",
+	17: "SEVERITY_NUMBER_ERROR",
+	18: "SEVERITY_NUMBER_ERROR2",
+	19: "SEVERITY_NUMBER_ERROR3",
+	20: "SEVERITY_NUMBER_ERROR4",
+	21: "SEVERITY_NUMBER_FATAL",
+	22: "SEVERITY_NUMBER_FATAL2",
+	23: "SEVERITY_NUMBER_FATAL3",
+	24: "SEVERITY_NUMBER_FATAL4",
+}
+
+var SeverityNumber_value = map[string]int32{
+	"SEVERITY_NUMBER_UNSPECIFIED": 0,
+	"SEVERITY_NUMBER_TRACE":       1,
+	"SEVERITY_NUMBER_TRACE2":      2,
+	"SEVERITY_NUMBER_TRACE3":      3,
+	"SEVERITY_NUMBER_TRACE4":      4,
+	"SEVERITY_NUMBER_DEBUG":       5,
+	"SEVERITY_NUMBER_DEBUG2":      6,
+	"SEVERITY_NUMBER_DEBUG3":      7,
+	"SEVERITY_NUMBER_DEBUG4":      8,
+	"SEVERITY_NUMBER_INFO":        9,
+	"SEVERITY_NUMBER_INFO2":       10,
+	"SEVERITY_NUMBER_INFO3":       11,
+	"SEVERITY_NUMBER_INFO4":       12,
+	"SEVERITY_NUMBER_WARN":        13,
+	"SEVERITY_NUMBER_WARN2":       14,
+	"SEVERITY_NUMBER_WARN3":       15,
+	"SEVERITY_NUMBER_WARN4":       16,
+	"SEVERITY_NUMBER_ERROR":       17,
+	"SEVERITY_NUMBER_ERROR2":      18,
+	"SEVERITY_NUMBER_ERROR3":      19,
+	"SEVERITY_NUMBER_ERROR4":      20,
+	"SEVERITY_NUMBER_FATAL":       21,
+	"SEVERITY_NUMBER_FATAL2":      22,
+	"SEVERITY_NUMBER_FATAL3":      23,
+	"SEVERITY_NUMBER_FATAL4":      24,
+}
+
+func (x SeverityNumber) String() string {
+	if name, ok := SeverityNumber_name[int32(x)]; ok {
+		return name
+	}
+	return strconv.FormatInt(int64(x), 10)
+}
+
 // LogRecordFlags represents constants used to interpret the
 // LogRecord.flags field, which is protobuf 'fixed32' type and is to
 // be used as bit-fields. Each non-zero value defined in this enum is
@@ -61,6 +125,23 @@ const (
 	// Bits 0-7 are used for trace flags.
 	LOG_RECORD_FLAGS_TRACE_FLAGS_MASK LogRecordFlags = 255
 )
+
+var LogRecordFlags_name = map[int32]string{
+	0:   "LOG_RECORD_FLAGS_DO_NOT_USE",
+	255: "LOG_RECORD_FLAGS_TRACE_FLAGS_MASK",
+}
+
+var LogRecordFlags_value = map[string]int32{
+	"LOG_RECORD_FLAGS_DO_NOT_USE":       0,
+	"LOG_RECORD_FLAGS_TRACE_FLAGS_MASK": 255,
+}
+
+func (x LogRecordFlags) String() string {
+	if name, ok := LogRecordFlags_name[int32(x)]; ok {
+		return name
+	}
+	return strconv.FormatInt(int64(x), 10)
+}
 
 // LogsData represents the logs data that can be stored in a persistent storage,
 // OR can be embedded by other protocols that transfer OTLP logs data but do not
@@ -203,17 +284,21 @@ type LogRecord struct {
 	fieldsPresent [1]uint64
 }
 
-func (m *LogsData) Reset()      { *m = LogsData{} }
-func (*LogsData) ProtoMessage() {}
+func (m *LogsData) Reset()         { *m = LogsData{} }
+func (*LogsData) ProtoMessage()    {}
+func (m *LogsData) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *ResourceLogs) Reset()      { *m = ResourceLogs{} }
-func (*ResourceLogs) ProtoMessage() {}
+func (m *ResourceLogs) Reset()         { *m = ResourceLogs{} }
+func (*ResourceLogs) ProtoMessage()    {}
+func (m *ResourceLogs) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *ScopeLogs) Reset()      { *m = ScopeLogs{} }
-func (*ScopeLogs) ProtoMessage() {}
+func (m *ScopeLogs) Reset()         { *m = ScopeLogs{} }
+func (*ScopeLogs) ProtoMessage()    {}
+func (m *ScopeLogs) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *LogRecord) Reset()      { *m = LogRecord{} }
-func (*LogRecord) ProtoMessage() {}
+func (m *LogRecord) Reset()         { *m = LogRecord{} }
+func (*LogRecord) ProtoMessage()    {}
+func (m *LogRecord) String() string { return fmt.Sprintf("%v", *m) }
 
 func (m *ResourceLogs) HasResource() bool {
 	return m.fieldsPresent[0]&(1<<0) != 0
@@ -2009,4 +2094,13 @@ func (this *LogRecord) Equal(that interface{}) bool {
 		return false
 	}
 	return true
+}
+
+func init() {
+	protohelpers.RegisterEnum("opentelemetry.proto.logs.v1.SeverityNumber", SeverityNumber_name, SeverityNumber_value)
+	protohelpers.RegisterEnum("opentelemetry.proto.logs.v1.LogRecordFlags", LogRecordFlags_name, LogRecordFlags_value)
+	protohelpers.RegisterType((*LogsData)(nil), "opentelemetry.proto.logs.v1.LogsData")
+	protohelpers.RegisterType((*ResourceLogs)(nil), "opentelemetry.proto.logs.v1.ResourceLogs")
+	protohelpers.RegisterType((*ScopeLogs)(nil), "opentelemetry.proto.logs.v1.ScopeLogs")
+	protohelpers.RegisterType((*LogRecord)(nil), "opentelemetry.proto.logs.v1.LogRecord")
 }

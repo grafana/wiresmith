@@ -31,8 +31,9 @@ type Resource struct {
 	fieldsPresent [1]uint64
 }
 
-func (m *Resource) Reset()      { *m = Resource{} }
-func (*Resource) ProtoMessage() {}
+func (m *Resource) Reset()         { *m = Resource{} }
+func (*Resource) ProtoMessage()    {}
+func (m *Resource) String() string { return fmt.Sprintf("%v", *m) }
 
 func (m *Resource) HasDroppedAttributesCount() bool {
 	return m.fieldsPresent[0]&(1<<0) != 0
@@ -478,4 +479,8 @@ func (this *Resource) Equal(that interface{}) bool {
 		}
 	}
 	return true
+}
+
+func init() {
+	protohelpers.RegisterType((*Resource)(nil), "opentelemetry.proto.resource.v1.Resource")
 }

@@ -11,6 +11,7 @@ import (
 	"io"
 	"math"
 	"slices"
+	"strconv"
 	"wiresmith/gen/protohelpers"
 )
 
@@ -22,6 +23,25 @@ const (
 	FOREIGN_BAZ ForeignEnum = 2
 )
 
+var ForeignEnum_name = map[int32]string{
+	0: "FOREIGN_FOO",
+	1: "FOREIGN_BAR",
+	2: "FOREIGN_BAZ",
+}
+
+var ForeignEnum_value = map[string]int32{
+	"FOREIGN_FOO": 0,
+	"FOREIGN_BAR": 1,
+	"FOREIGN_BAZ": 2,
+}
+
+func (x ForeignEnum) String() string {
+	if name, ok := ForeignEnum_name[int32(x)]; ok {
+		return name
+	}
+	return strconv.FormatInt(int64(x), 10)
+}
+
 type TestAllTypesProto3_NestedEnum int32
 
 const (
@@ -31,12 +51,50 @@ const (
 	NEG TestAllTypesProto3_NestedEnum = -1
 )
 
+var TestAllTypesProto3_NestedEnum_name = map[int32]string{
+	0:  "FOO",
+	1:  "BAR",
+	2:  "BAZ",
+	-1: "NEG",
+}
+
+var TestAllTypesProto3_NestedEnum_value = map[string]int32{
+	"FOO": 0,
+	"BAR": 1,
+	"BAZ": 2,
+	"NEG": -1,
+}
+
+func (x TestAllTypesProto3_NestedEnum) String() string {
+	if name, ok := TestAllTypesProto3_NestedEnum_name[int32(x)]; ok {
+		return name
+	}
+	return strconv.FormatInt(int64(x), 10)
+}
+
 type EnumOnlyProto3_Bool int32
 
 const (
 	kFalse EnumOnlyProto3_Bool = 0
 	kTrue  EnumOnlyProto3_Bool = 1
 )
+
+var EnumOnlyProto3_Bool_name = map[int32]string{
+	0: "kFalse",
+	1: "kTrue",
+}
+
+var EnumOnlyProto3_Bool_value = map[string]int32{
+	"kFalse": 0,
+	"kTrue":  1,
+}
+
+func (x EnumOnlyProto3_Bool) String() string {
+	if name, ok := EnumOnlyProto3_Bool_name[int32(x)]; ok {
+		return name
+	}
+	return strconv.FormatInt(int64(x), 10)
+}
 
 type TestAllTypesProto3_OneofField interface {
 	isTestAllTypesProto3_OneofField()
@@ -238,20 +296,25 @@ type NullHypothesisProto3 struct {
 type EnumOnlyProto3 struct {
 }
 
-func (m *TestAllTypesProto3_NestedMessage) Reset()      { *m = TestAllTypesProto3_NestedMessage{} }
-func (*TestAllTypesProto3_NestedMessage) ProtoMessage() {}
+func (m *TestAllTypesProto3_NestedMessage) Reset()         { *m = TestAllTypesProto3_NestedMessage{} }
+func (*TestAllTypesProto3_NestedMessage) ProtoMessage()    {}
+func (m *TestAllTypesProto3_NestedMessage) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *TestAllTypesProto3) Reset()      { *m = TestAllTypesProto3{} }
-func (*TestAllTypesProto3) ProtoMessage() {}
+func (m *TestAllTypesProto3) Reset()         { *m = TestAllTypesProto3{} }
+func (*TestAllTypesProto3) ProtoMessage()    {}
+func (m *TestAllTypesProto3) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *ForeignMessage) Reset()      { *m = ForeignMessage{} }
-func (*ForeignMessage) ProtoMessage() {}
+func (m *ForeignMessage) Reset()         { *m = ForeignMessage{} }
+func (*ForeignMessage) ProtoMessage()    {}
+func (m *ForeignMessage) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *NullHypothesisProto3) Reset()      { *m = NullHypothesisProto3{} }
-func (*NullHypothesisProto3) ProtoMessage() {}
+func (m *NullHypothesisProto3) Reset()         { *m = NullHypothesisProto3{} }
+func (*NullHypothesisProto3) ProtoMessage()    {}
+func (m *NullHypothesisProto3) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *EnumOnlyProto3) Reset()      { *m = EnumOnlyProto3{} }
-func (*EnumOnlyProto3) ProtoMessage() {}
+func (m *EnumOnlyProto3) Reset()         { *m = EnumOnlyProto3{} }
+func (*EnumOnlyProto3) ProtoMessage()    {}
+func (m *EnumOnlyProto3) String() string { return fmt.Sprintf("%v", *m) }
 
 func (m *TestAllTypesProto3_NestedMessage) HasA() bool {
 	return m.fieldsPresent[0]&(1<<0) != 0
@@ -10497,4 +10560,15 @@ func (this *EnumOnlyProto3) Equal(that interface{}) bool {
 		return false
 	}
 	return true
+}
+
+func init() {
+	protohelpers.RegisterEnum("protobuf_test_messages.proto3.ForeignEnum", ForeignEnum_name, ForeignEnum_value)
+	protohelpers.RegisterEnum("protobuf_test_messages.proto3.TestAllTypesProto3.NestedEnum", TestAllTypesProto3_NestedEnum_name, TestAllTypesProto3_NestedEnum_value)
+	protohelpers.RegisterEnum("protobuf_test_messages.proto3.EnumOnlyProto3.Bool", EnumOnlyProto3_Bool_name, EnumOnlyProto3_Bool_value)
+	protohelpers.RegisterType((*TestAllTypesProto3)(nil), "protobuf_test_messages.proto3.TestAllTypesProto3")
+	protohelpers.RegisterType((*TestAllTypesProto3_NestedMessage)(nil), "protobuf_test_messages.proto3.TestAllTypesProto3.NestedMessage")
+	protohelpers.RegisterType((*ForeignMessage)(nil), "protobuf_test_messages.proto3.ForeignMessage")
+	protohelpers.RegisterType((*NullHypothesisProto3)(nil), "protobuf_test_messages.proto3.NullHypothesisProto3")
+	protohelpers.RegisterType((*EnumOnlyProto3)(nil), "protobuf_test_messages.proto3.EnumOnlyProto3")
 }

@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"google.golang.org/protobuf/encoding/protowire"
 	"io"
+	"strconv"
 	commonv1 "wiresmith/gen/otlp/common/v1"
 	resourcev1 "wiresmith/gen/otlp/resource/v1"
 	"wiresmith/gen/protohelpers"
@@ -43,6 +44,27 @@ const (
 	SPAN_FLAGS_CONTEXT_IS_REMOTE_MASK     SpanFlags = 512
 )
 
+var SpanFlags_name = map[int32]string{
+	0:   "SPAN_FLAGS_DO_NOT_USE",
+	255: "SPAN_FLAGS_TRACE_FLAGS_MASK",
+	256: "SPAN_FLAGS_CONTEXT_HAS_IS_REMOTE_MASK",
+	512: "SPAN_FLAGS_CONTEXT_IS_REMOTE_MASK",
+}
+
+var SpanFlags_value = map[string]int32{
+	"SPAN_FLAGS_DO_NOT_USE":                 0,
+	"SPAN_FLAGS_TRACE_FLAGS_MASK":           255,
+	"SPAN_FLAGS_CONTEXT_HAS_IS_REMOTE_MASK": 256,
+	"SPAN_FLAGS_CONTEXT_IS_REMOTE_MASK":     512,
+}
+
+func (x SpanFlags) String() string {
+	if name, ok := SpanFlags_name[int32(x)]; ok {
+		return name
+	}
+	return strconv.FormatInt(int64(x), 10)
+}
+
 // SpanKind is the type of span. Can be used to specify additional relationships between spans
 // in addition to a parent/child relationship.
 type Span_SpanKind int32
@@ -70,6 +92,31 @@ const (
 	SPAN_KIND_CONSUMER Span_SpanKind = 5
 )
 
+var Span_SpanKind_name = map[int32]string{
+	0: "SPAN_KIND_UNSPECIFIED",
+	1: "SPAN_KIND_INTERNAL",
+	2: "SPAN_KIND_SERVER",
+	3: "SPAN_KIND_CLIENT",
+	4: "SPAN_KIND_PRODUCER",
+	5: "SPAN_KIND_CONSUMER",
+}
+
+var Span_SpanKind_value = map[string]int32{
+	"SPAN_KIND_UNSPECIFIED": 0,
+	"SPAN_KIND_INTERNAL":    1,
+	"SPAN_KIND_SERVER":      2,
+	"SPAN_KIND_CLIENT":      3,
+	"SPAN_KIND_PRODUCER":    4,
+	"SPAN_KIND_CONSUMER":    5,
+}
+
+func (x Span_SpanKind) String() string {
+	if name, ok := Span_SpanKind_name[int32(x)]; ok {
+		return name
+	}
+	return strconv.FormatInt(int64(x), 10)
+}
+
 // For the semantics of status codes see
 // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/api.md#set-status
 type Status_StatusCode int32
@@ -83,6 +130,25 @@ const (
 	// The Span contains an error.
 	STATUS_CODE_ERROR Status_StatusCode = 2
 )
+
+var Status_StatusCode_name = map[int32]string{
+	0: "STATUS_CODE_UNSET",
+	1: "STATUS_CODE_OK",
+	2: "STATUS_CODE_ERROR",
+}
+
+var Status_StatusCode_value = map[string]int32{
+	"STATUS_CODE_UNSET": 0,
+	"STATUS_CODE_OK":    1,
+	"STATUS_CODE_ERROR": 2,
+}
+
+func (x Status_StatusCode) String() string {
+	if name, ok := Status_StatusCode_name[int32(x)]; ok {
+		return name
+	}
+	return strconv.FormatInt(int64(x), 10)
+}
 
 // TracesData represents the traces data that can be stored in a persistent storage,
 // OR can be embedded by other protocols that transfer OTLP traces data but do
@@ -324,26 +390,33 @@ type Status struct {
 	fieldsPresent [1]uint64
 }
 
-func (m *TracesData) Reset()      { *m = TracesData{} }
-func (*TracesData) ProtoMessage() {}
+func (m *TracesData) Reset()         { *m = TracesData{} }
+func (*TracesData) ProtoMessage()    {}
+func (m *TracesData) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *ResourceSpans) Reset()      { *m = ResourceSpans{} }
-func (*ResourceSpans) ProtoMessage() {}
+func (m *ResourceSpans) Reset()         { *m = ResourceSpans{} }
+func (*ResourceSpans) ProtoMessage()    {}
+func (m *ResourceSpans) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *ScopeSpans) Reset()      { *m = ScopeSpans{} }
-func (*ScopeSpans) ProtoMessage() {}
+func (m *ScopeSpans) Reset()         { *m = ScopeSpans{} }
+func (*ScopeSpans) ProtoMessage()    {}
+func (m *ScopeSpans) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *Span_Event) Reset()      { *m = Span_Event{} }
-func (*Span_Event) ProtoMessage() {}
+func (m *Span_Event) Reset()         { *m = Span_Event{} }
+func (*Span_Event) ProtoMessage()    {}
+func (m *Span_Event) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *Span_Link) Reset()      { *m = Span_Link{} }
-func (*Span_Link) ProtoMessage() {}
+func (m *Span_Link) Reset()         { *m = Span_Link{} }
+func (*Span_Link) ProtoMessage()    {}
+func (m *Span_Link) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *Span) Reset()      { *m = Span{} }
-func (*Span) ProtoMessage() {}
+func (m *Span) Reset()         { *m = Span{} }
+func (*Span) ProtoMessage()    {}
+func (m *Span) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *Status) Reset()      { *m = Status{} }
-func (*Status) ProtoMessage() {}
+func (m *Status) Reset()         { *m = Status{} }
+func (*Status) ProtoMessage()    {}
+func (m *Status) String() string { return fmt.Sprintf("%v", *m) }
 
 func (m *ResourceSpans) HasResource() bool {
 	return m.fieldsPresent[0]&(1<<0) != 0
@@ -3525,4 +3598,17 @@ func (this *Status) Equal(that interface{}) bool {
 		return false
 	}
 	return true
+}
+
+func init() {
+	protohelpers.RegisterEnum("opentelemetry.proto.trace.v1.SpanFlags", SpanFlags_name, SpanFlags_value)
+	protohelpers.RegisterEnum("opentelemetry.proto.trace.v1.Span.SpanKind", Span_SpanKind_name, Span_SpanKind_value)
+	protohelpers.RegisterEnum("opentelemetry.proto.trace.v1.Status.StatusCode", Status_StatusCode_name, Status_StatusCode_value)
+	protohelpers.RegisterType((*TracesData)(nil), "opentelemetry.proto.trace.v1.TracesData")
+	protohelpers.RegisterType((*ResourceSpans)(nil), "opentelemetry.proto.trace.v1.ResourceSpans")
+	protohelpers.RegisterType((*ScopeSpans)(nil), "opentelemetry.proto.trace.v1.ScopeSpans")
+	protohelpers.RegisterType((*Span)(nil), "opentelemetry.proto.trace.v1.Span")
+	protohelpers.RegisterType((*Span_Event)(nil), "opentelemetry.proto.trace.v1.Span.Event")
+	protohelpers.RegisterType((*Span_Link)(nil), "opentelemetry.proto.trace.v1.Span.Link")
+	protohelpers.RegisterType((*Status)(nil), "opentelemetry.proto.trace.v1.Status")
 }

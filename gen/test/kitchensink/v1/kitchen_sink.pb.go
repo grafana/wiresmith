@@ -11,6 +11,7 @@ import (
 	"io"
 	"math"
 	"slices"
+	"strconv"
 	"wiresmith/gen/protohelpers"
 )
 
@@ -23,6 +24,27 @@ const (
 	COLOR_GREEN       Color = 2
 	COLOR_BLUE        Color = 3
 )
+
+var Color_name = map[int32]string{
+	0: "COLOR_UNSPECIFIED",
+	1: "COLOR_RED",
+	2: "COLOR_GREEN",
+	3: "COLOR_BLUE",
+}
+
+var Color_value = map[string]int32{
+	"COLOR_UNSPECIFIED": 0,
+	"COLOR_RED":         1,
+	"COLOR_GREEN":       2,
+	"COLOR_BLUE":        3,
+}
+
+func (x Color) String() string {
+	if name, ok := Color_name[int32(x)]; ok {
+		return name
+	}
+	return strconv.FormatInt(int64(x), 10)
+}
 
 type OneofVariants_Value interface {
 	isOneofVariants_Value()
@@ -267,44 +289,57 @@ type AllMaps struct {
 	MapStringEnum       map[string]Color
 }
 
-func (m *AllScalars) Reset()      { *m = AllScalars{} }
-func (*AllScalars) ProtoMessage() {}
+func (m *AllScalars) Reset()         { *m = AllScalars{} }
+func (*AllScalars) ProtoMessage()    {}
+func (m *AllScalars) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *AllOptionalScalars) Reset()      { *m = AllOptionalScalars{} }
-func (*AllOptionalScalars) ProtoMessage() {}
+func (m *AllOptionalScalars) Reset()         { *m = AllOptionalScalars{} }
+func (*AllOptionalScalars) ProtoMessage()    {}
+func (m *AllOptionalScalars) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *AllRepeatedScalars) Reset()      { *m = AllRepeatedScalars{} }
-func (*AllRepeatedScalars) ProtoMessage() {}
+func (m *AllRepeatedScalars) Reset()         { *m = AllRepeatedScalars{} }
+func (*AllRepeatedScalars) ProtoMessage()    {}
+func (m *AllRepeatedScalars) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *OneofVariants) Reset()      { *m = OneofVariants{} }
-func (*OneofVariants) ProtoMessage() {}
+func (m *OneofVariants) Reset()         { *m = OneofVariants{} }
+func (*OneofVariants) ProtoMessage()    {}
+func (m *OneofVariants) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *Outer) Reset()      { *m = Outer{} }
-func (*Outer) ProtoMessage() {}
+func (m *Outer) Reset()         { *m = Outer{} }
+func (*Outer) ProtoMessage()    {}
+func (m *Outer) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *Middle) Reset()      { *m = Middle{} }
-func (*Middle) ProtoMessage() {}
+func (m *Middle) Reset()         { *m = Middle{} }
+func (*Middle) ProtoMessage()    {}
+func (m *Middle) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *Inner) Reset()      { *m = Inner{} }
-func (*Inner) ProtoMessage() {}
+func (m *Inner) Reset()         { *m = Inner{} }
+func (*Inner) ProtoMessage()    {}
+func (m *Inner) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *HighFieldNumbers) Reset()      { *m = HighFieldNumbers{} }
-func (*HighFieldNumbers) ProtoMessage() {}
+func (m *HighFieldNumbers) Reset()         { *m = HighFieldNumbers{} }
+func (*HighFieldNumbers) ProtoMessage()    {}
+func (m *HighFieldNumbers) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *WithEnum) Reset()      { *m = WithEnum{} }
-func (*WithEnum) ProtoMessage() {}
+func (m *WithEnum) Reset()         { *m = WithEnum{} }
+func (*WithEnum) ProtoMessage()    {}
+func (m *WithEnum) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *Empty) Reset()      { *m = Empty{} }
-func (*Empty) ProtoMessage() {}
+func (m *Empty) Reset()         { *m = Empty{} }
+func (*Empty) ProtoMessage()    {}
+func (m *Empty) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *OnlyRepeated) Reset()      { *m = OnlyRepeated{} }
-func (*OnlyRepeated) ProtoMessage() {}
+func (m *OnlyRepeated) Reset()         { *m = OnlyRepeated{} }
+func (*OnlyRepeated) ProtoMessage()    {}
+func (m *OnlyRepeated) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *Container) Reset()      { *m = Container{} }
-func (*Container) ProtoMessage() {}
+func (m *Container) Reset()         { *m = Container{} }
+func (*Container) ProtoMessage()    {}
+func (m *Container) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *AllMaps) Reset()      { *m = AllMaps{} }
-func (*AllMaps) ProtoMessage() {}
+func (m *AllMaps) Reset()         { *m = AllMaps{} }
+func (*AllMaps) ProtoMessage()    {}
+func (m *AllMaps) String() string { return fmt.Sprintf("%v", *m) }
 
 func (m *AllScalars) HasFieldDouble() bool {
 	return m.fieldsPresent[0]&(1<<0) != 0
@@ -9251,4 +9286,21 @@ func (this *AllMaps) Equal(that interface{}) bool {
 		}
 	}
 	return true
+}
+
+func init() {
+	protohelpers.RegisterEnum("test.kitchensink.v1.Color", Color_name, Color_value)
+	protohelpers.RegisterType((*AllScalars)(nil), "test.kitchensink.v1.AllScalars")
+	protohelpers.RegisterType((*AllOptionalScalars)(nil), "test.kitchensink.v1.AllOptionalScalars")
+	protohelpers.RegisterType((*AllRepeatedScalars)(nil), "test.kitchensink.v1.AllRepeatedScalars")
+	protohelpers.RegisterType((*OneofVariants)(nil), "test.kitchensink.v1.OneofVariants")
+	protohelpers.RegisterType((*Outer)(nil), "test.kitchensink.v1.Outer")
+	protohelpers.RegisterType((*Middle)(nil), "test.kitchensink.v1.Middle")
+	protohelpers.RegisterType((*Inner)(nil), "test.kitchensink.v1.Inner")
+	protohelpers.RegisterType((*HighFieldNumbers)(nil), "test.kitchensink.v1.HighFieldNumbers")
+	protohelpers.RegisterType((*WithEnum)(nil), "test.kitchensink.v1.WithEnum")
+	protohelpers.RegisterType((*Empty)(nil), "test.kitchensink.v1.Empty")
+	protohelpers.RegisterType((*OnlyRepeated)(nil), "test.kitchensink.v1.OnlyRepeated")
+	protohelpers.RegisterType((*Container)(nil), "test.kitchensink.v1.Container")
+	protohelpers.RegisterType((*AllMaps)(nil), "test.kitchensink.v1.AllMaps")
 }

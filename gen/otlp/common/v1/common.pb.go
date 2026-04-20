@@ -175,23 +175,29 @@ type EntityRef struct {
 	fieldsPresent [1]uint64
 }
 
-func (m *AnyValue) Reset()      { *m = AnyValue{} }
-func (*AnyValue) ProtoMessage() {}
+func (m *AnyValue) Reset()         { *m = AnyValue{} }
+func (*AnyValue) ProtoMessage()    {}
+func (m *AnyValue) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *ArrayValue) Reset()      { *m = ArrayValue{} }
-func (*ArrayValue) ProtoMessage() {}
+func (m *ArrayValue) Reset()         { *m = ArrayValue{} }
+func (*ArrayValue) ProtoMessage()    {}
+func (m *ArrayValue) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *KeyValueList) Reset()      { *m = KeyValueList{} }
-func (*KeyValueList) ProtoMessage() {}
+func (m *KeyValueList) Reset()         { *m = KeyValueList{} }
+func (*KeyValueList) ProtoMessage()    {}
+func (m *KeyValueList) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *KeyValue) Reset()      { *m = KeyValue{} }
-func (*KeyValue) ProtoMessage() {}
+func (m *KeyValue) Reset()         { *m = KeyValue{} }
+func (*KeyValue) ProtoMessage()    {}
+func (m *KeyValue) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *InstrumentationScope) Reset()      { *m = InstrumentationScope{} }
-func (*InstrumentationScope) ProtoMessage() {}
+func (m *InstrumentationScope) Reset()         { *m = InstrumentationScope{} }
+func (*InstrumentationScope) ProtoMessage()    {}
+func (m *InstrumentationScope) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *EntityRef) Reset()      { *m = EntityRef{} }
-func (*EntityRef) ProtoMessage() {}
+func (m *EntityRef) Reset()         { *m = EntityRef{} }
+func (*EntityRef) ProtoMessage()    {}
+func (m *EntityRef) String() string { return fmt.Sprintf("%v", *m) }
 
 func (m *KeyValue) HasKey() bool {
 	return m.fieldsPresent[0]&(1<<0) != 0
@@ -2377,4 +2383,13 @@ func (this *EntityRef) Equal(that interface{}) bool {
 		}
 	}
 	return true
+}
+
+func init() {
+	protohelpers.RegisterType((*AnyValue)(nil), "opentelemetry.proto.common.v1.AnyValue")
+	protohelpers.RegisterType((*ArrayValue)(nil), "opentelemetry.proto.common.v1.ArrayValue")
+	protohelpers.RegisterType((*KeyValueList)(nil), "opentelemetry.proto.common.v1.KeyValueList")
+	protohelpers.RegisterType((*KeyValue)(nil), "opentelemetry.proto.common.v1.KeyValue")
+	protohelpers.RegisterType((*InstrumentationScope)(nil), "opentelemetry.proto.common.v1.InstrumentationScope")
+	protohelpers.RegisterType((*EntityRef)(nil), "opentelemetry.proto.common.v1.EntityRef")
 }

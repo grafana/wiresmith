@@ -106,6 +106,7 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 	fg.emitAllMarshalMethods(fd)
 	fg.emitAllUnmarshalMethods(fd)
 	fg.emitAllEqualMethods(fd)
+	fg.emitRegistration(fd)
 
 	var out bytes.Buffer
 	fg.emitHeader(&out)
@@ -126,7 +127,7 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 
 	// Use the proto filename without extension as the Go filename
 	base := filepath.Base(fd.Path())
-	base = strings.TrimSuffix(base, ".proto") + ".go"
+	base = strings.TrimSuffix(base, ".proto") + ".pb.go"
 	outPath := filepath.Join(dir, base)
 
 	return os.WriteFile(outPath, formatted, 0o644)

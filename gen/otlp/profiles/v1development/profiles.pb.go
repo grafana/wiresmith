@@ -414,47 +414,61 @@ type KeyValueAndUnit struct {
 	fieldsPresent [1]uint64
 }
 
-func (m *ProfilesDictionary) Reset()      { *m = ProfilesDictionary{} }
-func (*ProfilesDictionary) ProtoMessage() {}
+func (m *ProfilesDictionary) Reset()         { *m = ProfilesDictionary{} }
+func (*ProfilesDictionary) ProtoMessage()    {}
+func (m *ProfilesDictionary) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *ProfilesData) Reset()      { *m = ProfilesData{} }
-func (*ProfilesData) ProtoMessage() {}
+func (m *ProfilesData) Reset()         { *m = ProfilesData{} }
+func (*ProfilesData) ProtoMessage()    {}
+func (m *ProfilesData) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *ResourceProfiles) Reset()      { *m = ResourceProfiles{} }
-func (*ResourceProfiles) ProtoMessage() {}
+func (m *ResourceProfiles) Reset()         { *m = ResourceProfiles{} }
+func (*ResourceProfiles) ProtoMessage()    {}
+func (m *ResourceProfiles) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *ScopeProfiles) Reset()      { *m = ScopeProfiles{} }
-func (*ScopeProfiles) ProtoMessage() {}
+func (m *ScopeProfiles) Reset()         { *m = ScopeProfiles{} }
+func (*ScopeProfiles) ProtoMessage()    {}
+func (m *ScopeProfiles) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *Profile) Reset()      { *m = Profile{} }
-func (*Profile) ProtoMessage() {}
+func (m *Profile) Reset()         { *m = Profile{} }
+func (*Profile) ProtoMessage()    {}
+func (m *Profile) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *Link) Reset()      { *m = Link{} }
-func (*Link) ProtoMessage() {}
+func (m *Link) Reset()         { *m = Link{} }
+func (*Link) ProtoMessage()    {}
+func (m *Link) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *ValueType) Reset()      { *m = ValueType{} }
-func (*ValueType) ProtoMessage() {}
+func (m *ValueType) Reset()         { *m = ValueType{} }
+func (*ValueType) ProtoMessage()    {}
+func (m *ValueType) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *Sample) Reset()      { *m = Sample{} }
-func (*Sample) ProtoMessage() {}
+func (m *Sample) Reset()         { *m = Sample{} }
+func (*Sample) ProtoMessage()    {}
+func (m *Sample) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *Mapping) Reset()      { *m = Mapping{} }
-func (*Mapping) ProtoMessage() {}
+func (m *Mapping) Reset()         { *m = Mapping{} }
+func (*Mapping) ProtoMessage()    {}
+func (m *Mapping) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *Stack) Reset()      { *m = Stack{} }
-func (*Stack) ProtoMessage() {}
+func (m *Stack) Reset()         { *m = Stack{} }
+func (*Stack) ProtoMessage()    {}
+func (m *Stack) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *Location) Reset()      { *m = Location{} }
-func (*Location) ProtoMessage() {}
+func (m *Location) Reset()         { *m = Location{} }
+func (*Location) ProtoMessage()    {}
+func (m *Location) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *Line) Reset()      { *m = Line{} }
-func (*Line) ProtoMessage() {}
+func (m *Line) Reset()         { *m = Line{} }
+func (*Line) ProtoMessage()    {}
+func (m *Line) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *Function) Reset()      { *m = Function{} }
-func (*Function) ProtoMessage() {}
+func (m *Function) Reset()         { *m = Function{} }
+func (*Function) ProtoMessage()    {}
+func (m *Function) String() string { return fmt.Sprintf("%v", *m) }
 
-func (m *KeyValueAndUnit) Reset()      { *m = KeyValueAndUnit{} }
-func (*KeyValueAndUnit) ProtoMessage() {}
+func (m *KeyValueAndUnit) Reset()         { *m = KeyValueAndUnit{} }
+func (*KeyValueAndUnit) ProtoMessage()    {}
+func (m *KeyValueAndUnit) String() string { return fmt.Sprintf("%v", *m) }
 
 func (m *ProfilesData) HasDictionary() bool {
 	return m.fieldsPresent[0]&(1<<0) != 0
@@ -5770,4 +5784,21 @@ func (this *KeyValueAndUnit) Equal(that interface{}) bool {
 		return false
 	}
 	return true
+}
+
+func init() {
+	protohelpers.RegisterType((*ProfilesDictionary)(nil), "opentelemetry.proto.profiles.v1development.ProfilesDictionary")
+	protohelpers.RegisterType((*ProfilesData)(nil), "opentelemetry.proto.profiles.v1development.ProfilesData")
+	protohelpers.RegisterType((*ResourceProfiles)(nil), "opentelemetry.proto.profiles.v1development.ResourceProfiles")
+	protohelpers.RegisterType((*ScopeProfiles)(nil), "opentelemetry.proto.profiles.v1development.ScopeProfiles")
+	protohelpers.RegisterType((*Profile)(nil), "opentelemetry.proto.profiles.v1development.Profile")
+	protohelpers.RegisterType((*Link)(nil), "opentelemetry.proto.profiles.v1development.Link")
+	protohelpers.RegisterType((*ValueType)(nil), "opentelemetry.proto.profiles.v1development.ValueType")
+	protohelpers.RegisterType((*Sample)(nil), "opentelemetry.proto.profiles.v1development.Sample")
+	protohelpers.RegisterType((*Mapping)(nil), "opentelemetry.proto.profiles.v1development.Mapping")
+	protohelpers.RegisterType((*Stack)(nil), "opentelemetry.proto.profiles.v1development.Stack")
+	protohelpers.RegisterType((*Location)(nil), "opentelemetry.proto.profiles.v1development.Location")
+	protohelpers.RegisterType((*Line)(nil), "opentelemetry.proto.profiles.v1development.Line")
+	protohelpers.RegisterType((*Function)(nil), "opentelemetry.proto.profiles.v1development.Function")
+	protohelpers.RegisterType((*KeyValueAndUnit)(nil), "opentelemetry.proto.profiles.v1development.KeyValueAndUnit")
 }
