@@ -479,6 +479,9 @@ func (m *MapBench) unmarshal(dAtA []byte, depth int) error {
 						break
 					}
 				}
+				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
+					return fmt.Errorf("invalid field number")
+				}
 				switch int32(entryWire >> 3) {
 				case 1:
 					if int(entryWire&0x7) != int(protowire.BytesType) {
@@ -620,6 +623,9 @@ func (m *MapBench) unmarshal(dAtA []byte, depth int) error {
 						break
 					}
 				}
+				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
+					return fmt.Errorf("invalid field number")
+				}
 				switch int32(entryWire >> 3) {
 				case 1:
 					if int(entryWire&0x7) != int(protowire.VarintType) {
@@ -737,6 +743,9 @@ func (m *MapBench) unmarshal(dAtA []byte, depth int) error {
 					if b < 0x80 {
 						break
 					}
+				}
+				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
+					return fmt.Errorf("invalid field number")
 				}
 				switch int32(entryWire >> 3) {
 				case 1:

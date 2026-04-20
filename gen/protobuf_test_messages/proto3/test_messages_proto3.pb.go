@@ -5463,6 +5463,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 						break
 					}
 				}
+				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
+					return fmt.Errorf("invalid field number")
+				}
 				switch int32(entryWire >> 3) {
 				case 1:
 					if int(entryWire&0x7) != int(protowire.VarintType) {
@@ -5579,6 +5582,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					if b < 0x80 {
 						break
 					}
+				}
+				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
+					return fmt.Errorf("invalid field number")
 				}
 				switch int32(entryWire >> 3) {
 				case 1:
@@ -5697,6 +5703,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 						break
 					}
 				}
+				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
+					return fmt.Errorf("invalid field number")
+				}
 				switch int32(entryWire >> 3) {
 				case 1:
 					if int(entryWire&0x7) != int(protowire.VarintType) {
@@ -5813,6 +5822,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					if b < 0x80 {
 						break
 					}
+				}
+				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
+					return fmt.Errorf("invalid field number")
 				}
 				switch int32(entryWire >> 3) {
 				case 1:
@@ -5931,6 +5943,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 						break
 					}
 				}
+				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
+					return fmt.Errorf("invalid field number")
+				}
 				switch int32(entryWire >> 3) {
 				case 1:
 					if int(entryWire&0x7) != int(protowire.VarintType) {
@@ -6047,6 +6062,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					if b < 0x80 {
 						break
 					}
+				}
+				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
+					return fmt.Errorf("invalid field number")
 				}
 				switch int32(entryWire >> 3) {
 				case 1:
@@ -6165,6 +6183,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 						break
 					}
 				}
+				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
+					return fmt.Errorf("invalid field number")
+				}
 				switch int32(entryWire >> 3) {
 				case 1:
 					if int(entryWire&0x7) != int(protowire.Fixed32Type) {
@@ -6261,6 +6282,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					if b < 0x80 {
 						break
 					}
+				}
+				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
+					return fmt.Errorf("invalid field number")
 				}
 				switch int32(entryWire >> 3) {
 				case 1:
@@ -6359,6 +6383,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 						break
 					}
 				}
+				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
+					return fmt.Errorf("invalid field number")
+				}
 				switch int32(entryWire >> 3) {
 				case 1:
 					if int(entryWire&0x7) != int(protowire.Fixed32Type) {
@@ -6456,6 +6483,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 						break
 					}
 				}
+				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
+					return fmt.Errorf("invalid field number")
+				}
 				switch int32(entryWire >> 3) {
 				case 1:
 					if int(entryWire&0x7) != int(protowire.Fixed64Type) {
@@ -6552,6 +6582,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					if b < 0x80 {
 						break
 					}
+				}
+				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
+					return fmt.Errorf("invalid field number")
 				}
 				switch int32(entryWire >> 3) {
 				case 1:
@@ -6660,6 +6693,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 						break
 					}
 				}
+				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
+					return fmt.Errorf("invalid field number")
+				}
 				switch int32(entryWire >> 3) {
 				case 1:
 					if int(entryWire&0x7) != int(protowire.VarintType) {
@@ -6766,6 +6802,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					if b < 0x80 {
 						break
 					}
+				}
+				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
+					return fmt.Errorf("invalid field number")
 				}
 				switch int32(entryWire >> 3) {
 				case 1:
@@ -6883,6 +6922,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					if b < 0x80 {
 						break
 					}
+				}
+				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
+					return fmt.Errorf("invalid field number")
 				}
 				switch int32(entryWire >> 3) {
 				case 1:
@@ -7025,6 +7067,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 						break
 					}
 				}
+				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
+					return fmt.Errorf("invalid field number")
+				}
 				switch int32(entryWire >> 3) {
 				case 1:
 					if int(entryWire&0x7) != int(protowire.BytesType) {
@@ -7166,6 +7211,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					if b < 0x80 {
 						break
 					}
+				}
+				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
+					return fmt.Errorf("invalid field number")
 				}
 				switch int32(entryWire >> 3) {
 				case 1:
@@ -7320,6 +7368,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 						break
 					}
 				}
+				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
+					return fmt.Errorf("invalid field number")
+				}
 				switch int32(entryWire >> 3) {
 				case 1:
 					if int(entryWire&0x7) != int(protowire.BytesType) {
@@ -7472,6 +7523,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 						break
 					}
 				}
+				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
+					return fmt.Errorf("invalid field number")
+				}
 				switch int32(entryWire >> 3) {
 				case 1:
 					if int(entryWire&0x7) != int(protowire.BytesType) {
@@ -7600,6 +7654,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					if b < 0x80 {
 						break
 					}
+				}
+				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
+					return fmt.Errorf("invalid field number")
 				}
 				switch int32(entryWire >> 3) {
 				case 1:

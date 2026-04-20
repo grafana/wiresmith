@@ -98,6 +98,7 @@ func (m *MapField) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
 	e.Writef("\t\t\t\t\tentryWire |= uint64(b&0x7F) << shift\n")
 	e.Writef("\t\t\t\t\tif b < 0x80 {\n\t\t\t\t\t\tbreak\n\t\t\t\t\t}\n")
 	e.Writef("\t\t\t\t}\n")
+	e.Writef("\t\t\t\tif entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {\n\t\t\t\t\treturn fmt.Errorf(\"invalid field number\")\n\t\t\t\t}\n")
 	e.Writef("\t\t\t\tswitch int32(entryWire >> 3) {\n")
 
 	// Key (field 1)
