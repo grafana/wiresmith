@@ -1,7 +1,12 @@
 # Mimir Compatibility: Remaining Changes
 
 Changes from the `mimir-compat` branch not yet ported to `main`.
-Inline unmarshal optimization (iNdEx/dAtA pattern) was implemented in #31.
+
+Already implemented:
+- Inline unmarshal optimization (iNdEx/dAtA pattern) — #31
+- `Marshal` returns non-nil slice for empty messages — #32
+- `Equal(that interface{}) bool` per-message equality — #32
+- Proto source comments preserved in generated code — #32
 
 ## Method Signature Changes (generally applicable)
 
@@ -11,11 +16,6 @@ Target:  `func (m *T) MarshalToSizedBuffer(dAtA []byte) (int, error)`
 - All internal callers (nested message marshal) must propagate the error.
 - `MessageType.EmitMarshal` and `EmitValueMarshal` in `compiler/types/message.go` already emit `(int, error)` return handling — the emitter itself needs updating in `emit_marshal.go`.
 
-### `Marshal` returns non-nil slice for empty messages
-Current: `if size == 0 { return nil, nil }`
-Target:  allocate `dAtA = make([]byte, size)` before the zero check, return `dAtA, nil`.
-Also use named returns: `func (m *T) Marshal() (dAtA []byte, err error)`.
-
 ### New `MarshalTo` method
 ```go
 func (m *T) MarshalTo(dAtA []byte) (int, error) {
@@ -23,18 +23,6 @@ func (m *T) MarshalTo(dAtA []byte) (int, error) {
     return m.MarshalToSizedBuffer(dAtA[:size])
 }
 ```
-
-## New Methods (generally applicable)
-
-### `Equal(that interface{}) bool`
-Per-message equality method. Handles:
-- Nil receiver / nil argument → equal
-- Type assertion (pointer and value)
-- Per-field comparison: scalars `!=`, `bytes.Equal`, recursive `.Equal()` for messages
-- Map comparison: length + per-key value check
-- Repeated: length + per-element
-- Optional: nil checks + pointer dereference
-- Oneof: type switch + variant comparison
 
 ## Gogo-Specific Features (require GogoCompat flag)
 

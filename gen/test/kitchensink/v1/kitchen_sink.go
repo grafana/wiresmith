@@ -5463,6 +5463,9 @@ func (this *AllOptionalScalars) Equal(that interface{}) bool {
 			return false
 		}
 	}
+	if (this.FieldBytes == nil) != (that1.FieldBytes == nil) {
+		return false
+	}
 	if !bytes.Equal(this.FieldBytes, that1.FieldBytes) {
 		return false
 	}
@@ -5630,8 +5633,134 @@ func (this *OneofVariants) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
-	if this.Value != that1.Value {
+	if (this.Value == nil) != (that1.Value == nil) {
 		return false
+	}
+	if this.Value != nil {
+		switch v := this.Value.(type) {
+		case *OneofVariants_DoubleValue:
+			v2, ok := that1.Value.(*OneofVariants_DoubleValue)
+			if !ok {
+				return false
+			}
+			if v.DoubleValue != v2.DoubleValue {
+				return false
+			}
+		case *OneofVariants_FloatValue:
+			v2, ok := that1.Value.(*OneofVariants_FloatValue)
+			if !ok {
+				return false
+			}
+			if v.FloatValue != v2.FloatValue {
+				return false
+			}
+		case *OneofVariants_Int32Value:
+			v2, ok := that1.Value.(*OneofVariants_Int32Value)
+			if !ok {
+				return false
+			}
+			if v.Int32Value != v2.Int32Value {
+				return false
+			}
+		case *OneofVariants_Int64Value:
+			v2, ok := that1.Value.(*OneofVariants_Int64Value)
+			if !ok {
+				return false
+			}
+			if v.Int64Value != v2.Int64Value {
+				return false
+			}
+		case *OneofVariants_Uint32Value:
+			v2, ok := that1.Value.(*OneofVariants_Uint32Value)
+			if !ok {
+				return false
+			}
+			if v.Uint32Value != v2.Uint32Value {
+				return false
+			}
+		case *OneofVariants_Uint64Value:
+			v2, ok := that1.Value.(*OneofVariants_Uint64Value)
+			if !ok {
+				return false
+			}
+			if v.Uint64Value != v2.Uint64Value {
+				return false
+			}
+		case *OneofVariants_Sint32Value:
+			v2, ok := that1.Value.(*OneofVariants_Sint32Value)
+			if !ok {
+				return false
+			}
+			if v.Sint32Value != v2.Sint32Value {
+				return false
+			}
+		case *OneofVariants_Sint64Value:
+			v2, ok := that1.Value.(*OneofVariants_Sint64Value)
+			if !ok {
+				return false
+			}
+			if v.Sint64Value != v2.Sint64Value {
+				return false
+			}
+		case *OneofVariants_Fixed32Value:
+			v2, ok := that1.Value.(*OneofVariants_Fixed32Value)
+			if !ok {
+				return false
+			}
+			if v.Fixed32Value != v2.Fixed32Value {
+				return false
+			}
+		case *OneofVariants_Fixed64Value:
+			v2, ok := that1.Value.(*OneofVariants_Fixed64Value)
+			if !ok {
+				return false
+			}
+			if v.Fixed64Value != v2.Fixed64Value {
+				return false
+			}
+		case *OneofVariants_Sfixed32Value:
+			v2, ok := that1.Value.(*OneofVariants_Sfixed32Value)
+			if !ok {
+				return false
+			}
+			if v.Sfixed32Value != v2.Sfixed32Value {
+				return false
+			}
+		case *OneofVariants_Sfixed64Value:
+			v2, ok := that1.Value.(*OneofVariants_Sfixed64Value)
+			if !ok {
+				return false
+			}
+			if v.Sfixed64Value != v2.Sfixed64Value {
+				return false
+			}
+		case *OneofVariants_BoolValue:
+			v2, ok := that1.Value.(*OneofVariants_BoolValue)
+			if !ok {
+				return false
+			}
+			if v.BoolValue != v2.BoolValue {
+				return false
+			}
+		case *OneofVariants_StringValue:
+			v2, ok := that1.Value.(*OneofVariants_StringValue)
+			if !ok {
+				return false
+			}
+			if v.StringValue != v2.StringValue {
+				return false
+			}
+		case *OneofVariants_BytesValue:
+			v2, ok := that1.Value.(*OneofVariants_BytesValue)
+			if !ok {
+				return false
+			}
+			if !bytes.Equal(v.BytesValue, v2.BytesValue) {
+				return false
+			}
+		default:
+			return false
+		}
 	}
 	return true
 }

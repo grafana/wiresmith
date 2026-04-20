@@ -49,9 +49,7 @@ func (fg *FileGenerator) emitEqual(md protoreflect.MessageDescriptor) {
 			ooName := string(oo.Name())
 			if !seenOneofs[ooName] {
 				seenOneofs[ooName] = true
-				goName := snakeToPascal(ooName)
-				fmt.Fprintf(fg.body, "\tif this.%s != that1.%s {\n", goName, goName)
-				fmt.Fprintf(fg.body, "\t\treturn false\n\t}\n")
+				fg.emitOneofEqual(md, oo)
 			}
 			continue
 		}
@@ -64,14 +62,47 @@ func (fg *FileGenerator) emitEqual(md protoreflect.MessageDescriptor) {
 	fmt.Fprintf(fg.body, "}\n\n")
 }
 
+func (fg *FileGenerator) emitOneofEqual(md protoreflect.MessageDescriptor, oo protoreflect.OneofDescriptor) {
+	goName := snakeToPascal(string(oo.Name()))
+
+	fmt.Fprintf(fg.body, "\tif (this.%s == nil) != (that1.%s == nil) {\n", goName, goName)
+	fmt.Fprintf(fg.body, "\t\treturn false\n\t}\n")
+	fmt.Fprintf(fg.body, "\tif this.%s != nil {\n", goName)
+	fmt.Fprintf(fg.body, "\t\tswitch v := this.%s.(type) {\n", goName)
+
+	for i := 0; i < oo.Fields().Len(); i++ {
+		fd := oo.Fields().Get(i)
+		variantType := oneofVariantName(md, fd)
+		fieldName := snakeToPascal(string(fd.Name()))
+
+		fmt.Fprintf(fg.body, "\t\tcase *%s:\n", variantType)
+		fmt.Fprintf(fg.body, "\t\t\tv2, ok := that1.%s.(*%s)\n", goName, variantType)
+		fmt.Fprintf(fg.body, "\t\t\tif !ok {\n\t\t\t\treturn false\n\t\t\t}\n")
+
+		switch fd.Kind() {
+		case protoreflect.BytesKind:
+			fmt.Fprintf(fg.body, "\t\t\tif !bytes.Equal(v.%s, v2.%s) {\n\t\t\t\treturn false\n\t\t\t}\n", fieldName, fieldName)
+		case protoreflect.MessageKind:
+			fmt.Fprintf(fg.body, "\t\t\tif !v.%s.Equal(v2.%s) {\n\t\t\t\treturn false\n\t\t\t}\n", fieldName, fieldName)
+		default:
+			fmt.Fprintf(fg.body, "\t\t\tif v.%s != v2.%s {\n\t\t\t\treturn false\n\t\t\t}\n", fieldName, fieldName)
+		}
+	}
+
+	fmt.Fprintf(fg.body, "\t\tdefault:\n\t\t\treturn false\n")
+	fmt.Fprintf(fg.body, "\t\t}\n")
+	fmt.Fprintf(fg.body, "\t}\n")
+}
+
 func (fg *FileGenerator) emitFieldEqual(fd protoreflect.FieldDescriptor, goName string) {
 	if fd.IsList() {
 		fg.emitRepeatedFieldEqual(fd, goName)
 		return
 	}
 	if fd.HasOptionalKeyword() {
-		// []byte is already nullable — use bytes.Equal, not pointer deref.
+		// optional bytes: distinguish nil (unset) from []byte{} (set to empty).
 		if fd.Kind() == protoreflect.BytesKind {
+			fmt.Fprintf(fg.body, "\tif (this.%s == nil) != (that1.%s == nil) {\n\t\treturn false\n\t}\n", goName, goName)
 			fmt.Fprintf(fg.body, "\tif !bytes.Equal(this.%s, that1.%s) {\n\t\treturn false\n\t}\n", goName, goName)
 			return
 		}
@@ -137,10 +168,6 @@ func (fg *FileGenerator) emitRepeatedFieldEqual(fd protoreflect.FieldDescriptor,
 func needsBytesImportForEqual(md protoreflect.MessageDescriptor) bool {
 	for i := 0; i < md.Fields().Len(); i++ {
 		fd := md.Fields().Get(i)
-		// Skip oneof fields — we compare the interface directly.
-		if isRealOneof(fd) {
-			continue
-		}
 		if fd.Kind() == protoreflect.BytesKind {
 			return true
 		}

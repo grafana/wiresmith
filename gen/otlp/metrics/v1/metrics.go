@@ -4343,8 +4343,54 @@ func (this *Metric) Equal(that interface{}) bool {
 	if this.Unit != that1.Unit {
 		return false
 	}
-	if this.Data != that1.Data {
+	if (this.Data == nil) != (that1.Data == nil) {
 		return false
+	}
+	if this.Data != nil {
+		switch v := this.Data.(type) {
+		case *Metric_Gauge:
+			v2, ok := that1.Data.(*Metric_Gauge)
+			if !ok {
+				return false
+			}
+			if !v.Gauge.Equal(v2.Gauge) {
+				return false
+			}
+		case *Metric_Sum:
+			v2, ok := that1.Data.(*Metric_Sum)
+			if !ok {
+				return false
+			}
+			if !v.Sum.Equal(v2.Sum) {
+				return false
+			}
+		case *Metric_Histogram:
+			v2, ok := that1.Data.(*Metric_Histogram)
+			if !ok {
+				return false
+			}
+			if !v.Histogram.Equal(v2.Histogram) {
+				return false
+			}
+		case *Metric_ExponentialHistogram:
+			v2, ok := that1.Data.(*Metric_ExponentialHistogram)
+			if !ok {
+				return false
+			}
+			if !v.ExponentialHistogram.Equal(v2.ExponentialHistogram) {
+				return false
+			}
+		case *Metric_Summary:
+			v2, ok := that1.Data.(*Metric_Summary)
+			if !ok {
+				return false
+			}
+			if !v.Summary.Equal(v2.Summary) {
+				return false
+			}
+		default:
+			return false
+		}
 	}
 	if len(this.Metadata) != len(that1.Metadata) {
 		return false
@@ -4552,8 +4598,30 @@ func (this *NumberDataPoint) Equal(that interface{}) bool {
 	if this.TimeUnixNano != that1.TimeUnixNano {
 		return false
 	}
-	if this.Value != that1.Value {
+	if (this.Value == nil) != (that1.Value == nil) {
 		return false
+	}
+	if this.Value != nil {
+		switch v := this.Value.(type) {
+		case *NumberDataPoint_AsDouble:
+			v2, ok := that1.Value.(*NumberDataPoint_AsDouble)
+			if !ok {
+				return false
+			}
+			if v.AsDouble != v2.AsDouble {
+				return false
+			}
+		case *NumberDataPoint_AsInt:
+			v2, ok := that1.Value.(*NumberDataPoint_AsInt)
+			if !ok {
+				return false
+			}
+			if v.AsInt != v2.AsInt {
+				return false
+			}
+		default:
+			return false
+		}
 	}
 	if len(this.Exemplars) != len(that1.Exemplars) {
 		return false
@@ -4892,8 +4960,30 @@ func (this *Exemplar) Equal(that interface{}) bool {
 	if this.TimeUnixNano != that1.TimeUnixNano {
 		return false
 	}
-	if this.Value != that1.Value {
+	if (this.Value == nil) != (that1.Value == nil) {
 		return false
+	}
+	if this.Value != nil {
+		switch v := this.Value.(type) {
+		case *Exemplar_AsDouble:
+			v2, ok := that1.Value.(*Exemplar_AsDouble)
+			if !ok {
+				return false
+			}
+			if v.AsDouble != v2.AsDouble {
+				return false
+			}
+		case *Exemplar_AsInt:
+			v2, ok := that1.Value.(*Exemplar_AsInt)
+			if !ok {
+				return false
+			}
+			if v.AsInt != v2.AsInt {
+				return false
+			}
+		default:
+			return false
+		}
 	}
 	if !bytes.Equal(this.SpanId, that1.SpanId) {
 		return false

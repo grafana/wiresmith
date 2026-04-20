@@ -4,6 +4,7 @@
 package commonv1
 
 import (
+	"bytes"
 	"encoding/binary"
 	"fmt"
 	"google.golang.org/protobuf/encoding/protowire"
@@ -1251,8 +1252,78 @@ func (this *AnyValue) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
-	if this.Value != that1.Value {
+	if (this.Value == nil) != (that1.Value == nil) {
 		return false
+	}
+	if this.Value != nil {
+		switch v := this.Value.(type) {
+		case *AnyValue_StringValue:
+			v2, ok := that1.Value.(*AnyValue_StringValue)
+			if !ok {
+				return false
+			}
+			if v.StringValue != v2.StringValue {
+				return false
+			}
+		case *AnyValue_BoolValue:
+			v2, ok := that1.Value.(*AnyValue_BoolValue)
+			if !ok {
+				return false
+			}
+			if v.BoolValue != v2.BoolValue {
+				return false
+			}
+		case *AnyValue_IntValue:
+			v2, ok := that1.Value.(*AnyValue_IntValue)
+			if !ok {
+				return false
+			}
+			if v.IntValue != v2.IntValue {
+				return false
+			}
+		case *AnyValue_DoubleValue:
+			v2, ok := that1.Value.(*AnyValue_DoubleValue)
+			if !ok {
+				return false
+			}
+			if v.DoubleValue != v2.DoubleValue {
+				return false
+			}
+		case *AnyValue_ArrayValue:
+			v2, ok := that1.Value.(*AnyValue_ArrayValue)
+			if !ok {
+				return false
+			}
+			if !v.ArrayValue.Equal(v2.ArrayValue) {
+				return false
+			}
+		case *AnyValue_KvlistValue:
+			v2, ok := that1.Value.(*AnyValue_KvlistValue)
+			if !ok {
+				return false
+			}
+			if !v.KvlistValue.Equal(v2.KvlistValue) {
+				return false
+			}
+		case *AnyValue_BytesValue:
+			v2, ok := that1.Value.(*AnyValue_BytesValue)
+			if !ok {
+				return false
+			}
+			if !bytes.Equal(v.BytesValue, v2.BytesValue) {
+				return false
+			}
+		case *AnyValue_StringValueStrindex:
+			v2, ok := that1.Value.(*AnyValue_StringValueStrindex)
+			if !ok {
+				return false
+			}
+			if v.StringValueStrindex != v2.StringValueStrindex {
+				return false
+			}
+		default:
+			return false
+		}
 	}
 	return true
 }

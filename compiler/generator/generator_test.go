@@ -30,9 +30,23 @@ func repoRoot(t *testing.T) string {
 
 func TestGeneratorDeterminism(t *testing.T) {
 	root := repoRoot(t)
-	protoDir := filepath.Join(root, "proto", "otlp")
 
-	const iterations = 5
+	for _, tc := range []struct {
+		name     string
+		protoDir string
+	}{
+		{"otlp", filepath.Join(root, "proto", "otlp")},
+		{"kitchen_sink", filepath.Join(root, "proto", "test")},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			checkDeterminism(t, tc.protoDir, 5)
+		})
+	}
+}
+
+func checkDeterminism(t *testing.T, protoDir string, iterations int) {
+	t.Helper()
+
 	for i := 0; i < iterations; i++ {
 		dirA := t.TempDir()
 		dirB := t.TempDir()

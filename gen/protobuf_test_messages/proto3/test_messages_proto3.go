@@ -6729,8 +6729,86 @@ func (this *TestAllTypesProto3) Equal(that interface{}) bool {
 			return false
 		}
 	}
-	if this.OneofField != that1.OneofField {
+	if (this.OneofField == nil) != (that1.OneofField == nil) {
 		return false
+	}
+	if this.OneofField != nil {
+		switch v := this.OneofField.(type) {
+		case *TestAllTypesProto3_OneofUint32:
+			v2, ok := that1.OneofField.(*TestAllTypesProto3_OneofUint32)
+			if !ok {
+				return false
+			}
+			if v.OneofUint32 != v2.OneofUint32 {
+				return false
+			}
+		case *TestAllTypesProto3_OneofNestedMessage:
+			v2, ok := that1.OneofField.(*TestAllTypesProto3_OneofNestedMessage)
+			if !ok {
+				return false
+			}
+			if !v.OneofNestedMessage.Equal(v2.OneofNestedMessage) {
+				return false
+			}
+		case *TestAllTypesProto3_OneofString:
+			v2, ok := that1.OneofField.(*TestAllTypesProto3_OneofString)
+			if !ok {
+				return false
+			}
+			if v.OneofString != v2.OneofString {
+				return false
+			}
+		case *TestAllTypesProto3_OneofBytes:
+			v2, ok := that1.OneofField.(*TestAllTypesProto3_OneofBytes)
+			if !ok {
+				return false
+			}
+			if !bytes.Equal(v.OneofBytes, v2.OneofBytes) {
+				return false
+			}
+		case *TestAllTypesProto3_OneofBool:
+			v2, ok := that1.OneofField.(*TestAllTypesProto3_OneofBool)
+			if !ok {
+				return false
+			}
+			if v.OneofBool != v2.OneofBool {
+				return false
+			}
+		case *TestAllTypesProto3_OneofUint64:
+			v2, ok := that1.OneofField.(*TestAllTypesProto3_OneofUint64)
+			if !ok {
+				return false
+			}
+			if v.OneofUint64 != v2.OneofUint64 {
+				return false
+			}
+		case *TestAllTypesProto3_OneofFloat:
+			v2, ok := that1.OneofField.(*TestAllTypesProto3_OneofFloat)
+			if !ok {
+				return false
+			}
+			if v.OneofFloat != v2.OneofFloat {
+				return false
+			}
+		case *TestAllTypesProto3_OneofDouble:
+			v2, ok := that1.OneofField.(*TestAllTypesProto3_OneofDouble)
+			if !ok {
+				return false
+			}
+			if v.OneofDouble != v2.OneofDouble {
+				return false
+			}
+		case *TestAllTypesProto3_OneofEnum:
+			v2, ok := that1.OneofField.(*TestAllTypesProto3_OneofEnum)
+			if !ok {
+				return false
+			}
+			if v.OneofEnum != v2.OneofEnum {
+				return false
+			}
+		default:
+			return false
+		}
 	}
 	if this.Fieldname1 != that1.Fieldname1 {
 		return false
