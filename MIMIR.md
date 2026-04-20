@@ -7,22 +7,12 @@ Already implemented:
 - `Marshal` returns non-nil slice for empty messages — #32
 - `Equal(that interface{}) bool` per-message equality — #32
 - Proto source comments preserved in generated code — #32
-
-## Method Signature Changes (generally applicable)
-
-### `MarshalToSizedBuffer` returns `(int, error)` instead of `int`
-Current: `func (m *T) MarshalToSizedBuffer(dAtA []byte) int`
-Target:  `func (m *T) MarshalToSizedBuffer(dAtA []byte) (int, error)`
-- All internal callers (nested message marshal) must propagate the error.
-- `MessageType.EmitMarshal` and `EmitValueMarshal` in `compiler/types/message.go` already emit `(int, error)` return handling — the emitter itself needs updating in `emit_marshal.go`.
-
-### New `MarshalTo` method
-```go
-func (m *T) MarshalTo(dAtA []byte) (int, error) {
-    size := m.Size()
-    return m.MarshalToSizedBuffer(dAtA[:size])
-}
-```
+- `MarshalToSizedBuffer` returns `(int, error)` and `MarshalTo` method — #34
+- `Reset()`, `ProtoMessage()`, `String()` on all messages — #34
+- Getter methods (`Get*()`) for all fields — #34
+- Enum name/value maps and `String()` method — #35
+- Type registration via `protohelpers.RegisterType`/`RegisterEnum` in `init()` — #35
+- `.pb.go` output file suffix — #35
 
 ## Gogo-Specific Features (require GogoCompat flag)
 
@@ -32,11 +22,9 @@ These are NOT generally applicable — they only matter for gogo/protobuf drop-i
 - `protobuf:"varint,1,opt,name=foo,json=fooBar,proto3"` tags on struct fields
 - `protobuf_oneof:"field_name"` tags on oneof interface fields
 
-### Gogo method set
-- `Reset()`, `ProtoMessage()`, `String()`, `GoString()`
+### Gogo method set (remaining)
+- `GoString()`
 - `XXX_*` methods (deprecated but required for gogo compat)
-- Getter methods (`Get*()` for each field)
-- Registration: `proto.RegisterType()` / `proto.RegisterEnum()` in `init()`
 
 ### Pointer semantics
 - `(gogoproto.nullable)` support — message fields as `*T` instead of `T`
@@ -57,6 +45,5 @@ These are NOT generally applicable — they only matter for gogo/protobuf drop-i
 - `ProtoPaths []string` and `ProtoFiles []string` on Generator
 - `multiPathResolver` for cross-directory proto imports
 
-### Output conventions
-- `.pb.go` suffix instead of `.go`
+### Output conventions (remaining)
 - `go_package` option for output directory

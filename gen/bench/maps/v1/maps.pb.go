@@ -27,19 +27,40 @@ type Inner struct {
 
 func (m *MapBench) Reset()      { *m = MapBench{} }
 func (*MapBench) ProtoMessage() {}
+func (m *MapBench) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
 func (m *Inner) Reset()      { *m = Inner{} }
 func (*Inner) ProtoMessage() {}
+func (m *Inner) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
 func (m *Inner) HasName() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Inner) HasValue() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *Inner) HasData() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<2) != 0
 }
 
@@ -952,4 +973,9 @@ func (this *Inner) Equal(that interface{}) bool {
 		return false
 	}
 	return true
+}
+
+func init() {
+	protohelpers.RegisterType((*MapBench)(nil), "bench.maps.v1.MapBench")
+	protohelpers.RegisterType((*Inner)(nil), "bench.maps.v1.Inner")
 }
