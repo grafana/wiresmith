@@ -7,19 +7,11 @@
 # As wiresmith adds features, entries should be removed from this list.
 # The runner will flag any test that unexpectedly passes or fails.
 #
-# Summary: 11 expected failures
-#     4 — sint32/sint64 overlong varint normalization
+# Summary: 7 expected failures
 #     4 — message field merge semantics (repeated/oneof/empty/map)
 #     1 — overlong varint tag rejection
 #     1 — unknown field preservation/ordering
 #     1 — unknown varint preservation
-
-# Sint32/sint64 overlong varint normalization — wiresmith does not
-# canonicalize overlong varint encodings for sint types.
-Required.Proto3.ProtobufInput.RepeatedScalarSelectsLast.SINT32.ProtobufOutput
-Required.Proto3.ProtobufInput.ValidDataRepeated.SINT32.PackedInput.ProtobufOutput
-Required.Proto3.ProtobufInput.ValidDataRepeated.SINT32.UnpackedInput.ProtobufOutput
-Required.Proto3.ProtobufInput.ValidDataScalar.SINT32[4].ProtobufOutput
 
 # Message field merge semantics — wiresmith replaces rather than
 # merging when a message field appears multiple times.

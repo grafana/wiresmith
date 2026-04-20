@@ -4215,7 +4215,7 @@ func (m *ExponentialHistogramDataPoint_Buckets) unmarshal(dAtA []byte, depth int
 					break
 				}
 			}
-			m.Offset = int32(v>>1) ^ int32(v)<<31>>31
+			m.Offset = int32(uint32(v)>>1) ^ int32(uint32(v))<<31>>31
 		case 2: // bucket_counts
 			if wireType == 2 {
 				var byteLen uint64
@@ -4523,7 +4523,7 @@ func (m *ExponentialHistogramDataPoint) unmarshal(dAtA []byte, depth int) error 
 					break
 				}
 			}
-			m.Scale = int32(v>>1) ^ int32(v)<<31>>31
+			m.Scale = int32(uint32(v)>>1) ^ int32(uint32(v))<<31>>31
 		case 7: // zero_count
 			if wireType != 1 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)

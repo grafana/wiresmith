@@ -2144,7 +2144,7 @@ func (m *AllScalars) unmarshal(dAtA []byte, depth int) error {
 					break
 				}
 			}
-			m.FieldSint32 = int32(v>>1) ^ int32(v)<<31>>31
+			m.FieldSint32 = int32(uint32(v)>>1) ^ int32(uint32(v))<<31>>31
 		case 8: // field_sint64
 			if wireType != 0 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2534,7 +2534,7 @@ func (m *AllOptionalScalars) unmarshal(dAtA []byte, depth int) error {
 					break
 				}
 			}
-			tmp := int32(v>>1) ^ int32(v)<<31>>31
+			tmp := int32(uint32(v)>>1) ^ int32(uint32(v))<<31>>31
 			m.FieldSint32 = &tmp
 		case 8: // field_sint64
 			if wireType != 0 {
@@ -3273,7 +3273,7 @@ func (m *AllRepeatedScalars) unmarshal(dAtA []byte, depth int) error {
 					if vn < 0 {
 						return fmt.Errorf("invalid packed varint")
 					}
-					m.FieldSint32 = append(m.FieldSint32, int32(v>>1)^int32(v)<<31>>31)
+					m.FieldSint32 = append(m.FieldSint32, int32(uint32(v)>>1)^int32(uint32(v))<<31>>31)
 					data = data[vn:]
 				}
 				iNdEx = postIndex
@@ -3293,7 +3293,7 @@ func (m *AllRepeatedScalars) unmarshal(dAtA []byte, depth int) error {
 						break
 					}
 				}
-				m.FieldSint32 = append(m.FieldSint32, int32(v>>1)^int32(v)<<31>>31)
+				m.FieldSint32 = append(m.FieldSint32, int32(uint32(v)>>1)^int32(uint32(v))<<31>>31)
 			} else {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
@@ -3931,7 +3931,7 @@ func (m *OneofVariants) unmarshal(dAtA []byte, depth int) error {
 					break
 				}
 			}
-			m.Value = &OneofVariants_Sint32Value{Sint32Value: int32(v>>1) ^ int32(v)<<31>>31}
+			m.Value = &OneofVariants_Sint32Value{Sint32Value: int32(uint32(v)>>1) ^ int32(uint32(v))<<31>>31}
 		case 8: // sint64_value
 			if wireType != 0 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -6221,7 +6221,7 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 					if tmpN < 0 {
 						return fmt.Errorf("invalid varint")
 					}
-					mapkey = int32(tmpVal>>1) ^ int32(tmpVal)<<31>>31
+					mapkey = int32(uint32(tmpVal)>>1) ^ int32(uint32(tmpVal))<<31>>31
 					entryData = entryData[tmpN:]
 				case 2:
 					if entryTyp != protowire.VarintType {
@@ -6236,7 +6236,7 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 					if tmpN < 0 {
 						return fmt.Errorf("invalid varint")
 					}
-					mapvalue = int32(tmpVal>>1) ^ int32(tmpVal)<<31>>31
+					mapvalue = int32(uint32(tmpVal)>>1) ^ int32(uint32(tmpVal))<<31>>31
 					entryData = entryData[tmpN:]
 				default:
 					skipN, skipErr := skipField(entryData, entryNum, entryTyp)

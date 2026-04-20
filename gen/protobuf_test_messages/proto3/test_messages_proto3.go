@@ -2554,7 +2554,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					break
 				}
 			}
-			m.OptionalSint32 = int32(v>>1) ^ int32(v)<<31>>31
+			m.OptionalSint32 = int32(uint32(v)>>1) ^ int32(uint32(v))<<31>>31
 		case 6: // optional_sint64
 			if wireType != 0 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -3298,7 +3298,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					if vn < 0 {
 						return fmt.Errorf("invalid packed varint")
 					}
-					m.RepeatedSint32 = append(m.RepeatedSint32, int32(v>>1)^int32(v)<<31>>31)
+					m.RepeatedSint32 = append(m.RepeatedSint32, int32(uint32(v)>>1)^int32(uint32(v))<<31>>31)
 					data = data[vn:]
 				}
 				iNdEx = postIndex
@@ -3318,7 +3318,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 						break
 					}
 				}
-				m.RepeatedSint32 = append(m.RepeatedSint32, int32(v>>1)^int32(v)<<31>>31)
+				m.RepeatedSint32 = append(m.RepeatedSint32, int32(uint32(v)>>1)^int32(uint32(v))<<31>>31)
 			} else {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
@@ -4575,7 +4575,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					if tmpN < 0 {
 						return fmt.Errorf("invalid varint")
 					}
-					mapkey = int32(tmpVal>>1) ^ int32(tmpVal)<<31>>31
+					mapkey = int32(uint32(tmpVal)>>1) ^ int32(uint32(tmpVal))<<31>>31
 					entryData = entryData[tmpN:]
 				case 2:
 					if entryTyp != protowire.VarintType {
@@ -4590,7 +4590,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					if tmpN < 0 {
 						return fmt.Errorf("invalid varint")
 					}
-					mapvalue = int32(tmpVal>>1) ^ int32(tmpVal)<<31>>31
+					mapvalue = int32(uint32(tmpVal)>>1) ^ int32(uint32(tmpVal))<<31>>31
 					entryData = entryData[tmpN:]
 				default:
 					skipN, skipErr := skipField(entryData, entryNum, entryTyp)
@@ -6165,7 +6165,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					if vn < 0 {
 						return fmt.Errorf("invalid packed varint")
 					}
-					m.PackedSint32 = append(m.PackedSint32, int32(v>>1)^int32(v)<<31>>31)
+					m.PackedSint32 = append(m.PackedSint32, int32(uint32(v)>>1)^int32(uint32(v))<<31>>31)
 					data = data[vn:]
 				}
 				iNdEx = postIndex
@@ -6185,7 +6185,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 						break
 					}
 				}
-				m.PackedSint32 = append(m.PackedSint32, int32(v>>1)^int32(v)<<31>>31)
+				m.PackedSint32 = append(m.PackedSint32, int32(uint32(v)>>1)^int32(uint32(v))<<31>>31)
 			} else {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
@@ -7057,7 +7057,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					if vn < 0 {
 						return fmt.Errorf("invalid packed varint")
 					}
-					m.UnpackedSint32 = append(m.UnpackedSint32, int32(v>>1)^int32(v)<<31>>31)
+					m.UnpackedSint32 = append(m.UnpackedSint32, int32(uint32(v)>>1)^int32(uint32(v))<<31>>31)
 					data = data[vn:]
 				}
 				iNdEx = postIndex
@@ -7077,7 +7077,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 						break
 					}
 				}
-				m.UnpackedSint32 = append(m.UnpackedSint32, int32(v>>1)^int32(v)<<31>>31)
+				m.UnpackedSint32 = append(m.UnpackedSint32, int32(uint32(v)>>1)^int32(uint32(v))<<31>>31)
 			} else {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
