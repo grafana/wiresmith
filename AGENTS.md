@@ -69,6 +69,37 @@ docker run --rm --entrypoint conformance_test_runner wiresmith-conformance /usr/
 
 Compare the `unexpected failures` output against `conformance/failure_list.txt` and remove entries that no longer appear. The expected failure count in the runner output should equal the number of entries in the file.
 
+## Common review caveats
+
+Recurring themes from PR reviews. Keep these in mind when modifying the generator or generated code.
+
+### Nil-safety on all generated receiver methods
+Every generated method with a pointer receiver (`String()`, `Has<Field>()`, `Get<Field>()`, `Equal()`, `Reset()`) must handle `nil` receivers gracefully — return zero value or `"<nil>"`, never panic. Callers assume uniform nil-safety across the generated API.
+
+### Generated code must compile for edge-case protos
+- **`allow_alias` enums**: Multiple enum names can map to the same numeric value. Emitting a map literal with duplicate keys fails compilation — deduplicate by number or use assignment statements.
+- **Empty .proto files**: Files with no messages or enums must not emit an empty `init()` or unused imports — both cause compilation errors.
+- **`[packed = false]`**: Repeated scalar fields with explicit `[packed = false]` must be marshaled/sized as individual tag+value pairs, not as packed length-delimited blobs.
+
+### Wire format safety in unmarshal
+- **Reject field number 0**: Inline tag decode must validate `fieldNum >= 1` before dispatching. Zero is not a valid protobuf field number.
+- **Varint byte limits**: Enforce 10-byte maximum for varint decoding. The 10th byte must have `b & 0x7F <= 1` at `shift == 63` to prevent silent overflow.
+- **Packed field bounds**: Packed element reads must check against `postIndex` (packed payload boundary), not `l` (message length). Malformed packed data must not consume bytes from subsequent fields.
+- **32-bit length safety**: Length-delimited varint decode into `int` truncates on 32-bit architectures when `shift >= 32`. Decode into `uint64` first, then bounds-check before converting.
+
+### Map field correctness
+- **Merge semantics**: Track value-field presence with a boolean, not `len(mapValueBytes) > 0`. An empty-but-present message value (length 0) must trigger merge, not overwrite. Absent value field must preserve the existing entry.
+- **Bytes aliasing**: Bytes map values must allocate a fresh slice per entry (`append([]byte(nil), ...)` or `slices.Clone`). Reusing a backing array via `append(varName[:0], ...)` corrupts previously stored entries.
+
+### Oneof equality requires value comparison
+Comparing oneof fields with `!=` checks interface pointer identity, not semantic equality. Two independently allocated oneofs with identical payloads compare as unequal. Use a type-switch that compares variant type and payload.
+
+### Keep documentation in sync with code
+CLAUDE.md, AGENTS.md, MIMIR.md, and TEMPO.md track conformance counts, feature status, and CLI flags. Update them when features land or conformance results change. Reviewers consistently flag stale docs.
+
+### Generator test coverage
+The generator smoke test (`TestGenerateMatchesCheckedIn`) only checks files that were produced — it does not fail when a file stops being generated. Significant new generator features (Equal, presence bitmap, registration) should have dedicated tests, not just regeneration checks.
+
 ## Known issues
 
 - `go test ./...` panics in `bench/` with `proto: file "maps.proto" is already registered` due to conflicting proto registrations between `gen/bench/official`, `gen/bench/vtpb`, and `gen/bench/gogopb`. Use `go test ./test/ ./compiler/...` to run tests without the bench package, or `GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn go test ./bench/` to run benchmarks.
