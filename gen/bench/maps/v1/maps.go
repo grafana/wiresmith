@@ -12,17 +12,77 @@ import (
 )
 
 type MapBench struct {
-	StringMap     map[string]string
-	IntMap        map[int64]int64
-	MessageMap    map[string]Inner
-	unknownFields []byte
+	StringMap  map[string]string
+	IntMap     map[int64]int64
+	MessageMap map[string]Inner
 }
 
 type Inner struct {
-	Name          string
-	Value         int64
-	Data          []byte
-	unknownFields []byte
+	Name  string
+	Value int64
+	Data  []byte
+
+	fieldsPresent [1]uint64
+}
+
+func (m *MapBench) Reset()      { *m = MapBench{} }
+func (*MapBench) ProtoMessage() {}
+
+func (m *Inner) Reset()      { *m = Inner{} }
+func (*Inner) ProtoMessage() {}
+
+func (m *Inner) HasName() bool {
+	return m.fieldsPresent[0]&(1<<0) != 0
+}
+
+func (m *Inner) HasValue() bool {
+	return m.fieldsPresent[0]&(1<<1) != 0
+}
+
+func (m *Inner) HasData() bool {
+	return m.fieldsPresent[0]&(1<<2) != 0
+}
+
+func (m *MapBench) GetStringMap() map[string]string {
+	if m != nil {
+		return m.StringMap
+	}
+	return nil
+}
+
+func (m *MapBench) GetIntMap() map[int64]int64 {
+	if m != nil {
+		return m.IntMap
+	}
+	return nil
+}
+
+func (m *MapBench) GetMessageMap() map[string]Inner {
+	if m != nil {
+		return m.MessageMap
+	}
+	return nil
+}
+
+func (m *Inner) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+func (m *Inner) GetValue() int64 {
+	if m != nil {
+		return m.Value
+	}
+	return 0
+}
+
+func (m *Inner) GetData() []byte {
+	if m != nil {
+		return m.Data
+	}
+	return nil
 }
 
 func (m *MapBench) Size() int {
@@ -46,7 +106,6 @@ func (m *MapBench) Size() int {
 		entrySize += 1 + protowire.SizeVarint(uint64(s)) + s
 		n += 1 + protowire.SizeVarint(uint64(entrySize)) + entrySize
 	}
-	n += len(m.unknownFields)
 	return n
 }
 
@@ -61,7 +120,6 @@ func (m *Inner) Size() int {
 	if len(m.Data) > 0 {
 		n += 1 + protowire.SizeVarint(uint64(len(m.Data))) + len(m.Data)
 	}
-	n += len(m.unknownFields)
 	return n
 }
 
@@ -85,10 +143,6 @@ func (m *MapBench) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *MapBench) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
-	if len(m.unknownFields) > 0 {
-		i -= len(m.unknownFields)
-		copy(dAtA[i:], m.unknownFields)
-	}
 	for k, v := range m.MessageMap {
 		baseI := i
 		size, err := v.MarshalToSizedBuffer(dAtA[:i])
@@ -159,10 +213,6 @@ func (m *Inner) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *Inner) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
-	if len(m.unknownFields) > 0 {
-		i -= len(m.unknownFields)
-		copy(dAtA[i:], m.unknownFields)
-	}
 	if len(m.Data) > 0 {
 		i -= len(m.Data)
 		copy(dAtA[i:], m.Data)
@@ -366,7 +416,6 @@ func (m *MapBench) unmarshal(dAtA []byte, depth int) error {
 		}
 	}
 	for iNdEx < l {
-		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
 			if shift >= 35 {
@@ -668,7 +717,6 @@ func (m *MapBench) unmarshal(dAtA []byte, depth int) error {
 			if err != nil {
 				return err
 			}
-			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -689,7 +737,6 @@ func (m *Inner) unmarshal(dAtA []byte, depth int) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
-		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
 			if shift >= 35 {
@@ -748,6 +795,7 @@ func (m *Inner) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Name = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 0
 		case 2: // value
 			if wireType != 0 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -773,6 +821,7 @@ func (m *Inner) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.Value = int64(v)
+			m.fieldsPresent[0] |= 1 << 1
 		case 3: // data
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -810,12 +859,12 @@ func (m *Inner) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Data = append(m.Data[:0], dAtA[iNdEx:postIndex]...)
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 2
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
-			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -880,9 +929,6 @@ func (this *MapBench) Equal(that interface{}) bool {
 			return false
 		}
 	}
-	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
-		return false
-	}
 	return true
 }
 
@@ -912,9 +958,6 @@ func (this *Inner) Equal(that interface{}) bool {
 		return false
 	}
 	if !bytes.Equal(this.Data, that1.Data) {
-		return false
-	}
-	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
 		return false
 	}
 	return true

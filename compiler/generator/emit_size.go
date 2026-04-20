@@ -15,6 +15,7 @@ func (fg *FileGenerator) emitSize(md protoreflect.MessageDescriptor) {
 	fmt.Fprintf(fg.body, "func (m *%s) Size() int {\n", name)
 	fmt.Fprintf(fg.body, "\tvar n int\n")
 
+	pm := presenceMap(md)
 	seenOneofs := map[string]bool{}
 	for i := 0; i < md.Fields().Len(); i++ {
 		fd := md.Fields().Get(i)
@@ -27,12 +28,33 @@ func (fg *FileGenerator) emitSize(md protoreflect.MessageDescriptor) {
 			}
 			continue
 		}
+		// Singular message fields with presence bitmap: account for
+		// tag + length-0 when the field was set to an empty message.
+		if bitIndex, ok := pm[fd.Number()]; ok && fd.Kind() == protoreflect.MessageKind {
+			fg.emitMessageSizeWithPresence(fd, bitIndex)
+			continue
+		}
 		fg.emitFieldSize(fd)
 	}
 
-	fmt.Fprintf(fg.body, "\tn += len(m.unknownFields)\n")
 	fmt.Fprintf(fg.body, "\treturn n\n")
 	fmt.Fprintf(fg.body, "}\n\n")
+}
+
+// emitMessageSizeWithPresence emits size code for a singular message field
+// with presence bitmap. Adds tag + 1 byte (varint 0) when the field was
+// present but the nested message is empty.
+func (fg *FileGenerator) emitMessageSizeWithPresence(fd protoreflect.FieldDescriptor, bitIndex int) {
+	goName := snakeToPascal(string(fd.Name()))
+	access := "m." + goName
+	tagSize := protowire.SizeTag(protowire.Number(fd.Number()))
+	wordIndex := bitIndex / 64
+	bitOffset := bitIndex % 64
+
+	fmt.Fprintf(fg.body, "\t{\n\t\ts := %s.Size()\n", access)
+	fmt.Fprintf(fg.body, "\t\tif s > 0 {\n\t\t\tn += %d + protowire.SizeVarint(uint64(s)) + s\n\t\t}", tagSize)
+	fmt.Fprintf(fg.body, " else if m.fieldsPresent[%d]&(1<<%d) != 0 {\n\t\t\tn += %d\n\t\t}\n", wordIndex, bitOffset, tagSize+1)
+	fmt.Fprintf(fg.body, "\t}\n")
 }
 
 func (fg *FileGenerator) emitFieldSize(fd protoreflect.FieldDescriptor) {

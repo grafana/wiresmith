@@ -48,6 +48,7 @@ All commands are available via `make`:
 - **Field presence bitmap**: Singular non-optional, non-oneof fields get a `fieldsPresent` bitmap (`[N]uint64`) that tracks which fields were seen during `Unmarshal`. Generated `Has<Field>()` methods let callers distinguish "field absent" from "field set to zero value". The bitmap is not serialized. Repeated, map, optional, and oneof fields are excluded — they already have presence semantics via nil slice/pointer/interface. **Note on optional bytes**: optional bytes fields use `[]byte` (same Go type as regular bytes), with `nil` = absent and non-nil = present. This matches gogoproto/official protobuf behavior. The distinction is via nil-check, not the bitmap — `[]byte{}` is "present but empty", `nil` is "absent".
 - **Getter methods**: `Get<Field>()` methods are generated for all fields (nil-safe like gogoproto). For value-type message fields, the getter returns `*MessageType` and uses the presence bitmap to return `nil` when the field was absent from the wire. Optional fields dereference the pointer, oneof fields type-assert, repeated/map fields return the slice/map.
 - **Reset/ProtoMessage**: `Reset()` zeroes the struct (`*m = Type{}`). `ProtoMessage()` is a no-op marker method, matching the standard `proto.Message` interface shape.
+- **Unknown fields discarded**: Unknown fields are intentionally skipped during unmarshal and not preserved. This is a deliberate performance trade-off: wiresmith is designed for working with messages of known schema, so unknown field preservation would add per-struct overhead with no benefit for the primary use case.
 
 ## Supported proto3 features
 
@@ -57,7 +58,7 @@ Not supported (not needed for OTel protos): services/RPCs, extensions, well-know
 
 ## Conformance test status
 
-698 passing, 2 expected failures (1 empty message presence, 1 map message merge with recursive messages). Run with `make conformance`.
+695 passing, 5 expected failures (3 message merge with recursive messages, 2 unknown field preservation). Unknown fields are intentionally discarded for performance. Run with `make conformance`.
 
 **Updating the failure list:** The conformance runner errors when a failure list entry matches a now-passing test ("is in the failure list, but test succeeded"). After fixing conformance-related bugs, run conformance and remove entries that the runner flags:
 

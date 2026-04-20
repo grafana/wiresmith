@@ -210,7 +210,6 @@ func (fg *FileGenerator) emitUnmarshal(md protoreflect.MessageDescriptor) {
 
 	// Main parse loop with inline tag decoding.
 	fmt.Fprintf(fg.body, "\tfor iNdEx < l {\n")
-	fmt.Fprintf(fg.body, "\t\ttagStart := iNdEx\n")
 
 	// Inline tag decode
 	fmt.Fprintf(fg.body, "\t\tvar wire uint64\n")
@@ -246,7 +245,6 @@ func (fg *FileGenerator) emitUnmarshal(md protoreflect.MessageDescriptor) {
 	fmt.Fprintf(fg.body, "\t\tdefault:\n")
 	fmt.Fprintf(fg.body, "\t\t\tn, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)\n")
 	fmt.Fprintf(fg.body, "\t\t\tif err != nil {\n\t\t\t\treturn err\n\t\t\t}\n")
-	fmt.Fprintf(fg.body, "\t\t\tm.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)\n")
 	fmt.Fprintf(fg.body, "\t\t\tiNdEx += n\n")
 	fmt.Fprintf(fg.body, "\t\t}\n") // end switch
 	fmt.Fprintf(fg.body, "\t}\n")   // end for

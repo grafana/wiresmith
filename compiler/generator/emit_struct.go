@@ -55,6 +55,5 @@ func (fg *FileGenerator) emitStruct(md protoreflect.MessageDescriptor) {
 		fmt.Fprintf(fg.body, "\n\tfieldsPresent [%d]uint64\n", words)
 	}
 
-	fmt.Fprintf(fg.body, "\tunknownFields []byte\n")
 	fmt.Fprintf(fg.body, "}\n\n")
 }

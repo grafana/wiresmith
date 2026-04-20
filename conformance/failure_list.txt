@@ -7,18 +7,22 @@
 # As wiresmith adds features, entries should be removed from this list.
 # The runner will flag any test that unexpectedly passes or fails.
 #
-# Summary: 2 expected failures
-#     1 — empty message presence (value-type structs cannot distinguish
-#         "unset" from "set to empty message")
-#     1 — map message value merge with recursive messages (wiresmith does
-#         not generate recursive message fields, so corecursive data is
-#         preserved as unknown bytes but not merged recursively)
+# Summary: 5 expected failures
+#     3 — message merge with recursive messages (wiresmith does not
+#         generate recursive message fields; corecursive data is
+#         discarded as unknown fields)
+#     2 — unknown field preservation (wiresmith intentionally discards
+#         unknown fields for performance; it is designed to work with
+#         messages of known schema)
 
-# Empty message — an empty nested message (length 0) should be present
-# in the output, but wiresmith's value-type structs marshal it as absent.
-Required.Proto3.ProtobufInput.ValidDataScalar.MESSAGE[0].ProtobufOutput
-
-# Map message merge — the corecursive field inside the map value is
-# unknown to wiresmith, so repeated entries with the same key concatenate
-# unknown bytes rather than performing recursive message merge.
+# Message merge with recursive messages — the corecursive field is
+# unknown to wiresmith, so it is discarded during unmarshal and
+# absent from the merged output.
+Required.Proto3.ProtobufInput.RepeatedScalarMessageMerge.ProtobufOutput
 Required.Proto3.ProtobufInput.ValidDataMap.STRING.MESSAGE.MergeValue.ProtobufOutput
+Required.Proto3.ProtobufInput.ValidDataOneof.MESSAGE.Merge.ProtobufOutput
+
+# Unknown field preservation — wiresmith intentionally drops unknown
+# fields instead of preserving them in the output.
+Required.Proto3.ProtobufInput.UnknownOrdering.ProtobufOutput
+Required.Proto3.ProtobufInput.UnknownVarint.ProtobufOutput

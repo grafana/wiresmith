@@ -85,8 +85,7 @@ type ProfilesDictionary struct {
 	// Stacks referenced by samples via Sample.stack_index.
 	//
 	// stack_table[0] must always be zero value (Stack{}) and present.
-	StackTable    []Stack
-	unknownFields []byte
+	StackTable []Stack
 }
 
 // ProfilesData represents the profiles data that can be stored in persistent storage,
@@ -113,8 +112,9 @@ type ProfilesData struct {
 	// resources_profiles[0].scope_profiles[0].profiles[0] by default.
 	ResourceProfiles []ResourceProfiles
 	// One instance of ProfilesDictionary
-	Dictionary    ProfilesDictionary
-	unknownFields []byte
+	Dictionary ProfilesDictionary
+
+	fieldsPresent [1]uint64
 }
 
 // A collection of ScopeProfiles from a Resource.
@@ -132,8 +132,9 @@ type ResourceProfiles struct {
 	// https://opentelemetry.io/docs/specs/otel/schemas/#schema-url
 	// This schema_url applies to the data in the "resource" field. It does not apply
 	// to the data in the "scope_profiles" field which have their own schema_url field.
-	SchemaUrl     string
-	unknownFields []byte
+	SchemaUrl string
+
+	fieldsPresent [1]uint64
 }
 
 // A collection of Profiles produced by an InstrumentationScope.
@@ -152,8 +153,9 @@ type ScopeProfiles struct {
 	// https://opentelemetry.io/docs/specs/otel/schemas/#schema-url
 	// This schema_url applies to the data in the "scope" field and all profiles in the
 	// "profiles" field.
-	SchemaUrl     string
-	unknownFields []byte
+	SchemaUrl string
+
+	fieldsPresent [1]uint64
 }
 
 // Represents a complete profile, including sample types, samples, mappings to
@@ -225,7 +227,8 @@ type Profile struct {
 	OriginalPayload []byte
 	// References to attributes in attribute_table. [optional]
 	AttributeIndices []int32
-	unknownFields    []byte
+
+	fieldsPresent [1]uint64
 }
 
 // A pointer from a profile Sample to a trace Span.
@@ -237,8 +240,9 @@ type Link struct {
 	// 16-byte array.
 	TraceId []byte
 	// A unique identifier for the linked span. The ID is an 8-byte array.
-	SpanId        []byte
-	unknownFields []byte
+	SpanId []byte
+
+	fieldsPresent [1]uint64
 }
 
 // ValueType describes the type and units of a value.
@@ -248,8 +252,9 @@ type ValueType struct {
 	// Index into ProfilesDictionary.string_table.
 	TypeStrindex int32
 	// Index into ProfilesDictionary.string_table.
-	UnitStrindex  int32
-	unknownFields []byte
+	UnitStrindex int32
+
+	fieldsPresent [1]uint64
 }
 
 // Each Sample records values encountered in some program context. The program
@@ -298,7 +303,8 @@ type Sample struct {
 	// [Profile.time_unix_nano, Profile.time_unix_nano + Profile.duration_nano)
 	// time range.
 	TimestampsUnixNano []uint64
-	unknownFields      []byte
+
+	fieldsPresent [1]uint64
 }
 
 // Describes the mapping of a binary in memory, including its address range,
@@ -318,7 +324,8 @@ type Mapping struct {
 	FilenameStrindex int32
 	// References to attributes in ProfilesDictionary.attribute_table. [optional]
 	AttributeIndices []int32
-	unknownFields    []byte
+
+	fieldsPresent [1]uint64
 }
 
 // A Stack represents a stack trace as a list of locations.
@@ -328,7 +335,6 @@ type Stack struct {
 	// References to locations in ProfilesDictionary.location_table.
 	// The first location is the leaf frame.
 	LocationIndices []int32
-	unknownFields   []byte
 }
 
 // Describes function and line table debug information.
@@ -355,7 +361,8 @@ type Location struct {
 	Lines []Line
 	// References to attributes in ProfilesDictionary.attribute_table. [optional]
 	AttributeIndices []int32
-	unknownFields    []byte
+
+	fieldsPresent [1]uint64
 }
 
 // Details a specific line in a source code, linked to a function.
@@ -367,8 +374,9 @@ type Line struct {
 	// Line number in source code. 0 means unset.
 	Line int64
 	// Column number in source code. 0 means unset.
-	Column        int64
-	unknownFields []byte
+	Column int64
+
+	fieldsPresent [1]uint64
 }
 
 // Describes a function, including its human-readable name, system name,
@@ -384,8 +392,9 @@ type Function struct {
 	// Source file containing the function. Empty string if not available.
 	FilenameStrindex int32
 	// Line number in source file. 0 means unset.
-	StartLine     int64
-	unknownFields []byte
+	StartLine int64
+
+	fieldsPresent [1]uint64
 }
 
 // A custom 'dictionary native' style of encoding attributes which is more convenient
@@ -400,8 +409,580 @@ type KeyValueAndUnit struct {
 	Value commonv1.AnyValue
 	// The index into the string table for the attribute's unit.
 	// zero indicates implicit (by semconv) or non-defined unit.
-	UnitStrindex  int32
-	unknownFields []byte
+	UnitStrindex int32
+
+	fieldsPresent [1]uint64
+}
+
+func (m *ProfilesDictionary) Reset()      { *m = ProfilesDictionary{} }
+func (*ProfilesDictionary) ProtoMessage() {}
+
+func (m *ProfilesData) Reset()      { *m = ProfilesData{} }
+func (*ProfilesData) ProtoMessage() {}
+
+func (m *ResourceProfiles) Reset()      { *m = ResourceProfiles{} }
+func (*ResourceProfiles) ProtoMessage() {}
+
+func (m *ScopeProfiles) Reset()      { *m = ScopeProfiles{} }
+func (*ScopeProfiles) ProtoMessage() {}
+
+func (m *Profile) Reset()      { *m = Profile{} }
+func (*Profile) ProtoMessage() {}
+
+func (m *Link) Reset()      { *m = Link{} }
+func (*Link) ProtoMessage() {}
+
+func (m *ValueType) Reset()      { *m = ValueType{} }
+func (*ValueType) ProtoMessage() {}
+
+func (m *Sample) Reset()      { *m = Sample{} }
+func (*Sample) ProtoMessage() {}
+
+func (m *Mapping) Reset()      { *m = Mapping{} }
+func (*Mapping) ProtoMessage() {}
+
+func (m *Stack) Reset()      { *m = Stack{} }
+func (*Stack) ProtoMessage() {}
+
+func (m *Location) Reset()      { *m = Location{} }
+func (*Location) ProtoMessage() {}
+
+func (m *Line) Reset()      { *m = Line{} }
+func (*Line) ProtoMessage() {}
+
+func (m *Function) Reset()      { *m = Function{} }
+func (*Function) ProtoMessage() {}
+
+func (m *KeyValueAndUnit) Reset()      { *m = KeyValueAndUnit{} }
+func (*KeyValueAndUnit) ProtoMessage() {}
+
+func (m *ProfilesData) HasDictionary() bool {
+	return m.fieldsPresent[0]&(1<<0) != 0
+}
+
+func (m *ResourceProfiles) HasResource() bool {
+	return m.fieldsPresent[0]&(1<<0) != 0
+}
+
+func (m *ResourceProfiles) HasSchemaUrl() bool {
+	return m.fieldsPresent[0]&(1<<1) != 0
+}
+
+func (m *ScopeProfiles) HasScope() bool {
+	return m.fieldsPresent[0]&(1<<0) != 0
+}
+
+func (m *ScopeProfiles) HasSchemaUrl() bool {
+	return m.fieldsPresent[0]&(1<<1) != 0
+}
+
+func (m *Profile) HasSampleType() bool {
+	return m.fieldsPresent[0]&(1<<0) != 0
+}
+
+func (m *Profile) HasTimeUnixNano() bool {
+	return m.fieldsPresent[0]&(1<<1) != 0
+}
+
+func (m *Profile) HasDurationNano() bool {
+	return m.fieldsPresent[0]&(1<<2) != 0
+}
+
+func (m *Profile) HasPeriodType() bool {
+	return m.fieldsPresent[0]&(1<<3) != 0
+}
+
+func (m *Profile) HasPeriod() bool {
+	return m.fieldsPresent[0]&(1<<4) != 0
+}
+
+func (m *Profile) HasProfileId() bool {
+	return m.fieldsPresent[0]&(1<<5) != 0
+}
+
+func (m *Profile) HasDroppedAttributesCount() bool {
+	return m.fieldsPresent[0]&(1<<6) != 0
+}
+
+func (m *Profile) HasOriginalPayloadFormat() bool {
+	return m.fieldsPresent[0]&(1<<7) != 0
+}
+
+func (m *Profile) HasOriginalPayload() bool {
+	return m.fieldsPresent[0]&(1<<8) != 0
+}
+
+func (m *Link) HasTraceId() bool {
+	return m.fieldsPresent[0]&(1<<0) != 0
+}
+
+func (m *Link) HasSpanId() bool {
+	return m.fieldsPresent[0]&(1<<1) != 0
+}
+
+func (m *ValueType) HasTypeStrindex() bool {
+	return m.fieldsPresent[0]&(1<<0) != 0
+}
+
+func (m *ValueType) HasUnitStrindex() bool {
+	return m.fieldsPresent[0]&(1<<1) != 0
+}
+
+func (m *Sample) HasStackIndex() bool {
+	return m.fieldsPresent[0]&(1<<0) != 0
+}
+
+func (m *Sample) HasLinkIndex() bool {
+	return m.fieldsPresent[0]&(1<<1) != 0
+}
+
+func (m *Mapping) HasMemoryStart() bool {
+	return m.fieldsPresent[0]&(1<<0) != 0
+}
+
+func (m *Mapping) HasMemoryLimit() bool {
+	return m.fieldsPresent[0]&(1<<1) != 0
+}
+
+func (m *Mapping) HasFileOffset() bool {
+	return m.fieldsPresent[0]&(1<<2) != 0
+}
+
+func (m *Mapping) HasFilenameStrindex() bool {
+	return m.fieldsPresent[0]&(1<<3) != 0
+}
+
+func (m *Location) HasMappingIndex() bool {
+	return m.fieldsPresent[0]&(1<<0) != 0
+}
+
+func (m *Location) HasAddress() bool {
+	return m.fieldsPresent[0]&(1<<1) != 0
+}
+
+func (m *Line) HasFunctionIndex() bool {
+	return m.fieldsPresent[0]&(1<<0) != 0
+}
+
+func (m *Line) HasLine() bool {
+	return m.fieldsPresent[0]&(1<<1) != 0
+}
+
+func (m *Line) HasColumn() bool {
+	return m.fieldsPresent[0]&(1<<2) != 0
+}
+
+func (m *Function) HasNameStrindex() bool {
+	return m.fieldsPresent[0]&(1<<0) != 0
+}
+
+func (m *Function) HasSystemNameStrindex() bool {
+	return m.fieldsPresent[0]&(1<<1) != 0
+}
+
+func (m *Function) HasFilenameStrindex() bool {
+	return m.fieldsPresent[0]&(1<<2) != 0
+}
+
+func (m *Function) HasStartLine() bool {
+	return m.fieldsPresent[0]&(1<<3) != 0
+}
+
+func (m *KeyValueAndUnit) HasKeyStrindex() bool {
+	return m.fieldsPresent[0]&(1<<0) != 0
+}
+
+func (m *KeyValueAndUnit) HasValue() bool {
+	return m.fieldsPresent[0]&(1<<1) != 0
+}
+
+func (m *KeyValueAndUnit) HasUnitStrindex() bool {
+	return m.fieldsPresent[0]&(1<<2) != 0
+}
+
+func (m *ProfilesDictionary) GetMappingTable() []Mapping {
+	if m != nil {
+		return m.MappingTable
+	}
+	return nil
+}
+
+func (m *ProfilesDictionary) GetLocationTable() []Location {
+	if m != nil {
+		return m.LocationTable
+	}
+	return nil
+}
+
+func (m *ProfilesDictionary) GetFunctionTable() []Function {
+	if m != nil {
+		return m.FunctionTable
+	}
+	return nil
+}
+
+func (m *ProfilesDictionary) GetLinkTable() []Link {
+	if m != nil {
+		return m.LinkTable
+	}
+	return nil
+}
+
+func (m *ProfilesDictionary) GetStringTable() []string {
+	if m != nil {
+		return m.StringTable
+	}
+	return nil
+}
+
+func (m *ProfilesDictionary) GetAttributeTable() []KeyValueAndUnit {
+	if m != nil {
+		return m.AttributeTable
+	}
+	return nil
+}
+
+func (m *ProfilesDictionary) GetStackTable() []Stack {
+	if m != nil {
+		return m.StackTable
+	}
+	return nil
+}
+
+func (m *ProfilesData) GetResourceProfiles() []ResourceProfiles {
+	if m != nil {
+		return m.ResourceProfiles
+	}
+	return nil
+}
+
+func (m *ProfilesData) GetDictionary() *ProfilesDictionary {
+	if m != nil && m.fieldsPresent[0]&(1<<0) != 0 {
+		return &m.Dictionary
+	}
+	return nil
+}
+
+func (m *ResourceProfiles) GetResource() *resourcev1.Resource {
+	if m != nil && m.fieldsPresent[0]&(1<<0) != 0 {
+		return &m.Resource
+	}
+	return nil
+}
+
+func (m *ResourceProfiles) GetScopeProfiles() []ScopeProfiles {
+	if m != nil {
+		return m.ScopeProfiles
+	}
+	return nil
+}
+
+func (m *ResourceProfiles) GetSchemaUrl() string {
+	if m != nil {
+		return m.SchemaUrl
+	}
+	return ""
+}
+
+func (m *ScopeProfiles) GetScope() *commonv1.InstrumentationScope {
+	if m != nil && m.fieldsPresent[0]&(1<<0) != 0 {
+		return &m.Scope
+	}
+	return nil
+}
+
+func (m *ScopeProfiles) GetProfiles() []Profile {
+	if m != nil {
+		return m.Profiles
+	}
+	return nil
+}
+
+func (m *ScopeProfiles) GetSchemaUrl() string {
+	if m != nil {
+		return m.SchemaUrl
+	}
+	return ""
+}
+
+func (m *Profile) GetSampleType() *ValueType {
+	if m != nil && m.fieldsPresent[0]&(1<<0) != 0 {
+		return &m.SampleType
+	}
+	return nil
+}
+
+func (m *Profile) GetSamples() []Sample {
+	if m != nil {
+		return m.Samples
+	}
+	return nil
+}
+
+func (m *Profile) GetTimeUnixNano() uint64 {
+	if m != nil {
+		return m.TimeUnixNano
+	}
+	return 0
+}
+
+func (m *Profile) GetDurationNano() uint64 {
+	if m != nil {
+		return m.DurationNano
+	}
+	return 0
+}
+
+func (m *Profile) GetPeriodType() *ValueType {
+	if m != nil && m.fieldsPresent[0]&(1<<3) != 0 {
+		return &m.PeriodType
+	}
+	return nil
+}
+
+func (m *Profile) GetPeriod() int64 {
+	if m != nil {
+		return m.Period
+	}
+	return 0
+}
+
+func (m *Profile) GetProfileId() []byte {
+	if m != nil {
+		return m.ProfileId
+	}
+	return nil
+}
+
+func (m *Profile) GetDroppedAttributesCount() uint32 {
+	if m != nil {
+		return m.DroppedAttributesCount
+	}
+	return 0
+}
+
+func (m *Profile) GetOriginalPayloadFormat() string {
+	if m != nil {
+		return m.OriginalPayloadFormat
+	}
+	return ""
+}
+
+func (m *Profile) GetOriginalPayload() []byte {
+	if m != nil {
+		return m.OriginalPayload
+	}
+	return nil
+}
+
+func (m *Profile) GetAttributeIndices() []int32 {
+	if m != nil {
+		return m.AttributeIndices
+	}
+	return nil
+}
+
+func (m *Link) GetTraceId() []byte {
+	if m != nil {
+		return m.TraceId
+	}
+	return nil
+}
+
+func (m *Link) GetSpanId() []byte {
+	if m != nil {
+		return m.SpanId
+	}
+	return nil
+}
+
+func (m *ValueType) GetTypeStrindex() int32 {
+	if m != nil {
+		return m.TypeStrindex
+	}
+	return 0
+}
+
+func (m *ValueType) GetUnitStrindex() int32 {
+	if m != nil {
+		return m.UnitStrindex
+	}
+	return 0
+}
+
+func (m *Sample) GetStackIndex() int32 {
+	if m != nil {
+		return m.StackIndex
+	}
+	return 0
+}
+
+func (m *Sample) GetAttributeIndices() []int32 {
+	if m != nil {
+		return m.AttributeIndices
+	}
+	return nil
+}
+
+func (m *Sample) GetLinkIndex() int32 {
+	if m != nil {
+		return m.LinkIndex
+	}
+	return 0
+}
+
+func (m *Sample) GetValues() []int64 {
+	if m != nil {
+		return m.Values
+	}
+	return nil
+}
+
+func (m *Sample) GetTimestampsUnixNano() []uint64 {
+	if m != nil {
+		return m.TimestampsUnixNano
+	}
+	return nil
+}
+
+func (m *Mapping) GetMemoryStart() uint64 {
+	if m != nil {
+		return m.MemoryStart
+	}
+	return 0
+}
+
+func (m *Mapping) GetMemoryLimit() uint64 {
+	if m != nil {
+		return m.MemoryLimit
+	}
+	return 0
+}
+
+func (m *Mapping) GetFileOffset() uint64 {
+	if m != nil {
+		return m.FileOffset
+	}
+	return 0
+}
+
+func (m *Mapping) GetFilenameStrindex() int32 {
+	if m != nil {
+		return m.FilenameStrindex
+	}
+	return 0
+}
+
+func (m *Mapping) GetAttributeIndices() []int32 {
+	if m != nil {
+		return m.AttributeIndices
+	}
+	return nil
+}
+
+func (m *Stack) GetLocationIndices() []int32 {
+	if m != nil {
+		return m.LocationIndices
+	}
+	return nil
+}
+
+func (m *Location) GetMappingIndex() int32 {
+	if m != nil {
+		return m.MappingIndex
+	}
+	return 0
+}
+
+func (m *Location) GetAddress() uint64 {
+	if m != nil {
+		return m.Address
+	}
+	return 0
+}
+
+func (m *Location) GetLines() []Line {
+	if m != nil {
+		return m.Lines
+	}
+	return nil
+}
+
+func (m *Location) GetAttributeIndices() []int32 {
+	if m != nil {
+		return m.AttributeIndices
+	}
+	return nil
+}
+
+func (m *Line) GetFunctionIndex() int32 {
+	if m != nil {
+		return m.FunctionIndex
+	}
+	return 0
+}
+
+func (m *Line) GetLine() int64 {
+	if m != nil {
+		return m.Line
+	}
+	return 0
+}
+
+func (m *Line) GetColumn() int64 {
+	if m != nil {
+		return m.Column
+	}
+	return 0
+}
+
+func (m *Function) GetNameStrindex() int32 {
+	if m != nil {
+		return m.NameStrindex
+	}
+	return 0
+}
+
+func (m *Function) GetSystemNameStrindex() int32 {
+	if m != nil {
+		return m.SystemNameStrindex
+	}
+	return 0
+}
+
+func (m *Function) GetFilenameStrindex() int32 {
+	if m != nil {
+		return m.FilenameStrindex
+	}
+	return 0
+}
+
+func (m *Function) GetStartLine() int64 {
+	if m != nil {
+		return m.StartLine
+	}
+	return 0
+}
+
+func (m *KeyValueAndUnit) GetKeyStrindex() int32 {
+	if m != nil {
+		return m.KeyStrindex
+	}
+	return 0
+}
+
+func (m *KeyValueAndUnit) GetValue() *commonv1.AnyValue {
+	if m != nil && m.fieldsPresent[0]&(1<<1) != 0 {
+		return &m.Value
+	}
+	return nil
+}
+
+func (m *KeyValueAndUnit) GetUnitStrindex() int32 {
+	if m != nil {
+		return m.UnitStrindex
+	}
+	return 0
 }
 
 func (m *ProfilesDictionary) Size() int {
@@ -433,7 +1014,6 @@ func (m *ProfilesDictionary) Size() int {
 		s := m.StackTable[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
-	n += len(m.unknownFields)
 	return n
 }
 
@@ -447,9 +1027,10 @@ func (m *ProfilesData) Size() int {
 		s := m.Dictionary.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
+		} else if m.fieldsPresent[0]&(1<<0) != 0 {
+			n += 2
 		}
 	}
-	n += len(m.unknownFields)
 	return n
 }
 
@@ -459,6 +1040,8 @@ func (m *ResourceProfiles) Size() int {
 		s := m.Resource.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
+		} else if m.fieldsPresent[0]&(1<<0) != 0 {
+			n += 2
 		}
 	}
 	for i := range m.ScopeProfiles {
@@ -468,7 +1051,6 @@ func (m *ResourceProfiles) Size() int {
 	if len(m.SchemaUrl) > 0 {
 		n += 1 + protowire.SizeVarint(uint64(len(m.SchemaUrl))) + len(m.SchemaUrl)
 	}
-	n += len(m.unknownFields)
 	return n
 }
 
@@ -478,6 +1060,8 @@ func (m *ScopeProfiles) Size() int {
 		s := m.Scope.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
+		} else if m.fieldsPresent[0]&(1<<0) != 0 {
+			n += 2
 		}
 	}
 	for i := range m.Profiles {
@@ -487,7 +1071,6 @@ func (m *ScopeProfiles) Size() int {
 	if len(m.SchemaUrl) > 0 {
 		n += 1 + protowire.SizeVarint(uint64(len(m.SchemaUrl))) + len(m.SchemaUrl)
 	}
-	n += len(m.unknownFields)
 	return n
 }
 
@@ -497,6 +1080,8 @@ func (m *Profile) Size() int {
 		s := m.SampleType.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
+		} else if m.fieldsPresent[0]&(1<<0) != 0 {
+			n += 2
 		}
 	}
 	for i := range m.Samples {
@@ -513,6 +1098,8 @@ func (m *Profile) Size() int {
 		s := m.PeriodType.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
+		} else if m.fieldsPresent[0]&(1<<3) != 0 {
+			n += 2
 		}
 	}
 	if m.Period != 0 {
@@ -537,7 +1124,6 @@ func (m *Profile) Size() int {
 		}
 		n += 1 + protowire.SizeVarint(uint64(dataLen)) + dataLen
 	}
-	n += len(m.unknownFields)
 	return n
 }
 
@@ -549,7 +1135,6 @@ func (m *Link) Size() int {
 	if len(m.SpanId) > 0 {
 		n += 1 + protowire.SizeVarint(uint64(len(m.SpanId))) + len(m.SpanId)
 	}
-	n += len(m.unknownFields)
 	return n
 }
 
@@ -561,7 +1146,6 @@ func (m *ValueType) Size() int {
 	if m.UnitStrindex != 0 {
 		n += 1 + protowire.SizeVarint(uint64(m.UnitStrindex))
 	}
-	n += len(m.unknownFields)
 	return n
 }
 
@@ -591,7 +1175,6 @@ func (m *Sample) Size() int {
 		dataLen := len(m.TimestampsUnixNano) * 8
 		n += 1 + protowire.SizeVarint(uint64(dataLen)) + dataLen
 	}
-	n += len(m.unknownFields)
 	return n
 }
 
@@ -616,7 +1199,6 @@ func (m *Mapping) Size() int {
 		}
 		n += 1 + protowire.SizeVarint(uint64(dataLen)) + dataLen
 	}
-	n += len(m.unknownFields)
 	return n
 }
 
@@ -629,7 +1211,6 @@ func (m *Stack) Size() int {
 		}
 		n += 1 + protowire.SizeVarint(uint64(dataLen)) + dataLen
 	}
-	n += len(m.unknownFields)
 	return n
 }
 
@@ -652,7 +1233,6 @@ func (m *Location) Size() int {
 		}
 		n += 1 + protowire.SizeVarint(uint64(dataLen)) + dataLen
 	}
-	n += len(m.unknownFields)
 	return n
 }
 
@@ -667,7 +1247,6 @@ func (m *Line) Size() int {
 	if m.Column != 0 {
 		n += 1 + protowire.SizeVarint(uint64(m.Column))
 	}
-	n += len(m.unknownFields)
 	return n
 }
 
@@ -685,7 +1264,6 @@ func (m *Function) Size() int {
 	if m.StartLine != 0 {
 		n += 1 + protowire.SizeVarint(uint64(m.StartLine))
 	}
-	n += len(m.unknownFields)
 	return n
 }
 
@@ -698,12 +1276,13 @@ func (m *KeyValueAndUnit) Size() int {
 		s := m.Value.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
+		} else if m.fieldsPresent[0]&(1<<1) != 0 {
+			n += 2
 		}
 	}
 	if m.UnitStrindex != 0 {
 		n += 1 + protowire.SizeVarint(uint64(m.UnitStrindex))
 	}
-	n += len(m.unknownFields)
 	return n
 }
 
@@ -727,10 +1306,6 @@ func (m *ProfilesDictionary) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *ProfilesDictionary) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
-	if len(m.unknownFields) > 0 {
-		i -= len(m.unknownFields)
-		copy(dAtA[i:], m.unknownFields)
-	}
 	for iNdEx := len(m.StackTable) - 1; iNdEx >= 0; iNdEx-- {
 		size, err := m.StackTable[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 		if err != nil {
@@ -821,10 +1396,6 @@ func (m *ProfilesData) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *ProfilesData) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
-	if len(m.unknownFields) > 0 {
-		i -= len(m.unknownFields)
-		copy(dAtA[i:], m.unknownFields)
-	}
 	{
 		size, err := m.Dictionary.MarshalToSizedBuffer(dAtA[:i])
 		if err != nil {
@@ -833,6 +1404,11 @@ func (m *ProfilesData) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		if size > 0 {
 			i -= size
 			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			i--
+			dAtA[i] = 0x12
+		} else if m.fieldsPresent[0]&(1<<0) != 0 {
+			i--
+			dAtA[i] = 0
 			i--
 			dAtA[i] = 0x12
 		}
@@ -870,10 +1446,6 @@ func (m *ResourceProfiles) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *ResourceProfiles) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
-	if len(m.unknownFields) > 0 {
-		i -= len(m.unknownFields)
-		copy(dAtA[i:], m.unknownFields)
-	}
 	if len(m.SchemaUrl) > 0 {
 		i -= len(m.SchemaUrl)
 		copy(dAtA[i:], m.SchemaUrl)
@@ -901,6 +1473,11 @@ func (m *ResourceProfiles) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 			i--
 			dAtA[i] = 0x0a
+		} else if m.fieldsPresent[0]&(1<<0) != 0 {
+			i--
+			dAtA[i] = 0
+			i--
+			dAtA[i] = 0x0a
 		}
 	}
 	return len(dAtA) - i, nil
@@ -926,10 +1503,6 @@ func (m *ScopeProfiles) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *ScopeProfiles) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
-	if len(m.unknownFields) > 0 {
-		i -= len(m.unknownFields)
-		copy(dAtA[i:], m.unknownFields)
-	}
 	if len(m.SchemaUrl) > 0 {
 		i -= len(m.SchemaUrl)
 		copy(dAtA[i:], m.SchemaUrl)
@@ -957,6 +1530,11 @@ func (m *ScopeProfiles) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 			i--
 			dAtA[i] = 0x0a
+		} else if m.fieldsPresent[0]&(1<<0) != 0 {
+			i--
+			dAtA[i] = 0
+			i--
+			dAtA[i] = 0x0a
 		}
 	}
 	return len(dAtA) - i, nil
@@ -982,10 +1560,6 @@ func (m *Profile) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *Profile) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
-	if len(m.unknownFields) > 0 {
-		i -= len(m.unknownFields)
-		copy(dAtA[i:], m.unknownFields)
-	}
 	if len(m.AttributeIndices) > 0 {
 		var j int
 		pStart := i
@@ -1037,6 +1611,11 @@ func (m *Profile) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 			i--
 			dAtA[i] = 0x2a
+		} else if m.fieldsPresent[0]&(1<<3) != 0 {
+			i--
+			dAtA[i] = 0
+			i--
+			dAtA[i] = 0x2a
 		}
 	}
 	if m.DurationNano != 0 {
@@ -1070,6 +1649,11 @@ func (m *Profile) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 			i--
 			dAtA[i] = 0x0a
+		} else if m.fieldsPresent[0]&(1<<0) != 0 {
+			i--
+			dAtA[i] = 0
+			i--
+			dAtA[i] = 0x0a
 		}
 	}
 	return len(dAtA) - i, nil
@@ -1095,10 +1679,6 @@ func (m *Link) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *Link) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
-	if len(m.unknownFields) > 0 {
-		i -= len(m.unknownFields)
-		copy(dAtA[i:], m.unknownFields)
-	}
 	if len(m.SpanId) > 0 {
 		i -= len(m.SpanId)
 		copy(dAtA[i:], m.SpanId)
@@ -1136,10 +1716,6 @@ func (m *ValueType) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *ValueType) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
-	if len(m.unknownFields) > 0 {
-		i -= len(m.unknownFields)
-		copy(dAtA[i:], m.unknownFields)
-	}
 	if m.UnitStrindex != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.UnitStrindex))
 		i--
@@ -1173,10 +1749,6 @@ func (m *Sample) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *Sample) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
-	if len(m.unknownFields) > 0 {
-		i -= len(m.unknownFields)
-		copy(dAtA[i:], m.unknownFields)
-	}
 	if len(m.TimestampsUnixNano) > 0 {
 		for iNdEx := len(m.TimestampsUnixNano) - 1; iNdEx >= 0; iNdEx-- {
 			i -= 8
@@ -1239,10 +1811,6 @@ func (m *Mapping) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *Mapping) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
-	if len(m.unknownFields) > 0 {
-		i -= len(m.unknownFields)
-		copy(dAtA[i:], m.unknownFields)
-	}
 	if len(m.AttributeIndices) > 0 {
 		var j int
 		pStart := i
@@ -1296,10 +1864,6 @@ func (m *Stack) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *Stack) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
-	if len(m.unknownFields) > 0 {
-		i -= len(m.unknownFields)
-		copy(dAtA[i:], m.unknownFields)
-	}
 	if len(m.LocationIndices) > 0 {
 		var j int
 		pStart := i
@@ -1333,10 +1897,6 @@ func (m *Location) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *Location) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
-	if len(m.unknownFields) > 0 {
-		i -= len(m.unknownFields)
-		copy(dAtA[i:], m.unknownFields)
-	}
 	if len(m.AttributeIndices) > 0 {
 		var j int
 		pStart := i
@@ -1390,10 +1950,6 @@ func (m *Line) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *Line) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
-	if len(m.unknownFields) > 0 {
-		i -= len(m.unknownFields)
-		copy(dAtA[i:], m.unknownFields)
-	}
 	if m.Column != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.Column))
 		i--
@@ -1432,10 +1988,6 @@ func (m *Function) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *Function) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
-	if len(m.unknownFields) > 0 {
-		i -= len(m.unknownFields)
-		copy(dAtA[i:], m.unknownFields)
-	}
 	if m.StartLine != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.StartLine))
 		i--
@@ -1479,10 +2031,6 @@ func (m *KeyValueAndUnit) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *KeyValueAndUnit) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
-	if len(m.unknownFields) > 0 {
-		i -= len(m.unknownFields)
-		copy(dAtA[i:], m.unknownFields)
-	}
 	if m.UnitStrindex != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.UnitStrindex))
 		i--
@@ -1496,6 +2044,11 @@ func (m *KeyValueAndUnit) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		if size > 0 {
 			i -= size
 			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			i--
+			dAtA[i] = 0x12
+		} else if m.fieldsPresent[0]&(1<<1) != 0 {
+			i--
+			dAtA[i] = 0
 			i--
 			dAtA[i] = 0x12
 		}
@@ -1713,7 +2266,6 @@ func (m *ProfilesDictionary) unmarshal(dAtA []byte, depth int) error {
 		}
 	}
 	for iNdEx < l {
-		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
 			if shift >= 35 {
@@ -2017,7 +2569,6 @@ func (m *ProfilesDictionary) unmarshal(dAtA []byte, depth int) error {
 			if err != nil {
 				return err
 			}
-			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -2097,7 +2648,6 @@ func (m *ProfilesData) unmarshal(dAtA []byte, depth int) error {
 		}
 	}
 	for iNdEx < l {
-		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
 			if shift >= 35 {
@@ -2198,12 +2748,12 @@ func (m *ProfilesData) unmarshal(dAtA []byte, depth int) error {
 				return err
 			}
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 0
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
-			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -2283,7 +2833,6 @@ func (m *ResourceProfiles) unmarshal(dAtA []byte, depth int) error {
 		}
 	}
 	for iNdEx < l {
-		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
 			if shift >= 35 {
@@ -2344,6 +2893,7 @@ func (m *ResourceProfiles) unmarshal(dAtA []byte, depth int) error {
 				return err
 			}
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 0
 		case 2: // scope_profiles
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2421,12 +2971,12 @@ func (m *ResourceProfiles) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.SchemaUrl = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 1
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
-			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -2506,7 +3056,6 @@ func (m *ScopeProfiles) unmarshal(dAtA []byte, depth int) error {
 		}
 	}
 	for iNdEx < l {
-		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
 			if shift >= 35 {
@@ -2567,6 +3116,7 @@ func (m *ScopeProfiles) unmarshal(dAtA []byte, depth int) error {
 				return err
 			}
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 0
 		case 2: // profiles
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2644,12 +3194,12 @@ func (m *ScopeProfiles) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.SchemaUrl = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 1
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
-			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -2729,7 +3279,6 @@ func (m *Profile) unmarshal(dAtA []byte, depth int) error {
 		}
 	}
 	for iNdEx < l {
-		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
 			if shift >= 35 {
@@ -2790,6 +3339,7 @@ func (m *Profile) unmarshal(dAtA []byte, depth int) error {
 				return err
 			}
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 0
 		case 2: // samples
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2845,6 +3395,7 @@ func (m *Profile) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.TimeUnixNano = v
+			m.fieldsPresent[0] |= 1 << 1
 		case 4: // duration_nano
 			if wireType != 0 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2870,6 +3421,7 @@ func (m *Profile) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.DurationNano = v
+			m.fieldsPresent[0] |= 1 << 2
 		case 5: // period_type
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2909,6 +3461,7 @@ func (m *Profile) unmarshal(dAtA []byte, depth int) error {
 				return err
 			}
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 3
 		case 6: // period
 			if wireType != 0 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2934,6 +3487,7 @@ func (m *Profile) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.Period = int64(v)
+			m.fieldsPresent[0] |= 1 << 4
 		case 7: // profile_id
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2971,6 +3525,7 @@ func (m *Profile) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.ProfileId = append(m.ProfileId[:0], dAtA[iNdEx:postIndex]...)
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 5
 		case 8: // dropped_attributes_count
 			if wireType != 0 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2996,6 +3551,7 @@ func (m *Profile) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.DroppedAttributesCount = uint32(v)
+			m.fieldsPresent[0] |= 1 << 6
 		case 9: // original_payload_format
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -3033,6 +3589,7 @@ func (m *Profile) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.OriginalPayloadFormat = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 7
 		case 10: // original_payload
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -3070,6 +3627,7 @@ func (m *Profile) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.OriginalPayload = append(m.OriginalPayload[:0], dAtA[iNdEx:postIndex]...)
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 8
 		case 11: // attribute_indices
 			if wireType == 2 {
 				var byteLen uint64
@@ -3146,7 +3704,6 @@ func (m *Profile) unmarshal(dAtA []byte, depth int) error {
 			if err != nil {
 				return err
 			}
-			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -3167,7 +3724,6 @@ func (m *Link) unmarshal(dAtA []byte, depth int) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
-		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
 			if shift >= 35 {
@@ -3226,6 +3782,7 @@ func (m *Link) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.TraceId = append(m.TraceId[:0], dAtA[iNdEx:postIndex]...)
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 0
 		case 2: // span_id
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -3263,12 +3820,12 @@ func (m *Link) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.SpanId = append(m.SpanId[:0], dAtA[iNdEx:postIndex]...)
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 1
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
-			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -3289,7 +3846,6 @@ func (m *ValueType) unmarshal(dAtA []byte, depth int) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
-		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
 			if shift >= 35 {
@@ -3336,6 +3892,7 @@ func (m *ValueType) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.TypeStrindex = int32(v)
+			m.fieldsPresent[0] |= 1 << 0
 		case 2: // unit_strindex
 			if wireType != 0 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -3361,12 +3918,12 @@ func (m *ValueType) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.UnitStrindex = int32(v)
+			m.fieldsPresent[0] |= 1 << 1
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
-			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -3387,7 +3944,6 @@ func (m *Sample) unmarshal(dAtA []byte, depth int) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
-		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
 			if shift >= 35 {
@@ -3434,6 +3990,7 @@ func (m *Sample) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.StackIndex = int32(v)
+			m.fieldsPresent[0] |= 1 << 0
 		case 2: // attribute_indices
 			if wireType == 2 {
 				var byteLen uint64
@@ -3530,6 +4087,7 @@ func (m *Sample) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.LinkIndex = int32(v)
+			m.fieldsPresent[0] |= 1 << 1
 		case 4: // values
 			if wireType == 2 {
 				var byteLen uint64
@@ -3661,7 +4219,6 @@ func (m *Sample) unmarshal(dAtA []byte, depth int) error {
 			if err != nil {
 				return err
 			}
-			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -3682,7 +4239,6 @@ func (m *Mapping) unmarshal(dAtA []byte, depth int) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
-		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
 			if shift >= 35 {
@@ -3729,6 +4285,7 @@ func (m *Mapping) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.MemoryStart = v
+			m.fieldsPresent[0] |= 1 << 0
 		case 2: // memory_limit
 			if wireType != 0 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -3754,6 +4311,7 @@ func (m *Mapping) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.MemoryLimit = v
+			m.fieldsPresent[0] |= 1 << 1
 		case 3: // file_offset
 			if wireType != 0 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -3779,6 +4337,7 @@ func (m *Mapping) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.FileOffset = v
+			m.fieldsPresent[0] |= 1 << 2
 		case 4: // filename_strindex
 			if wireType != 0 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -3804,6 +4363,7 @@ func (m *Mapping) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.FilenameStrindex = int32(v)
+			m.fieldsPresent[0] |= 1 << 3
 		case 5: // attribute_indices
 			if wireType == 2 {
 				var byteLen uint64
@@ -3880,7 +4440,6 @@ func (m *Mapping) unmarshal(dAtA []byte, depth int) error {
 			if err != nil {
 				return err
 			}
-			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -3901,7 +4460,6 @@ func (m *Stack) unmarshal(dAtA []byte, depth int) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
-		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
 			if shift >= 35 {
@@ -3999,7 +4557,6 @@ func (m *Stack) unmarshal(dAtA []byte, depth int) error {
 			if err != nil {
 				return err
 			}
-			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -4079,7 +4636,6 @@ func (m *Location) unmarshal(dAtA []byte, depth int) error {
 		}
 	}
 	for iNdEx < l {
-		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
 			if shift >= 35 {
@@ -4126,6 +4682,7 @@ func (m *Location) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.MappingIndex = int32(v)
+			m.fieldsPresent[0] |= 1 << 0
 		case 2: // address
 			if wireType != 0 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4151,6 +4708,7 @@ func (m *Location) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.Address = v
+			m.fieldsPresent[0] |= 1 << 1
 		case 3: // lines
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4267,7 +4825,6 @@ func (m *Location) unmarshal(dAtA []byte, depth int) error {
 			if err != nil {
 				return err
 			}
-			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -4288,7 +4845,6 @@ func (m *Line) unmarshal(dAtA []byte, depth int) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
-		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
 			if shift >= 35 {
@@ -4335,6 +4891,7 @@ func (m *Line) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.FunctionIndex = int32(v)
+			m.fieldsPresent[0] |= 1 << 0
 		case 2: // line
 			if wireType != 0 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4360,6 +4917,7 @@ func (m *Line) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.Line = int64(v)
+			m.fieldsPresent[0] |= 1 << 1
 		case 3: // column
 			if wireType != 0 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4385,12 +4943,12 @@ func (m *Line) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.Column = int64(v)
+			m.fieldsPresent[0] |= 1 << 2
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
-			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -4411,7 +4969,6 @@ func (m *Function) unmarshal(dAtA []byte, depth int) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
-		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
 			if shift >= 35 {
@@ -4458,6 +5015,7 @@ func (m *Function) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.NameStrindex = int32(v)
+			m.fieldsPresent[0] |= 1 << 0
 		case 2: // system_name_strindex
 			if wireType != 0 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4483,6 +5041,7 @@ func (m *Function) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.SystemNameStrindex = int32(v)
+			m.fieldsPresent[0] |= 1 << 1
 		case 3: // filename_strindex
 			if wireType != 0 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4508,6 +5067,7 @@ func (m *Function) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.FilenameStrindex = int32(v)
+			m.fieldsPresent[0] |= 1 << 2
 		case 4: // start_line
 			if wireType != 0 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4533,12 +5093,12 @@ func (m *Function) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.StartLine = int64(v)
+			m.fieldsPresent[0] |= 1 << 3
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
-			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -4559,7 +5119,6 @@ func (m *KeyValueAndUnit) unmarshal(dAtA []byte, depth int) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
-		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
 			if shift >= 35 {
@@ -4606,6 +5165,7 @@ func (m *KeyValueAndUnit) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.KeyStrindex = int32(v)
+			m.fieldsPresent[0] |= 1 << 0
 		case 2: // value
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4645,6 +5205,7 @@ func (m *KeyValueAndUnit) unmarshal(dAtA []byte, depth int) error {
 				return err
 			}
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 1
 		case 3: // unit_strindex
 			if wireType != 0 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4670,12 +5231,12 @@ func (m *KeyValueAndUnit) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.UnitStrindex = int32(v)
+			m.fieldsPresent[0] |= 1 << 2
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
-			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -4760,9 +5321,6 @@ func (this *ProfilesDictionary) Equal(that interface{}) bool {
 			return false
 		}
 	}
-	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
-		return false
-	}
 	return true
 }
 
@@ -4794,9 +5352,6 @@ func (this *ProfilesData) Equal(that interface{}) bool {
 		}
 	}
 	if !this.Dictionary.Equal(that1.Dictionary) {
-		return false
-	}
-	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
 		return false
 	}
 	return true
@@ -4835,9 +5390,6 @@ func (this *ResourceProfiles) Equal(that interface{}) bool {
 	if this.SchemaUrl != that1.SchemaUrl {
 		return false
 	}
-	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
-		return false
-	}
 	return true
 }
 
@@ -4872,9 +5424,6 @@ func (this *ScopeProfiles) Equal(that interface{}) bool {
 		}
 	}
 	if this.SchemaUrl != that1.SchemaUrl {
-		return false
-	}
-	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
 		return false
 	}
 	return true
@@ -4942,9 +5491,6 @@ func (this *Profile) Equal(that interface{}) bool {
 			return false
 		}
 	}
-	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
-		return false
-	}
 	return true
 }
 
@@ -4973,9 +5519,6 @@ func (this *Link) Equal(that interface{}) bool {
 	if !bytes.Equal(this.SpanId, that1.SpanId) {
 		return false
 	}
-	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
-		return false
-	}
 	return true
 }
 
@@ -5002,9 +5545,6 @@ func (this *ValueType) Equal(that interface{}) bool {
 		return false
 	}
 	if this.UnitStrindex != that1.UnitStrindex {
-		return false
-	}
-	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
 		return false
 	}
 	return true
@@ -5059,9 +5599,6 @@ func (this *Sample) Equal(that interface{}) bool {
 			return false
 		}
 	}
-	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
-		return false
-	}
 	return true
 }
 
@@ -5104,9 +5641,6 @@ func (this *Mapping) Equal(that interface{}) bool {
 			return false
 		}
 	}
-	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
-		return false
-	}
 	return true
 }
 
@@ -5136,9 +5670,6 @@ func (this *Stack) Equal(that interface{}) bool {
 		if this.LocationIndices[i] != that1.LocationIndices[i] {
 			return false
 		}
-	}
-	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
-		return false
 	}
 	return true
 }
@@ -5184,9 +5715,6 @@ func (this *Location) Equal(that interface{}) bool {
 			return false
 		}
 	}
-	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
-		return false
-	}
 	return true
 }
 
@@ -5216,9 +5744,6 @@ func (this *Line) Equal(that interface{}) bool {
 		return false
 	}
 	if this.Column != that1.Column {
-		return false
-	}
-	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
 		return false
 	}
 	return true
@@ -5255,9 +5780,6 @@ func (this *Function) Equal(that interface{}) bool {
 	if this.StartLine != that1.StartLine {
 		return false
 	}
-	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
-		return false
-	}
 	return true
 }
 
@@ -5287,9 +5809,6 @@ func (this *KeyValueAndUnit) Equal(that interface{}) bool {
 		return false
 	}
 	if this.UnitStrindex != that1.UnitStrindex {
-		return false
-	}
-	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
 		return false
 	}
 	return true

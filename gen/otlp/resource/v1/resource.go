@@ -4,7 +4,6 @@
 package resourcev1
 
 import (
-	"bytes"
 	"fmt"
 	"google.golang.org/protobuf/encoding/protowire"
 	"io"
@@ -27,8 +26,37 @@ type Resource struct {
 	// Note: keys in the references MUST exist in attributes of this message.
 	//
 	// Status: [Development]
-	EntityRefs    []commonv1.EntityRef
-	unknownFields []byte
+	EntityRefs []commonv1.EntityRef
+
+	fieldsPresent [1]uint64
+}
+
+func (m *Resource) Reset()      { *m = Resource{} }
+func (*Resource) ProtoMessage() {}
+
+func (m *Resource) HasDroppedAttributesCount() bool {
+	return m.fieldsPresent[0]&(1<<0) != 0
+}
+
+func (m *Resource) GetAttributes() []commonv1.KeyValue {
+	if m != nil {
+		return m.Attributes
+	}
+	return nil
+}
+
+func (m *Resource) GetDroppedAttributesCount() uint32 {
+	if m != nil {
+		return m.DroppedAttributesCount
+	}
+	return 0
+}
+
+func (m *Resource) GetEntityRefs() []commonv1.EntityRef {
+	if m != nil {
+		return m.EntityRefs
+	}
+	return nil
 }
 
 func (m *Resource) Size() int {
@@ -44,7 +72,6 @@ func (m *Resource) Size() int {
 		s := m.EntityRefs[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
-	n += len(m.unknownFields)
 	return n
 }
 
@@ -68,10 +95,6 @@ func (m *Resource) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *Resource) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
-	if len(m.unknownFields) > 0 {
-		i -= len(m.unknownFields)
-		copy(dAtA[i:], m.unknownFields)
-	}
 	for iNdEx := len(m.EntityRefs) - 1; iNdEx >= 0; iNdEx-- {
 		size, err := m.EntityRefs[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 		if err != nil {
@@ -275,7 +298,6 @@ func (m *Resource) unmarshal(dAtA []byte, depth int) error {
 		}
 	}
 	for iNdEx < l {
-		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
 			if shift >= 35 {
@@ -362,6 +384,7 @@ func (m *Resource) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.DroppedAttributesCount = uint32(v)
+			m.fieldsPresent[0] |= 1 << 0
 		case 3: // entity_refs
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -407,7 +430,6 @@ func (m *Resource) unmarshal(dAtA []byte, depth int) error {
 			if err != nil {
 				return err
 			}
-			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -454,9 +476,6 @@ func (this *Resource) Equal(that interface{}) bool {
 		if !this.EntityRefs[i].Equal(that1.EntityRefs[i]) {
 			return false
 		}
-	}
-	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
-		return false
 	}
 	return true
 }
