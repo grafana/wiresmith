@@ -179,7 +179,7 @@ func TestGenerateMatchesCheckedIn(t *testing.T) {
 			// Walk the freshly generated output and compare against checked-in
 			// files. The generator writes to outDir/goPackageDir(pkg), which
 			// mirrors the layout under gen/.
-			var generated int
+			generatedFiles := make(map[string]struct{})
 			err := filepath.Walk(tmpDir, func(path string, info os.FileInfo, err error) error {
 				if err != nil {
 					return err
@@ -194,7 +194,7 @@ func TestGenerateMatchesCheckedIn(t *testing.T) {
 				if !strings.HasSuffix(rel, ".go") {
 					return nil
 				}
-				generated++
+				generatedFiles[rel] = struct{}{}
 
 				freshContent, err := os.ReadFile(path)
 				if err != nil {
@@ -214,8 +214,33 @@ func TestGenerateMatchesCheckedIn(t *testing.T) {
 			if err != nil {
 				t.Fatalf("walking generated output: %v", err)
 			}
-			if generated == 0 {
+			if len(generatedFiles) == 0 {
 				t.Fatal("generator produced no files")
+			}
+
+			// Reverse check: for each directory that contains generated files,
+			// verify the matching checked-in directory has no extra .go files
+			// the generator didn't produce. We scope to exact directories
+			// because gen/ also contains protoc-generated files in sibling dirs.
+			genDirs := make(map[string]struct{})
+			for rel := range generatedFiles {
+				genDirs[filepath.Dir(rel)] = struct{}{}
+			}
+			for dir := range genDirs {
+				checkedInDir := filepath.Join(genDir, dir)
+				entries, err := os.ReadDir(checkedInDir)
+				if err != nil {
+					t.Fatalf("reading checked-in directory %s: %v", dir, err)
+				}
+				for _, e := range entries {
+					if e.IsDir() || !strings.HasSuffix(e.Name(), ".go") {
+						continue
+					}
+					rel := filepath.Join(dir, e.Name())
+					if _, ok := generatedFiles[rel]; !ok {
+						t.Errorf("checked-in %s was not generated; run 'make generate-ours'", rel)
+					}
+				}
 			}
 		})
 	}
