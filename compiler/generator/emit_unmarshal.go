@@ -233,9 +233,13 @@ func (fg *FileGenerator) emitUnmarshal(md protoreflect.MessageDescriptor) {
 
 	fmt.Fprintf(fg.body, "\t\tswitch fieldNum {\n")
 
+	pm := presenceMap(md)
 	for i := 0; i < md.Fields().Len(); i++ {
 		fd := md.Fields().Get(i)
 		fg.emitFieldUnmarshal(md, fd)
+		if bitIndex, ok := pm[fd.Number()]; ok {
+			fmt.Fprintf(fg.body, "\t\t\tm.fieldsPresent[%d] |= 1 << %d\n", bitIndex/64, bitIndex%64)
+		}
 	}
 
 	fmt.Fprintf(fg.body, "\t\tdefault:\n")

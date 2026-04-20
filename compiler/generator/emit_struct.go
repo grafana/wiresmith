@@ -51,5 +51,9 @@ func (fg *FileGenerator) emitStruct(md protoreflect.MessageDescriptor) {
 		fmt.Fprintf(fg.body, "\t%s %s\n", goName, goType)
 	}
 
+	if words := presenceBitmapWords(md); words > 0 {
+		fmt.Fprintf(fg.body, "\n\tfieldsPresent [%d]uint64\n", words)
+	}
+
 	fmt.Fprintf(fg.body, "}\n\n")
 }

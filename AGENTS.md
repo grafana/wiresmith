@@ -45,6 +45,9 @@ All commands are available via `make`:
 - **Packed repeated scalars**: Repeated numeric fields use packed encoding (proto3 default). Unmarshal handles both packed and unpacked for compatibility.
 - **No reflection**: All marshal/unmarshal/size code is directly generated with no runtime reflection.
 - **bufbuild/protocompile for parsing**: Reuses the buf compiler for proto parsing and type resolution instead of a custom parser.
+- **Field presence bitmap**: Singular non-optional, non-oneof fields get a `fieldsPresent` bitmap (`[N]uint64`) that tracks which fields were seen during `Unmarshal`. Generated `Has<Field>()` methods let callers distinguish "field absent" from "field set to zero value". The bitmap is not serialized. Repeated, map, optional, and oneof fields are excluded (they already have presence semantics via nil slice/pointer/interface).
+- **Getter methods**: `Get<Field>()` methods are generated for all fields (nil-safe like gogoproto). For value-type message fields, the getter returns `*MessageType` and uses the presence bitmap to return `nil` when the field was absent from the wire. Optional fields dereference the pointer, oneof fields type-assert, repeated/map fields return the slice/map.
+- **Reset/ProtoMessage**: `Reset()` zeroes the struct (`*m = Type{}`). `ProtoMessage()` is a no-op marker method, matching the standard `proto.Message` interface shape.
 
 ## Supported proto3 features
 

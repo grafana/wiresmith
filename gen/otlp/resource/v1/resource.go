@@ -27,6 +27,36 @@ type Resource struct {
 	//
 	// Status: [Development]
 	EntityRefs []commonv1.EntityRef
+
+	fieldsPresent [1]uint64
+}
+
+func (m *Resource) Reset()      { *m = Resource{} }
+func (*Resource) ProtoMessage() {}
+
+func (m *Resource) HasDroppedAttributesCount() bool {
+	return m.fieldsPresent[0]&(1<<0) != 0
+}
+
+func (m *Resource) GetAttributes() []commonv1.KeyValue {
+	if m != nil {
+		return m.Attributes
+	}
+	return nil
+}
+
+func (m *Resource) GetDroppedAttributesCount() uint32 {
+	if m != nil {
+		return m.DroppedAttributesCount
+	}
+	return 0
+}
+
+func (m *Resource) GetEntityRefs() []commonv1.EntityRef {
+	if m != nil {
+		return m.EntityRefs
+	}
+	return nil
 }
 
 func (m *Resource) Size() int {
@@ -354,6 +384,7 @@ func (m *Resource) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.DroppedAttributesCount = uint32(v)
+			m.fieldsPresent[0] |= 1 << 0
 		case 3: // entity_refs
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)

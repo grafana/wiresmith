@@ -29,7 +29,7 @@ func mapRoundTrip[T interface {
 
 	dst := newZero(src)
 	require.NoError(t, dst.Unmarshal(b))
-	assert.Equal(t, src, dst, "unmarshal must reproduce original")
+	assert.EqualExportedValues(t, src, dst, "unmarshal must reproduce original")
 	assert.True(t, src.Equal(dst), "Equal() must agree with assert.Equal")
 }
 

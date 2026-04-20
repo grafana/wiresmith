@@ -99,6 +99,9 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 	fg.emitAllEnums(fd)
 	fg.emitAllOneofs(fd)
 	fg.emitAllStructs(fd)
+	fg.emitAllResetMethods(fd)
+	fg.emitAllHasMethods(fd)
+	fg.emitAllGetterMethods(fd)
 	fg.emitAllSizeMethods(fd)
 	fg.emitAllMarshalMethods(fd)
 	fg.emitAllUnmarshalMethods(fd)
@@ -219,6 +222,23 @@ func (fg *FileGenerator) emitMessageStructs(md protoreflect.MessageDescriptor) {
 		fg.emitMessageStructs(nested)
 	}
 	fg.emitStruct(md)
+}
+
+func (fg *FileGenerator) emitAllHasMethods(fd protoreflect.FileDescriptor) {
+	for i := 0; i < fd.Messages().Len(); i++ {
+		fg.emitHasMethodsRecursive(fd.Messages().Get(i))
+	}
+}
+
+func (fg *FileGenerator) emitHasMethodsRecursive(md protoreflect.MessageDescriptor) {
+	for i := 0; i < md.Messages().Len(); i++ {
+		nested := md.Messages().Get(i)
+		if nested.IsMapEntry() {
+			continue
+		}
+		fg.emitHasMethodsRecursive(nested)
+	}
+	fg.emitHasMethods(md)
 }
 
 func (fg *FileGenerator) emitAllSizeMethods(fd protoreflect.FileDescriptor) {
