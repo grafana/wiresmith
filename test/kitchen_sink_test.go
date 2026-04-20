@@ -26,7 +26,7 @@ func roundTrip[T interface {
 
 	dst := reflect.New(reflect.TypeOf(src).Elem()).Interface().(T)
 	require.NoError(t, dst.Unmarshal(b))
-	assert.Equal(t, src, dst, "unmarshal must reproduce original")
+	assert.EqualExportedValues(t, src, dst, "unmarshal must reproduce original")
 	assert.True(t, src.Equal(dst), "Equal() must agree with assert.Equal")
 
 	b2, err := dst.Marshal()

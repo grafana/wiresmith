@@ -117,6 +117,8 @@ type ResourceSpans struct {
 	// This schema_url applies to the data in the "resource" field. It does not apply
 	// to the data in the "scope_spans" field which have their own schema_url field.
 	SchemaUrl string
+
+	fieldsPresent [1]uint64
 }
 
 // A collection of Spans produced by an InstrumentationScope.
@@ -134,6 +136,8 @@ type ScopeSpans struct {
 	// This schema_url applies to the data in the "scope" field and all spans and span
 	// events in the "spans" field.
 	SchemaUrl string
+
+	fieldsPresent [1]uint64
 }
 
 // Event is a time-stamped annotation of the span, consisting of user-supplied
@@ -152,6 +156,8 @@ type Span_Event struct {
 	// The number of dropped attributes. If the value is 0,
 	// then no attributes were dropped.
 	DroppedAttributesCount uint32
+
+	fieldsPresent [1]uint64
 }
 
 // A pointer from the current span to another span in the same trace or in a
@@ -192,6 +198,8 @@ type Span_Link struct {
 	//
 	// [Optional].
 	Flags uint32
+
+	fieldsPresent [1]uint64
 }
 
 // A Span represents a single operation performed by a single component of the system.
@@ -301,6 +309,8 @@ type Span struct {
 	// An optional final status for this span. Semantically when Status isn't set, it means
 	// span's status code is unset, i.e. assume STATUS_CODE_UNSET (code = 0).
 	Status Status
+
+	fieldsPresent [1]uint64
 }
 
 // The Status type defines a logical error model that is suitable for different
@@ -310,6 +320,382 @@ type Status struct {
 	Message string
 	// The status code.
 	Code Status_StatusCode
+
+	fieldsPresent [1]uint64
+}
+
+func (m *TracesData) Reset()      { *m = TracesData{} }
+func (*TracesData) ProtoMessage() {}
+
+func (m *ResourceSpans) Reset()      { *m = ResourceSpans{} }
+func (*ResourceSpans) ProtoMessage() {}
+
+func (m *ScopeSpans) Reset()      { *m = ScopeSpans{} }
+func (*ScopeSpans) ProtoMessage() {}
+
+func (m *Span_Event) Reset()      { *m = Span_Event{} }
+func (*Span_Event) ProtoMessage() {}
+
+func (m *Span_Link) Reset()      { *m = Span_Link{} }
+func (*Span_Link) ProtoMessage() {}
+
+func (m *Span) Reset()      { *m = Span{} }
+func (*Span) ProtoMessage() {}
+
+func (m *Status) Reset()      { *m = Status{} }
+func (*Status) ProtoMessage() {}
+
+func (m *ResourceSpans) HasResource() bool {
+	return m.fieldsPresent[0]&(1<<0) != 0
+}
+
+func (m *ResourceSpans) HasSchemaUrl() bool {
+	return m.fieldsPresent[0]&(1<<1) != 0
+}
+
+func (m *ScopeSpans) HasScope() bool {
+	return m.fieldsPresent[0]&(1<<0) != 0
+}
+
+func (m *ScopeSpans) HasSchemaUrl() bool {
+	return m.fieldsPresent[0]&(1<<1) != 0
+}
+
+func (m *Span_Event) HasTimeUnixNano() bool {
+	return m.fieldsPresent[0]&(1<<0) != 0
+}
+
+func (m *Span_Event) HasName() bool {
+	return m.fieldsPresent[0]&(1<<1) != 0
+}
+
+func (m *Span_Event) HasDroppedAttributesCount() bool {
+	return m.fieldsPresent[0]&(1<<2) != 0
+}
+
+func (m *Span_Link) HasTraceId() bool {
+	return m.fieldsPresent[0]&(1<<0) != 0
+}
+
+func (m *Span_Link) HasSpanId() bool {
+	return m.fieldsPresent[0]&(1<<1) != 0
+}
+
+func (m *Span_Link) HasTraceState() bool {
+	return m.fieldsPresent[0]&(1<<2) != 0
+}
+
+func (m *Span_Link) HasDroppedAttributesCount() bool {
+	return m.fieldsPresent[0]&(1<<3) != 0
+}
+
+func (m *Span_Link) HasFlags() bool {
+	return m.fieldsPresent[0]&(1<<4) != 0
+}
+
+func (m *Span) HasTraceId() bool {
+	return m.fieldsPresent[0]&(1<<0) != 0
+}
+
+func (m *Span) HasSpanId() bool {
+	return m.fieldsPresent[0]&(1<<1) != 0
+}
+
+func (m *Span) HasTraceState() bool {
+	return m.fieldsPresent[0]&(1<<2) != 0
+}
+
+func (m *Span) HasParentSpanId() bool {
+	return m.fieldsPresent[0]&(1<<3) != 0
+}
+
+func (m *Span) HasFlags() bool {
+	return m.fieldsPresent[0]&(1<<4) != 0
+}
+
+func (m *Span) HasName() bool {
+	return m.fieldsPresent[0]&(1<<5) != 0
+}
+
+func (m *Span) HasKind() bool {
+	return m.fieldsPresent[0]&(1<<6) != 0
+}
+
+func (m *Span) HasStartTimeUnixNano() bool {
+	return m.fieldsPresent[0]&(1<<7) != 0
+}
+
+func (m *Span) HasEndTimeUnixNano() bool {
+	return m.fieldsPresent[0]&(1<<8) != 0
+}
+
+func (m *Span) HasDroppedAttributesCount() bool {
+	return m.fieldsPresent[0]&(1<<9) != 0
+}
+
+func (m *Span) HasDroppedEventsCount() bool {
+	return m.fieldsPresent[0]&(1<<10) != 0
+}
+
+func (m *Span) HasDroppedLinksCount() bool {
+	return m.fieldsPresent[0]&(1<<11) != 0
+}
+
+func (m *Span) HasStatus() bool {
+	return m.fieldsPresent[0]&(1<<12) != 0
+}
+
+func (m *Status) HasMessage() bool {
+	return m.fieldsPresent[0]&(1<<0) != 0
+}
+
+func (m *Status) HasCode() bool {
+	return m.fieldsPresent[0]&(1<<1) != 0
+}
+
+func (m *TracesData) GetResourceSpans() []ResourceSpans {
+	if m != nil {
+		return m.ResourceSpans
+	}
+	return nil
+}
+
+func (m *ResourceSpans) GetResource() *resourcev1.Resource {
+	if m != nil && m.fieldsPresent[0]&(1<<0) != 0 {
+		return &m.Resource
+	}
+	return nil
+}
+
+func (m *ResourceSpans) GetScopeSpans() []ScopeSpans {
+	if m != nil {
+		return m.ScopeSpans
+	}
+	return nil
+}
+
+func (m *ResourceSpans) GetSchemaUrl() string {
+	if m != nil {
+		return m.SchemaUrl
+	}
+	return ""
+}
+
+func (m *ScopeSpans) GetScope() *commonv1.InstrumentationScope {
+	if m != nil && m.fieldsPresent[0]&(1<<0) != 0 {
+		return &m.Scope
+	}
+	return nil
+}
+
+func (m *ScopeSpans) GetSpans() []Span {
+	if m != nil {
+		return m.Spans
+	}
+	return nil
+}
+
+func (m *ScopeSpans) GetSchemaUrl() string {
+	if m != nil {
+		return m.SchemaUrl
+	}
+	return ""
+}
+
+func (m *Span_Event) GetTimeUnixNano() uint64 {
+	if m != nil {
+		return m.TimeUnixNano
+	}
+	return 0
+}
+
+func (m *Span_Event) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+func (m *Span_Event) GetAttributes() []commonv1.KeyValue {
+	if m != nil {
+		return m.Attributes
+	}
+	return nil
+}
+
+func (m *Span_Event) GetDroppedAttributesCount() uint32 {
+	if m != nil {
+		return m.DroppedAttributesCount
+	}
+	return 0
+}
+
+func (m *Span_Link) GetTraceId() []byte {
+	if m != nil {
+		return m.TraceId
+	}
+	return nil
+}
+
+func (m *Span_Link) GetSpanId() []byte {
+	if m != nil {
+		return m.SpanId
+	}
+	return nil
+}
+
+func (m *Span_Link) GetTraceState() string {
+	if m != nil {
+		return m.TraceState
+	}
+	return ""
+}
+
+func (m *Span_Link) GetAttributes() []commonv1.KeyValue {
+	if m != nil {
+		return m.Attributes
+	}
+	return nil
+}
+
+func (m *Span_Link) GetDroppedAttributesCount() uint32 {
+	if m != nil {
+		return m.DroppedAttributesCount
+	}
+	return 0
+}
+
+func (m *Span_Link) GetFlags() uint32 {
+	if m != nil {
+		return m.Flags
+	}
+	return 0
+}
+
+func (m *Span) GetTraceId() []byte {
+	if m != nil {
+		return m.TraceId
+	}
+	return nil
+}
+
+func (m *Span) GetSpanId() []byte {
+	if m != nil {
+		return m.SpanId
+	}
+	return nil
+}
+
+func (m *Span) GetTraceState() string {
+	if m != nil {
+		return m.TraceState
+	}
+	return ""
+}
+
+func (m *Span) GetParentSpanId() []byte {
+	if m != nil {
+		return m.ParentSpanId
+	}
+	return nil
+}
+
+func (m *Span) GetFlags() uint32 {
+	if m != nil {
+		return m.Flags
+	}
+	return 0
+}
+
+func (m *Span) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+func (m *Span) GetKind() Span_SpanKind {
+	if m != nil {
+		return m.Kind
+	}
+	return 0
+}
+
+func (m *Span) GetStartTimeUnixNano() uint64 {
+	if m != nil {
+		return m.StartTimeUnixNano
+	}
+	return 0
+}
+
+func (m *Span) GetEndTimeUnixNano() uint64 {
+	if m != nil {
+		return m.EndTimeUnixNano
+	}
+	return 0
+}
+
+func (m *Span) GetAttributes() []commonv1.KeyValue {
+	if m != nil {
+		return m.Attributes
+	}
+	return nil
+}
+
+func (m *Span) GetDroppedAttributesCount() uint32 {
+	if m != nil {
+		return m.DroppedAttributesCount
+	}
+	return 0
+}
+
+func (m *Span) GetEvents() []Span_Event {
+	if m != nil {
+		return m.Events
+	}
+	return nil
+}
+
+func (m *Span) GetDroppedEventsCount() uint32 {
+	if m != nil {
+		return m.DroppedEventsCount
+	}
+	return 0
+}
+
+func (m *Span) GetLinks() []Span_Link {
+	if m != nil {
+		return m.Links
+	}
+	return nil
+}
+
+func (m *Span) GetDroppedLinksCount() uint32 {
+	if m != nil {
+		return m.DroppedLinksCount
+	}
+	return 0
+}
+
+func (m *Span) GetStatus() *Status {
+	if m != nil && m.fieldsPresent[0]&(1<<12) != 0 {
+		return &m.Status
+	}
+	return nil
+}
+
+func (m *Status) GetMessage() string {
+	if m != nil {
+		return m.Message
+	}
+	return ""
+}
+
+func (m *Status) GetCode() Status_StatusCode {
+	if m != nil {
+		return m.Code
+	}
+	return 0
 }
 
 func (m *TracesData) Size() int {
@@ -1271,6 +1657,7 @@ func (m *ResourceSpans) unmarshal(dAtA []byte, depth int) error {
 				return err
 			}
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 0
 		case 2: // scope_spans
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1348,6 +1735,7 @@ func (m *ResourceSpans) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.SchemaUrl = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 1
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
@@ -1492,6 +1880,7 @@ func (m *ScopeSpans) unmarshal(dAtA []byte, depth int) error {
 				return err
 			}
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 0
 		case 2: // spans
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1569,6 +1958,7 @@ func (m *ScopeSpans) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.SchemaUrl = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 1
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
@@ -1689,6 +2079,7 @@ func (m *Span_Event) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.TimeUnixNano = v
+			m.fieldsPresent[0] |= 1 << 0
 		case 2: // name
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1726,6 +2117,7 @@ func (m *Span_Event) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Name = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 1
 		case 3: // attributes
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1791,6 +2183,7 @@ func (m *Span_Event) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.DroppedAttributesCount = uint32(v)
+			m.fieldsPresent[0] |= 1 << 2
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
@@ -1933,6 +2326,7 @@ func (m *Span_Link) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.TraceId = append(m.TraceId[:0], dAtA[iNdEx:postIndex]...)
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 0
 		case 2: // span_id
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1970,6 +2364,7 @@ func (m *Span_Link) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.SpanId = append(m.SpanId[:0], dAtA[iNdEx:postIndex]...)
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 1
 		case 3: // trace_state
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2007,6 +2402,7 @@ func (m *Span_Link) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.TraceState = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 2
 		case 4: // attributes
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2072,6 +2468,7 @@ func (m *Span_Link) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.DroppedAttributesCount = uint32(v)
+			m.fieldsPresent[0] |= 1 << 3
 		case 6: // flags
 			if wireType != 5 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2087,6 +2484,7 @@ func (m *Span_Link) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint32(dAtA[iNdEx:])
 			iNdEx += 4
 			m.Flags = v
+			m.fieldsPresent[0] |= 1 << 4
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
@@ -2241,6 +2639,7 @@ func (m *Span) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.TraceId = append(m.TraceId[:0], dAtA[iNdEx:postIndex]...)
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 0
 		case 2: // span_id
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2278,6 +2677,7 @@ func (m *Span) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.SpanId = append(m.SpanId[:0], dAtA[iNdEx:postIndex]...)
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 1
 		case 3: // trace_state
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2315,6 +2715,7 @@ func (m *Span) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.TraceState = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 2
 		case 4: // parent_span_id
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2352,6 +2753,7 @@ func (m *Span) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.ParentSpanId = append(m.ParentSpanId[:0], dAtA[iNdEx:postIndex]...)
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 3
 		case 16: // flags
 			if wireType != 5 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2367,6 +2769,7 @@ func (m *Span) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint32(dAtA[iNdEx:])
 			iNdEx += 4
 			m.Flags = v
+			m.fieldsPresent[0] |= 1 << 4
 		case 5: // name
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2404,6 +2807,7 @@ func (m *Span) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Name = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 5
 		case 6: // kind
 			if wireType != 0 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2429,6 +2833,7 @@ func (m *Span) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.Kind = Span_SpanKind(v)
+			m.fieldsPresent[0] |= 1 << 6
 		case 7: // start_time_unix_nano
 			if wireType != 1 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2444,6 +2849,7 @@ func (m *Span) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.StartTimeUnixNano = v
+			m.fieldsPresent[0] |= 1 << 7
 		case 8: // end_time_unix_nano
 			if wireType != 1 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2459,6 +2865,7 @@ func (m *Span) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.EndTimeUnixNano = v
+			m.fieldsPresent[0] |= 1 << 8
 		case 9: // attributes
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2524,6 +2931,7 @@ func (m *Span) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.DroppedAttributesCount = uint32(v)
+			m.fieldsPresent[0] |= 1 << 9
 		case 11: // events
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2589,6 +2997,7 @@ func (m *Span) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.DroppedEventsCount = uint32(v)
+			m.fieldsPresent[0] |= 1 << 10
 		case 13: // links
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2654,6 +3063,7 @@ func (m *Span) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.DroppedLinksCount = uint32(v)
+			m.fieldsPresent[0] |= 1 << 11
 		case 15: // status
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2693,6 +3103,7 @@ func (m *Span) unmarshal(dAtA []byte, depth int) error {
 				return err
 			}
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 12
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
@@ -2776,6 +3187,7 @@ func (m *Status) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Message = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 0
 		case 3: // code
 			if wireType != 0 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2801,6 +3213,7 @@ func (m *Status) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.Code = Status_StatusCode(v)
+			m.fieldsPresent[0] |= 1 << 1
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {

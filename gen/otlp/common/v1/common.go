@@ -116,6 +116,8 @@ type KeyValue struct {
 	//
 	// Status: [Alpha]
 	KeyStrindex int32
+
+	fieldsPresent [1]uint64
 }
 
 // InstrumentationScope is a message representing the instrumentation scope information
@@ -136,6 +138,8 @@ type InstrumentationScope struct {
 	// can be discarded because their keys are too long or because there are too many
 	// attributes. If this value is 0, then no attributes were dropped.
 	DroppedAttributesCount uint32
+
+	fieldsPresent [1]uint64
 }
 
 // A reference to an Entity.
@@ -167,6 +171,212 @@ type EntityRef struct {
 	// These attribute keys are not part of entity's identity.
 	// These keys MUST exist in the containing {message}.attributes.
 	DescriptionKeys []string
+
+	fieldsPresent [1]uint64
+}
+
+func (m *AnyValue) Reset()      { *m = AnyValue{} }
+func (*AnyValue) ProtoMessage() {}
+
+func (m *ArrayValue) Reset()      { *m = ArrayValue{} }
+func (*ArrayValue) ProtoMessage() {}
+
+func (m *KeyValueList) Reset()      { *m = KeyValueList{} }
+func (*KeyValueList) ProtoMessage() {}
+
+func (m *KeyValue) Reset()      { *m = KeyValue{} }
+func (*KeyValue) ProtoMessage() {}
+
+func (m *InstrumentationScope) Reset()      { *m = InstrumentationScope{} }
+func (*InstrumentationScope) ProtoMessage() {}
+
+func (m *EntityRef) Reset()      { *m = EntityRef{} }
+func (*EntityRef) ProtoMessage() {}
+
+func (m *KeyValue) HasKey() bool {
+	return m.fieldsPresent[0]&(1<<0) != 0
+}
+
+func (m *KeyValue) HasValue() bool {
+	return m.fieldsPresent[0]&(1<<1) != 0
+}
+
+func (m *KeyValue) HasKeyStrindex() bool {
+	return m.fieldsPresent[0]&(1<<2) != 0
+}
+
+func (m *InstrumentationScope) HasName() bool {
+	return m.fieldsPresent[0]&(1<<0) != 0
+}
+
+func (m *InstrumentationScope) HasVersion() bool {
+	return m.fieldsPresent[0]&(1<<1) != 0
+}
+
+func (m *InstrumentationScope) HasDroppedAttributesCount() bool {
+	return m.fieldsPresent[0]&(1<<2) != 0
+}
+
+func (m *EntityRef) HasSchemaUrl() bool {
+	return m.fieldsPresent[0]&(1<<0) != 0
+}
+
+func (m *EntityRef) HasType() bool {
+	return m.fieldsPresent[0]&(1<<1) != 0
+}
+
+func (m *AnyValue) GetValue() AnyValue_Value {
+	if m != nil {
+		return m.Value
+	}
+	return nil
+}
+
+func (m *AnyValue) GetStringValue() string {
+	if x, ok := m.GetValue().(*AnyValue_StringValue); ok {
+		return x.StringValue
+	}
+	return ""
+}
+
+func (m *AnyValue) GetBoolValue() bool {
+	if x, ok := m.GetValue().(*AnyValue_BoolValue); ok {
+		return x.BoolValue
+	}
+	return false
+}
+
+func (m *AnyValue) GetIntValue() int64 {
+	if x, ok := m.GetValue().(*AnyValue_IntValue); ok {
+		return x.IntValue
+	}
+	return 0
+}
+
+func (m *AnyValue) GetDoubleValue() float64 {
+	if x, ok := m.GetValue().(*AnyValue_DoubleValue); ok {
+		return x.DoubleValue
+	}
+	return 0
+}
+
+func (m *AnyValue) GetArrayValue() *ArrayValue {
+	if x, ok := m.GetValue().(*AnyValue_ArrayValue); ok {
+		return &x.ArrayValue
+	}
+	return nil
+}
+
+func (m *AnyValue) GetKvlistValue() *KeyValueList {
+	if x, ok := m.GetValue().(*AnyValue_KvlistValue); ok {
+		return &x.KvlistValue
+	}
+	return nil
+}
+
+func (m *AnyValue) GetBytesValue() []byte {
+	if x, ok := m.GetValue().(*AnyValue_BytesValue); ok {
+		return x.BytesValue
+	}
+	return nil
+}
+
+func (m *AnyValue) GetStringValueStrindex() int32 {
+	if x, ok := m.GetValue().(*AnyValue_StringValueStrindex); ok {
+		return x.StringValueStrindex
+	}
+	return 0
+}
+
+func (m *ArrayValue) GetValues() []AnyValue {
+	if m != nil {
+		return m.Values
+	}
+	return nil
+}
+
+func (m *KeyValueList) GetValues() []KeyValue {
+	if m != nil {
+		return m.Values
+	}
+	return nil
+}
+
+func (m *KeyValue) GetKey() string {
+	if m != nil {
+		return m.Key
+	}
+	return ""
+}
+
+func (m *KeyValue) GetValue() *AnyValue {
+	if m != nil && m.fieldsPresent[0]&(1<<1) != 0 {
+		return &m.Value
+	}
+	return nil
+}
+
+func (m *KeyValue) GetKeyStrindex() int32 {
+	if m != nil {
+		return m.KeyStrindex
+	}
+	return 0
+}
+
+func (m *InstrumentationScope) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+func (m *InstrumentationScope) GetVersion() string {
+	if m != nil {
+		return m.Version
+	}
+	return ""
+}
+
+func (m *InstrumentationScope) GetAttributes() []KeyValue {
+	if m != nil {
+		return m.Attributes
+	}
+	return nil
+}
+
+func (m *InstrumentationScope) GetDroppedAttributesCount() uint32 {
+	if m != nil {
+		return m.DroppedAttributesCount
+	}
+	return 0
+}
+
+func (m *EntityRef) GetSchemaUrl() string {
+	if m != nil {
+		return m.SchemaUrl
+	}
+	return ""
+}
+
+func (m *EntityRef) GetType() string {
+	if m != nil {
+		return m.Type
+	}
+	return ""
+}
+
+func (m *EntityRef) GetIdKeys() []string {
+	if m != nil {
+		return m.IdKeys
+	}
+	return nil
+}
+
+func (m *EntityRef) GetDescriptionKeys() []string {
+	if m != nil {
+		return m.DescriptionKeys
+	}
+	return nil
 }
 
 func (m *AnyValue) Size() int {
@@ -1311,6 +1521,7 @@ func (m *KeyValue) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Key = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 0
 		case 2: // value
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1350,6 +1561,7 @@ func (m *KeyValue) unmarshal(dAtA []byte, depth int) error {
 				return err
 			}
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 1
 		case 3: // key_strindex
 			if wireType != 0 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1375,6 +1587,7 @@ func (m *KeyValue) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.KeyStrindex = int32(v)
+			m.fieldsPresent[0] |= 1 << 2
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
@@ -1517,6 +1730,7 @@ func (m *InstrumentationScope) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Name = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 0
 		case 2: // version
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1554,6 +1768,7 @@ func (m *InstrumentationScope) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Version = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 1
 		case 3: // attributes
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1619,6 +1834,7 @@ func (m *InstrumentationScope) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.DroppedAttributesCount = uint32(v)
+			m.fieldsPresent[0] |= 1 << 2
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
@@ -1767,6 +1983,7 @@ func (m *EntityRef) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.SchemaUrl = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 0
 		case 2: // type
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1804,6 +2021,7 @@ func (m *EntityRef) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Type = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 1
 		case 3: // id_keys
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)

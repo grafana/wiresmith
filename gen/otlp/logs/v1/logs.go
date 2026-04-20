@@ -95,6 +95,8 @@ type ResourceLogs struct {
 	// This schema_url applies to the data in the "resource" field. It does not apply
 	// to the data in the "scope_logs" field which have their own schema_url field.
 	SchemaUrl string
+
+	fieldsPresent [1]uint64
 }
 
 // A collection of Logs produced by a Scope.
@@ -112,6 +114,8 @@ type ScopeLogs struct {
 	// This schema_url applies to the data in the "scope" field and all logs in the
 	// "log_records" field.
 	SchemaUrl string
+
+	fieldsPresent [1]uint64
 }
 
 // A log record according to OpenTelemetry Log Data Model:
@@ -195,6 +199,202 @@ type LogRecord struct {
 	//
 	// [Optional].
 	EventName string
+
+	fieldsPresent [1]uint64
+}
+
+func (m *LogsData) Reset()      { *m = LogsData{} }
+func (*LogsData) ProtoMessage() {}
+
+func (m *ResourceLogs) Reset()      { *m = ResourceLogs{} }
+func (*ResourceLogs) ProtoMessage() {}
+
+func (m *ScopeLogs) Reset()      { *m = ScopeLogs{} }
+func (*ScopeLogs) ProtoMessage() {}
+
+func (m *LogRecord) Reset()      { *m = LogRecord{} }
+func (*LogRecord) ProtoMessage() {}
+
+func (m *ResourceLogs) HasResource() bool {
+	return m.fieldsPresent[0]&(1<<0) != 0
+}
+
+func (m *ResourceLogs) HasSchemaUrl() bool {
+	return m.fieldsPresent[0]&(1<<1) != 0
+}
+
+func (m *ScopeLogs) HasScope() bool {
+	return m.fieldsPresent[0]&(1<<0) != 0
+}
+
+func (m *ScopeLogs) HasSchemaUrl() bool {
+	return m.fieldsPresent[0]&(1<<1) != 0
+}
+
+func (m *LogRecord) HasTimeUnixNano() bool {
+	return m.fieldsPresent[0]&(1<<0) != 0
+}
+
+func (m *LogRecord) HasObservedTimeUnixNano() bool {
+	return m.fieldsPresent[0]&(1<<1) != 0
+}
+
+func (m *LogRecord) HasSeverityNumber() bool {
+	return m.fieldsPresent[0]&(1<<2) != 0
+}
+
+func (m *LogRecord) HasSeverityText() bool {
+	return m.fieldsPresent[0]&(1<<3) != 0
+}
+
+func (m *LogRecord) HasBody() bool {
+	return m.fieldsPresent[0]&(1<<4) != 0
+}
+
+func (m *LogRecord) HasDroppedAttributesCount() bool {
+	return m.fieldsPresent[0]&(1<<5) != 0
+}
+
+func (m *LogRecord) HasFlags() bool {
+	return m.fieldsPresent[0]&(1<<6) != 0
+}
+
+func (m *LogRecord) HasTraceId() bool {
+	return m.fieldsPresent[0]&(1<<7) != 0
+}
+
+func (m *LogRecord) HasSpanId() bool {
+	return m.fieldsPresent[0]&(1<<8) != 0
+}
+
+func (m *LogRecord) HasEventName() bool {
+	return m.fieldsPresent[0]&(1<<9) != 0
+}
+
+func (m *LogsData) GetResourceLogs() []ResourceLogs {
+	if m != nil {
+		return m.ResourceLogs
+	}
+	return nil
+}
+
+func (m *ResourceLogs) GetResource() *resourcev1.Resource {
+	if m != nil && m.fieldsPresent[0]&(1<<0) != 0 {
+		return &m.Resource
+	}
+	return nil
+}
+
+func (m *ResourceLogs) GetScopeLogs() []ScopeLogs {
+	if m != nil {
+		return m.ScopeLogs
+	}
+	return nil
+}
+
+func (m *ResourceLogs) GetSchemaUrl() string {
+	if m != nil {
+		return m.SchemaUrl
+	}
+	return ""
+}
+
+func (m *ScopeLogs) GetScope() *commonv1.InstrumentationScope {
+	if m != nil && m.fieldsPresent[0]&(1<<0) != 0 {
+		return &m.Scope
+	}
+	return nil
+}
+
+func (m *ScopeLogs) GetLogRecords() []LogRecord {
+	if m != nil {
+		return m.LogRecords
+	}
+	return nil
+}
+
+func (m *ScopeLogs) GetSchemaUrl() string {
+	if m != nil {
+		return m.SchemaUrl
+	}
+	return ""
+}
+
+func (m *LogRecord) GetTimeUnixNano() uint64 {
+	if m != nil {
+		return m.TimeUnixNano
+	}
+	return 0
+}
+
+func (m *LogRecord) GetObservedTimeUnixNano() uint64 {
+	if m != nil {
+		return m.ObservedTimeUnixNano
+	}
+	return 0
+}
+
+func (m *LogRecord) GetSeverityNumber() SeverityNumber {
+	if m != nil {
+		return m.SeverityNumber
+	}
+	return 0
+}
+
+func (m *LogRecord) GetSeverityText() string {
+	if m != nil {
+		return m.SeverityText
+	}
+	return ""
+}
+
+func (m *LogRecord) GetBody() *commonv1.AnyValue {
+	if m != nil && m.fieldsPresent[0]&(1<<4) != 0 {
+		return &m.Body
+	}
+	return nil
+}
+
+func (m *LogRecord) GetAttributes() []commonv1.KeyValue {
+	if m != nil {
+		return m.Attributes
+	}
+	return nil
+}
+
+func (m *LogRecord) GetDroppedAttributesCount() uint32 {
+	if m != nil {
+		return m.DroppedAttributesCount
+	}
+	return 0
+}
+
+func (m *LogRecord) GetFlags() uint32 {
+	if m != nil {
+		return m.Flags
+	}
+	return 0
+}
+
+func (m *LogRecord) GetTraceId() []byte {
+	if m != nil {
+		return m.TraceId
+	}
+	return nil
+}
+
+func (m *LogRecord) GetSpanId() []byte {
+	if m != nil {
+		return m.SpanId
+	}
+	return nil
+}
+
+func (m *LogRecord) GetEventName() string {
+	if m != nil {
+		return m.EventName
+	}
+	return ""
 }
 
 func (m *LogsData) Size() int {
@@ -896,6 +1096,7 @@ func (m *ResourceLogs) unmarshal(dAtA []byte, depth int) error {
 				return err
 			}
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 0
 		case 2: // scope_logs
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -973,6 +1174,7 @@ func (m *ResourceLogs) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.SchemaUrl = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 1
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
@@ -1117,6 +1319,7 @@ func (m *ScopeLogs) unmarshal(dAtA []byte, depth int) error {
 				return err
 			}
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 0
 		case 2: // log_records
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1194,6 +1397,7 @@ func (m *ScopeLogs) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.SchemaUrl = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 1
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
@@ -1314,6 +1518,7 @@ func (m *LogRecord) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.TimeUnixNano = v
+			m.fieldsPresent[0] |= 1 << 0
 		case 11: // observed_time_unix_nano
 			if wireType != 1 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1329,6 +1534,7 @@ func (m *LogRecord) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.ObservedTimeUnixNano = v
+			m.fieldsPresent[0] |= 1 << 1
 		case 2: // severity_number
 			if wireType != 0 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1354,6 +1560,7 @@ func (m *LogRecord) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.SeverityNumber = SeverityNumber(v)
+			m.fieldsPresent[0] |= 1 << 2
 		case 3: // severity_text
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1391,6 +1598,7 @@ func (m *LogRecord) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.SeverityText = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 3
 		case 5: // body
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1430,6 +1638,7 @@ func (m *LogRecord) unmarshal(dAtA []byte, depth int) error {
 				return err
 			}
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 4
 		case 6: // attributes
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1495,6 +1704,7 @@ func (m *LogRecord) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.DroppedAttributesCount = uint32(v)
+			m.fieldsPresent[0] |= 1 << 5
 		case 8: // flags
 			if wireType != 5 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1510,6 +1720,7 @@ func (m *LogRecord) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint32(dAtA[iNdEx:])
 			iNdEx += 4
 			m.Flags = v
+			m.fieldsPresent[0] |= 1 << 6
 		case 9: // trace_id
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1547,6 +1758,7 @@ func (m *LogRecord) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.TraceId = append(m.TraceId[:0], dAtA[iNdEx:postIndex]...)
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 7
 		case 10: // span_id
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1584,6 +1796,7 @@ func (m *LogRecord) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.SpanId = append(m.SpanId[:0], dAtA[iNdEx:postIndex]...)
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 8
 		case 12: // event_name
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1621,6 +1834,7 @@ func (m *LogRecord) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.EventName = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 9
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {

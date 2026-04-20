@@ -21,6 +21,68 @@ type Inner struct {
 	Name  string
 	Value int64
 	Data  []byte
+
+	fieldsPresent [1]uint64
+}
+
+func (m *MapBench) Reset()      { *m = MapBench{} }
+func (*MapBench) ProtoMessage() {}
+
+func (m *Inner) Reset()      { *m = Inner{} }
+func (*Inner) ProtoMessage() {}
+
+func (m *Inner) HasName() bool {
+	return m.fieldsPresent[0]&(1<<0) != 0
+}
+
+func (m *Inner) HasValue() bool {
+	return m.fieldsPresent[0]&(1<<1) != 0
+}
+
+func (m *Inner) HasData() bool {
+	return m.fieldsPresent[0]&(1<<2) != 0
+}
+
+func (m *MapBench) GetStringMap() map[string]string {
+	if m != nil {
+		return m.StringMap
+	}
+	return nil
+}
+
+func (m *MapBench) GetIntMap() map[int64]int64 {
+	if m != nil {
+		return m.IntMap
+	}
+	return nil
+}
+
+func (m *MapBench) GetMessageMap() map[string]Inner {
+	if m != nil {
+		return m.MessageMap
+	}
+	return nil
+}
+
+func (m *Inner) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+func (m *Inner) GetValue() int64 {
+	if m != nil {
+		return m.Value
+	}
+	return 0
+}
+
+func (m *Inner) GetData() []byte {
+	if m != nil {
+		return m.Data
+	}
+	return nil
 }
 
 func (m *MapBench) Size() int {
@@ -724,6 +786,7 @@ func (m *Inner) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Name = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 0
 		case 2: // value
 			if wireType != 0 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -749,6 +812,7 @@ func (m *Inner) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.Value = int64(v)
+			m.fieldsPresent[0] |= 1 << 1
 		case 3: // data
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -786,6 +850,7 @@ func (m *Inner) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Data = append(m.Data[:0], dAtA[iNdEx:postIndex]...)
 			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 2
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
