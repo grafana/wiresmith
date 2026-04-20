@@ -1,6 +1,6 @@
 # Tempo Integration
 
-Summary of wiresmith2 changes needed to integrate with Grafana Tempo.
+Summary of wiresmith changes needed to integrate with Grafana Tempo.
 
 ## CLI Flags Added
 
