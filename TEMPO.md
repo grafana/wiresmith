@@ -22,7 +22,15 @@ wiresmith \
   --helpers_import=github.com/grafana/tempo/pkg/tempopb/protohelpers
 ```
 
-## Compiler Changes
+## Already Implemented
+
+- Getter methods (`GetXxx()`) for all fields — #34
+- `Reset()`, `ProtoMessage()`, `String()` on all messages — #34, #35
+- Enum name maps (`_name`/`_value`) and `String()` method — #35
+- `.pb.go` output file suffix — #35
+- Type registration via `protohelpers.RegisterType`/`RegisterEnum` in `init()` — #35
+
+## Compiler Changes (remaining)
 
 ### Recursive directory scanning
 
@@ -34,26 +42,6 @@ wiresmith \
 - `goDeclaredPkgName`: with `--strip_prefix`, uses the last path component (`v1`) instead of the concatenated form (`commonv1`)
 - `goImportPath`: uses `--import_base` instead of `module/gen/`
 - `helpersImportPath`: uses `--helpers_import` if set
-
-### Getter methods (`emit_getters.go`)
-
-Generated `GetXxx()` for every field. Required because Tempo code uses nil-safe getter chains like `rs.GetResource().GetAttributes()`.
-
-- Scalar/enum fields: return value, zero if nil receiver
-- Message fields (value types): return `*T` (pointer to the value field), nil if nil receiver
-- Repeated/map fields: return slice/map, nil if nil receiver
-- Oneof interface: return the interface, nil if nil receiver
-- Oneof variant getters: type-assert the interface and extract the value
-
-### Proto-compat methods (`emit_compat.go`)
-
-Generated `Reset()`, `String()`, `ProtoMessage()` for every message. `ProtoMessage()` is needed as a marker for proto.Message interface satisfaction. `Reset()` is used by some Tempo code paths.
-
-### Enum name maps and String() (`emit_enum.go`)
-
-- Constants use the parent message prefix: `Status_STATUS_CODE_ERROR`
-- Name maps use bare enum value names (no prefix): `"STATUS_CODE_ERROR"`
-- This matches gogoproto behavior where `String()` returns `"STATUS_CODE_ERROR"`, not `"Status_STATUS_CODE_ERROR"`
 
 ### Struct tags (`emit_struct.go`)
 

@@ -10,6 +10,7 @@ import (
 	"google.golang.org/protobuf/encoding/protowire"
 	"io"
 	"math"
+	"strconv"
 	"wiresmith/gen/protohelpers"
 )
 
@@ -21,6 +22,25 @@ const (
 	FOREIGN_BAZ ForeignEnum = 2
 )
 
+var ForeignEnum_name = map[int32]string{
+	0: "FOREIGN_FOO",
+	1: "FOREIGN_BAR",
+	2: "FOREIGN_BAZ",
+}
+
+var ForeignEnum_value = map[string]int32{
+	"FOREIGN_FOO": 0,
+	"FOREIGN_BAR": 1,
+	"FOREIGN_BAZ": 2,
+}
+
+func (x ForeignEnum) String() string {
+	if name, ok := ForeignEnum_name[int32(x)]; ok {
+		return name
+	}
+	return strconv.FormatInt(int64(x), 10)
+}
+
 type TestAllTypesProto3_NestedEnum int32
 
 const (
@@ -30,12 +50,50 @@ const (
 	NEG TestAllTypesProto3_NestedEnum = -1
 )
 
+var TestAllTypesProto3_NestedEnum_name = map[int32]string{
+	0:  "FOO",
+	1:  "BAR",
+	2:  "BAZ",
+	-1: "NEG",
+}
+
+var TestAllTypesProto3_NestedEnum_value = map[string]int32{
+	"FOO": 0,
+	"BAR": 1,
+	"BAZ": 2,
+	"NEG": -1,
+}
+
+func (x TestAllTypesProto3_NestedEnum) String() string {
+	if name, ok := TestAllTypesProto3_NestedEnum_name[int32(x)]; ok {
+		return name
+	}
+	return strconv.FormatInt(int64(x), 10)
+}
+
 type EnumOnlyProto3_Bool int32
 
 const (
 	kFalse EnumOnlyProto3_Bool = 0
 	kTrue  EnumOnlyProto3_Bool = 1
 )
+
+var EnumOnlyProto3_Bool_name = map[int32]string{
+	0: "kFalse",
+	1: "kTrue",
+}
+
+var EnumOnlyProto3_Bool_value = map[string]int32{
+	"kFalse": 0,
+	"kTrue":  1,
+}
+
+func (x EnumOnlyProto3_Bool) String() string {
+	if name, ok := EnumOnlyProto3_Bool_name[int32(x)]; ok {
+		return name
+	}
+	return strconv.FormatInt(int64(x), 10)
+}
 
 type TestAllTypesProto3_OneofField interface {
 	isTestAllTypesProto3_OneofField()
@@ -239,180 +297,333 @@ type EnumOnlyProto3 struct {
 
 func (m *TestAllTypesProto3_NestedMessage) Reset()      { *m = TestAllTypesProto3_NestedMessage{} }
 func (*TestAllTypesProto3_NestedMessage) ProtoMessage() {}
+func (m *TestAllTypesProto3_NestedMessage) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
 func (m *TestAllTypesProto3) Reset()      { *m = TestAllTypesProto3{} }
 func (*TestAllTypesProto3) ProtoMessage() {}
+func (m *TestAllTypesProto3) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
 func (m *ForeignMessage) Reset()      { *m = ForeignMessage{} }
 func (*ForeignMessage) ProtoMessage() {}
+func (m *ForeignMessage) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
 func (m *NullHypothesisProto3) Reset()      { *m = NullHypothesisProto3{} }
 func (*NullHypothesisProto3) ProtoMessage() {}
+func (m *NullHypothesisProto3) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
 func (m *EnumOnlyProto3) Reset()      { *m = EnumOnlyProto3{} }
 func (*EnumOnlyProto3) ProtoMessage() {}
+func (m *EnumOnlyProto3) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
 func (m *TestAllTypesProto3_NestedMessage) HasA() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalInt32() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalInt64() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalUint32() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<2) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalUint64() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<3) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalSint32() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<4) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalSint64() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<5) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalFixed32() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<6) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalFixed64() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<7) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalSfixed32() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<8) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalSfixed64() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<9) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalFloat() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<10) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalDouble() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<11) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalBool() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<12) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalString() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<13) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalBytes() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<14) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalNestedMessage() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<15) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalForeignMessage() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<16) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalNestedEnum() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<17) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalForeignEnum() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<18) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalStringPiece() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<19) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalCord() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<20) != 0
 }
 
 func (m *TestAllTypesProto3) HasFieldname1() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<21) != 0
 }
 
 func (m *TestAllTypesProto3) HasFieldName2() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<22) != 0
 }
 
 func (m *TestAllTypesProto3) HasFieldName3() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<23) != 0
 }
 
 func (m *TestAllTypesProto3) HasFieldName4() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<24) != 0
 }
 
 func (m *TestAllTypesProto3) HasField0name5() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<25) != 0
 }
 
 func (m *TestAllTypesProto3) HasField0Name6() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<26) != 0
 }
 
 func (m *TestAllTypesProto3) HasFieldName7() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<27) != 0
 }
 
 func (m *TestAllTypesProto3) HasFieldName8() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<28) != 0
 }
 
 func (m *TestAllTypesProto3) HasFieldName9() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<29) != 0
 }
 
 func (m *TestAllTypesProto3) HasFieldName10() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<30) != 0
 }
 
 func (m *TestAllTypesProto3) HasFIELDNAME11() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<31) != 0
 }
 
 func (m *TestAllTypesProto3) HasFIELDName12() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<32) != 0
 }
 
 func (m *TestAllTypesProto3) HasFieldName13() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<33) != 0
 }
 
 func (m *TestAllTypesProto3) HasFieldName14() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<34) != 0
 }
 
 func (m *TestAllTypesProto3) HasFieldName15() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<35) != 0
 }
 
 func (m *TestAllTypesProto3) HasFieldName16() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<36) != 0
 }
 
 func (m *TestAllTypesProto3) HasFieldName17() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<37) != 0
 }
 
 func (m *TestAllTypesProto3) HasFieldName18() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<38) != 0
 }
 
 func (m *ForeignMessage) HasC() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
@@ -11016,4 +11227,15 @@ func (this *EnumOnlyProto3) Equal(that interface{}) bool {
 		return false
 	}
 	return true
+}
+
+func init() {
+	protohelpers.RegisterEnum("protobuf_test_messages.proto3.ForeignEnum", ForeignEnum_name, ForeignEnum_value)
+	protohelpers.RegisterEnum("protobuf_test_messages.proto3.TestAllTypesProto3.NestedEnum", TestAllTypesProto3_NestedEnum_name, TestAllTypesProto3_NestedEnum_value)
+	protohelpers.RegisterEnum("protobuf_test_messages.proto3.EnumOnlyProto3.Bool", EnumOnlyProto3_Bool_name, EnumOnlyProto3_Bool_value)
+	protohelpers.RegisterType((*TestAllTypesProto3)(nil), "protobuf_test_messages.proto3.TestAllTypesProto3")
+	protohelpers.RegisterType((*TestAllTypesProto3_NestedMessage)(nil), "protobuf_test_messages.proto3.TestAllTypesProto3.NestedMessage")
+	protohelpers.RegisterType((*ForeignMessage)(nil), "protobuf_test_messages.proto3.ForeignMessage")
+	protohelpers.RegisterType((*NullHypothesisProto3)(nil), "protobuf_test_messages.proto3.NullHypothesisProto3")
+	protohelpers.RegisterType((*EnumOnlyProto3)(nil), "protobuf_test_messages.proto3.EnumOnlyProto3")
 }

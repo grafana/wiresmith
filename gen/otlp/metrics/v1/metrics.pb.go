@@ -10,6 +10,7 @@ import (
 	"google.golang.org/protobuf/encoding/protowire"
 	"io"
 	"math"
+	"strconv"
 	commonv1 "wiresmith/gen/otlp/common/v1"
 	resourcev1 "wiresmith/gen/otlp/resource/v1"
 	"wiresmith/gen/protohelpers"
@@ -86,6 +87,25 @@ const (
 	AGGREGATION_TEMPORALITY_CUMULATIVE AggregationTemporality = 2
 )
 
+var AggregationTemporality_name = map[int32]string{
+	0: "AGGREGATION_TEMPORALITY_UNSPECIFIED",
+	1: "AGGREGATION_TEMPORALITY_DELTA",
+	2: "AGGREGATION_TEMPORALITY_CUMULATIVE",
+}
+
+var AggregationTemporality_value = map[string]int32{
+	"AGGREGATION_TEMPORALITY_UNSPECIFIED": 0,
+	"AGGREGATION_TEMPORALITY_DELTA":       1,
+	"AGGREGATION_TEMPORALITY_CUMULATIVE":  2,
+}
+
+func (x AggregationTemporality) String() string {
+	if name, ok := AggregationTemporality_name[int32(x)]; ok {
+		return name
+	}
+	return strconv.FormatInt(int64(x), 10)
+}
+
 // DataPointFlags is defined as a protobuf 'uint32' type and is to be used as a
 // bit-field representing 32 distinct boolean flags.  Each flag defined in this
 // enum is a bit-mask.  To test the presence of a single flag in the flags of
@@ -103,6 +123,23 @@ const (
 	// for an equivalent to the Prometheus "staleness marker".
 	DATA_POINT_FLAGS_NO_RECORDED_VALUE_MASK DataPointFlags = 1
 )
+
+var DataPointFlags_name = map[int32]string{
+	0: "DATA_POINT_FLAGS_DO_NOT_USE",
+	1: "DATA_POINT_FLAGS_NO_RECORDED_VALUE_MASK",
+}
+
+var DataPointFlags_value = map[string]int32{
+	"DATA_POINT_FLAGS_DO_NOT_USE":             0,
+	"DATA_POINT_FLAGS_NO_RECORDED_VALUE_MASK": 1,
+}
+
+func (x DataPointFlags) String() string {
+	if name, ok := DataPointFlags_name[int32(x)]; ok {
+		return name
+	}
+	return strconv.FormatInt(int64(x), 10)
+}
 
 type Metric_Data interface {
 	isMetric_Data()
@@ -739,201 +776,411 @@ type Exemplar struct {
 
 func (m *MetricsData) Reset()      { *m = MetricsData{} }
 func (*MetricsData) ProtoMessage() {}
+func (m *MetricsData) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
 func (m *ResourceMetrics) Reset()      { *m = ResourceMetrics{} }
 func (*ResourceMetrics) ProtoMessage() {}
+func (m *ResourceMetrics) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
 func (m *ScopeMetrics) Reset()      { *m = ScopeMetrics{} }
 func (*ScopeMetrics) ProtoMessage() {}
+func (m *ScopeMetrics) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
 func (m *Metric) Reset()      { *m = Metric{} }
 func (*Metric) ProtoMessage() {}
+func (m *Metric) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
 func (m *Gauge) Reset()      { *m = Gauge{} }
 func (*Gauge) ProtoMessage() {}
+func (m *Gauge) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
 func (m *Sum) Reset()      { *m = Sum{} }
 func (*Sum) ProtoMessage() {}
+func (m *Sum) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
 func (m *Histogram) Reset()      { *m = Histogram{} }
 func (*Histogram) ProtoMessage() {}
+func (m *Histogram) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
 func (m *ExponentialHistogram) Reset()      { *m = ExponentialHistogram{} }
 func (*ExponentialHistogram) ProtoMessage() {}
+func (m *ExponentialHistogram) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
 func (m *Summary) Reset()      { *m = Summary{} }
 func (*Summary) ProtoMessage() {}
+func (m *Summary) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
 func (m *NumberDataPoint) Reset()      { *m = NumberDataPoint{} }
 func (*NumberDataPoint) ProtoMessage() {}
+func (m *NumberDataPoint) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
 func (m *HistogramDataPoint) Reset()      { *m = HistogramDataPoint{} }
 func (*HistogramDataPoint) ProtoMessage() {}
+func (m *HistogramDataPoint) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
 func (m *ExponentialHistogramDataPoint_Buckets) Reset()      { *m = ExponentialHistogramDataPoint_Buckets{} }
 func (*ExponentialHistogramDataPoint_Buckets) ProtoMessage() {}
+func (m *ExponentialHistogramDataPoint_Buckets) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
 func (m *ExponentialHistogramDataPoint) Reset()      { *m = ExponentialHistogramDataPoint{} }
 func (*ExponentialHistogramDataPoint) ProtoMessage() {}
+func (m *ExponentialHistogramDataPoint) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
 func (m *SummaryDataPoint_ValueAtQuantile) Reset()      { *m = SummaryDataPoint_ValueAtQuantile{} }
 func (*SummaryDataPoint_ValueAtQuantile) ProtoMessage() {}
+func (m *SummaryDataPoint_ValueAtQuantile) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
 func (m *SummaryDataPoint) Reset()      { *m = SummaryDataPoint{} }
 func (*SummaryDataPoint) ProtoMessage() {}
+func (m *SummaryDataPoint) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
 func (m *Exemplar) Reset()      { *m = Exemplar{} }
 func (*Exemplar) ProtoMessage() {}
+func (m *Exemplar) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
 func (m *ResourceMetrics) HasResource() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *ResourceMetrics) HasSchemaUrl() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *ScopeMetrics) HasScope() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *ScopeMetrics) HasSchemaUrl() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *Metric) HasName() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Metric) HasDescription() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *Metric) HasUnit() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<2) != 0
 }
 
 func (m *Sum) HasAggregationTemporality() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Sum) HasIsMonotonic() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *Histogram) HasAggregationTemporality() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *ExponentialHistogram) HasAggregationTemporality() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *NumberDataPoint) HasStartTimeUnixNano() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *NumberDataPoint) HasTimeUnixNano() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *NumberDataPoint) HasFlags() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<2) != 0
 }
 
 func (m *HistogramDataPoint) HasStartTimeUnixNano() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *HistogramDataPoint) HasTimeUnixNano() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *HistogramDataPoint) HasCount() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<2) != 0
 }
 
 func (m *HistogramDataPoint) HasFlags() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<3) != 0
 }
 
 func (m *ExponentialHistogramDataPoint_Buckets) HasOffset() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *ExponentialHistogramDataPoint) HasStartTimeUnixNano() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *ExponentialHistogramDataPoint) HasTimeUnixNano() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *ExponentialHistogramDataPoint) HasCount() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<2) != 0
 }
 
 func (m *ExponentialHistogramDataPoint) HasScale() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<3) != 0
 }
 
 func (m *ExponentialHistogramDataPoint) HasZeroCount() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<4) != 0
 }
 
 func (m *ExponentialHistogramDataPoint) HasPositive() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<5) != 0
 }
 
 func (m *ExponentialHistogramDataPoint) HasNegative() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<6) != 0
 }
 
 func (m *ExponentialHistogramDataPoint) HasFlags() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<7) != 0
 }
 
 func (m *ExponentialHistogramDataPoint) HasZeroThreshold() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<8) != 0
 }
 
 func (m *SummaryDataPoint_ValueAtQuantile) HasQuantile() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *SummaryDataPoint_ValueAtQuantile) HasValue() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *SummaryDataPoint) HasStartTimeUnixNano() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *SummaryDataPoint) HasTimeUnixNano() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *SummaryDataPoint) HasCount() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<2) != 0
 }
 
 func (m *SummaryDataPoint) HasSum() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<3) != 0
 }
 
 func (m *SummaryDataPoint) HasFlags() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<4) != 0
 }
 
 func (m *Exemplar) HasTimeUnixNano() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Exemplar) HasSpanId() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *Exemplar) HasTraceId() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<2) != 0
 }
 
@@ -7449,4 +7696,25 @@ func (this *Exemplar) Equal(that interface{}) bool {
 		return false
 	}
 	return true
+}
+
+func init() {
+	protohelpers.RegisterEnum("opentelemetry.proto.metrics.v1.AggregationTemporality", AggregationTemporality_name, AggregationTemporality_value)
+	protohelpers.RegisterEnum("opentelemetry.proto.metrics.v1.DataPointFlags", DataPointFlags_name, DataPointFlags_value)
+	protohelpers.RegisterType((*MetricsData)(nil), "opentelemetry.proto.metrics.v1.MetricsData")
+	protohelpers.RegisterType((*ResourceMetrics)(nil), "opentelemetry.proto.metrics.v1.ResourceMetrics")
+	protohelpers.RegisterType((*ScopeMetrics)(nil), "opentelemetry.proto.metrics.v1.ScopeMetrics")
+	protohelpers.RegisterType((*Metric)(nil), "opentelemetry.proto.metrics.v1.Metric")
+	protohelpers.RegisterType((*Gauge)(nil), "opentelemetry.proto.metrics.v1.Gauge")
+	protohelpers.RegisterType((*Sum)(nil), "opentelemetry.proto.metrics.v1.Sum")
+	protohelpers.RegisterType((*Histogram)(nil), "opentelemetry.proto.metrics.v1.Histogram")
+	protohelpers.RegisterType((*ExponentialHistogram)(nil), "opentelemetry.proto.metrics.v1.ExponentialHistogram")
+	protohelpers.RegisterType((*Summary)(nil), "opentelemetry.proto.metrics.v1.Summary")
+	protohelpers.RegisterType((*NumberDataPoint)(nil), "opentelemetry.proto.metrics.v1.NumberDataPoint")
+	protohelpers.RegisterType((*HistogramDataPoint)(nil), "opentelemetry.proto.metrics.v1.HistogramDataPoint")
+	protohelpers.RegisterType((*ExponentialHistogramDataPoint)(nil), "opentelemetry.proto.metrics.v1.ExponentialHistogramDataPoint")
+	protohelpers.RegisterType((*ExponentialHistogramDataPoint_Buckets)(nil), "opentelemetry.proto.metrics.v1.ExponentialHistogramDataPoint.Buckets")
+	protohelpers.RegisterType((*SummaryDataPoint)(nil), "opentelemetry.proto.metrics.v1.SummaryDataPoint")
+	protohelpers.RegisterType((*SummaryDataPoint_ValueAtQuantile)(nil), "opentelemetry.proto.metrics.v1.SummaryDataPoint.ValueAtQuantile")
+	protohelpers.RegisterType((*Exemplar)(nil), "opentelemetry.proto.metrics.v1.Exemplar")
 }

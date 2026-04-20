@@ -205,7 +205,7 @@ func TestGenerateMatchesCheckedIn(t *testing.T) {
 				if err != nil {
 					return err
 				}
-				if !strings.HasSuffix(rel, ".go") {
+				if !strings.HasSuffix(rel, ".pb.go") {
 					return nil
 				}
 				generatedFiles[rel] = struct{}{}
@@ -247,7 +247,7 @@ func TestGenerateMatchesCheckedIn(t *testing.T) {
 					t.Fatalf("reading checked-in directory %s: %v", dir, err)
 				}
 				for _, e := range entries {
-					if e.IsDir() || !strings.HasSuffix(e.Name(), ".go") {
+					if e.IsDir() || !strings.HasSuffix(e.Name(), ".pb.go") {
 						continue
 					}
 					rel := filepath.Join(dir, e.Name())
