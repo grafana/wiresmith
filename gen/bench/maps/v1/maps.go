@@ -209,12 +209,15 @@ func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) 
 	}
 }
 
-func skipValue(dAtA []byte, wireType int) (int, error) {
+func skipValue(dAtA []byte, wireType int, fieldNum int32) (int, error) {
 	iNdEx := 0
 	l := len(dAtA)
 	switch wireType {
 	case 0:
-		for {
+		for shift := 0; ; shift++ {
+			if shift >= 10 {
+				return 0, fmt.Errorf("proto: varint too long")
+			}
 			if iNdEx >= l {
 				return 0, io.ErrUnexpectedEOF
 			}
@@ -251,6 +254,12 @@ func skipValue(dAtA []byte, wireType int) (int, error) {
 		if iNdEx < 0 || iNdEx > l {
 			return 0, io.ErrUnexpectedEOF
 		}
+	case 3:
+		_, n := protowire.ConsumeGroup(protowire.Number(fieldNum), dAtA[iNdEx:])
+		if n < 0 {
+			return 0, fmt.Errorf("invalid group")
+		}
+		iNdEx += n
 	case 5:
 		if (iNdEx + 4) > l {
 			return 0, io.ErrUnexpectedEOF
@@ -361,10 +370,13 @@ func (m *MapBench) unmarshal(dAtA []byte, depth int) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
+			return fmt.Errorf("invalid field number")
+		}
 		switch fieldNum {
 		case 1: // string_map
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -452,7 +464,7 @@ func (m *MapBench) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 2: // int_map
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -540,7 +552,7 @@ func (m *MapBench) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 3: // message_map
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -629,7 +641,7 @@ func (m *MapBench) unmarshal(dAtA []byte, depth int) error {
 			m.MessageMap[mapkey] = mapvalue
 			iNdEx = postIndex
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType)
+			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -670,10 +682,13 @@ func (m *Inner) unmarshal(dAtA []byte, depth int) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
+			return fmt.Errorf("invalid field number")
+		}
 		switch fieldNum {
 		case 1: // name
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -710,7 +725,7 @@ func (m *Inner) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 2: // value
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -735,7 +750,7 @@ func (m *Inner) unmarshal(dAtA []byte, depth int) error {
 			m.Value = int64(v)
 		case 3: // data
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -771,7 +786,7 @@ func (m *Inner) unmarshal(dAtA []byte, depth int) error {
 			m.Data = append(m.Data[:0], dAtA[iNdEx:postIndex]...)
 			iNdEx = postIndex
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType)
+			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}

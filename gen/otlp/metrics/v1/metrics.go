@@ -1529,12 +1529,15 @@ func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) 
 	}
 }
 
-func skipValue(dAtA []byte, wireType int) (int, error) {
+func skipValue(dAtA []byte, wireType int, fieldNum int32) (int, error) {
 	iNdEx := 0
 	l := len(dAtA)
 	switch wireType {
 	case 0:
-		for {
+		for shift := 0; ; shift++ {
+			if shift >= 10 {
+				return 0, fmt.Errorf("proto: varint too long")
+			}
 			if iNdEx >= l {
 				return 0, io.ErrUnexpectedEOF
 			}
@@ -1571,6 +1574,12 @@ func skipValue(dAtA []byte, wireType int) (int, error) {
 		if iNdEx < 0 || iNdEx > l {
 			return 0, io.ErrUnexpectedEOF
 		}
+	case 3:
+		_, n := protowire.ConsumeGroup(protowire.Number(fieldNum), dAtA[iNdEx:])
+		if n < 0 {
+			return 0, fmt.Errorf("invalid group")
+		}
+		iNdEx += n
 	case 5:
 		if (iNdEx + 4) > l {
 			return 0, io.ErrUnexpectedEOF
@@ -1669,10 +1678,13 @@ func (m *MetricsData) unmarshal(dAtA []byte, depth int) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
+			return fmt.Errorf("invalid field number")
+		}
 		switch fieldNum {
 		case 1: // resource_metrics
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -1711,7 +1723,7 @@ func (m *MetricsData) unmarshal(dAtA []byte, depth int) error {
 			}
 			iNdEx = postIndex
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType)
+			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -1811,10 +1823,13 @@ func (m *ResourceMetrics) unmarshal(dAtA []byte, depth int) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
+			return fmt.Errorf("invalid field number")
+		}
 		switch fieldNum {
 		case 1: // resource
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -1853,7 +1868,7 @@ func (m *ResourceMetrics) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 2: // scope_metrics
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -1893,7 +1908,7 @@ func (m *ResourceMetrics) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 3: // schema_url
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -1929,7 +1944,7 @@ func (m *ResourceMetrics) unmarshal(dAtA []byte, depth int) error {
 			m.SchemaUrl = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType)
+			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -2029,10 +2044,13 @@ func (m *ScopeMetrics) unmarshal(dAtA []byte, depth int) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
+			return fmt.Errorf("invalid field number")
+		}
 		switch fieldNum {
 		case 1: // scope
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2071,7 +2089,7 @@ func (m *ScopeMetrics) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 2: // metrics
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2111,7 +2129,7 @@ func (m *ScopeMetrics) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 3: // schema_url
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2147,7 +2165,7 @@ func (m *ScopeMetrics) unmarshal(dAtA []byte, depth int) error {
 			m.SchemaUrl = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType)
+			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -2247,10 +2265,13 @@ func (m *Metric) unmarshal(dAtA []byte, depth int) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
+			return fmt.Errorf("invalid field number")
+		}
 		switch fieldNum {
 		case 1: // name
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2287,7 +2308,7 @@ func (m *Metric) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 2: // description
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2324,7 +2345,7 @@ func (m *Metric) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 3: // unit
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2361,7 +2382,7 @@ func (m *Metric) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 5: // gauge
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2402,7 +2423,7 @@ func (m *Metric) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 7: // sum
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2443,7 +2464,7 @@ func (m *Metric) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 9: // histogram
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2484,7 +2505,7 @@ func (m *Metric) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 10: // exponential_histogram
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2525,7 +2546,7 @@ func (m *Metric) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 11: // summary
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2566,7 +2587,7 @@ func (m *Metric) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 12: // metadata
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2605,7 +2626,7 @@ func (m *Metric) unmarshal(dAtA []byte, depth int) error {
 			}
 			iNdEx = postIndex
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType)
+			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -2705,10 +2726,13 @@ func (m *Gauge) unmarshal(dAtA []byte, depth int) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
+			return fmt.Errorf("invalid field number")
+		}
 		switch fieldNum {
 		case 1: // data_points
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2747,7 +2771,7 @@ func (m *Gauge) unmarshal(dAtA []byte, depth int) error {
 			}
 			iNdEx = postIndex
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType)
+			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -2847,10 +2871,13 @@ func (m *Sum) unmarshal(dAtA []byte, depth int) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
+			return fmt.Errorf("invalid field number")
+		}
 		switch fieldNum {
 		case 1: // data_points
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2890,7 +2917,7 @@ func (m *Sum) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 2: // aggregation_temporality
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2915,7 +2942,7 @@ func (m *Sum) unmarshal(dAtA []byte, depth int) error {
 			m.AggregationTemporality = AggregationTemporality(v)
 		case 3: // is_monotonic
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2939,7 +2966,7 @@ func (m *Sum) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.IsMonotonic = v != 0
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType)
+			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -3039,10 +3066,13 @@ func (m *Histogram) unmarshal(dAtA []byte, depth int) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
+			return fmt.Errorf("invalid field number")
+		}
 		switch fieldNum {
 		case 1: // data_points
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -3082,7 +3112,7 @@ func (m *Histogram) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 2: // aggregation_temporality
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -3106,7 +3136,7 @@ func (m *Histogram) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.AggregationTemporality = AggregationTemporality(v)
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType)
+			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -3206,10 +3236,13 @@ func (m *ExponentialHistogram) unmarshal(dAtA []byte, depth int) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
+			return fmt.Errorf("invalid field number")
+		}
 		switch fieldNum {
 		case 1: // data_points
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -3249,7 +3282,7 @@ func (m *ExponentialHistogram) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 2: // aggregation_temporality
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -3273,7 +3306,7 @@ func (m *ExponentialHistogram) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.AggregationTemporality = AggregationTemporality(v)
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType)
+			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -3373,10 +3406,13 @@ func (m *Summary) unmarshal(dAtA []byte, depth int) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
+			return fmt.Errorf("invalid field number")
+		}
 		switch fieldNum {
 		case 1: // data_points
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -3415,7 +3451,7 @@ func (m *Summary) unmarshal(dAtA []byte, depth int) error {
 			}
 			iNdEx = postIndex
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType)
+			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -3521,10 +3557,13 @@ func (m *NumberDataPoint) unmarshal(dAtA []byte, depth int) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
+			return fmt.Errorf("invalid field number")
+		}
 		switch fieldNum {
 		case 7: // attributes
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -3564,7 +3603,7 @@ func (m *NumberDataPoint) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 2: // start_time_unix_nano
 			if wireType != 1 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -3579,7 +3618,7 @@ func (m *NumberDataPoint) unmarshal(dAtA []byte, depth int) error {
 			m.StartTimeUnixNano = v
 		case 3: // time_unix_nano
 			if wireType != 1 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -3594,7 +3633,7 @@ func (m *NumberDataPoint) unmarshal(dAtA []byte, depth int) error {
 			m.TimeUnixNano = v
 		case 4: // as_double
 			if wireType != 1 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -3609,7 +3648,7 @@ func (m *NumberDataPoint) unmarshal(dAtA []byte, depth int) error {
 			m.Value = &NumberDataPoint_AsDouble{AsDouble: math.Float64frombits(v)}
 		case 6: // as_int
 			if wireType != 1 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -3624,7 +3663,7 @@ func (m *NumberDataPoint) unmarshal(dAtA []byte, depth int) error {
 			m.Value = &NumberDataPoint_AsInt{AsInt: int64(v)}
 		case 5: // exemplars
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -3664,7 +3703,7 @@ func (m *NumberDataPoint) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 8: // flags
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -3688,7 +3727,7 @@ func (m *NumberDataPoint) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Flags = uint32(v)
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType)
+			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -3794,10 +3833,13 @@ func (m *HistogramDataPoint) unmarshal(dAtA []byte, depth int) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
+			return fmt.Errorf("invalid field number")
+		}
 		switch fieldNum {
 		case 9: // attributes
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -3837,7 +3879,7 @@ func (m *HistogramDataPoint) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 2: // start_time_unix_nano
 			if wireType != 1 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -3852,7 +3894,7 @@ func (m *HistogramDataPoint) unmarshal(dAtA []byte, depth int) error {
 			m.StartTimeUnixNano = v
 		case 3: // time_unix_nano
 			if wireType != 1 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -3867,7 +3909,7 @@ func (m *HistogramDataPoint) unmarshal(dAtA []byte, depth int) error {
 			m.TimeUnixNano = v
 		case 4: // count
 			if wireType != 1 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -3882,7 +3924,7 @@ func (m *HistogramDataPoint) unmarshal(dAtA []byte, depth int) error {
 			m.Count = v
 		case 5: // sum
 			if wireType != 1 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -3945,7 +3987,7 @@ func (m *HistogramDataPoint) unmarshal(dAtA []byte, depth int) error {
 				iNdEx += 8
 				m.BucketCounts = append(m.BucketCounts, v)
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4000,7 +4042,7 @@ func (m *HistogramDataPoint) unmarshal(dAtA []byte, depth int) error {
 				iNdEx += 8
 				m.ExplicitBounds = append(m.ExplicitBounds, math.Float64frombits(v))
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4008,7 +4050,7 @@ func (m *HistogramDataPoint) unmarshal(dAtA []byte, depth int) error {
 			}
 		case 8: // exemplars
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4048,7 +4090,7 @@ func (m *HistogramDataPoint) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 10: // flags
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4073,7 +4115,7 @@ func (m *HistogramDataPoint) unmarshal(dAtA []byte, depth int) error {
 			m.Flags = uint32(v)
 		case 11: // min
 			if wireType != 1 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4089,7 +4131,7 @@ func (m *HistogramDataPoint) unmarshal(dAtA []byte, depth int) error {
 			m.Min = &tmp
 		case 12: // max
 			if wireType != 1 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4104,7 +4146,7 @@ func (m *HistogramDataPoint) unmarshal(dAtA []byte, depth int) error {
 			tmp := math.Float64frombits(v)
 			m.Max = &tmp
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType)
+			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -4145,10 +4187,13 @@ func (m *ExponentialHistogramDataPoint_Buckets) unmarshal(dAtA []byte, depth int
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
+			return fmt.Errorf("invalid field number")
+		}
 		switch fieldNum {
 		case 1: // offset
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4236,14 +4281,14 @@ func (m *ExponentialHistogramDataPoint_Buckets) unmarshal(dAtA []byte, depth int
 				}
 				m.BucketCounts = append(m.BucketCounts, v)
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
 				iNdEx += n
 			}
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType)
+			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -4349,10 +4394,13 @@ func (m *ExponentialHistogramDataPoint) unmarshal(dAtA []byte, depth int) error 
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
+			return fmt.Errorf("invalid field number")
+		}
 		switch fieldNum {
 		case 1: // attributes
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4392,7 +4440,7 @@ func (m *ExponentialHistogramDataPoint) unmarshal(dAtA []byte, depth int) error 
 			iNdEx = postIndex
 		case 2: // start_time_unix_nano
 			if wireType != 1 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4407,7 +4455,7 @@ func (m *ExponentialHistogramDataPoint) unmarshal(dAtA []byte, depth int) error 
 			m.StartTimeUnixNano = v
 		case 3: // time_unix_nano
 			if wireType != 1 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4422,7 +4470,7 @@ func (m *ExponentialHistogramDataPoint) unmarshal(dAtA []byte, depth int) error 
 			m.TimeUnixNano = v
 		case 4: // count
 			if wireType != 1 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4437,7 +4485,7 @@ func (m *ExponentialHistogramDataPoint) unmarshal(dAtA []byte, depth int) error 
 			m.Count = v
 		case 5: // sum
 			if wireType != 1 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4453,7 +4501,7 @@ func (m *ExponentialHistogramDataPoint) unmarshal(dAtA []byte, depth int) error 
 			m.Sum = &tmp
 		case 6: // scale
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4478,7 +4526,7 @@ func (m *ExponentialHistogramDataPoint) unmarshal(dAtA []byte, depth int) error 
 			m.Scale = int32(v>>1) ^ int32(v)<<31>>31
 		case 7: // zero_count
 			if wireType != 1 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4493,7 +4541,7 @@ func (m *ExponentialHistogramDataPoint) unmarshal(dAtA []byte, depth int) error 
 			m.ZeroCount = v
 		case 8: // positive
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4532,7 +4580,7 @@ func (m *ExponentialHistogramDataPoint) unmarshal(dAtA []byte, depth int) error 
 			iNdEx = postIndex
 		case 9: // negative
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4571,7 +4619,7 @@ func (m *ExponentialHistogramDataPoint) unmarshal(dAtA []byte, depth int) error 
 			iNdEx = postIndex
 		case 10: // flags
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4596,7 +4644,7 @@ func (m *ExponentialHistogramDataPoint) unmarshal(dAtA []byte, depth int) error 
 			m.Flags = uint32(v)
 		case 11: // exemplars
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4636,7 +4684,7 @@ func (m *ExponentialHistogramDataPoint) unmarshal(dAtA []byte, depth int) error 
 			iNdEx = postIndex
 		case 12: // min
 			if wireType != 1 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4652,7 +4700,7 @@ func (m *ExponentialHistogramDataPoint) unmarshal(dAtA []byte, depth int) error 
 			m.Min = &tmp
 		case 13: // max
 			if wireType != 1 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4668,7 +4716,7 @@ func (m *ExponentialHistogramDataPoint) unmarshal(dAtA []byte, depth int) error 
 			m.Max = &tmp
 		case 14: // zero_threshold
 			if wireType != 1 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4682,7 +4730,7 @@ func (m *ExponentialHistogramDataPoint) unmarshal(dAtA []byte, depth int) error 
 			iNdEx += 8
 			m.ZeroThreshold = math.Float64frombits(v)
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType)
+			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -4723,10 +4771,13 @@ func (m *SummaryDataPoint_ValueAtQuantile) unmarshal(dAtA []byte, depth int) err
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
+			return fmt.Errorf("invalid field number")
+		}
 		switch fieldNum {
 		case 1: // quantile
 			if wireType != 1 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4741,7 +4792,7 @@ func (m *SummaryDataPoint_ValueAtQuantile) unmarshal(dAtA []byte, depth int) err
 			m.Quantile = math.Float64frombits(v)
 		case 2: // value
 			if wireType != 1 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4755,7 +4806,7 @@ func (m *SummaryDataPoint_ValueAtQuantile) unmarshal(dAtA []byte, depth int) err
 			iNdEx += 8
 			m.Value = math.Float64frombits(v)
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType)
+			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -4861,10 +4912,13 @@ func (m *SummaryDataPoint) unmarshal(dAtA []byte, depth int) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
+			return fmt.Errorf("invalid field number")
+		}
 		switch fieldNum {
 		case 7: // attributes
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4904,7 +4958,7 @@ func (m *SummaryDataPoint) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 2: // start_time_unix_nano
 			if wireType != 1 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4919,7 +4973,7 @@ func (m *SummaryDataPoint) unmarshal(dAtA []byte, depth int) error {
 			m.StartTimeUnixNano = v
 		case 3: // time_unix_nano
 			if wireType != 1 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4934,7 +4988,7 @@ func (m *SummaryDataPoint) unmarshal(dAtA []byte, depth int) error {
 			m.TimeUnixNano = v
 		case 4: // count
 			if wireType != 1 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4949,7 +5003,7 @@ func (m *SummaryDataPoint) unmarshal(dAtA []byte, depth int) error {
 			m.Count = v
 		case 5: // sum
 			if wireType != 1 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4964,7 +5018,7 @@ func (m *SummaryDataPoint) unmarshal(dAtA []byte, depth int) error {
 			m.Sum = math.Float64frombits(v)
 		case 6: // quantile_values
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -5004,7 +5058,7 @@ func (m *SummaryDataPoint) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 8: // flags
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -5028,7 +5082,7 @@ func (m *SummaryDataPoint) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Flags = uint32(v)
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType)
+			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -5128,10 +5182,13 @@ func (m *Exemplar) unmarshal(dAtA []byte, depth int) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
+			return fmt.Errorf("invalid field number")
+		}
 		switch fieldNum {
 		case 7: // filtered_attributes
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -5171,7 +5228,7 @@ func (m *Exemplar) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 2: // time_unix_nano
 			if wireType != 1 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -5186,7 +5243,7 @@ func (m *Exemplar) unmarshal(dAtA []byte, depth int) error {
 			m.TimeUnixNano = v
 		case 3: // as_double
 			if wireType != 1 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -5201,7 +5258,7 @@ func (m *Exemplar) unmarshal(dAtA []byte, depth int) error {
 			m.Value = &Exemplar_AsDouble{AsDouble: math.Float64frombits(v)}
 		case 6: // as_int
 			if wireType != 1 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -5216,7 +5273,7 @@ func (m *Exemplar) unmarshal(dAtA []byte, depth int) error {
 			m.Value = &Exemplar_AsInt{AsInt: int64(v)}
 		case 4: // span_id
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -5253,7 +5310,7 @@ func (m *Exemplar) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 5: // trace_id
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -5289,7 +5346,7 @@ func (m *Exemplar) unmarshal(dAtA []byte, depth int) error {
 			m.TraceId = append(m.TraceId[:0], dAtA[iNdEx:postIndex]...)
 			iNdEx = postIndex
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType)
+			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}

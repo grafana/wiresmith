@@ -719,12 +719,15 @@ func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) 
 	}
 }
 
-func skipValue(dAtA []byte, wireType int) (int, error) {
+func skipValue(dAtA []byte, wireType int, fieldNum int32) (int, error) {
 	iNdEx := 0
 	l := len(dAtA)
 	switch wireType {
 	case 0:
-		for {
+		for shift := 0; ; shift++ {
+			if shift >= 10 {
+				return 0, fmt.Errorf("proto: varint too long")
+			}
 			if iNdEx >= l {
 				return 0, io.ErrUnexpectedEOF
 			}
@@ -761,6 +764,12 @@ func skipValue(dAtA []byte, wireType int) (int, error) {
 		if iNdEx < 0 || iNdEx > l {
 			return 0, io.ErrUnexpectedEOF
 		}
+	case 3:
+		_, n := protowire.ConsumeGroup(protowire.Number(fieldNum), dAtA[iNdEx:])
+		if n < 0 {
+			return 0, fmt.Errorf("invalid group")
+		}
+		iNdEx += n
 	case 5:
 		if (iNdEx + 4) > l {
 			return 0, io.ErrUnexpectedEOF
@@ -859,10 +868,13 @@ func (m *TracesData) unmarshal(dAtA []byte, depth int) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
+			return fmt.Errorf("invalid field number")
+		}
 		switch fieldNum {
 		case 1: // resource_spans
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -901,7 +913,7 @@ func (m *TracesData) unmarshal(dAtA []byte, depth int) error {
 			}
 			iNdEx = postIndex
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType)
+			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -1001,10 +1013,13 @@ func (m *ResourceSpans) unmarshal(dAtA []byte, depth int) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
+			return fmt.Errorf("invalid field number")
+		}
 		switch fieldNum {
 		case 1: // resource
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -1043,7 +1058,7 @@ func (m *ResourceSpans) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 2: // scope_spans
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -1083,7 +1098,7 @@ func (m *ResourceSpans) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 3: // schema_url
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -1119,7 +1134,7 @@ func (m *ResourceSpans) unmarshal(dAtA []byte, depth int) error {
 			m.SchemaUrl = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType)
+			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -1219,10 +1234,13 @@ func (m *ScopeSpans) unmarshal(dAtA []byte, depth int) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
+			return fmt.Errorf("invalid field number")
+		}
 		switch fieldNum {
 		case 1: // scope
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -1261,7 +1279,7 @@ func (m *ScopeSpans) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 2: // spans
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -1301,7 +1319,7 @@ func (m *ScopeSpans) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 3: // schema_url
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -1337,7 +1355,7 @@ func (m *ScopeSpans) unmarshal(dAtA []byte, depth int) error {
 			m.SchemaUrl = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType)
+			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -1437,10 +1455,13 @@ func (m *Span_Event) unmarshal(dAtA []byte, depth int) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
+			return fmt.Errorf("invalid field number")
+		}
 		switch fieldNum {
 		case 1: // time_unix_nano
 			if wireType != 1 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -1455,7 +1476,7 @@ func (m *Span_Event) unmarshal(dAtA []byte, depth int) error {
 			m.TimeUnixNano = v
 		case 2: // name
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -1492,7 +1513,7 @@ func (m *Span_Event) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 3: // attributes
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -1532,7 +1553,7 @@ func (m *Span_Event) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 4: // dropped_attributes_count
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -1556,7 +1577,7 @@ func (m *Span_Event) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.DroppedAttributesCount = uint32(v)
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType)
+			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -1656,10 +1677,13 @@ func (m *Span_Link) unmarshal(dAtA []byte, depth int) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
+			return fmt.Errorf("invalid field number")
+		}
 		switch fieldNum {
 		case 1: // trace_id
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -1696,7 +1720,7 @@ func (m *Span_Link) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 2: // span_id
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -1733,7 +1757,7 @@ func (m *Span_Link) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 3: // trace_state
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -1770,7 +1794,7 @@ func (m *Span_Link) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 4: // attributes
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -1810,7 +1834,7 @@ func (m *Span_Link) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 5: // dropped_attributes_count
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -1835,7 +1859,7 @@ func (m *Span_Link) unmarshal(dAtA []byte, depth int) error {
 			m.DroppedAttributesCount = uint32(v)
 		case 6: // flags
 			if wireType != 5 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -1849,7 +1873,7 @@ func (m *Span_Link) unmarshal(dAtA []byte, depth int) error {
 			iNdEx += 4
 			m.Flags = v
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType)
+			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -1961,10 +1985,13 @@ func (m *Span) unmarshal(dAtA []byte, depth int) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
+			return fmt.Errorf("invalid field number")
+		}
 		switch fieldNum {
 		case 1: // trace_id
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2001,7 +2028,7 @@ func (m *Span) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 2: // span_id
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2038,7 +2065,7 @@ func (m *Span) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 3: // trace_state
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2075,7 +2102,7 @@ func (m *Span) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 4: // parent_span_id
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2112,7 +2139,7 @@ func (m *Span) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 16: // flags
 			if wireType != 5 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2127,7 +2154,7 @@ func (m *Span) unmarshal(dAtA []byte, depth int) error {
 			m.Flags = v
 		case 5: // name
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2164,7 +2191,7 @@ func (m *Span) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 6: // kind
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2189,7 +2216,7 @@ func (m *Span) unmarshal(dAtA []byte, depth int) error {
 			m.Kind = Span_SpanKind(v)
 		case 7: // start_time_unix_nano
 			if wireType != 1 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2204,7 +2231,7 @@ func (m *Span) unmarshal(dAtA []byte, depth int) error {
 			m.StartTimeUnixNano = v
 		case 8: // end_time_unix_nano
 			if wireType != 1 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2219,7 +2246,7 @@ func (m *Span) unmarshal(dAtA []byte, depth int) error {
 			m.EndTimeUnixNano = v
 		case 9: // attributes
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2259,7 +2286,7 @@ func (m *Span) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 10: // dropped_attributes_count
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2284,7 +2311,7 @@ func (m *Span) unmarshal(dAtA []byte, depth int) error {
 			m.DroppedAttributesCount = uint32(v)
 		case 11: // events
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2324,7 +2351,7 @@ func (m *Span) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 12: // dropped_events_count
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2349,7 +2376,7 @@ func (m *Span) unmarshal(dAtA []byte, depth int) error {
 			m.DroppedEventsCount = uint32(v)
 		case 13: // links
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2389,7 +2416,7 @@ func (m *Span) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 14: // dropped_links_count
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2414,7 +2441,7 @@ func (m *Span) unmarshal(dAtA []byte, depth int) error {
 			m.DroppedLinksCount = uint32(v)
 		case 15: // status
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2452,7 +2479,7 @@ func (m *Span) unmarshal(dAtA []byte, depth int) error {
 			}
 			iNdEx = postIndex
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType)
+			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -2493,10 +2520,13 @@ func (m *Status) unmarshal(dAtA []byte, depth int) error {
 		}
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
+		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
+			return fmt.Errorf("invalid field number")
+		}
 		switch fieldNum {
 		case 2: // message
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2533,7 +2563,7 @@ func (m *Status) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 3: // code
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType)
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2557,7 +2587,7 @@ func (m *Status) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Code = Status_StatusCode(v)
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType)
+			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}

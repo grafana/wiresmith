@@ -45,13 +45,15 @@ func (fg *FileGenerator) emitSkipFieldHelper() {
 func (fg *FileGenerator) emitSkipValueHelper() {
 	fg.imports.addImport("io", "")
 	fg.imports.addImport("fmt", "")
+	fg.imports.addImport("google.golang.org/protobuf/encoding/protowire", "")
 
-	fmt.Fprintf(fg.body, "func skipValue(dAtA []byte, wireType int) (int, error) {\n")
+	fmt.Fprintf(fg.body, "func skipValue(dAtA []byte, wireType int, fieldNum int32) (int, error) {\n")
 	fmt.Fprintf(fg.body, "\tiNdEx := 0\n")
 	fmt.Fprintf(fg.body, "\tl := len(dAtA)\n")
 	fmt.Fprintf(fg.body, "\tswitch wireType {\n")
 	fmt.Fprintf(fg.body, "\tcase 0:\n") // varint
-	fmt.Fprintf(fg.body, "\t\tfor {\n")
+	fmt.Fprintf(fg.body, "\t\tfor shift := 0; ; shift++ {\n")
+	fmt.Fprintf(fg.body, "\t\t\tif shift >= 10 {\n\t\t\t\treturn 0, fmt.Errorf(\"proto: varint too long\")\n\t\t\t}\n")
 	fmt.Fprintf(fg.body, "\t\t\tif iNdEx >= l {\n\t\t\t\treturn 0, io.ErrUnexpectedEOF\n\t\t\t}\n")
 	fmt.Fprintf(fg.body, "\t\t\tiNdEx++\n")
 	fmt.Fprintf(fg.body, "\t\t\tif dAtA[iNdEx-1] < 0x80 {\n\t\t\t\tbreak\n\t\t\t}\n")
@@ -72,6 +74,10 @@ func (fg *FileGenerator) emitSkipValueHelper() {
 	fmt.Fprintf(fg.body, "\t\tif int(length) < 0 {\n\t\t\treturn 0, fmt.Errorf(\"proto: negative length\")\n\t\t}\n")
 	fmt.Fprintf(fg.body, "\t\tiNdEx += int(length)\n")
 	fmt.Fprintf(fg.body, "\t\tif iNdEx < 0 || iNdEx > l {\n\t\t\treturn 0, io.ErrUnexpectedEOF\n\t\t}\n")
+	fmt.Fprintf(fg.body, "\tcase 3:\n") // start group
+	fmt.Fprintf(fg.body, "\t\t_, n := protowire.ConsumeGroup(protowire.Number(fieldNum), dAtA[iNdEx:])\n")
+	fmt.Fprintf(fg.body, "\t\tif n < 0 {\n\t\t\treturn 0, fmt.Errorf(\"invalid group\")\n\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\tiNdEx += n\n")
 	fmt.Fprintf(fg.body, "\tcase 5:\n") // fixed32
 	fmt.Fprintf(fg.body, "\t\tif (iNdEx + 4) > l {\n\t\t\treturn 0, io.ErrUnexpectedEOF\n\t\t}\n")
 	fmt.Fprintf(fg.body, "\t\tiNdEx += 4\n")
@@ -220,6 +226,12 @@ func (fg *FileGenerator) emitUnmarshal(md protoreflect.MessageDescriptor) {
 	fmt.Fprintf(fg.body, "\t\tfieldNum := int32(wire >> 3)\n")
 	fmt.Fprintf(fg.body, "\t\twireType := int(wire & 0x7)\n")
 
+	// Reject invalid field numbers: 0 is illegal, >2^29-1 is reserved.
+	// The int32 cast can alias high numbers to valid ones, so check before truncation.
+	fmt.Fprintf(fg.body, "\t\tif wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {\n")
+	fmt.Fprintf(fg.body, "\t\t\treturn fmt.Errorf(\"invalid field number\")\n")
+	fmt.Fprintf(fg.body, "\t\t}\n")
+
 	fmt.Fprintf(fg.body, "\t\tswitch fieldNum {\n")
 
 	for i := 0; i < md.Fields().Len(); i++ {
@@ -228,7 +240,7 @@ func (fg *FileGenerator) emitUnmarshal(md protoreflect.MessageDescriptor) {
 	}
 
 	fmt.Fprintf(fg.body, "\t\tdefault:\n")
-	fmt.Fprintf(fg.body, "\t\t\tn, err := skipValue(dAtA[iNdEx:], wireType)\n")
+	fmt.Fprintf(fg.body, "\t\t\tn, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)\n")
 	fmt.Fprintf(fg.body, "\t\t\tif err != nil {\n\t\t\t\treturn err\n\t\t\t}\n")
 	fmt.Fprintf(fg.body, "\t\t\tiNdEx += n\n")
 	fmt.Fprintf(fg.body, "\t\t}\n") // end switch
@@ -331,7 +343,7 @@ func (fg *FileGenerator) emitFieldUnmarshal(md protoreflect.MessageDescriptor, f
 func (fg *FileGenerator) emitWireTypeCheck(kind protoreflect.Kind) {
 	wtInt := types.WireTypeInt(kind)
 	fmt.Fprintf(fg.body, "\t\t\tif wireType != %d {\n", wtInt)
-	fmt.Fprintf(fg.body, "\t\t\t\tn, err := skipValue(dAtA[iNdEx:], wireType)\n")
+	fmt.Fprintf(fg.body, "\t\t\t\tn, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)\n")
 	fmt.Fprintf(fg.body, "\t\t\t\tif err != nil {\n\t\t\t\t\treturn err\n\t\t\t\t}\n")
 	fmt.Fprintf(fg.body, "\t\t\t\tiNdEx += n\n")
 	fmt.Fprintf(fg.body, "\t\t\t\tcontinue\n")
