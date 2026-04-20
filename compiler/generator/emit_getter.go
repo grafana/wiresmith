@@ -66,6 +66,9 @@ func (fg *FileGenerator) emitGetters(md protoreflect.MessageDescriptor) {
 		}
 
 		// Message value-type fields: return pointer, nil when bitmap says absent.
+		// Currently the bitmap entry always exists here (same filter predicate
+		// as fieldsForPresence), but we keep the fallback so the getter
+		// degrades to a plain nil-safe accessor if the predicates ever diverge.
 		if fd.Kind() == protoreflect.MessageKind {
 			msgType := fg.imports.goSingularType(fd)
 			bitIndex, hasBit := pm[fd.Number()]
@@ -73,6 +76,7 @@ func (fg *FileGenerator) emitGetters(md protoreflect.MessageDescriptor) {
 			if hasBit {
 				fmt.Fprintf(fg.body, "\tif m != nil && m.fieldsPresent[%d]&(1<<%d) != 0 {\n", bitIndex/64, bitIndex%64)
 			} else {
+				// Defensive: emitted when the field has no presence-bitmap entry.
 				fmt.Fprintf(fg.body, "\tif m != nil {\n")
 			}
 			fmt.Fprintf(fg.body, "\t\treturn &m.%s\n\t}\n", goName)
