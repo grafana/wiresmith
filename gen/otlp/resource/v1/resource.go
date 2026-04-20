@@ -125,10 +125,10 @@ func skipValue(dAtA []byte, wireType int, fieldNum int32) (int, error) {
 	case 0:
 		for shift := 0; ; shift++ {
 			if shift >= 10 {
-				return 0, fmt.Errorf("proto: varint too long")
+				return 0, fmt.Errorf("invalid varint")
 			}
 			if iNdEx >= l {
-				return 0, io.ErrUnexpectedEOF
+				return 0, fmt.Errorf("invalid varint")
 			}
 			iNdEx++
 			if dAtA[iNdEx-1] < 0x80 {
@@ -137,17 +137,17 @@ func skipValue(dAtA []byte, wireType int, fieldNum int32) (int, error) {
 		}
 	case 1:
 		if (iNdEx + 8) > l {
-			return 0, io.ErrUnexpectedEOF
+			return 0, fmt.Errorf("truncated fixed64")
 		}
 		iNdEx += 8
 	case 2:
 		var length uint64
 		for shift := uint(0); ; shift += 7 {
 			if shift >= 64 {
-				return 0, fmt.Errorf("proto: integer overflow")
+				return 0, fmt.Errorf("invalid bytes")
 			}
 			if iNdEx >= l {
-				return 0, io.ErrUnexpectedEOF
+				return 0, fmt.Errorf("invalid bytes")
 			}
 			b := dAtA[iNdEx]
 			iNdEx++
@@ -157,11 +157,11 @@ func skipValue(dAtA []byte, wireType int, fieldNum int32) (int, error) {
 			}
 		}
 		if int(length) < 0 {
-			return 0, fmt.Errorf("proto: negative length")
+			return 0, fmt.Errorf("invalid bytes")
 		}
 		iNdEx += int(length)
 		if iNdEx < 0 || iNdEx > l {
-			return 0, io.ErrUnexpectedEOF
+			return 0, fmt.Errorf("invalid bytes")
 		}
 	case 3:
 		_, n := protowire.ConsumeGroup(protowire.Number(fieldNum), dAtA[iNdEx:])
@@ -171,7 +171,7 @@ func skipValue(dAtA []byte, wireType int, fieldNum int32) (int, error) {
 		iNdEx += n
 	case 5:
 		if (iNdEx + 4) > l {
-			return 0, io.ErrUnexpectedEOF
+			return 0, fmt.Errorf("truncated fixed32")
 		}
 		iNdEx += 4
 	default:

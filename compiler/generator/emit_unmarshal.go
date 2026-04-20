@@ -43,7 +43,6 @@ func (fg *FileGenerator) emitSkipFieldHelper() {
 // given its wire type. Used by the main unmarshal loop for unknown fields and
 // wire type mismatches where the tag has already been decoded.
 func (fg *FileGenerator) emitSkipValueHelper() {
-	fg.imports.addImport("io", "")
 	fg.imports.addImport("fmt", "")
 	fg.imports.addImport("google.golang.org/protobuf/encoding/protowire", "")
 
@@ -53,33 +52,33 @@ func (fg *FileGenerator) emitSkipValueHelper() {
 	fmt.Fprintf(fg.body, "\tswitch wireType {\n")
 	fmt.Fprintf(fg.body, "\tcase 0:\n") // varint
 	fmt.Fprintf(fg.body, "\t\tfor shift := 0; ; shift++ {\n")
-	fmt.Fprintf(fg.body, "\t\t\tif shift >= 10 {\n\t\t\t\treturn 0, fmt.Errorf(\"proto: varint too long\")\n\t\t\t}\n")
-	fmt.Fprintf(fg.body, "\t\t\tif iNdEx >= l {\n\t\t\t\treturn 0, io.ErrUnexpectedEOF\n\t\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\t\tif shift >= 10 {\n\t\t\t\treturn 0, fmt.Errorf(\"invalid varint\")\n\t\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\t\tif iNdEx >= l {\n\t\t\t\treturn 0, fmt.Errorf(\"invalid varint\")\n\t\t\t}\n")
 	fmt.Fprintf(fg.body, "\t\t\tiNdEx++\n")
 	fmt.Fprintf(fg.body, "\t\t\tif dAtA[iNdEx-1] < 0x80 {\n\t\t\t\tbreak\n\t\t\t}\n")
 	fmt.Fprintf(fg.body, "\t\t}\n")
 	fmt.Fprintf(fg.body, "\tcase 1:\n") // fixed64
-	fmt.Fprintf(fg.body, "\t\tif (iNdEx + 8) > l {\n\t\t\treturn 0, io.ErrUnexpectedEOF\n\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\tif (iNdEx + 8) > l {\n\t\t\treturn 0, fmt.Errorf(\"truncated fixed64\")\n\t\t}\n")
 	fmt.Fprintf(fg.body, "\t\tiNdEx += 8\n")
 	fmt.Fprintf(fg.body, "\tcase 2:\n") // length-delimited
 	fmt.Fprintf(fg.body, "\t\tvar length uint64\n")
 	fmt.Fprintf(fg.body, "\t\tfor shift := uint(0); ; shift += 7 {\n")
-	fmt.Fprintf(fg.body, "\t\t\tif shift >= 64 {\n\t\t\t\treturn 0, fmt.Errorf(\"proto: integer overflow\")\n\t\t\t}\n")
-	fmt.Fprintf(fg.body, "\t\t\tif iNdEx >= l {\n\t\t\t\treturn 0, io.ErrUnexpectedEOF\n\t\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\t\tif shift >= 64 {\n\t\t\t\treturn 0, fmt.Errorf(\"invalid bytes\")\n\t\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\t\tif iNdEx >= l {\n\t\t\t\treturn 0, fmt.Errorf(\"invalid bytes\")\n\t\t\t}\n")
 	fmt.Fprintf(fg.body, "\t\t\tb := dAtA[iNdEx]\n")
 	fmt.Fprintf(fg.body, "\t\t\tiNdEx++\n")
 	fmt.Fprintf(fg.body, "\t\t\tlength |= uint64(b&0x7F) << shift\n")
 	fmt.Fprintf(fg.body, "\t\t\tif b < 0x80 {\n\t\t\t\tbreak\n\t\t\t}\n")
 	fmt.Fprintf(fg.body, "\t\t}\n")
-	fmt.Fprintf(fg.body, "\t\tif int(length) < 0 {\n\t\t\treturn 0, fmt.Errorf(\"proto: negative length\")\n\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\tif int(length) < 0 {\n\t\t\treturn 0, fmt.Errorf(\"invalid bytes\")\n\t\t}\n")
 	fmt.Fprintf(fg.body, "\t\tiNdEx += int(length)\n")
-	fmt.Fprintf(fg.body, "\t\tif iNdEx < 0 || iNdEx > l {\n\t\t\treturn 0, io.ErrUnexpectedEOF\n\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\tif iNdEx < 0 || iNdEx > l {\n\t\t\treturn 0, fmt.Errorf(\"invalid bytes\")\n\t\t}\n")
 	fmt.Fprintf(fg.body, "\tcase 3:\n") // start group
 	fmt.Fprintf(fg.body, "\t\t_, n := protowire.ConsumeGroup(protowire.Number(fieldNum), dAtA[iNdEx:])\n")
 	fmt.Fprintf(fg.body, "\t\tif n < 0 {\n\t\t\treturn 0, fmt.Errorf(\"invalid group\")\n\t\t}\n")
 	fmt.Fprintf(fg.body, "\t\tiNdEx += n\n")
 	fmt.Fprintf(fg.body, "\tcase 5:\n") // fixed32
-	fmt.Fprintf(fg.body, "\t\tif (iNdEx + 4) > l {\n\t\t\treturn 0, io.ErrUnexpectedEOF\n\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\tif (iNdEx + 4) > l {\n\t\t\treturn 0, fmt.Errorf(\"truncated fixed32\")\n\t\t}\n")
 	fmt.Fprintf(fg.body, "\t\tiNdEx += 4\n")
 	fmt.Fprintf(fg.body, "\tdefault:\n")
 	fmt.Fprintf(fg.body, "\t\treturn 0, fmt.Errorf(\"unknown wire type %%d\", wireType)\n")
