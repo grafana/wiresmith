@@ -24,11 +24,17 @@ func (fg *FileGenerator) emitEnum(ed protoreflect.EnumDescriptor) {
 	}
 	fmt.Fprintf(fg.body, ")\n\n")
 
-	// Name map: int32 → string
+	// Name map: int32 → string (first name wins for aliased values)
 	fmt.Fprintf(fg.body, "var %s_name = map[int32]string{\n", typeName)
+	seenNumbers := make(map[int32]bool)
 	for i := 0; i < ed.Values().Len(); i++ {
 		v := ed.Values().Get(i)
-		fmt.Fprintf(fg.body, "\t%d: %q,\n", v.Number(), string(v.Name()))
+		num := int32(v.Number())
+		if seenNumbers[num] {
+			continue
+		}
+		seenNumbers[num] = true
+		fmt.Fprintf(fg.body, "\t%d: %q,\n", num, string(v.Name()))
 	}
 	fmt.Fprintf(fg.body, "}\n\n")
 
