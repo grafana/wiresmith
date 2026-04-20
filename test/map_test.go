@@ -19,6 +19,7 @@ func mapRoundTrip[T interface {
 	Marshal() ([]byte, error)
 	Unmarshal([]byte) error
 	Size() int
+	Equal(interface{}) bool
 }](t *testing.T, src T) {
 	t.Helper()
 
@@ -29,6 +30,7 @@ func mapRoundTrip[T interface {
 	dst := newZero(src)
 	require.NoError(t, dst.Unmarshal(b))
 	assert.Equal(t, src, dst, "unmarshal must reproduce original")
+	assert.True(t, src.Equal(dst), "Equal() must agree with assert.Equal")
 }
 
 // newZero returns a new zero-value instance of the same concrete type.
