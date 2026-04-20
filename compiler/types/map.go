@@ -69,6 +69,8 @@ func (m *MapField) EmitMarshal(e Emitter, access string, num protowire.Number) {
 }
 
 func (m *MapField) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
+	_, isMsg := m.Val.(*MessageType)
+
 	emitConsumeBytesLen(e)
 
 	e.Writef("\t\t\tif %s == nil {\n", access)
@@ -76,40 +78,72 @@ func (m *MapField) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
 	e.Writef("\t\t\t}\n")
 	e.Writef("\t\t\tvar mapkey %s\n", m.KeyGoType)
 	e.Writef("\t\t\tvar mapvalue %s\n", m.ValGoType)
-	e.Writef("\t\t\tentryData := dAtA[iNdEx:postIndex]\n")
-	e.Writef("\t\t\tfor len(entryData) > 0 {\n")
-	e.Writef("\t\t\t\tentryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)\n")
-	e.Writef("\t\t\t\tif entryTagLen < 0 {\n\t\t\t\t\treturn fmt.Errorf(\"invalid map entry tag\")\n\t\t\t\t}\n")
-	e.Writef("\t\t\t\tentryData = entryData[entryTagLen:]\n")
-	e.Writef("\t\t\t\tswitch entryNum {\n")
+	if isMsg {
+		e.Writef("\t\t\tvar mapValueBytes []byte\n")
+	}
+
+	// Index-based iteration: reuse iNdEx directly instead of creating
+	// an entryData sub-slice, and inline tag decode to avoid non-inlined
+	// protowire.ConsumeTag calls.
+	e.AddImport("io", "")
+	e.Writef("\t\t\tfor iNdEx < postIndex {\n")
+
+	EmitConsumeTagAt(e, "\t\t\t\t", "entryWire")
+	e.Writef("\t\t\t\tswitch int32(entryWire >> 3) {\n")
 
 	// Key (field 1)
 	e.Writef("\t\t\t\tcase 1:\n")
-	m.emitMapEntryWireTypeCheck(e, m.Key.WireType())
+	emitMapEntryWireTypeCheck(e, m.Key.WireType())
 	m.Key.EmitMapEntryUnmarshal(e, "mapkey", "\t\t\t\t\t", m.KeyCtx)
 
 	// Value (field 2)
 	e.Writef("\t\t\t\tcase 2:\n")
-	m.emitMapEntryWireTypeCheck(e, m.Val.WireType())
+	emitMapEntryWireTypeCheck(e, m.Val.WireType())
 	m.Val.EmitMapEntryUnmarshal(e, "mapvalue", "\t\t\t\t\t", m.ValCtx)
+	if isMsg {
+		// Save raw value bytes for merge semantics when the same
+		// key appears in multiple wire entries.
+		e.Writef("\t\t\t\t\tmapValueBytes = dAtA[mapValueStart:iNdEx]\n")
+	}
 
 	// Unknown fields
 	e.Writef("\t\t\t\tdefault:\n")
-	e.Writef("\t\t\t\t\tskipN, skipErr := skipField(entryData, entryNum, entryTyp)\n")
-	e.Writef("\t\t\t\t\tif skipErr != nil {\n\t\t\t\t\t\treturn skipErr\n\t\t\t\t\t}\n")
-	e.Writef("\t\t\t\t\tentryData = entryData[skipN:]\n")
+	e.Writef("\t\t\t\t\tn, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))\n")
+	e.Writef("\t\t\t\t\tif err != nil {\n\t\t\t\t\t\treturn err\n\t\t\t\t\t}\n")
+	e.Writef("\t\t\t\t\tiNdEx += n\n")
 
 	e.Writef("\t\t\t\t}\n") // end switch
 	e.Writef("\t\t\t}\n")   // end for
-	e.Writef("\t\t\t%s[mapkey] = mapvalue\n", access)
+
+	if isMsg {
+		// Merge semantics: if the key already exists and the value field
+		// was present (even if empty), merge into the existing message.
+		// When value is absent (mapValueBytes == nil) and key exists,
+		// preserve the existing entry per proto merge rules.
+		e.Writef("\t\t\tif existing, ok := %s[mapkey]; ok && mapValueBytes != nil {\n", access)
+		if m.ValCtx.IsSamePackage {
+			e.Writef("\t\t\t\tif err := existing.unmarshal(mapValueBytes, depth+1); err != nil {\n\t\t\t\t\treturn err\n\t\t\t\t}\n")
+		} else {
+			e.Writef("\t\t\t\tif err := existing.Unmarshal(mapValueBytes); err != nil {\n\t\t\t\t\treturn err\n\t\t\t\t}\n")
+		}
+		e.Writef("\t\t\t\t%s[mapkey] = existing\n", access)
+		e.Writef("\t\t\t} else if !ok {\n")
+		e.Writef("\t\t\t\t%s[mapkey] = mapvalue\n", access)
+		e.Writef("\t\t\t}\n")
+	} else {
+		e.Writef("\t\t\t%s[mapkey] = mapvalue\n", access)
+	}
 	e.Writef("\t\t\tiNdEx = postIndex\n")
 }
 
-func (m *MapField) emitMapEntryWireTypeCheck(e Emitter, wt string) {
-	e.Writef("\t\t\t\t\tif entryTyp != %s {\n", wt)
-	e.Writef("\t\t\t\t\t\tskipN, skipErr := skipField(entryData, entryNum, entryTyp)\n")
-	e.Writef("\t\t\t\t\t\tif skipErr != nil {\n\t\t\t\t\t\t\treturn skipErr\n\t\t\t\t\t\t}\n")
-	e.Writef("\t\t\t\t\t\tentryData = entryData[skipN:]\n")
+// emitMapEntryWireTypeCheck emits a wire type guard for a map entry field.
+// Uses entryWire (from inline tag decode) and skipValue (index-based skip).
+func emitMapEntryWireTypeCheck(e Emitter, wt string) {
+	// Extract wire type constant's numeric value for comparison
+	e.Writef("\t\t\t\t\tif int(entryWire&0x7) != int(%s) {\n", wt)
+	e.Writef("\t\t\t\t\t\tn, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))\n")
+	e.Writef("\t\t\t\t\t\tif err != nil {\n\t\t\t\t\t\t\treturn err\n\t\t\t\t\t\t}\n")
+	e.Writef("\t\t\t\t\t\tiNdEx += n\n")
 	e.Writef("\t\t\t\t\t\tcontinue\n")
 	e.Writef("\t\t\t\t\t}\n")
 }

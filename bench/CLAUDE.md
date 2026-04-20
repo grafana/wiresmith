@@ -64,15 +64,15 @@ Requires: `protoc`, `protoc-gen-go`, `protoc-gen-go-vtproto`, `protoc-gen-gogofa
 
 | Operation | Ours | VTProto | GogoProto | Official |
 |-----------|-----:|--------:|----------:|---------:|
-| Marshal ns/op | 5,800 | 8,560 | 8,550 | 33,400 |
+| Marshal ns/op | 5,480 | 8,360 | 8,440 | 31,670 |
 | Marshal B/op | 9,472 | 9,472 | 9,472 | 22,272 |
 | Marshal allocs | 1 | 1 | 1 | 1,001 |
-| Unmarshal ns/op | 14,840 | 16,870 | 16,730 | 44,500 |
+| Unmarshal ns/op | 10,820 | 16,860 | 16,850 | 43,050 |
 | Unmarshal B/op | 25,704 | 39,368 | 37,768 | 51,304 |
 | Unmarshal allocs | 512 | 633 | 633 | 1,518 |
-| Size ns/op | 1,700 | 1,600 | — | — |
+| Size ns/op | 1,684 | 1,634 | — | — |
 
-Marshal is ~32% faster than vtproto/gogoproto due to reverse-write. Unmarshal is ~12% faster with 35% less memory due to pre-scan map pre-allocation and value-type message values (avoids per-entry heap allocation at the cost of larger map entries during growth — compensated by the pre-allocation eliminating rehashing).
+Marshal is ~34% faster than vtproto/gogoproto due to reverse-write. Unmarshal is ~36% faster with 35% less memory due to inline map entry decoding, pre-scan map pre-allocation, and value-type message values (avoids per-entry heap allocation at the cost of larger map entries during growth — compensated by the pre-allocation eliminating rehashing).
 
 ## Gogoproto and `optional`
 

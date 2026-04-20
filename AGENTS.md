@@ -50,6 +50,7 @@ All commands are available via `make`:
 - **Reset/ProtoMessage/String**: `Reset()` zeroes the struct (`*m = Type{}`). `ProtoMessage()` is a no-op marker method, matching the standard `proto.Message` interface shape. `String()` uses `fmt.Sprintf("%v", *m)`.
 - **Enum name maps**: Each enum gets `TypeName_name` (int32→string) and `TypeName_value` (string→int32) maps, plus a `String()` method. Matches gogoproto convention of using bare value names.
 - **Type registration**: Generated `init()` registers all messages and enums via `protohelpers.RegisterType`/`RegisterEnum`. No gogo/protobuf dependency — uses a lightweight self-hosted registry in `gen/protohelpers/`.
+- **Unknown fields discarded**: Unknown fields are intentionally skipped during unmarshal and not preserved. This is a deliberate performance trade-off: wiresmith is designed for working with messages of known schema, so unknown field preservation would add per-struct overhead with no benefit for the primary use case.
 
 ## Supported proto3 features
 
@@ -59,7 +60,7 @@ Not supported (not needed for OTel protos): services/RPCs, extensions, well-know
 
 ## Conformance test status
 
-693 passing, 7 expected failures (4 message merge, 1 overlong varint tag, 2 unknown field preservation). Run with `make conformance`.
+695 passing, 5 expected failures (3 message merge with recursive messages, 2 unknown field preservation). Unknown fields are intentionally discarded for performance. Run with `make conformance`.
 
 **Updating the failure list:** The conformance runner errors when a failure list entry matches a now-passing test ("is in the failure list, but test succeeded"). After fixing conformance-related bugs, run conformance and remove entries that the runner flags:
 

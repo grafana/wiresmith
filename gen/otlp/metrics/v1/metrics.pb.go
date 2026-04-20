@@ -1738,6 +1738,8 @@ func (m *ResourceMetrics) Size() int {
 		s := m.Resource.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
+		} else if m.fieldsPresent[0]&(1<<0) != 0 {
+			n += 2
 		}
 	}
 	for i := range m.ScopeMetrics {
@@ -1756,6 +1758,8 @@ func (m *ScopeMetrics) Size() int {
 		s := m.Scope.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
+		} else if m.fieldsPresent[0]&(1<<0) != 0 {
+			n += 2
 		}
 	}
 	for i := range m.Metrics {
@@ -1975,12 +1979,16 @@ func (m *ExponentialHistogramDataPoint) Size() int {
 		s := m.Positive.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
+		} else if m.fieldsPresent[0]&(1<<5) != 0 {
+			n += 2
 		}
 	}
 	{
 		s := m.Negative.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
+		} else if m.fieldsPresent[0]&(1<<6) != 0 {
+			n += 2
 		}
 	}
 	if m.Flags != 0 {
@@ -2147,6 +2155,11 @@ func (m *ResourceMetrics) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 			i--
 			dAtA[i] = 0x0a
+		} else if m.fieldsPresent[0]&(1<<0) != 0 {
+			i--
+			dAtA[i] = 0
+			i--
+			dAtA[i] = 0x0a
 		}
 	}
 	return len(dAtA) - i, nil
@@ -2197,6 +2210,11 @@ func (m *ScopeMetrics) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		if size > 0 {
 			i -= size
 			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			i--
+			dAtA[i] = 0x0a
+		} else if m.fieldsPresent[0]&(1<<0) != 0 {
+			i--
+			dAtA[i] = 0
 			i--
 			dAtA[i] = 0x0a
 		}
@@ -2770,6 +2788,11 @@ func (m *ExponentialHistogramDataPoint) MarshalToSizedBuffer(dAtA []byte) (int, 
 			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 			i--
 			dAtA[i] = 0x4a
+		} else if m.fieldsPresent[0]&(1<<6) != 0 {
+			i--
+			dAtA[i] = 0
+			i--
+			dAtA[i] = 0x4a
 		}
 	}
 	{
@@ -2780,6 +2803,11 @@ func (m *ExponentialHistogramDataPoint) MarshalToSizedBuffer(dAtA []byte) (int, 
 		if size > 0 {
 			i -= size
 			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			i--
+			dAtA[i] = 0x42
+		} else if m.fieldsPresent[0]&(1<<5) != 0 {
+			i--
+			dAtA[i] = 0
 			i--
 			dAtA[i] = 0x42
 		}
@@ -3006,41 +3034,6 @@ func (m *Exemplar) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 
 const maxUnmarshalDepth = 10000
 
-func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) {
-	switch typ {
-	case protowire.VarintType:
-		_, n := protowire.ConsumeVarint(b)
-		if n < 0 {
-			return 0, fmt.Errorf("invalid varint")
-		}
-		return n, nil
-	case protowire.Fixed32Type:
-		if len(b) < 4 {
-			return 0, fmt.Errorf("truncated fixed32")
-		}
-		return 4, nil
-	case protowire.Fixed64Type:
-		if len(b) < 8 {
-			return 0, fmt.Errorf("truncated fixed64")
-		}
-		return 8, nil
-	case protowire.BytesType:
-		_, n := protowire.ConsumeBytes(b)
-		if n < 0 {
-			return 0, fmt.Errorf("invalid bytes")
-		}
-		return n, nil
-	case protowire.StartGroupType:
-		_, n := protowire.ConsumeGroup(num, b)
-		if n < 0 {
-			return 0, fmt.Errorf("invalid group")
-		}
-		return n, nil
-	default:
-		return 0, fmt.Errorf("unknown wire type %d", typ)
-	}
-}
-
 func skipValue(dAtA []byte, wireType int, fieldNum int32) (int, error) {
 	iNdEx := 0
 	l := len(dAtA)
@@ -3175,7 +3168,7 @@ func (m *MetricsData) unmarshal(dAtA []byte, depth int) error {
 	for iNdEx < l {
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -3188,11 +3181,11 @@ func (m *MetricsData) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // resource_metrics
 			if wireType != 2 {
@@ -3320,7 +3313,7 @@ func (m *ResourceMetrics) unmarshal(dAtA []byte, depth int) error {
 	for iNdEx < l {
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -3333,11 +3326,11 @@ func (m *ResourceMetrics) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // resource
 			if wireType != 2 {
@@ -3543,7 +3536,7 @@ func (m *ScopeMetrics) unmarshal(dAtA []byte, depth int) error {
 	for iNdEx < l {
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -3556,11 +3549,11 @@ func (m *ScopeMetrics) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // scope
 			if wireType != 2 {
@@ -3766,7 +3759,7 @@ func (m *Metric) unmarshal(dAtA []byte, depth int) error {
 	for iNdEx < l {
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -3779,11 +3772,11 @@ func (m *Metric) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // name
 			if wireType != 2 {
@@ -3935,6 +3928,9 @@ func (m *Metric) unmarshal(dAtA []byte, depth int) error {
 				return io.ErrUnexpectedEOF
 			}
 			var msg Gauge
+			if ov, ok := m.Data.(*Metric_Gauge); ok {
+				msg = ov.Gauge
+			}
 			if err := msg.unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
@@ -3976,6 +3972,9 @@ func (m *Metric) unmarshal(dAtA []byte, depth int) error {
 				return io.ErrUnexpectedEOF
 			}
 			var msg Sum
+			if ov, ok := m.Data.(*Metric_Sum); ok {
+				msg = ov.Sum
+			}
 			if err := msg.unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
@@ -4017,6 +4016,9 @@ func (m *Metric) unmarshal(dAtA []byte, depth int) error {
 				return io.ErrUnexpectedEOF
 			}
 			var msg Histogram
+			if ov, ok := m.Data.(*Metric_Histogram); ok {
+				msg = ov.Histogram
+			}
 			if err := msg.unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
@@ -4058,6 +4060,9 @@ func (m *Metric) unmarshal(dAtA []byte, depth int) error {
 				return io.ErrUnexpectedEOF
 			}
 			var msg ExponentialHistogram
+			if ov, ok := m.Data.(*Metric_ExponentialHistogram); ok {
+				msg = ov.ExponentialHistogram
+			}
 			if err := msg.unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
@@ -4099,6 +4104,9 @@ func (m *Metric) unmarshal(dAtA []byte, depth int) error {
 				return io.ErrUnexpectedEOF
 			}
 			var msg Summary
+			if ov, ok := m.Data.(*Metric_Summary); ok {
+				msg = ov.Summary
+			}
 			if err := msg.unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
@@ -4230,7 +4238,7 @@ func (m *Gauge) unmarshal(dAtA []byte, depth int) error {
 	for iNdEx < l {
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -4243,11 +4251,11 @@ func (m *Gauge) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // data_points
 			if wireType != 2 {
@@ -4375,7 +4383,7 @@ func (m *Sum) unmarshal(dAtA []byte, depth int) error {
 	for iNdEx < l {
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -4388,11 +4396,11 @@ func (m *Sum) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // data_points
 			if wireType != 2 {
@@ -4572,7 +4580,7 @@ func (m *Histogram) unmarshal(dAtA []byte, depth int) error {
 	for iNdEx < l {
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -4585,11 +4593,11 @@ func (m *Histogram) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // data_points
 			if wireType != 2 {
@@ -4743,7 +4751,7 @@ func (m *ExponentialHistogram) unmarshal(dAtA []byte, depth int) error {
 	for iNdEx < l {
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -4756,11 +4764,11 @@ func (m *ExponentialHistogram) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // data_points
 			if wireType != 2 {
@@ -4914,7 +4922,7 @@ func (m *Summary) unmarshal(dAtA []byte, depth int) error {
 	for iNdEx < l {
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -4927,11 +4935,11 @@ func (m *Summary) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // data_points
 			if wireType != 2 {
@@ -5065,7 +5073,7 @@ func (m *NumberDataPoint) unmarshal(dAtA []byte, depth int) error {
 	for iNdEx < l {
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -5078,11 +5086,11 @@ func (m *NumberDataPoint) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 7: // attributes
 			if wireType != 2 {
@@ -5344,7 +5352,7 @@ func (m *HistogramDataPoint) unmarshal(dAtA []byte, depth int) error {
 	for iNdEx < l {
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -5357,11 +5365,11 @@ func (m *HistogramDataPoint) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 9: // attributes
 			if wireType != 2 {
@@ -5702,7 +5710,7 @@ func (m *ExponentialHistogramDataPoint_Buckets) unmarshal(dAtA []byte, depth int
 	for iNdEx < l {
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -5715,11 +5723,11 @@ func (m *ExponentialHistogramDataPoint_Buckets) unmarshal(dAtA []byte, depth int
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // offset
 			if wireType != 0 {
@@ -5910,7 +5918,7 @@ func (m *ExponentialHistogramDataPoint) unmarshal(dAtA []byte, depth int) error 
 	for iNdEx < l {
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -5923,11 +5931,11 @@ func (m *ExponentialHistogramDataPoint) unmarshal(dAtA []byte, depth int) error 
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // attributes
 			if wireType != 2 {
@@ -6296,7 +6304,7 @@ func (m *SummaryDataPoint_ValueAtQuantile) unmarshal(dAtA []byte, depth int) err
 	for iNdEx < l {
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -6309,11 +6317,11 @@ func (m *SummaryDataPoint_ValueAtQuantile) unmarshal(dAtA []byte, depth int) err
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // quantile
 			if wireType != 1 {
@@ -6439,7 +6447,7 @@ func (m *SummaryDataPoint) unmarshal(dAtA []byte, depth int) error {
 	for iNdEx < l {
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -6452,11 +6460,11 @@ func (m *SummaryDataPoint) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 7: // attributes
 			if wireType != 2 {
@@ -6714,7 +6722,7 @@ func (m *Exemplar) unmarshal(dAtA []byte, depth int) error {
 	for iNdEx < l {
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -6727,11 +6735,11 @@ func (m *Exemplar) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 7: // filtered_attributes
 			if wireType != 2 {

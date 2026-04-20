@@ -69,10 +69,9 @@ func (StringType) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
 }
 
 func (StringType) EmitMapEntryUnmarshal(e Emitter, varName, indent string, ctx FieldContext) {
-	e.Writef("%stmpVal, tmpN := protowire.ConsumeString(entryData)\n", indent)
-	e.Writef("%sif tmpN < 0 {\n%s\treturn fmt.Errorf(\"invalid string\")\n%s}\n", indent, indent, indent)
-	e.Writef("%s%s = tmpVal\n", indent, varName)
-	e.Writef("%sentryData = entryData[tmpN:]\n", indent)
+	emitConsumeBytesLenAt(e, indent)
+	e.Writef("%s%s = string(dAtA[iNdEx:postIndex])\n", indent, varName)
+	e.Writef("%siNdEx = postIndex\n", indent)
 }
 
 func init() {

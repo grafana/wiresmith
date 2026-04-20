@@ -75,14 +75,15 @@ func (MessageType) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
 }
 
 func (MessageType) EmitMapEntryUnmarshal(e Emitter, varName, indent string, ctx FieldContext) {
-	e.Writef("%stmpVal, tmpN := protowire.ConsumeBytes(entryData)\n", indent)
-	e.Writef("%sif tmpN < 0 {\n%s\treturn fmt.Errorf(\"invalid bytes\")\n%s}\n", indent, indent, indent)
+	emitConsumeBytesLenAt(e, indent)
+	// Save start position so the caller can capture raw bytes for merge semantics.
+	e.Writef("%smapValueStart := iNdEx\n", indent)
 	if ctx.IsSamePackage {
-		e.Writef("%sif err := %s.unmarshal(tmpVal, depth+1); err != nil {\n%s\treturn err\n%s}\n", indent, varName, indent, indent)
+		e.Writef("%sif err := %s.unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {\n%s\treturn err\n%s}\n", indent, varName, indent, indent)
 	} else {
-		e.Writef("%sif err := %s.Unmarshal(tmpVal); err != nil {\n%s\treturn err\n%s}\n", indent, varName, indent, indent)
+		e.Writef("%sif err := %s.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {\n%s\treturn err\n%s}\n", indent, varName, indent, indent)
 	}
-	e.Writef("%sentryData = entryData[tmpN:]\n", indent)
+	e.Writef("%siNdEx = postIndex\n", indent)
 }
 
 func init() {

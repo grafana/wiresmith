@@ -902,6 +902,8 @@ func (m *ResourceSpans) Size() int {
 		s := m.Resource.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
+		} else if m.fieldsPresent[0]&(1<<0) != 0 {
+			n += 2
 		}
 	}
 	for i := range m.ScopeSpans {
@@ -920,6 +922,8 @@ func (m *ScopeSpans) Size() int {
 		s := m.Scope.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
+		} else if m.fieldsPresent[0]&(1<<0) != 0 {
+			n += 2
 		}
 	}
 	for i := range m.Spans {
@@ -1028,6 +1032,8 @@ func (m *Span) Size() int {
 		s := m.Status.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
+		} else if m.fieldsPresent[0]&(1<<12) != 0 {
+			n += 2
 		}
 	}
 	return n
@@ -1124,6 +1130,11 @@ func (m *ResourceSpans) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 			i--
 			dAtA[i] = 0x0a
+		} else if m.fieldsPresent[0]&(1<<0) != 0 {
+			i--
+			dAtA[i] = 0
+			i--
+			dAtA[i] = 0x0a
 		}
 	}
 	return len(dAtA) - i, nil
@@ -1174,6 +1185,11 @@ func (m *ScopeSpans) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		if size > 0 {
 			i -= size
 			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			i--
+			dAtA[i] = 0x0a
+		} else if m.fieldsPresent[0]&(1<<0) != 0 {
+			i--
+			dAtA[i] = 0
 			i--
 			dAtA[i] = 0x0a
 		}
@@ -1335,6 +1351,11 @@ func (m *Span) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 			i--
 			dAtA[i] = 0x7a
+		} else if m.fieldsPresent[0]&(1<<12) != 0 {
+			i--
+			dAtA[i] = 0
+			i--
+			dAtA[i] = 0x7a
 		}
 	}
 	if m.DroppedLinksCount != 0 {
@@ -1474,41 +1495,6 @@ func (m *Status) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 
 const maxUnmarshalDepth = 10000
 
-func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) {
-	switch typ {
-	case protowire.VarintType:
-		_, n := protowire.ConsumeVarint(b)
-		if n < 0 {
-			return 0, fmt.Errorf("invalid varint")
-		}
-		return n, nil
-	case protowire.Fixed32Type:
-		if len(b) < 4 {
-			return 0, fmt.Errorf("truncated fixed32")
-		}
-		return 4, nil
-	case protowire.Fixed64Type:
-		if len(b) < 8 {
-			return 0, fmt.Errorf("truncated fixed64")
-		}
-		return 8, nil
-	case protowire.BytesType:
-		_, n := protowire.ConsumeBytes(b)
-		if n < 0 {
-			return 0, fmt.Errorf("invalid bytes")
-		}
-		return n, nil
-	case protowire.StartGroupType:
-		_, n := protowire.ConsumeGroup(num, b)
-		if n < 0 {
-			return 0, fmt.Errorf("invalid group")
-		}
-		return n, nil
-	default:
-		return 0, fmt.Errorf("unknown wire type %d", typ)
-	}
-}
-
 func skipValue(dAtA []byte, wireType int, fieldNum int32) (int, error) {
 	iNdEx := 0
 	l := len(dAtA)
@@ -1643,7 +1629,7 @@ func (m *TracesData) unmarshal(dAtA []byte, depth int) error {
 	for iNdEx < l {
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -1656,11 +1642,11 @@ func (m *TracesData) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // resource_spans
 			if wireType != 2 {
@@ -1788,7 +1774,7 @@ func (m *ResourceSpans) unmarshal(dAtA []byte, depth int) error {
 	for iNdEx < l {
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -1801,11 +1787,11 @@ func (m *ResourceSpans) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // resource
 			if wireType != 2 {
@@ -2011,7 +1997,7 @@ func (m *ScopeSpans) unmarshal(dAtA []byte, depth int) error {
 	for iNdEx < l {
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -2024,11 +2010,11 @@ func (m *ScopeSpans) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // scope
 			if wireType != 2 {
@@ -2234,7 +2220,7 @@ func (m *Span_Event) unmarshal(dAtA []byte, depth int) error {
 	for iNdEx < l {
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -2247,11 +2233,11 @@ func (m *Span_Event) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // time_unix_nano
 			if wireType != 1 {
@@ -2459,7 +2445,7 @@ func (m *Span_Link) unmarshal(dAtA []byte, depth int) error {
 	for iNdEx < l {
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -2472,11 +2458,11 @@ func (m *Span_Link) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // trace_id
 			if wireType != 2 {
@@ -2772,7 +2758,7 @@ func (m *Span) unmarshal(dAtA []byte, depth int) error {
 	for iNdEx < l {
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -2785,11 +2771,11 @@ func (m *Span) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // trace_id
 			if wireType != 2 {
@@ -3320,7 +3306,7 @@ func (m *Status) unmarshal(dAtA []byte, depth int) error {
 	for iNdEx < l {
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -3333,11 +3319,11 @@ func (m *Status) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 2: // message
 			if wireType != 2 {

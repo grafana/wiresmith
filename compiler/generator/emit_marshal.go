@@ -43,6 +43,7 @@ func (fg *FileGenerator) emitMarshal(md protoreflect.MessageDescriptor) {
 		return fields[a].Number() > fields[b].Number()
 	})
 
+	pm := presenceMap(md)
 	seenOneofs := map[string]bool{}
 	for _, fd := range fields {
 		if isRealOneof(fd) {
@@ -53,6 +54,12 @@ func (fg *FileGenerator) emitMarshal(md protoreflect.MessageDescriptor) {
 			}
 			seenOneofs[ooName] = true
 			fg.emitOneofMarshalReverse(md, oo)
+			continue
+		}
+		// Singular message fields with presence bitmap: emit the field
+		// even when empty (size 0) if the bitmap says it was set.
+		if bitIndex, ok := pm[fd.Number()]; ok && fd.Kind() == protoreflect.MessageKind {
+			fg.emitMessageMarshalWithPresence(fd, bitIndex)
 			continue
 		}
 		fg.emitFieldMarshalReverse(fd)
@@ -78,6 +85,33 @@ func (fg *FileGenerator) reverseTag(indent string, num protowire.Number, wt prot
 	for j := len(tag) - 1; j >= 0; j-- {
 		fmt.Fprintf(fg.body, "%si--\n%sdAtA[i] = 0x%02x\n", indent, indent, tag[j])
 	}
+}
+
+// emitMessageMarshalWithPresence emits marshal code for a singular message
+// field that uses the presence bitmap. When the nested message is non-empty it
+// is written normally; when it is empty but the bitmap says it was present on
+// the wire, a zero-length field (tag + varint 0) is emitted.
+func (fg *FileGenerator) emitMessageMarshalWithPresence(fd protoreflect.FieldDescriptor, bitIndex int) {
+	goName := snakeToPascal(string(fd.Name()))
+	access := "m." + goName
+	num := protowire.Number(fd.Number())
+	wordIndex := bitIndex / 64
+	bitOffset := bitIndex % 64
+
+	fg.imports.addImport(fg.module+"/gen/protohelpers", "")
+	fmt.Fprintf(fg.body, "\t{\n")
+	fmt.Fprintf(fg.body, "\t\tsize, err := %s.MarshalToSizedBuffer(dAtA[:i])\n", access)
+	fmt.Fprintf(fg.body, "\t\tif err != nil {\n\t\t\treturn 0, err\n\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\tif size > 0 {\n")
+	fmt.Fprintf(fg.body, "\t\t\ti -= size\n")
+	fmt.Fprintf(fg.body, "\t\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(size))\n")
+	fg.reverseTag("\t\t\t", num, protowire.BytesType)
+	fmt.Fprintf(fg.body, "\t\t} else if m.fieldsPresent[%d]&(1<<%d) != 0 {\n", wordIndex, bitOffset)
+	fmt.Fprintf(fg.body, "\t\t\ti--\n")
+	fmt.Fprintf(fg.body, "\t\t\tdAtA[i] = 0\n")
+	fg.reverseTag("\t\t\t", num, protowire.BytesType)
+	fmt.Fprintf(fg.body, "\t\t}\n")
+	fmt.Fprintf(fg.body, "\t}\n")
 }
 
 func (fg *FileGenerator) emitOneofMarshalReverse(md protoreflect.MessageDescriptor, oo protoreflect.OneofDescriptor) {

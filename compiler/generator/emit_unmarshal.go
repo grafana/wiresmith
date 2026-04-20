@@ -7,38 +7,6 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
-func (fg *FileGenerator) emitSkipFieldHelper() {
-	fg.imports.addImport("google.golang.org/protobuf/encoding/protowire", "")
-	fg.imports.addImport("fmt", "")
-
-	// skipField is used by map entry parsing and other sub-slice contexts
-	// that still use protowire-based decoding.
-	fmt.Fprintf(fg.body, "func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) {\n")
-	fmt.Fprintf(fg.body, "\tswitch typ {\n")
-	fmt.Fprintf(fg.body, "\tcase protowire.VarintType:\n")
-	fmt.Fprintf(fg.body, "\t\t_, n := protowire.ConsumeVarint(b)\n")
-	fmt.Fprintf(fg.body, "\t\tif n < 0 {\n\t\t\treturn 0, fmt.Errorf(\"invalid varint\")\n\t\t}\n")
-	fmt.Fprintf(fg.body, "\t\treturn n, nil\n")
-	fmt.Fprintf(fg.body, "\tcase protowire.Fixed32Type:\n")
-	fmt.Fprintf(fg.body, "\t\tif len(b) < 4 {\n\t\t\treturn 0, fmt.Errorf(\"truncated fixed32\")\n\t\t}\n")
-	fmt.Fprintf(fg.body, "\t\treturn 4, nil\n")
-	fmt.Fprintf(fg.body, "\tcase protowire.Fixed64Type:\n")
-	fmt.Fprintf(fg.body, "\t\tif len(b) < 8 {\n\t\t\treturn 0, fmt.Errorf(\"truncated fixed64\")\n\t\t}\n")
-	fmt.Fprintf(fg.body, "\t\treturn 8, nil\n")
-	fmt.Fprintf(fg.body, "\tcase protowire.BytesType:\n")
-	fmt.Fprintf(fg.body, "\t\t_, n := protowire.ConsumeBytes(b)\n")
-	fmt.Fprintf(fg.body, "\t\tif n < 0 {\n\t\t\treturn 0, fmt.Errorf(\"invalid bytes\")\n\t\t}\n")
-	fmt.Fprintf(fg.body, "\t\treturn n, nil\n")
-	fmt.Fprintf(fg.body, "\tcase protowire.StartGroupType:\n")
-	fmt.Fprintf(fg.body, "\t\t_, n := protowire.ConsumeGroup(num, b)\n")
-	fmt.Fprintf(fg.body, "\t\tif n < 0 {\n\t\t\treturn 0, fmt.Errorf(\"invalid group\")\n\t\t}\n")
-	fmt.Fprintf(fg.body, "\t\treturn n, nil\n")
-	fmt.Fprintf(fg.body, "\tdefault:\n")
-	fmt.Fprintf(fg.body, "\t\treturn 0, fmt.Errorf(\"unknown wire type %%d\", typ)\n")
-	fmt.Fprintf(fg.body, "\t}\n")
-	fmt.Fprintf(fg.body, "}\n\n")
-}
-
 // emitSkipValueHelper emits an inline skip function that skips a field value
 // given its wire type. Used by the main unmarshal loop for unknown fields and
 // wire type mismatches where the tag has already been decoded.
@@ -211,25 +179,9 @@ func (fg *FileGenerator) emitUnmarshal(md protoreflect.MessageDescriptor) {
 	// Main parse loop with inline tag decoding.
 	fmt.Fprintf(fg.body, "\tfor iNdEx < l {\n")
 
-	// Inline tag decode
-	fmt.Fprintf(fg.body, "\t\tvar wire uint64\n")
-	fmt.Fprintf(fg.body, "\t\tfor shift := uint(0); ; shift += 7 {\n")
-	fmt.Fprintf(fg.body, "\t\t\tif shift >= 64 {\n\t\t\t\treturn fmt.Errorf(\"proto: integer overflow\")\n\t\t\t}\n")
-	fmt.Fprintf(fg.body, "\t\t\tif iNdEx >= l {\n\t\t\t\treturn io.ErrUnexpectedEOF\n\t\t\t}\n")
-	fmt.Fprintf(fg.body, "\t\t\tb := dAtA[iNdEx]\n")
-	fmt.Fprintf(fg.body, "\t\t\tiNdEx++\n")
-	fmt.Fprintf(fg.body, "\t\t\twire |= uint64(b&0x7F) << shift\n")
-	fmt.Fprintf(fg.body, "\t\t\tif b < 0x80 {\n\t\t\t\tbreak\n\t\t\t}\n")
-	fmt.Fprintf(fg.body, "\t\t}\n")
-
+	types.EmitConsumeTagAt(fg, "\t\t", "wire")
 	fmt.Fprintf(fg.body, "\t\tfieldNum := int32(wire >> 3)\n")
 	fmt.Fprintf(fg.body, "\t\twireType := int(wire & 0x7)\n")
-
-	// Reject invalid field numbers: 0 is illegal, >2^29-1 is reserved.
-	// The int32 cast can alias high numbers to valid ones, so check before truncation.
-	fmt.Fprintf(fg.body, "\t\tif wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {\n")
-	fmt.Fprintf(fg.body, "\t\t\treturn fmt.Errorf(\"invalid field number\")\n")
-	fmt.Fprintf(fg.body, "\t\t}\n")
 
 	fmt.Fprintf(fg.body, "\t\tswitch fieldNum {\n")
 
@@ -311,7 +263,12 @@ func (fg *FileGenerator) emitFieldUnmarshal(md protoreflect.MessageDescriptor, f
 		switch kind {
 		case protoreflect.MessageKind:
 			// EmitConsume set postIndex for length-delimited types.
+			// Merge semantics: if the oneof already holds the same variant,
+			// unmarshal into the existing message instead of replacing it.
 			fmt.Fprintf(fg.body, "\t\t\tvar msg %s\n", ctx.MessageType)
+			fmt.Fprintf(fg.body, "\t\t\tif ov, ok := m.%s.(*%s); ok {\n", ooFieldName, variantName)
+			fmt.Fprintf(fg.body, "\t\t\t\tmsg = ov.%s\n", fieldName)
+			fmt.Fprintf(fg.body, "\t\t\t}\n")
 			if ctx.IsSamePackage {
 				fmt.Fprintf(fg.body, "\t\t\tif err := msg.unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n")
 			} else {

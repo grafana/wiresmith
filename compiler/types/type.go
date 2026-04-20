@@ -111,6 +111,26 @@ func AddTypeImports(e Emitter, ft FieldType) {
 // in scope in the generated unmarshal method. They replace the old
 // protowire.ConsumeXxx function calls to eliminate call overhead.
 
+// EmitConsumeTagAt emits an inline tag decode at the given indent.
+// Declares varName (uint64) in generated code, advances iNdEx.
+// Tags are 32-bit field numbers so the varint is rejected after 5 bytes.
+// Also validates the field number range (1..0x1FFFFFFF) before the caller
+// switches on the decoded field number.
+func EmitConsumeTagAt(e Emitter, indent, varName string) {
+	e.AddImport("io", "")
+	e.AddImport("fmt", "")
+	e.Writef("%svar %s uint64\n", indent, varName)
+	e.Writef("%sfor shift := uint(0); ; shift += 7 {\n", indent)
+	e.Writef("%s\tif shift >= 35 {\n%s\t\treturn fmt.Errorf(\"proto: integer overflow\")\n%s\t}\n", indent, indent, indent)
+	e.Writef("%s\tif iNdEx >= l {\n%s\t\treturn io.ErrUnexpectedEOF\n%s\t}\n", indent, indent, indent)
+	e.Writef("%s\tb := dAtA[iNdEx]\n", indent)
+	e.Writef("%s\tiNdEx++\n", indent)
+	e.Writef("%s\t%s |= uint64(b&0x7F) << shift\n", indent, varName)
+	e.Writef("%s\tif b < 0x80 {\n%s\t\tbreak\n%s\t}\n", indent, indent, indent)
+	e.Writef("%s}\n", indent)
+	e.Writef("%sif %s>>3 < 1 || %s>>3 > 0x1FFFFFFF {\n%s\treturn fmt.Errorf(\"invalid field number\")\n%s}\n", indent, varName, varName, indent, indent)
+}
+
 // emitConsumeVarintAt emits an inline varint decode loop at the given indent.
 // Sets v (uint64) in generated code, advances iNdEx.
 func emitConsumeVarintAt(e Emitter, indent string) {

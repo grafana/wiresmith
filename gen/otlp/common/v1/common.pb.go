@@ -495,6 +495,8 @@ func (m *KeyValue) Size() int {
 		s := m.Value.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
+		} else if m.fieldsPresent[0]&(1<<1) != 0 {
+			n += 2
 		}
 	}
 	if m.KeyStrindex != 0 {
@@ -716,6 +718,11 @@ func (m *KeyValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 			i--
 			dAtA[i] = 0x12
+		} else if m.fieldsPresent[0]&(1<<1) != 0 {
+			i--
+			dAtA[i] = 0
+			i--
+			dAtA[i] = 0x12
 		}
 	}
 	if len(m.Key) > 0 {
@@ -833,41 +840,6 @@ func (m *EntityRef) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 
 const maxUnmarshalDepth = 10000
 
-func skipField(b []byte, num protowire.Number, typ protowire.Type) (int, error) {
-	switch typ {
-	case protowire.VarintType:
-		_, n := protowire.ConsumeVarint(b)
-		if n < 0 {
-			return 0, fmt.Errorf("invalid varint")
-		}
-		return n, nil
-	case protowire.Fixed32Type:
-		if len(b) < 4 {
-			return 0, fmt.Errorf("truncated fixed32")
-		}
-		return 4, nil
-	case protowire.Fixed64Type:
-		if len(b) < 8 {
-			return 0, fmt.Errorf("truncated fixed64")
-		}
-		return 8, nil
-	case protowire.BytesType:
-		_, n := protowire.ConsumeBytes(b)
-		if n < 0 {
-			return 0, fmt.Errorf("invalid bytes")
-		}
-		return n, nil
-	case protowire.StartGroupType:
-		_, n := protowire.ConsumeGroup(num, b)
-		if n < 0 {
-			return 0, fmt.Errorf("invalid group")
-		}
-		return n, nil
-	default:
-		return 0, fmt.Errorf("unknown wire type %d", typ)
-	}
-}
-
 func skipValue(dAtA []byte, wireType int, fieldNum int32) (int, error) {
 	iNdEx := 0
 	l := len(dAtA)
@@ -943,7 +915,7 @@ func (m *AnyValue) unmarshal(dAtA []byte, depth int) error {
 	for iNdEx < l {
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -956,11 +928,11 @@ func (m *AnyValue) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // string_value
 			if wireType != 2 {
@@ -1100,6 +1072,9 @@ func (m *AnyValue) unmarshal(dAtA []byte, depth int) error {
 				return io.ErrUnexpectedEOF
 			}
 			var msg ArrayValue
+			if ov, ok := m.Value.(*AnyValue_ArrayValue); ok {
+				msg = ov.ArrayValue
+			}
 			if err := msg.unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
@@ -1141,6 +1116,9 @@ func (m *AnyValue) unmarshal(dAtA []byte, depth int) error {
 				return io.ErrUnexpectedEOF
 			}
 			var msg KeyValueList
+			if ov, ok := m.Value.(*AnyValue_KvlistValue); ok {
+				msg = ov.KvlistValue
+			}
 			if err := msg.unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
@@ -1294,7 +1272,7 @@ func (m *ArrayValue) unmarshal(dAtA []byte, depth int) error {
 	for iNdEx < l {
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -1307,11 +1285,11 @@ func (m *ArrayValue) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // values
 			if wireType != 2 {
@@ -1439,7 +1417,7 @@ func (m *KeyValueList) unmarshal(dAtA []byte, depth int) error {
 	for iNdEx < l {
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -1452,11 +1430,11 @@ func (m *KeyValueList) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // values
 			if wireType != 2 {
@@ -1525,7 +1503,7 @@ func (m *KeyValue) unmarshal(dAtA []byte, depth int) error {
 	for iNdEx < l {
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -1538,11 +1516,11 @@ func (m *KeyValue) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // key
 			if wireType != 2 {
@@ -1734,7 +1712,7 @@ func (m *InstrumentationScope) unmarshal(dAtA []byte, depth int) error {
 	for iNdEx < l {
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -1747,11 +1725,11 @@ func (m *InstrumentationScope) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // name
 			if wireType != 2 {
@@ -1987,7 +1965,7 @@ func (m *EntityRef) unmarshal(dAtA []byte, depth int) error {
 	for iNdEx < l {
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -2000,11 +1978,11 @@ func (m *EntityRef) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
 			return fmt.Errorf("invalid field number")
 		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1: // schema_url
 			if wireType != 2 {

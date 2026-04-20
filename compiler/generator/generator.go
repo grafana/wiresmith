@@ -279,7 +279,6 @@ func (fg *FileGenerator) emitMarshalMethods(md protoreflect.MessageDescriptor) {
 func (fg *FileGenerator) emitAllUnmarshalMethods(fd protoreflect.FileDescriptor) {
 	// Emit the max recursion depth constant and skip helpers once per file.
 	fmt.Fprintf(fg.body, "const maxUnmarshalDepth = 10000\n\n")
-	fg.emitSkipFieldHelper()
 	fg.emitSkipValueHelper()
 	for i := 0; i < fd.Messages().Len(); i++ {
 		fg.emitUnmarshalMethods(fd.Messages().Get(i))

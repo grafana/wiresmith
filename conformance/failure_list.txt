@@ -7,24 +7,22 @@
 # As wiresmith adds features, entries should be removed from this list.
 # The runner will flag any test that unexpectedly passes or fails.
 #
-# Summary: 7 expected failures
-#     4 — message field merge semantics (repeated/oneof/empty/map)
-#     1 — overlong varint tag rejection
-#     1 — unknown field preservation/ordering
-#     1 — unknown varint preservation
+# Summary: 5 expected failures
+#     3 — message merge with recursive messages (wiresmith does not
+#         generate recursive message fields; corecursive data is
+#         discarded as unknown fields)
+#     2 — unknown field preservation (wiresmith intentionally discards
+#         unknown fields for performance; it is designed to work with
+#         messages of known schema)
 
-# Message field merge semantics — wiresmith replaces rather than
-# merging when a message field appears multiple times.
+# Message merge with recursive messages — the corecursive field is
+# unknown to wiresmith, so it is discarded during unmarshal and
+# absent from the merged output.
 Required.Proto3.ProtobufInput.RepeatedScalarMessageMerge.ProtobufOutput
 Required.Proto3.ProtobufInput.ValidDataMap.STRING.MESSAGE.MergeValue.ProtobufOutput
 Required.Proto3.ProtobufInput.ValidDataOneof.MESSAGE.Merge.ProtobufOutput
-Required.Proto3.ProtobufInput.ValidDataScalar.MESSAGE[0].ProtobufOutput
 
-# Overlong varint tag — wiresmith accepts overlong varint-encoded tags
-# instead of rejecting them as invalid.
-Required.Proto3.ProtobufInput.BadTag_OverlongVarint
-
-# Unknown field preservation — wiresmith drops unknown fields instead
-# of preserving them in the output.
+# Unknown field preservation — wiresmith intentionally drops unknown
+# fields instead of preserving them in the output.
 Required.Proto3.ProtobufInput.UnknownOrdering.ProtobufOutput
 Required.Proto3.ProtobufInput.UnknownVarint.ProtobufOutput
