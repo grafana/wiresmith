@@ -390,139 +390,255 @@ type Status struct {
 	fieldsPresent [1]uint64
 }
 
-func (m *TracesData) Reset()         { *m = TracesData{} }
-func (*TracesData) ProtoMessage()    {}
-func (m *TracesData) String() string { return fmt.Sprintf("%v", *m) }
+func (m *TracesData) Reset()      { *m = TracesData{} }
+func (*TracesData) ProtoMessage() {}
+func (m *TracesData) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *ResourceSpans) Reset()         { *m = ResourceSpans{} }
-func (*ResourceSpans) ProtoMessage()    {}
-func (m *ResourceSpans) String() string { return fmt.Sprintf("%v", *m) }
+func (m *ResourceSpans) Reset()      { *m = ResourceSpans{} }
+func (*ResourceSpans) ProtoMessage() {}
+func (m *ResourceSpans) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *ScopeSpans) Reset()         { *m = ScopeSpans{} }
-func (*ScopeSpans) ProtoMessage()    {}
-func (m *ScopeSpans) String() string { return fmt.Sprintf("%v", *m) }
+func (m *ScopeSpans) Reset()      { *m = ScopeSpans{} }
+func (*ScopeSpans) ProtoMessage() {}
+func (m *ScopeSpans) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *Span_Event) Reset()         { *m = Span_Event{} }
-func (*Span_Event) ProtoMessage()    {}
-func (m *Span_Event) String() string { return fmt.Sprintf("%v", *m) }
+func (m *Span_Event) Reset()      { *m = Span_Event{} }
+func (*Span_Event) ProtoMessage() {}
+func (m *Span_Event) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *Span_Link) Reset()         { *m = Span_Link{} }
-func (*Span_Link) ProtoMessage()    {}
-func (m *Span_Link) String() string { return fmt.Sprintf("%v", *m) }
+func (m *Span_Link) Reset()      { *m = Span_Link{} }
+func (*Span_Link) ProtoMessage() {}
+func (m *Span_Link) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *Span) Reset()         { *m = Span{} }
-func (*Span) ProtoMessage()    {}
-func (m *Span) String() string { return fmt.Sprintf("%v", *m) }
+func (m *Span) Reset()      { *m = Span{} }
+func (*Span) ProtoMessage() {}
+func (m *Span) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *Status) Reset()         { *m = Status{} }
-func (*Status) ProtoMessage()    {}
-func (m *Status) String() string { return fmt.Sprintf("%v", *m) }
+func (m *Status) Reset()      { *m = Status{} }
+func (*Status) ProtoMessage() {}
+func (m *Status) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
 func (m *ResourceSpans) HasResource() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *ResourceSpans) HasSchemaUrl() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *ScopeSpans) HasScope() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *ScopeSpans) HasSchemaUrl() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *Span_Event) HasTimeUnixNano() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Span_Event) HasName() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *Span_Event) HasDroppedAttributesCount() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<2) != 0
 }
 
 func (m *Span_Link) HasTraceId() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Span_Link) HasSpanId() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *Span_Link) HasTraceState() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<2) != 0
 }
 
 func (m *Span_Link) HasDroppedAttributesCount() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<3) != 0
 }
 
 func (m *Span_Link) HasFlags() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<4) != 0
 }
 
 func (m *Span) HasTraceId() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Span) HasSpanId() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *Span) HasTraceState() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<2) != 0
 }
 
 func (m *Span) HasParentSpanId() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<3) != 0
 }
 
 func (m *Span) HasFlags() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<4) != 0
 }
 
 func (m *Span) HasName() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<5) != 0
 }
 
 func (m *Span) HasKind() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<6) != 0
 }
 
 func (m *Span) HasStartTimeUnixNano() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<7) != 0
 }
 
 func (m *Span) HasEndTimeUnixNano() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<8) != 0
 }
 
 func (m *Span) HasDroppedAttributesCount() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<9) != 0
 }
 
 func (m *Span) HasDroppedEventsCount() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<10) != 0
 }
 
 func (m *Span) HasDroppedLinksCount() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<11) != 0
 }
 
 func (m *Span) HasStatus() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<12) != 0
 }
 
 func (m *Status) HasMessage() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Status) HasCode() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 

@@ -31,11 +31,19 @@ type Resource struct {
 	fieldsPresent [1]uint64
 }
 
-func (m *Resource) Reset()         { *m = Resource{} }
-func (*Resource) ProtoMessage()    {}
-func (m *Resource) String() string { return fmt.Sprintf("%v", *m) }
+func (m *Resource) Reset()      { *m = Resource{} }
+func (*Resource) ProtoMessage() {}
+func (m *Resource) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
 func (m *Resource) HasDroppedAttributesCount() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 

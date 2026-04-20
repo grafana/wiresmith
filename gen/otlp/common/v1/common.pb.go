@@ -175,59 +175,113 @@ type EntityRef struct {
 	fieldsPresent [1]uint64
 }
 
-func (m *AnyValue) Reset()         { *m = AnyValue{} }
-func (*AnyValue) ProtoMessage()    {}
-func (m *AnyValue) String() string { return fmt.Sprintf("%v", *m) }
+func (m *AnyValue) Reset()      { *m = AnyValue{} }
+func (*AnyValue) ProtoMessage() {}
+func (m *AnyValue) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *ArrayValue) Reset()         { *m = ArrayValue{} }
-func (*ArrayValue) ProtoMessage()    {}
-func (m *ArrayValue) String() string { return fmt.Sprintf("%v", *m) }
+func (m *ArrayValue) Reset()      { *m = ArrayValue{} }
+func (*ArrayValue) ProtoMessage() {}
+func (m *ArrayValue) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *KeyValueList) Reset()         { *m = KeyValueList{} }
-func (*KeyValueList) ProtoMessage()    {}
-func (m *KeyValueList) String() string { return fmt.Sprintf("%v", *m) }
+func (m *KeyValueList) Reset()      { *m = KeyValueList{} }
+func (*KeyValueList) ProtoMessage() {}
+func (m *KeyValueList) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *KeyValue) Reset()         { *m = KeyValue{} }
-func (*KeyValue) ProtoMessage()    {}
-func (m *KeyValue) String() string { return fmt.Sprintf("%v", *m) }
+func (m *KeyValue) Reset()      { *m = KeyValue{} }
+func (*KeyValue) ProtoMessage() {}
+func (m *KeyValue) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *InstrumentationScope) Reset()         { *m = InstrumentationScope{} }
-func (*InstrumentationScope) ProtoMessage()    {}
-func (m *InstrumentationScope) String() string { return fmt.Sprintf("%v", *m) }
+func (m *InstrumentationScope) Reset()      { *m = InstrumentationScope{} }
+func (*InstrumentationScope) ProtoMessage() {}
+func (m *InstrumentationScope) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *EntityRef) Reset()         { *m = EntityRef{} }
-func (*EntityRef) ProtoMessage()    {}
-func (m *EntityRef) String() string { return fmt.Sprintf("%v", *m) }
+func (m *EntityRef) Reset()      { *m = EntityRef{} }
+func (*EntityRef) ProtoMessage() {}
+func (m *EntityRef) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
 func (m *KeyValue) HasKey() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *KeyValue) HasValue() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *KeyValue) HasKeyStrindex() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<2) != 0
 }
 
 func (m *InstrumentationScope) HasName() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *InstrumentationScope) HasVersion() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *InstrumentationScope) HasDroppedAttributesCount() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<2) != 0
 }
 
 func (m *EntityRef) HasSchemaUrl() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *EntityRef) HasType() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 

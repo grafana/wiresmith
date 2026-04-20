@@ -284,75 +284,137 @@ type LogRecord struct {
 	fieldsPresent [1]uint64
 }
 
-func (m *LogsData) Reset()         { *m = LogsData{} }
-func (*LogsData) ProtoMessage()    {}
-func (m *LogsData) String() string { return fmt.Sprintf("%v", *m) }
+func (m *LogsData) Reset()      { *m = LogsData{} }
+func (*LogsData) ProtoMessage() {}
+func (m *LogsData) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *ResourceLogs) Reset()         { *m = ResourceLogs{} }
-func (*ResourceLogs) ProtoMessage()    {}
-func (m *ResourceLogs) String() string { return fmt.Sprintf("%v", *m) }
+func (m *ResourceLogs) Reset()      { *m = ResourceLogs{} }
+func (*ResourceLogs) ProtoMessage() {}
+func (m *ResourceLogs) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *ScopeLogs) Reset()         { *m = ScopeLogs{} }
-func (*ScopeLogs) ProtoMessage()    {}
-func (m *ScopeLogs) String() string { return fmt.Sprintf("%v", *m) }
+func (m *ScopeLogs) Reset()      { *m = ScopeLogs{} }
+func (*ScopeLogs) ProtoMessage() {}
+func (m *ScopeLogs) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *LogRecord) Reset()         { *m = LogRecord{} }
-func (*LogRecord) ProtoMessage()    {}
-func (m *LogRecord) String() string { return fmt.Sprintf("%v", *m) }
+func (m *LogRecord) Reset()      { *m = LogRecord{} }
+func (*LogRecord) ProtoMessage() {}
+func (m *LogRecord) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
 func (m *ResourceLogs) HasResource() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *ResourceLogs) HasSchemaUrl() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *ScopeLogs) HasScope() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *ScopeLogs) HasSchemaUrl() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *LogRecord) HasTimeUnixNano() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *LogRecord) HasObservedTimeUnixNano() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *LogRecord) HasSeverityNumber() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<2) != 0
 }
 
 func (m *LogRecord) HasSeverityText() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<3) != 0
 }
 
 func (m *LogRecord) HasBody() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<4) != 0
 }
 
 func (m *LogRecord) HasDroppedAttributesCount() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<5) != 0
 }
 
 func (m *LogRecord) HasFlags() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<6) != 0
 }
 
 func (m *LogRecord) HasTraceId() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<7) != 0
 }
 
 func (m *LogRecord) HasSpanId() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<8) != 0
 }
 
 func (m *LogRecord) HasEventName() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<9) != 0
 }
 

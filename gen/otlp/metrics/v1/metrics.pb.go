@@ -774,219 +774,413 @@ type Exemplar struct {
 	fieldsPresent [1]uint64
 }
 
-func (m *MetricsData) Reset()         { *m = MetricsData{} }
-func (*MetricsData) ProtoMessage()    {}
-func (m *MetricsData) String() string { return fmt.Sprintf("%v", *m) }
+func (m *MetricsData) Reset()      { *m = MetricsData{} }
+func (*MetricsData) ProtoMessage() {}
+func (m *MetricsData) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *ResourceMetrics) Reset()         { *m = ResourceMetrics{} }
-func (*ResourceMetrics) ProtoMessage()    {}
-func (m *ResourceMetrics) String() string { return fmt.Sprintf("%v", *m) }
+func (m *ResourceMetrics) Reset()      { *m = ResourceMetrics{} }
+func (*ResourceMetrics) ProtoMessage() {}
+func (m *ResourceMetrics) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *ScopeMetrics) Reset()         { *m = ScopeMetrics{} }
-func (*ScopeMetrics) ProtoMessage()    {}
-func (m *ScopeMetrics) String() string { return fmt.Sprintf("%v", *m) }
+func (m *ScopeMetrics) Reset()      { *m = ScopeMetrics{} }
+func (*ScopeMetrics) ProtoMessage() {}
+func (m *ScopeMetrics) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *Metric) Reset()         { *m = Metric{} }
-func (*Metric) ProtoMessage()    {}
-func (m *Metric) String() string { return fmt.Sprintf("%v", *m) }
+func (m *Metric) Reset()      { *m = Metric{} }
+func (*Metric) ProtoMessage() {}
+func (m *Metric) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *Gauge) Reset()         { *m = Gauge{} }
-func (*Gauge) ProtoMessage()    {}
-func (m *Gauge) String() string { return fmt.Sprintf("%v", *m) }
+func (m *Gauge) Reset()      { *m = Gauge{} }
+func (*Gauge) ProtoMessage() {}
+func (m *Gauge) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *Sum) Reset()         { *m = Sum{} }
-func (*Sum) ProtoMessage()    {}
-func (m *Sum) String() string { return fmt.Sprintf("%v", *m) }
+func (m *Sum) Reset()      { *m = Sum{} }
+func (*Sum) ProtoMessage() {}
+func (m *Sum) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *Histogram) Reset()         { *m = Histogram{} }
-func (*Histogram) ProtoMessage()    {}
-func (m *Histogram) String() string { return fmt.Sprintf("%v", *m) }
+func (m *Histogram) Reset()      { *m = Histogram{} }
+func (*Histogram) ProtoMessage() {}
+func (m *Histogram) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *ExponentialHistogram) Reset()         { *m = ExponentialHistogram{} }
-func (*ExponentialHistogram) ProtoMessage()    {}
-func (m *ExponentialHistogram) String() string { return fmt.Sprintf("%v", *m) }
+func (m *ExponentialHistogram) Reset()      { *m = ExponentialHistogram{} }
+func (*ExponentialHistogram) ProtoMessage() {}
+func (m *ExponentialHistogram) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *Summary) Reset()         { *m = Summary{} }
-func (*Summary) ProtoMessage()    {}
-func (m *Summary) String() string { return fmt.Sprintf("%v", *m) }
+func (m *Summary) Reset()      { *m = Summary{} }
+func (*Summary) ProtoMessage() {}
+func (m *Summary) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *NumberDataPoint) Reset()         { *m = NumberDataPoint{} }
-func (*NumberDataPoint) ProtoMessage()    {}
-func (m *NumberDataPoint) String() string { return fmt.Sprintf("%v", *m) }
+func (m *NumberDataPoint) Reset()      { *m = NumberDataPoint{} }
+func (*NumberDataPoint) ProtoMessage() {}
+func (m *NumberDataPoint) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *HistogramDataPoint) Reset()         { *m = HistogramDataPoint{} }
-func (*HistogramDataPoint) ProtoMessage()    {}
-func (m *HistogramDataPoint) String() string { return fmt.Sprintf("%v", *m) }
+func (m *HistogramDataPoint) Reset()      { *m = HistogramDataPoint{} }
+func (*HistogramDataPoint) ProtoMessage() {}
+func (m *HistogramDataPoint) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *ExponentialHistogramDataPoint_Buckets) Reset()         { *m = ExponentialHistogramDataPoint_Buckets{} }
-func (*ExponentialHistogramDataPoint_Buckets) ProtoMessage()    {}
-func (m *ExponentialHistogramDataPoint_Buckets) String() string { return fmt.Sprintf("%v", *m) }
+func (m *ExponentialHistogramDataPoint_Buckets) Reset()      { *m = ExponentialHistogramDataPoint_Buckets{} }
+func (*ExponentialHistogramDataPoint_Buckets) ProtoMessage() {}
+func (m *ExponentialHistogramDataPoint_Buckets) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *ExponentialHistogramDataPoint) Reset()         { *m = ExponentialHistogramDataPoint{} }
-func (*ExponentialHistogramDataPoint) ProtoMessage()    {}
-func (m *ExponentialHistogramDataPoint) String() string { return fmt.Sprintf("%v", *m) }
+func (m *ExponentialHistogramDataPoint) Reset()      { *m = ExponentialHistogramDataPoint{} }
+func (*ExponentialHistogramDataPoint) ProtoMessage() {}
+func (m *ExponentialHistogramDataPoint) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *SummaryDataPoint_ValueAtQuantile) Reset()         { *m = SummaryDataPoint_ValueAtQuantile{} }
-func (*SummaryDataPoint_ValueAtQuantile) ProtoMessage()    {}
-func (m *SummaryDataPoint_ValueAtQuantile) String() string { return fmt.Sprintf("%v", *m) }
+func (m *SummaryDataPoint_ValueAtQuantile) Reset()      { *m = SummaryDataPoint_ValueAtQuantile{} }
+func (*SummaryDataPoint_ValueAtQuantile) ProtoMessage() {}
+func (m *SummaryDataPoint_ValueAtQuantile) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *SummaryDataPoint) Reset()         { *m = SummaryDataPoint{} }
-func (*SummaryDataPoint) ProtoMessage()    {}
-func (m *SummaryDataPoint) String() string { return fmt.Sprintf("%v", *m) }
+func (m *SummaryDataPoint) Reset()      { *m = SummaryDataPoint{} }
+func (*SummaryDataPoint) ProtoMessage() {}
+func (m *SummaryDataPoint) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *Exemplar) Reset()         { *m = Exemplar{} }
-func (*Exemplar) ProtoMessage()    {}
-func (m *Exemplar) String() string { return fmt.Sprintf("%v", *m) }
+func (m *Exemplar) Reset()      { *m = Exemplar{} }
+func (*Exemplar) ProtoMessage() {}
+func (m *Exemplar) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
 func (m *ResourceMetrics) HasResource() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *ResourceMetrics) HasSchemaUrl() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *ScopeMetrics) HasScope() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *ScopeMetrics) HasSchemaUrl() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *Metric) HasName() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Metric) HasDescription() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *Metric) HasUnit() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<2) != 0
 }
 
 func (m *Sum) HasAggregationTemporality() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Sum) HasIsMonotonic() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *Histogram) HasAggregationTemporality() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *ExponentialHistogram) HasAggregationTemporality() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *NumberDataPoint) HasStartTimeUnixNano() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *NumberDataPoint) HasTimeUnixNano() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *NumberDataPoint) HasFlags() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<2) != 0
 }
 
 func (m *HistogramDataPoint) HasStartTimeUnixNano() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *HistogramDataPoint) HasTimeUnixNano() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *HistogramDataPoint) HasCount() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<2) != 0
 }
 
 func (m *HistogramDataPoint) HasFlags() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<3) != 0
 }
 
 func (m *ExponentialHistogramDataPoint_Buckets) HasOffset() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *ExponentialHistogramDataPoint) HasStartTimeUnixNano() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *ExponentialHistogramDataPoint) HasTimeUnixNano() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *ExponentialHistogramDataPoint) HasCount() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<2) != 0
 }
 
 func (m *ExponentialHistogramDataPoint) HasScale() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<3) != 0
 }
 
 func (m *ExponentialHistogramDataPoint) HasZeroCount() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<4) != 0
 }
 
 func (m *ExponentialHistogramDataPoint) HasPositive() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<5) != 0
 }
 
 func (m *ExponentialHistogramDataPoint) HasNegative() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<6) != 0
 }
 
 func (m *ExponentialHistogramDataPoint) HasFlags() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<7) != 0
 }
 
 func (m *ExponentialHistogramDataPoint) HasZeroThreshold() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<8) != 0
 }
 
 func (m *SummaryDataPoint_ValueAtQuantile) HasQuantile() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *SummaryDataPoint_ValueAtQuantile) HasValue() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *SummaryDataPoint) HasStartTimeUnixNano() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *SummaryDataPoint) HasTimeUnixNano() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *SummaryDataPoint) HasCount() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<2) != 0
 }
 
 func (m *SummaryDataPoint) HasSum() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<3) != 0
 }
 
 func (m *SummaryDataPoint) HasFlags() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<4) != 0
 }
 
 func (m *Exemplar) HasTimeUnixNano() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Exemplar) HasSpanId() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *Exemplar) HasTraceId() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<2) != 0
 }
 

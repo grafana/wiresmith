@@ -58,6 +58,7 @@ func (fg *FileGenerator) emitHasMethods(md protoreflect.MessageDescriptor) {
 		wordIndex := pf.bitIndex / 64
 		bitOffset := pf.bitIndex % 64
 		fmt.Fprintf(fg.body, "func (m *%s) Has%s() bool {\n", name, goName)
+		fmt.Fprintf(fg.body, "\tif m == nil {\n\t\treturn false\n\t}\n")
 		fmt.Fprintf(fg.body, "\treturn m.fieldsPresent[%d]&(1<<%d) != 0\n", wordIndex, bitOffset)
 		fmt.Fprintf(fg.body, "}\n\n")
 	}

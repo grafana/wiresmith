@@ -414,203 +414,381 @@ type KeyValueAndUnit struct {
 	fieldsPresent [1]uint64
 }
 
-func (m *ProfilesDictionary) Reset()         { *m = ProfilesDictionary{} }
-func (*ProfilesDictionary) ProtoMessage()    {}
-func (m *ProfilesDictionary) String() string { return fmt.Sprintf("%v", *m) }
+func (m *ProfilesDictionary) Reset()      { *m = ProfilesDictionary{} }
+func (*ProfilesDictionary) ProtoMessage() {}
+func (m *ProfilesDictionary) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *ProfilesData) Reset()         { *m = ProfilesData{} }
-func (*ProfilesData) ProtoMessage()    {}
-func (m *ProfilesData) String() string { return fmt.Sprintf("%v", *m) }
+func (m *ProfilesData) Reset()      { *m = ProfilesData{} }
+func (*ProfilesData) ProtoMessage() {}
+func (m *ProfilesData) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *ResourceProfiles) Reset()         { *m = ResourceProfiles{} }
-func (*ResourceProfiles) ProtoMessage()    {}
-func (m *ResourceProfiles) String() string { return fmt.Sprintf("%v", *m) }
+func (m *ResourceProfiles) Reset()      { *m = ResourceProfiles{} }
+func (*ResourceProfiles) ProtoMessage() {}
+func (m *ResourceProfiles) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *ScopeProfiles) Reset()         { *m = ScopeProfiles{} }
-func (*ScopeProfiles) ProtoMessage()    {}
-func (m *ScopeProfiles) String() string { return fmt.Sprintf("%v", *m) }
+func (m *ScopeProfiles) Reset()      { *m = ScopeProfiles{} }
+func (*ScopeProfiles) ProtoMessage() {}
+func (m *ScopeProfiles) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *Profile) Reset()         { *m = Profile{} }
-func (*Profile) ProtoMessage()    {}
-func (m *Profile) String() string { return fmt.Sprintf("%v", *m) }
+func (m *Profile) Reset()      { *m = Profile{} }
+func (*Profile) ProtoMessage() {}
+func (m *Profile) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *Link) Reset()         { *m = Link{} }
-func (*Link) ProtoMessage()    {}
-func (m *Link) String() string { return fmt.Sprintf("%v", *m) }
+func (m *Link) Reset()      { *m = Link{} }
+func (*Link) ProtoMessage() {}
+func (m *Link) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *ValueType) Reset()         { *m = ValueType{} }
-func (*ValueType) ProtoMessage()    {}
-func (m *ValueType) String() string { return fmt.Sprintf("%v", *m) }
+func (m *ValueType) Reset()      { *m = ValueType{} }
+func (*ValueType) ProtoMessage() {}
+func (m *ValueType) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *Sample) Reset()         { *m = Sample{} }
-func (*Sample) ProtoMessage()    {}
-func (m *Sample) String() string { return fmt.Sprintf("%v", *m) }
+func (m *Sample) Reset()      { *m = Sample{} }
+func (*Sample) ProtoMessage() {}
+func (m *Sample) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *Mapping) Reset()         { *m = Mapping{} }
-func (*Mapping) ProtoMessage()    {}
-func (m *Mapping) String() string { return fmt.Sprintf("%v", *m) }
+func (m *Mapping) Reset()      { *m = Mapping{} }
+func (*Mapping) ProtoMessage() {}
+func (m *Mapping) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *Stack) Reset()         { *m = Stack{} }
-func (*Stack) ProtoMessage()    {}
-func (m *Stack) String() string { return fmt.Sprintf("%v", *m) }
+func (m *Stack) Reset()      { *m = Stack{} }
+func (*Stack) ProtoMessage() {}
+func (m *Stack) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *Location) Reset()         { *m = Location{} }
-func (*Location) ProtoMessage()    {}
-func (m *Location) String() string { return fmt.Sprintf("%v", *m) }
+func (m *Location) Reset()      { *m = Location{} }
+func (*Location) ProtoMessage() {}
+func (m *Location) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *Line) Reset()         { *m = Line{} }
-func (*Line) ProtoMessage()    {}
-func (m *Line) String() string { return fmt.Sprintf("%v", *m) }
+func (m *Line) Reset()      { *m = Line{} }
+func (*Line) ProtoMessage() {}
+func (m *Line) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *Function) Reset()         { *m = Function{} }
-func (*Function) ProtoMessage()    {}
-func (m *Function) String() string { return fmt.Sprintf("%v", *m) }
+func (m *Function) Reset()      { *m = Function{} }
+func (*Function) ProtoMessage() {}
+func (m *Function) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *KeyValueAndUnit) Reset()         { *m = KeyValueAndUnit{} }
-func (*KeyValueAndUnit) ProtoMessage()    {}
-func (m *KeyValueAndUnit) String() string { return fmt.Sprintf("%v", *m) }
+func (m *KeyValueAndUnit) Reset()      { *m = KeyValueAndUnit{} }
+func (*KeyValueAndUnit) ProtoMessage() {}
+func (m *KeyValueAndUnit) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
 func (m *ProfilesData) HasDictionary() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *ResourceProfiles) HasResource() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *ResourceProfiles) HasSchemaUrl() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *ScopeProfiles) HasScope() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *ScopeProfiles) HasSchemaUrl() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *Profile) HasSampleType() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Profile) HasTimeUnixNano() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *Profile) HasDurationNano() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<2) != 0
 }
 
 func (m *Profile) HasPeriodType() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<3) != 0
 }
 
 func (m *Profile) HasPeriod() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<4) != 0
 }
 
 func (m *Profile) HasProfileId() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<5) != 0
 }
 
 func (m *Profile) HasDroppedAttributesCount() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<6) != 0
 }
 
 func (m *Profile) HasOriginalPayloadFormat() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<7) != 0
 }
 
 func (m *Profile) HasOriginalPayload() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<8) != 0
 }
 
 func (m *Link) HasTraceId() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Link) HasSpanId() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *ValueType) HasTypeStrindex() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *ValueType) HasUnitStrindex() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *Sample) HasStackIndex() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Sample) HasLinkIndex() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *Mapping) HasMemoryStart() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Mapping) HasMemoryLimit() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *Mapping) HasFileOffset() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<2) != 0
 }
 
 func (m *Mapping) HasFilenameStrindex() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<3) != 0
 }
 
 func (m *Location) HasMappingIndex() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Location) HasAddress() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *Line) HasFunctionIndex() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Line) HasLine() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *Line) HasColumn() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<2) != 0
 }
 
 func (m *Function) HasNameStrindex() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Function) HasSystemNameStrindex() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *Function) HasFilenameStrindex() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<2) != 0
 }
 
 func (m *Function) HasStartLine() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<3) != 0
 }
 
 func (m *KeyValueAndUnit) HasKeyStrindex() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *KeyValueAndUnit) HasValue() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *KeyValueAndUnit) HasUnitStrindex() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<2) != 0
 }
 

@@ -25,23 +25,42 @@ type Inner struct {
 	fieldsPresent [1]uint64
 }
 
-func (m *MapBench) Reset()         { *m = MapBench{} }
-func (*MapBench) ProtoMessage()    {}
-func (m *MapBench) String() string { return fmt.Sprintf("%v", *m) }
+func (m *MapBench) Reset()      { *m = MapBench{} }
+func (*MapBench) ProtoMessage() {}
+func (m *MapBench) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *Inner) Reset()         { *m = Inner{} }
-func (*Inner) ProtoMessage()    {}
-func (m *Inner) String() string { return fmt.Sprintf("%v", *m) }
+func (m *Inner) Reset()      { *m = Inner{} }
+func (*Inner) ProtoMessage() {}
+func (m *Inner) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
 func (m *Inner) HasName() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Inner) HasValue() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *Inner) HasData() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<2) != 0
 }
 

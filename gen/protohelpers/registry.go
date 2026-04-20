@@ -10,6 +10,9 @@ var enumValues = map[string]map[string]int32{}
 // Called from generated init() functions.
 func RegisterType(msg any, fullName string) {
 	t := reflect.TypeOf(msg)
+	if t == nil {
+		panic("protohelpers.RegisterType: msg must not be nil")
+	}
 	if t.Kind() == reflect.Pointer {
 		t = t.Elem()
 	}

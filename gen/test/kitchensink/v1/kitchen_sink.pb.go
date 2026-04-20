@@ -289,179 +289,337 @@ type AllMaps struct {
 	MapStringEnum       map[string]Color
 }
 
-func (m *AllScalars) Reset()         { *m = AllScalars{} }
-func (*AllScalars) ProtoMessage()    {}
-func (m *AllScalars) String() string { return fmt.Sprintf("%v", *m) }
+func (m *AllScalars) Reset()      { *m = AllScalars{} }
+func (*AllScalars) ProtoMessage() {}
+func (m *AllScalars) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *AllOptionalScalars) Reset()         { *m = AllOptionalScalars{} }
-func (*AllOptionalScalars) ProtoMessage()    {}
-func (m *AllOptionalScalars) String() string { return fmt.Sprintf("%v", *m) }
+func (m *AllOptionalScalars) Reset()      { *m = AllOptionalScalars{} }
+func (*AllOptionalScalars) ProtoMessage() {}
+func (m *AllOptionalScalars) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *AllRepeatedScalars) Reset()         { *m = AllRepeatedScalars{} }
-func (*AllRepeatedScalars) ProtoMessage()    {}
-func (m *AllRepeatedScalars) String() string { return fmt.Sprintf("%v", *m) }
+func (m *AllRepeatedScalars) Reset()      { *m = AllRepeatedScalars{} }
+func (*AllRepeatedScalars) ProtoMessage() {}
+func (m *AllRepeatedScalars) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *OneofVariants) Reset()         { *m = OneofVariants{} }
-func (*OneofVariants) ProtoMessage()    {}
-func (m *OneofVariants) String() string { return fmt.Sprintf("%v", *m) }
+func (m *OneofVariants) Reset()      { *m = OneofVariants{} }
+func (*OneofVariants) ProtoMessage() {}
+func (m *OneofVariants) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *Outer) Reset()         { *m = Outer{} }
-func (*Outer) ProtoMessage()    {}
-func (m *Outer) String() string { return fmt.Sprintf("%v", *m) }
+func (m *Outer) Reset()      { *m = Outer{} }
+func (*Outer) ProtoMessage() {}
+func (m *Outer) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *Middle) Reset()         { *m = Middle{} }
-func (*Middle) ProtoMessage()    {}
-func (m *Middle) String() string { return fmt.Sprintf("%v", *m) }
+func (m *Middle) Reset()      { *m = Middle{} }
+func (*Middle) ProtoMessage() {}
+func (m *Middle) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *Inner) Reset()         { *m = Inner{} }
-func (*Inner) ProtoMessage()    {}
-func (m *Inner) String() string { return fmt.Sprintf("%v", *m) }
+func (m *Inner) Reset()      { *m = Inner{} }
+func (*Inner) ProtoMessage() {}
+func (m *Inner) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *HighFieldNumbers) Reset()         { *m = HighFieldNumbers{} }
-func (*HighFieldNumbers) ProtoMessage()    {}
-func (m *HighFieldNumbers) String() string { return fmt.Sprintf("%v", *m) }
+func (m *HighFieldNumbers) Reset()      { *m = HighFieldNumbers{} }
+func (*HighFieldNumbers) ProtoMessage() {}
+func (m *HighFieldNumbers) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *WithEnum) Reset()         { *m = WithEnum{} }
-func (*WithEnum) ProtoMessage()    {}
-func (m *WithEnum) String() string { return fmt.Sprintf("%v", *m) }
+func (m *WithEnum) Reset()      { *m = WithEnum{} }
+func (*WithEnum) ProtoMessage() {}
+func (m *WithEnum) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *Empty) Reset()         { *m = Empty{} }
-func (*Empty) ProtoMessage()    {}
-func (m *Empty) String() string { return fmt.Sprintf("%v", *m) }
+func (m *Empty) Reset()      { *m = Empty{} }
+func (*Empty) ProtoMessage() {}
+func (m *Empty) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *OnlyRepeated) Reset()         { *m = OnlyRepeated{} }
-func (*OnlyRepeated) ProtoMessage()    {}
-func (m *OnlyRepeated) String() string { return fmt.Sprintf("%v", *m) }
+func (m *OnlyRepeated) Reset()      { *m = OnlyRepeated{} }
+func (*OnlyRepeated) ProtoMessage() {}
+func (m *OnlyRepeated) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *Container) Reset()         { *m = Container{} }
-func (*Container) ProtoMessage()    {}
-func (m *Container) String() string { return fmt.Sprintf("%v", *m) }
+func (m *Container) Reset()      { *m = Container{} }
+func (*Container) ProtoMessage() {}
+func (m *Container) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
-func (m *AllMaps) Reset()         { *m = AllMaps{} }
-func (*AllMaps) ProtoMessage()    {}
-func (m *AllMaps) String() string { return fmt.Sprintf("%v", *m) }
+func (m *AllMaps) Reset()      { *m = AllMaps{} }
+func (*AllMaps) ProtoMessage() {}
+func (m *AllMaps) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
 
 func (m *AllScalars) HasFieldDouble() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *AllScalars) HasFieldFloat() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *AllScalars) HasFieldInt32() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<2) != 0
 }
 
 func (m *AllScalars) HasFieldInt64() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<3) != 0
 }
 
 func (m *AllScalars) HasFieldUint32() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<4) != 0
 }
 
 func (m *AllScalars) HasFieldUint64() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<5) != 0
 }
 
 func (m *AllScalars) HasFieldSint32() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<6) != 0
 }
 
 func (m *AllScalars) HasFieldSint64() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<7) != 0
 }
 
 func (m *AllScalars) HasFieldFixed32() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<8) != 0
 }
 
 func (m *AllScalars) HasFieldFixed64() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<9) != 0
 }
 
 func (m *AllScalars) HasFieldSfixed32() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<10) != 0
 }
 
 func (m *AllScalars) HasFieldSfixed64() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<11) != 0
 }
 
 func (m *AllScalars) HasFieldBool() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<12) != 0
 }
 
 func (m *AllScalars) HasFieldString() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<13) != 0
 }
 
 func (m *AllScalars) HasFieldBytes() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<14) != 0
 }
 
 func (m *Outer) HasMiddle() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Outer) HasName() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *Middle) HasInner() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Middle) HasValue() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *Inner) HasData() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Inner) HasRaw() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *Inner) HasSignedVal() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<2) != 0
 }
 
 func (m *Inner) HasFixedVal() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<3) != 0
 }
 
 func (m *HighFieldNumbers) HasField1() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *HighFieldNumbers) HasField16() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *HighFieldNumbers) HasField128() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<2) != 0
 }
 
 func (m *HighFieldNumbers) HasField2048() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<3) != 0
 }
 
 func (m *HighFieldNumbers) HasField16384() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<4) != 0
 }
 
 func (m *WithEnum) HasColor() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Container) HasVariant() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Container) HasScalars() bool {
+	if m == nil {
+		return false
+	}
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
