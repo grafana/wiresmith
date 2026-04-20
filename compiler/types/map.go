@@ -69,6 +69,8 @@ func (m *MapField) EmitMarshal(e Emitter, access string, num protowire.Number) {
 }
 
 func (m *MapField) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
+	_, isMsg := m.Val.(*MessageType)
+
 	emitConsumeBytesLen(e)
 
 	e.Writef("\t\t\tif %s == nil {\n", access)
@@ -76,6 +78,9 @@ func (m *MapField) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
 	e.Writef("\t\t\t}\n")
 	e.Writef("\t\t\tvar mapkey %s\n", m.KeyGoType)
 	e.Writef("\t\t\tvar mapvalue %s\n", m.ValGoType)
+	if isMsg {
+		e.Writef("\t\t\tvar mapValueBytes []byte\n")
+	}
 	e.Writef("\t\t\tentryData := dAtA[iNdEx:postIndex]\n")
 	e.Writef("\t\t\tfor len(entryData) > 0 {\n")
 	e.Writef("\t\t\t\tentryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)\n")
@@ -92,6 +97,11 @@ func (m *MapField) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
 	e.Writef("\t\t\t\tcase 2:\n")
 	m.emitMapEntryWireTypeCheck(e, m.Val.WireType())
 	m.Val.EmitMapEntryUnmarshal(e, "mapvalue", "\t\t\t\t\t", m.ValCtx)
+	if isMsg {
+		// Save raw value bytes for merge semantics when the same
+		// key appears in multiple wire entries.
+		e.Writef("\t\t\t\t\tmapValueBytes = tmpVal\n")
+	}
 
 	// Unknown fields
 	e.Writef("\t\t\t\tdefault:\n")
@@ -101,7 +111,23 @@ func (m *MapField) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
 
 	e.Writef("\t\t\t\t}\n") // end switch
 	e.Writef("\t\t\t}\n")   // end for
-	e.Writef("\t\t\t%s[mapkey] = mapvalue\n", access)
+
+	if isMsg {
+		// Merge semantics: if the key already exists, unmarshal the new
+		// value bytes into the existing message instead of replacing it.
+		e.Writef("\t\t\tif existing, ok := %s[mapkey]; ok && len(mapValueBytes) > 0 {\n", access)
+		if m.ValCtx.IsSamePackage {
+			e.Writef("\t\t\t\tif err := existing.unmarshal(mapValueBytes, depth+1); err != nil {\n\t\t\t\t\treturn err\n\t\t\t\t}\n")
+		} else {
+			e.Writef("\t\t\t\tif err := existing.Unmarshal(mapValueBytes); err != nil {\n\t\t\t\t\treturn err\n\t\t\t\t}\n")
+		}
+		e.Writef("\t\t\t\t%s[mapkey] = existing\n", access)
+		e.Writef("\t\t\t} else {\n")
+		e.Writef("\t\t\t\t%s[mapkey] = mapvalue\n", access)
+		e.Writef("\t\t\t}\n")
+	} else {
+		e.Writef("\t\t\t%s[mapkey] = mapvalue\n", access)
+	}
 	e.Writef("\t\t\tiNdEx = postIndex\n")
 }
 

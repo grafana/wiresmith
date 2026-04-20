@@ -33,6 +33,10 @@ func (fg *FileGenerator) emitMarshal(md protoreflect.MessageDescriptor) {
 	// Returns the number of bytes written.
 	fmt.Fprintf(fg.body, "func (m *%s) MarshalToSizedBuffer(dAtA []byte) (int, error) {\n", name)
 	fmt.Fprintf(fg.body, "\ti := len(dAtA)\n")
+	fmt.Fprintf(fg.body, "\tif len(m.unknownFields) > 0 {\n")
+	fmt.Fprintf(fg.body, "\t\ti -= len(m.unknownFields)\n")
+	fmt.Fprintf(fg.body, "\t\tcopy(dAtA[i:], m.unknownFields)\n")
+	fmt.Fprintf(fg.body, "\t}\n")
 
 	// Collect fields sorted by number descending for reverse-write.
 	var fields []protoreflect.FieldDescriptor

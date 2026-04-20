@@ -205,6 +205,7 @@ type MetricsData struct {
 	// typically batch the data before forwarding further and in that case this
 	// array will contain multiple elements.
 	ResourceMetrics []ResourceMetrics
+	unknownFields   []byte
 }
 
 // A collection of ScopeMetrics from a Resource.
@@ -220,9 +221,8 @@ type ResourceMetrics struct {
 	// https://opentelemetry.io/docs/specs/otel/schemas/#schema-url
 	// This schema_url applies to the data in the "resource" field. It does not apply
 	// to the data in the "scope_metrics" field which have their own schema_url field.
-	SchemaUrl string
-
-	fieldsPresent [1]uint64
+	SchemaUrl     string
+	unknownFields []byte
 }
 
 // A collection of Metrics produced by an Scope.
@@ -239,9 +239,8 @@ type ScopeMetrics struct {
 	// https://opentelemetry.io/docs/specs/otel/schemas/#schema-url
 	// This schema_url applies to the data in the "scope" field and all metrics in the
 	// "metrics" field.
-	SchemaUrl string
-
-	fieldsPresent [1]uint64
+	SchemaUrl     string
+	unknownFields []byte
 }
 
 // Defines a Metric which has one or more timeseries.  The following is a
@@ -348,9 +347,8 @@ type Metric struct {
 	// Attribute keys MUST be unique (it is not allowed to have more than one
 	// attribute with the same key).
 	// The behavior of software that receives duplicated keys can be unpredictable.
-	Metadata []commonv1.KeyValue
-
-	fieldsPresent [1]uint64
+	Metadata      []commonv1.KeyValue
+	unknownFields []byte
 }
 
 // Gauge represents the type of a scalar metric that always exports the
@@ -365,7 +363,8 @@ type Metric struct {
 type Gauge struct {
 	// The time series data points.
 	// Note: Multiple time series may be included (same timestamp, different attributes).
-	DataPoints []NumberDataPoint
+	DataPoints    []NumberDataPoint
+	unknownFields []byte
 }
 
 // Sum represents the type of a scalar metric that is calculated as a sum of all
@@ -378,9 +377,8 @@ type Sum struct {
 	// since last report time, or cumulative changes since a fixed start time.
 	AggregationTemporality AggregationTemporality
 	// Represents whether the sum is monotonic.
-	IsMonotonic bool
-
-	fieldsPresent [1]uint64
+	IsMonotonic   bool
+	unknownFields []byte
 }
 
 // Histogram represents the type of a metric that is calculated by aggregating
@@ -392,8 +390,7 @@ type Histogram struct {
 	// aggregation_temporality describes if the aggregator reports delta changes
 	// since last report time, or cumulative changes since a fixed start time.
 	AggregationTemporality AggregationTemporality
-
-	fieldsPresent [1]uint64
+	unknownFields          []byte
 }
 
 // ExponentialHistogram represents the type of a metric that is calculated by aggregating
@@ -405,8 +402,7 @@ type ExponentialHistogram struct {
 	// aggregation_temporality describes if the aggregator reports delta changes
 	// since last report time, or cumulative changes since a fixed start time.
 	AggregationTemporality AggregationTemporality
-
-	fieldsPresent [1]uint64
+	unknownFields          []byte
 }
 
 // Summary metric data are used to convey quantile summaries,
@@ -421,7 +417,8 @@ type ExponentialHistogram struct {
 type Summary struct {
 	// The time series data points.
 	// Note: Multiple time series may be included (same timestamp, different attributes).
-	DataPoints []SummaryDataPoint
+	DataPoints    []SummaryDataPoint
+	unknownFields []byte
 }
 
 // NumberDataPoint is a single data point in a timeseries that describes the
@@ -452,9 +449,8 @@ type NumberDataPoint struct {
 	Exemplars []Exemplar
 	// Flags that apply to this specific data point.  See DataPointFlags
 	// for the available flags and their meaning.
-	Flags uint32
-
-	fieldsPresent [1]uint64
+	Flags         uint32
+	unknownFields []byte
 }
 
 // HistogramDataPoint is a single data point in a timeseries that describes the
@@ -534,9 +530,8 @@ type HistogramDataPoint struct {
 	// min is the minimum value over (start_time, end_time].
 	Min *float64
 	// max is the maximum value over (start_time, end_time].
-	Max *float64
-
-	fieldsPresent [1]uint64
+	Max           *float64
+	unknownFields []byte
 }
 
 // Buckets are a set of bucket counts, encoded in a contiguous array
@@ -555,9 +550,8 @@ type ExponentialHistogramDataPoint_Buckets struct {
 	// fixed64.  This field is expected to have many buckets,
 	// especially zeros, so uint64 has been selected to ensure
 	// varint encoding.
-	BucketCounts []uint64
-
-	fieldsPresent [1]uint64
+	BucketCounts  []uint64
+	unknownFields []byte
 }
 
 // ExponentialHistogramDataPoint is a single data point in a timeseries that describes the
@@ -641,8 +635,7 @@ type ExponentialHistogramDataPoint struct {
 	// expressed using the standard exponential formula as well as values that
 	// have been rounded to zero.
 	ZeroThreshold float64
-
-	fieldsPresent [1]uint64
+	unknownFields []byte
 }
 
 // Represents the value at a given quantile of a distribution.
@@ -660,9 +653,8 @@ type SummaryDataPoint_ValueAtQuantile struct {
 	// The value at the given quantile of a distribution.
 	//
 	// Quantile values must NOT be negative.
-	Value float64
-
-	fieldsPresent [1]uint64
+	Value         float64
+	unknownFields []byte
 }
 
 // SummaryDataPoint is a single data point in a timeseries that describes the
@@ -702,9 +694,8 @@ type SummaryDataPoint struct {
 	QuantileValues []SummaryDataPoint_ValueAtQuantile
 	// Flags that apply to this specific data point.  See DataPointFlags
 	// for the available flags and their meaning.
-	Flags uint32
-
-	fieldsPresent [1]uint64
+	Flags         uint32
+	unknownFields []byte
 }
 
 // A representation of an exemplar, which is a sample input measurement.
@@ -732,748 +723,8 @@ type Exemplar struct {
 	// (Optional) Trace ID of the exemplar trace.
 	// trace_id may be missing if the measurement is not recorded inside a trace
 	// or if the trace is not sampled.
-	TraceId []byte
-
-	fieldsPresent [1]uint64
-}
-
-func (m *MetricsData) Reset()      { *m = MetricsData{} }
-func (*MetricsData) ProtoMessage() {}
-
-func (m *ResourceMetrics) Reset()      { *m = ResourceMetrics{} }
-func (*ResourceMetrics) ProtoMessage() {}
-
-func (m *ScopeMetrics) Reset()      { *m = ScopeMetrics{} }
-func (*ScopeMetrics) ProtoMessage() {}
-
-func (m *Metric) Reset()      { *m = Metric{} }
-func (*Metric) ProtoMessage() {}
-
-func (m *Gauge) Reset()      { *m = Gauge{} }
-func (*Gauge) ProtoMessage() {}
-
-func (m *Sum) Reset()      { *m = Sum{} }
-func (*Sum) ProtoMessage() {}
-
-func (m *Histogram) Reset()      { *m = Histogram{} }
-func (*Histogram) ProtoMessage() {}
-
-func (m *ExponentialHistogram) Reset()      { *m = ExponentialHistogram{} }
-func (*ExponentialHistogram) ProtoMessage() {}
-
-func (m *Summary) Reset()      { *m = Summary{} }
-func (*Summary) ProtoMessage() {}
-
-func (m *NumberDataPoint) Reset()      { *m = NumberDataPoint{} }
-func (*NumberDataPoint) ProtoMessage() {}
-
-func (m *HistogramDataPoint) Reset()      { *m = HistogramDataPoint{} }
-func (*HistogramDataPoint) ProtoMessage() {}
-
-func (m *ExponentialHistogramDataPoint_Buckets) Reset()      { *m = ExponentialHistogramDataPoint_Buckets{} }
-func (*ExponentialHistogramDataPoint_Buckets) ProtoMessage() {}
-
-func (m *ExponentialHistogramDataPoint) Reset()      { *m = ExponentialHistogramDataPoint{} }
-func (*ExponentialHistogramDataPoint) ProtoMessage() {}
-
-func (m *SummaryDataPoint_ValueAtQuantile) Reset()      { *m = SummaryDataPoint_ValueAtQuantile{} }
-func (*SummaryDataPoint_ValueAtQuantile) ProtoMessage() {}
-
-func (m *SummaryDataPoint) Reset()      { *m = SummaryDataPoint{} }
-func (*SummaryDataPoint) ProtoMessage() {}
-
-func (m *Exemplar) Reset()      { *m = Exemplar{} }
-func (*Exemplar) ProtoMessage() {}
-
-func (m *ResourceMetrics) HasResource() bool {
-	return m.fieldsPresent[0]&(1<<0) != 0
-}
-
-func (m *ResourceMetrics) HasSchemaUrl() bool {
-	return m.fieldsPresent[0]&(1<<1) != 0
-}
-
-func (m *ScopeMetrics) HasScope() bool {
-	return m.fieldsPresent[0]&(1<<0) != 0
-}
-
-func (m *ScopeMetrics) HasSchemaUrl() bool {
-	return m.fieldsPresent[0]&(1<<1) != 0
-}
-
-func (m *Metric) HasName() bool {
-	return m.fieldsPresent[0]&(1<<0) != 0
-}
-
-func (m *Metric) HasDescription() bool {
-	return m.fieldsPresent[0]&(1<<1) != 0
-}
-
-func (m *Metric) HasUnit() bool {
-	return m.fieldsPresent[0]&(1<<2) != 0
-}
-
-func (m *Sum) HasAggregationTemporality() bool {
-	return m.fieldsPresent[0]&(1<<0) != 0
-}
-
-func (m *Sum) HasIsMonotonic() bool {
-	return m.fieldsPresent[0]&(1<<1) != 0
-}
-
-func (m *Histogram) HasAggregationTemporality() bool {
-	return m.fieldsPresent[0]&(1<<0) != 0
-}
-
-func (m *ExponentialHistogram) HasAggregationTemporality() bool {
-	return m.fieldsPresent[0]&(1<<0) != 0
-}
-
-func (m *NumberDataPoint) HasStartTimeUnixNano() bool {
-	return m.fieldsPresent[0]&(1<<0) != 0
-}
-
-func (m *NumberDataPoint) HasTimeUnixNano() bool {
-	return m.fieldsPresent[0]&(1<<1) != 0
-}
-
-func (m *NumberDataPoint) HasFlags() bool {
-	return m.fieldsPresent[0]&(1<<2) != 0
-}
-
-func (m *HistogramDataPoint) HasStartTimeUnixNano() bool {
-	return m.fieldsPresent[0]&(1<<0) != 0
-}
-
-func (m *HistogramDataPoint) HasTimeUnixNano() bool {
-	return m.fieldsPresent[0]&(1<<1) != 0
-}
-
-func (m *HistogramDataPoint) HasCount() bool {
-	return m.fieldsPresent[0]&(1<<2) != 0
-}
-
-func (m *HistogramDataPoint) HasFlags() bool {
-	return m.fieldsPresent[0]&(1<<3) != 0
-}
-
-func (m *ExponentialHistogramDataPoint_Buckets) HasOffset() bool {
-	return m.fieldsPresent[0]&(1<<0) != 0
-}
-
-func (m *ExponentialHistogramDataPoint) HasStartTimeUnixNano() bool {
-	return m.fieldsPresent[0]&(1<<0) != 0
-}
-
-func (m *ExponentialHistogramDataPoint) HasTimeUnixNano() bool {
-	return m.fieldsPresent[0]&(1<<1) != 0
-}
-
-func (m *ExponentialHistogramDataPoint) HasCount() bool {
-	return m.fieldsPresent[0]&(1<<2) != 0
-}
-
-func (m *ExponentialHistogramDataPoint) HasScale() bool {
-	return m.fieldsPresent[0]&(1<<3) != 0
-}
-
-func (m *ExponentialHistogramDataPoint) HasZeroCount() bool {
-	return m.fieldsPresent[0]&(1<<4) != 0
-}
-
-func (m *ExponentialHistogramDataPoint) HasPositive() bool {
-	return m.fieldsPresent[0]&(1<<5) != 0
-}
-
-func (m *ExponentialHistogramDataPoint) HasNegative() bool {
-	return m.fieldsPresent[0]&(1<<6) != 0
-}
-
-func (m *ExponentialHistogramDataPoint) HasFlags() bool {
-	return m.fieldsPresent[0]&(1<<7) != 0
-}
-
-func (m *ExponentialHistogramDataPoint) HasZeroThreshold() bool {
-	return m.fieldsPresent[0]&(1<<8) != 0
-}
-
-func (m *SummaryDataPoint_ValueAtQuantile) HasQuantile() bool {
-	return m.fieldsPresent[0]&(1<<0) != 0
-}
-
-func (m *SummaryDataPoint_ValueAtQuantile) HasValue() bool {
-	return m.fieldsPresent[0]&(1<<1) != 0
-}
-
-func (m *SummaryDataPoint) HasStartTimeUnixNano() bool {
-	return m.fieldsPresent[0]&(1<<0) != 0
-}
-
-func (m *SummaryDataPoint) HasTimeUnixNano() bool {
-	return m.fieldsPresent[0]&(1<<1) != 0
-}
-
-func (m *SummaryDataPoint) HasCount() bool {
-	return m.fieldsPresent[0]&(1<<2) != 0
-}
-
-func (m *SummaryDataPoint) HasSum() bool {
-	return m.fieldsPresent[0]&(1<<3) != 0
-}
-
-func (m *SummaryDataPoint) HasFlags() bool {
-	return m.fieldsPresent[0]&(1<<4) != 0
-}
-
-func (m *Exemplar) HasTimeUnixNano() bool {
-	return m.fieldsPresent[0]&(1<<0) != 0
-}
-
-func (m *Exemplar) HasSpanId() bool {
-	return m.fieldsPresent[0]&(1<<1) != 0
-}
-
-func (m *Exemplar) HasTraceId() bool {
-	return m.fieldsPresent[0]&(1<<2) != 0
-}
-
-func (m *MetricsData) GetResourceMetrics() []ResourceMetrics {
-	if m != nil {
-		return m.ResourceMetrics
-	}
-	return nil
-}
-
-func (m *ResourceMetrics) GetResource() *resourcev1.Resource {
-	if m != nil && m.fieldsPresent[0]&(1<<0) != 0 {
-		return &m.Resource
-	}
-	return nil
-}
-
-func (m *ResourceMetrics) GetScopeMetrics() []ScopeMetrics {
-	if m != nil {
-		return m.ScopeMetrics
-	}
-	return nil
-}
-
-func (m *ResourceMetrics) GetSchemaUrl() string {
-	if m != nil {
-		return m.SchemaUrl
-	}
-	return ""
-}
-
-func (m *ScopeMetrics) GetScope() *commonv1.InstrumentationScope {
-	if m != nil && m.fieldsPresent[0]&(1<<0) != 0 {
-		return &m.Scope
-	}
-	return nil
-}
-
-func (m *ScopeMetrics) GetMetrics() []Metric {
-	if m != nil {
-		return m.Metrics
-	}
-	return nil
-}
-
-func (m *ScopeMetrics) GetSchemaUrl() string {
-	if m != nil {
-		return m.SchemaUrl
-	}
-	return ""
-}
-
-func (m *Metric) GetName() string {
-	if m != nil {
-		return m.Name
-	}
-	return ""
-}
-
-func (m *Metric) GetDescription() string {
-	if m != nil {
-		return m.Description
-	}
-	return ""
-}
-
-func (m *Metric) GetUnit() string {
-	if m != nil {
-		return m.Unit
-	}
-	return ""
-}
-
-func (m *Metric) GetData() Metric_Data {
-	if m != nil {
-		return m.Data
-	}
-	return nil
-}
-
-func (m *Metric) GetGauge() *Gauge {
-	if x, ok := m.GetData().(*Metric_Gauge); ok {
-		return &x.Gauge
-	}
-	return nil
-}
-
-func (m *Metric) GetSum() *Sum {
-	if x, ok := m.GetData().(*Metric_Sum); ok {
-		return &x.Sum
-	}
-	return nil
-}
-
-func (m *Metric) GetHistogram() *Histogram {
-	if x, ok := m.GetData().(*Metric_Histogram); ok {
-		return &x.Histogram
-	}
-	return nil
-}
-
-func (m *Metric) GetExponentialHistogram() *ExponentialHistogram {
-	if x, ok := m.GetData().(*Metric_ExponentialHistogram); ok {
-		return &x.ExponentialHistogram
-	}
-	return nil
-}
-
-func (m *Metric) GetSummary() *Summary {
-	if x, ok := m.GetData().(*Metric_Summary); ok {
-		return &x.Summary
-	}
-	return nil
-}
-
-func (m *Metric) GetMetadata() []commonv1.KeyValue {
-	if m != nil {
-		return m.Metadata
-	}
-	return nil
-}
-
-func (m *Gauge) GetDataPoints() []NumberDataPoint {
-	if m != nil {
-		return m.DataPoints
-	}
-	return nil
-}
-
-func (m *Sum) GetDataPoints() []NumberDataPoint {
-	if m != nil {
-		return m.DataPoints
-	}
-	return nil
-}
-
-func (m *Sum) GetAggregationTemporality() AggregationTemporality {
-	if m != nil {
-		return m.AggregationTemporality
-	}
-	return 0
-}
-
-func (m *Sum) GetIsMonotonic() bool {
-	if m != nil {
-		return m.IsMonotonic
-	}
-	return false
-}
-
-func (m *Histogram) GetDataPoints() []HistogramDataPoint {
-	if m != nil {
-		return m.DataPoints
-	}
-	return nil
-}
-
-func (m *Histogram) GetAggregationTemporality() AggregationTemporality {
-	if m != nil {
-		return m.AggregationTemporality
-	}
-	return 0
-}
-
-func (m *ExponentialHistogram) GetDataPoints() []ExponentialHistogramDataPoint {
-	if m != nil {
-		return m.DataPoints
-	}
-	return nil
-}
-
-func (m *ExponentialHistogram) GetAggregationTemporality() AggregationTemporality {
-	if m != nil {
-		return m.AggregationTemporality
-	}
-	return 0
-}
-
-func (m *Summary) GetDataPoints() []SummaryDataPoint {
-	if m != nil {
-		return m.DataPoints
-	}
-	return nil
-}
-
-func (m *NumberDataPoint) GetAttributes() []commonv1.KeyValue {
-	if m != nil {
-		return m.Attributes
-	}
-	return nil
-}
-
-func (m *NumberDataPoint) GetStartTimeUnixNano() uint64 {
-	if m != nil {
-		return m.StartTimeUnixNano
-	}
-	return 0
-}
-
-func (m *NumberDataPoint) GetTimeUnixNano() uint64 {
-	if m != nil {
-		return m.TimeUnixNano
-	}
-	return 0
-}
-
-func (m *NumberDataPoint) GetValue() NumberDataPoint_Value {
-	if m != nil {
-		return m.Value
-	}
-	return nil
-}
-
-func (m *NumberDataPoint) GetAsDouble() float64 {
-	if x, ok := m.GetValue().(*NumberDataPoint_AsDouble); ok {
-		return x.AsDouble
-	}
-	return 0
-}
-
-func (m *NumberDataPoint) GetAsInt() int64 {
-	if x, ok := m.GetValue().(*NumberDataPoint_AsInt); ok {
-		return x.AsInt
-	}
-	return 0
-}
-
-func (m *NumberDataPoint) GetExemplars() []Exemplar {
-	if m != nil {
-		return m.Exemplars
-	}
-	return nil
-}
-
-func (m *NumberDataPoint) GetFlags() uint32 {
-	if m != nil {
-		return m.Flags
-	}
-	return 0
-}
-
-func (m *HistogramDataPoint) GetAttributes() []commonv1.KeyValue {
-	if m != nil {
-		return m.Attributes
-	}
-	return nil
-}
-
-func (m *HistogramDataPoint) GetStartTimeUnixNano() uint64 {
-	if m != nil {
-		return m.StartTimeUnixNano
-	}
-	return 0
-}
-
-func (m *HistogramDataPoint) GetTimeUnixNano() uint64 {
-	if m != nil {
-		return m.TimeUnixNano
-	}
-	return 0
-}
-
-func (m *HistogramDataPoint) GetCount() uint64 {
-	if m != nil {
-		return m.Count
-	}
-	return 0
-}
-
-func (m *HistogramDataPoint) GetSum() float64 {
-	if m != nil && m.Sum != nil {
-		return *m.Sum
-	}
-	return 0
-}
-
-func (m *HistogramDataPoint) GetBucketCounts() []uint64 {
-	if m != nil {
-		return m.BucketCounts
-	}
-	return nil
-}
-
-func (m *HistogramDataPoint) GetExplicitBounds() []float64 {
-	if m != nil {
-		return m.ExplicitBounds
-	}
-	return nil
-}
-
-func (m *HistogramDataPoint) GetExemplars() []Exemplar {
-	if m != nil {
-		return m.Exemplars
-	}
-	return nil
-}
-
-func (m *HistogramDataPoint) GetFlags() uint32 {
-	if m != nil {
-		return m.Flags
-	}
-	return 0
-}
-
-func (m *HistogramDataPoint) GetMin() float64 {
-	if m != nil && m.Min != nil {
-		return *m.Min
-	}
-	return 0
-}
-
-func (m *HistogramDataPoint) GetMax() float64 {
-	if m != nil && m.Max != nil {
-		return *m.Max
-	}
-	return 0
-}
-
-func (m *ExponentialHistogramDataPoint_Buckets) GetOffset() int32 {
-	if m != nil {
-		return m.Offset
-	}
-	return 0
-}
-
-func (m *ExponentialHistogramDataPoint_Buckets) GetBucketCounts() []uint64 {
-	if m != nil {
-		return m.BucketCounts
-	}
-	return nil
-}
-
-func (m *ExponentialHistogramDataPoint) GetAttributes() []commonv1.KeyValue {
-	if m != nil {
-		return m.Attributes
-	}
-	return nil
-}
-
-func (m *ExponentialHistogramDataPoint) GetStartTimeUnixNano() uint64 {
-	if m != nil {
-		return m.StartTimeUnixNano
-	}
-	return 0
-}
-
-func (m *ExponentialHistogramDataPoint) GetTimeUnixNano() uint64 {
-	if m != nil {
-		return m.TimeUnixNano
-	}
-	return 0
-}
-
-func (m *ExponentialHistogramDataPoint) GetCount() uint64 {
-	if m != nil {
-		return m.Count
-	}
-	return 0
-}
-
-func (m *ExponentialHistogramDataPoint) GetSum() float64 {
-	if m != nil && m.Sum != nil {
-		return *m.Sum
-	}
-	return 0
-}
-
-func (m *ExponentialHistogramDataPoint) GetScale() int32 {
-	if m != nil {
-		return m.Scale
-	}
-	return 0
-}
-
-func (m *ExponentialHistogramDataPoint) GetZeroCount() uint64 {
-	if m != nil {
-		return m.ZeroCount
-	}
-	return 0
-}
-
-func (m *ExponentialHistogramDataPoint) GetPositive() *ExponentialHistogramDataPoint_Buckets {
-	if m != nil && m.fieldsPresent[0]&(1<<5) != 0 {
-		return &m.Positive
-	}
-	return nil
-}
-
-func (m *ExponentialHistogramDataPoint) GetNegative() *ExponentialHistogramDataPoint_Buckets {
-	if m != nil && m.fieldsPresent[0]&(1<<6) != 0 {
-		return &m.Negative
-	}
-	return nil
-}
-
-func (m *ExponentialHistogramDataPoint) GetFlags() uint32 {
-	if m != nil {
-		return m.Flags
-	}
-	return 0
-}
-
-func (m *ExponentialHistogramDataPoint) GetExemplars() []Exemplar {
-	if m != nil {
-		return m.Exemplars
-	}
-	return nil
-}
-
-func (m *ExponentialHistogramDataPoint) GetMin() float64 {
-	if m != nil && m.Min != nil {
-		return *m.Min
-	}
-	return 0
-}
-
-func (m *ExponentialHistogramDataPoint) GetMax() float64 {
-	if m != nil && m.Max != nil {
-		return *m.Max
-	}
-	return 0
-}
-
-func (m *ExponentialHistogramDataPoint) GetZeroThreshold() float64 {
-	if m != nil {
-		return m.ZeroThreshold
-	}
-	return 0
-}
-
-func (m *SummaryDataPoint_ValueAtQuantile) GetQuantile() float64 {
-	if m != nil {
-		return m.Quantile
-	}
-	return 0
-}
-
-func (m *SummaryDataPoint_ValueAtQuantile) GetValue() float64 {
-	if m != nil {
-		return m.Value
-	}
-	return 0
-}
-
-func (m *SummaryDataPoint) GetAttributes() []commonv1.KeyValue {
-	if m != nil {
-		return m.Attributes
-	}
-	return nil
-}
-
-func (m *SummaryDataPoint) GetStartTimeUnixNano() uint64 {
-	if m != nil {
-		return m.StartTimeUnixNano
-	}
-	return 0
-}
-
-func (m *SummaryDataPoint) GetTimeUnixNano() uint64 {
-	if m != nil {
-		return m.TimeUnixNano
-	}
-	return 0
-}
-
-func (m *SummaryDataPoint) GetCount() uint64 {
-	if m != nil {
-		return m.Count
-	}
-	return 0
-}
-
-func (m *SummaryDataPoint) GetSum() float64 {
-	if m != nil {
-		return m.Sum
-	}
-	return 0
-}
-
-func (m *SummaryDataPoint) GetQuantileValues() []SummaryDataPoint_ValueAtQuantile {
-	if m != nil {
-		return m.QuantileValues
-	}
-	return nil
-}
-
-func (m *SummaryDataPoint) GetFlags() uint32 {
-	if m != nil {
-		return m.Flags
-	}
-	return 0
-}
-
-func (m *Exemplar) GetFilteredAttributes() []commonv1.KeyValue {
-	if m != nil {
-		return m.FilteredAttributes
-	}
-	return nil
-}
-
-func (m *Exemplar) GetTimeUnixNano() uint64 {
-	if m != nil {
-		return m.TimeUnixNano
-	}
-	return 0
-}
-
-func (m *Exemplar) GetValue() Exemplar_Value {
-	if m != nil {
-		return m.Value
-	}
-	return nil
-}
-
-func (m *Exemplar) GetAsDouble() float64 {
-	if x, ok := m.GetValue().(*Exemplar_AsDouble); ok {
-		return x.AsDouble
-	}
-	return 0
-}
-
-func (m *Exemplar) GetAsInt() int64 {
-	if x, ok := m.GetValue().(*Exemplar_AsInt); ok {
-		return x.AsInt
-	}
-	return 0
-}
-
-func (m *Exemplar) GetSpanId() []byte {
-	if m != nil {
-		return m.SpanId
-	}
-	return nil
-}
-
-func (m *Exemplar) GetTraceId() []byte {
-	if m != nil {
-		return m.TraceId
-	}
-	return nil
+	TraceId       []byte
+	unknownFields []byte
 }
 
 func (m *MetricsData) Size() int {
@@ -1482,6 +733,7 @@ func (m *MetricsData) Size() int {
 		s := m.ResourceMetrics[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -1500,6 +752,7 @@ func (m *ResourceMetrics) Size() int {
 	if len(m.SchemaUrl) > 0 {
 		n += 1 + protowire.SizeVarint(uint64(len(m.SchemaUrl))) + len(m.SchemaUrl)
 	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -1518,6 +771,7 @@ func (m *ScopeMetrics) Size() int {
 	if len(m.SchemaUrl) > 0 {
 		n += 1 + protowire.SizeVarint(uint64(len(m.SchemaUrl))) + len(m.SchemaUrl)
 	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -1553,6 +807,7 @@ func (m *Metric) Size() int {
 		s := m.Metadata[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -1562,6 +817,7 @@ func (m *Gauge) Size() int {
 		s := m.DataPoints[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -1577,6 +833,7 @@ func (m *Sum) Size() int {
 	if m.IsMonotonic {
 		n += 2
 	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -1589,6 +846,7 @@ func (m *Histogram) Size() int {
 	if m.AggregationTemporality != 0 {
 		n += 1 + protowire.SizeVarint(uint64(m.AggregationTemporality))
 	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -1601,6 +859,7 @@ func (m *ExponentialHistogram) Size() int {
 	if m.AggregationTemporality != 0 {
 		n += 1 + protowire.SizeVarint(uint64(m.AggregationTemporality))
 	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -1610,6 +869,7 @@ func (m *Summary) Size() int {
 		s := m.DataPoints[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -1640,6 +900,7 @@ func (m *NumberDataPoint) Size() int {
 	if m.Flags != 0 {
 		n += 1 + protowire.SizeVarint(uint64(m.Flags))
 	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -1682,6 +943,7 @@ func (m *HistogramDataPoint) Size() int {
 	if m.Max != nil {
 		n += 9
 	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -1697,6 +959,7 @@ func (m *ExponentialHistogramDataPoint_Buckets) Size() int {
 		}
 		n += 1 + protowire.SizeVarint(uint64(dataLen)) + dataLen
 	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -1752,6 +1015,7 @@ func (m *ExponentialHistogramDataPoint) Size() int {
 	if m.ZeroThreshold != 0 {
 		n += 9
 	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -1763,6 +1027,7 @@ func (m *SummaryDataPoint_ValueAtQuantile) Size() int {
 	if m.Value != 0 {
 		n += 9
 	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -1791,6 +1056,7 @@ func (m *SummaryDataPoint) Size() int {
 	if m.Flags != 0 {
 		n += 1 + protowire.SizeVarint(uint64(m.Flags))
 	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -1817,6 +1083,7 @@ func (m *Exemplar) Size() int {
 	if len(m.TraceId) > 0 {
 		n += 1 + protowire.SizeVarint(uint64(len(m.TraceId))) + len(m.TraceId)
 	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -1840,6 +1107,10 @@ func (m *MetricsData) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *MetricsData) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
+	if len(m.unknownFields) > 0 {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
 	for iNdEx := len(m.ResourceMetrics) - 1; iNdEx >= 0; iNdEx-- {
 		size, err := m.ResourceMetrics[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 		if err != nil {
@@ -1873,6 +1144,10 @@ func (m *ResourceMetrics) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *ResourceMetrics) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
+	if len(m.unknownFields) > 0 {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
 	if len(m.SchemaUrl) > 0 {
 		i -= len(m.SchemaUrl)
 		copy(dAtA[i:], m.SchemaUrl)
@@ -1925,6 +1200,10 @@ func (m *ScopeMetrics) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *ScopeMetrics) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
+	if len(m.unknownFields) > 0 {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
 	if len(m.SchemaUrl) > 0 {
 		i -= len(m.SchemaUrl)
 		copy(dAtA[i:], m.SchemaUrl)
@@ -1977,6 +1256,10 @@ func (m *Metric) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *Metric) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
+	if len(m.unknownFields) > 0 {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
 	for iNdEx := len(m.Metadata) - 1; iNdEx >= 0; iNdEx-- {
 		size, err := m.Metadata[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 		if err != nil {
@@ -2078,6 +1361,10 @@ func (m *Gauge) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *Gauge) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
+	if len(m.unknownFields) > 0 {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
 	for iNdEx := len(m.DataPoints) - 1; iNdEx >= 0; iNdEx-- {
 		size, err := m.DataPoints[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 		if err != nil {
@@ -2111,6 +1398,10 @@ func (m *Sum) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *Sum) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
+	if len(m.unknownFields) > 0 {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
 	if m.IsMonotonic {
 		i--
 		if m.IsMonotonic {
@@ -2159,6 +1450,10 @@ func (m *Histogram) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *Histogram) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
+	if len(m.unknownFields) > 0 {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
 	if m.AggregationTemporality != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.AggregationTemporality))
 		i--
@@ -2197,6 +1492,10 @@ func (m *ExponentialHistogram) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *ExponentialHistogram) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
+	if len(m.unknownFields) > 0 {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
 	if m.AggregationTemporality != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.AggregationTemporality))
 		i--
@@ -2235,6 +1534,10 @@ func (m *Summary) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *Summary) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
+	if len(m.unknownFields) > 0 {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
 	for iNdEx := len(m.DataPoints) - 1; iNdEx >= 0; iNdEx-- {
 		size, err := m.DataPoints[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 		if err != nil {
@@ -2268,6 +1571,10 @@ func (m *NumberDataPoint) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *NumberDataPoint) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
+	if len(m.unknownFields) > 0 {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
 	if m.Flags != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.Flags))
 		i--
@@ -2340,6 +1647,10 @@ func (m *HistogramDataPoint) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *HistogramDataPoint) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
+	if len(m.unknownFields) > 0 {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
 	if m.Max != nil {
 		i -= 8
 		binary.LittleEndian.PutUint64(dAtA[i:], math.Float64bits(*m.Max))
@@ -2442,6 +1753,10 @@ func (m *ExponentialHistogramDataPoint_Buckets) MarshalTo(dAtA []byte) (int, err
 
 func (m *ExponentialHistogramDataPoint_Buckets) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
+	if len(m.unknownFields) > 0 {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
 	if len(m.BucketCounts) > 0 {
 		var j int
 		pStart := i
@@ -2480,6 +1795,10 @@ func (m *ExponentialHistogramDataPoint) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *ExponentialHistogramDataPoint) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
+	if len(m.unknownFields) > 0 {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
 	if m.ZeroThreshold != 0 {
 		i -= 8
 		binary.LittleEndian.PutUint64(dAtA[i:], math.Float64bits(m.ZeroThreshold))
@@ -2605,6 +1924,10 @@ func (m *SummaryDataPoint_ValueAtQuantile) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *SummaryDataPoint_ValueAtQuantile) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
+	if len(m.unknownFields) > 0 {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
 	if m.Value != 0 {
 		i -= 8
 		binary.LittleEndian.PutUint64(dAtA[i:], math.Float64bits(m.Value))
@@ -2640,6 +1963,10 @@ func (m *SummaryDataPoint) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *SummaryDataPoint) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
+	if len(m.unknownFields) > 0 {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
 	if m.Flags != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.Flags))
 		i--
@@ -2712,6 +2039,10 @@ func (m *Exemplar) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *Exemplar) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
+	if len(m.unknownFields) > 0 {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
 	for iNdEx := len(m.FilteredAttributes) - 1; iNdEx >= 0; iNdEx-- {
 		size, err := m.FilteredAttributes[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 		if err != nil {
@@ -2926,9 +2257,10 @@ func (m *MetricsData) unmarshal(dAtA []byte, depth int) error {
 		}
 	}
 	for iNdEx < l {
+		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -2992,6 +2324,7 @@ func (m *MetricsData) unmarshal(dAtA []byte, depth int) error {
 			if err != nil {
 				return err
 			}
+			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -3071,9 +2404,10 @@ func (m *ResourceMetrics) unmarshal(dAtA []byte, depth int) error {
 		}
 	}
 	for iNdEx < l {
+		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -3131,7 +2465,6 @@ func (m *ResourceMetrics) unmarshal(dAtA []byte, depth int) error {
 				return err
 			}
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
 		case 2: // scope_metrics
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -3209,12 +2542,12 @@ func (m *ResourceMetrics) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.SchemaUrl = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 1
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
+			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -3294,9 +2627,10 @@ func (m *ScopeMetrics) unmarshal(dAtA []byte, depth int) error {
 		}
 	}
 	for iNdEx < l {
+		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -3354,7 +2688,6 @@ func (m *ScopeMetrics) unmarshal(dAtA []byte, depth int) error {
 				return err
 			}
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
 		case 2: // metrics
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -3432,12 +2765,12 @@ func (m *ScopeMetrics) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.SchemaUrl = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 1
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
+			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -3517,9 +2850,10 @@ func (m *Metric) unmarshal(dAtA []byte, depth int) error {
 		}
 	}
 	for iNdEx < l {
+		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -3575,7 +2909,6 @@ func (m *Metric) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Name = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
 		case 2: // description
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -3613,7 +2946,6 @@ func (m *Metric) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Description = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 1
 		case 3: // unit
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -3651,7 +2983,6 @@ func (m *Metric) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Unit = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 2
 		case 5: // gauge
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -3688,6 +3019,9 @@ func (m *Metric) unmarshal(dAtA []byte, depth int) error {
 				return io.ErrUnexpectedEOF
 			}
 			var msg Gauge
+			if ov, ok := m.Data.(*Metric_Gauge); ok {
+				msg = ov.Gauge
+			}
 			if err := msg.unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
@@ -3729,6 +3063,9 @@ func (m *Metric) unmarshal(dAtA []byte, depth int) error {
 				return io.ErrUnexpectedEOF
 			}
 			var msg Sum
+			if ov, ok := m.Data.(*Metric_Sum); ok {
+				msg = ov.Sum
+			}
 			if err := msg.unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
@@ -3770,6 +3107,9 @@ func (m *Metric) unmarshal(dAtA []byte, depth int) error {
 				return io.ErrUnexpectedEOF
 			}
 			var msg Histogram
+			if ov, ok := m.Data.(*Metric_Histogram); ok {
+				msg = ov.Histogram
+			}
 			if err := msg.unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
@@ -3811,6 +3151,9 @@ func (m *Metric) unmarshal(dAtA []byte, depth int) error {
 				return io.ErrUnexpectedEOF
 			}
 			var msg ExponentialHistogram
+			if ov, ok := m.Data.(*Metric_ExponentialHistogram); ok {
+				msg = ov.ExponentialHistogram
+			}
 			if err := msg.unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
@@ -3852,6 +3195,9 @@ func (m *Metric) unmarshal(dAtA []byte, depth int) error {
 				return io.ErrUnexpectedEOF
 			}
 			var msg Summary
+			if ov, ok := m.Data.(*Metric_Summary); ok {
+				msg = ov.Summary
+			}
 			if err := msg.unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
@@ -3902,6 +3248,7 @@ func (m *Metric) unmarshal(dAtA []byte, depth int) error {
 			if err != nil {
 				return err
 			}
+			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -3981,9 +3328,10 @@ func (m *Gauge) unmarshal(dAtA []byte, depth int) error {
 		}
 	}
 	for iNdEx < l {
+		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -4047,6 +3395,7 @@ func (m *Gauge) unmarshal(dAtA []byte, depth int) error {
 			if err != nil {
 				return err
 			}
+			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -4126,9 +3475,10 @@ func (m *Sum) unmarshal(dAtA []byte, depth int) error {
 		}
 	}
 	for iNdEx < l {
+		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -4212,7 +3562,6 @@ func (m *Sum) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.AggregationTemporality = AggregationTemporality(v)
-			m.fieldsPresent[0] |= 1 << 0
 		case 3: // is_monotonic
 			if wireType != 0 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4238,12 +3587,12 @@ func (m *Sum) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.IsMonotonic = v != 0
-			m.fieldsPresent[0] |= 1 << 1
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
+			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -4323,9 +3672,10 @@ func (m *Histogram) unmarshal(dAtA []byte, depth int) error {
 		}
 	}
 	for iNdEx < l {
+		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -4409,12 +3759,12 @@ func (m *Histogram) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.AggregationTemporality = AggregationTemporality(v)
-			m.fieldsPresent[0] |= 1 << 0
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
+			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -4494,9 +3844,10 @@ func (m *ExponentialHistogram) unmarshal(dAtA []byte, depth int) error {
 		}
 	}
 	for iNdEx < l {
+		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -4580,12 +3931,12 @@ func (m *ExponentialHistogram) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.AggregationTemporality = AggregationTemporality(v)
-			m.fieldsPresent[0] |= 1 << 0
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
+			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -4665,9 +4016,10 @@ func (m *Summary) unmarshal(dAtA []byte, depth int) error {
 		}
 	}
 	for iNdEx < l {
+		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -4731,6 +4083,7 @@ func (m *Summary) unmarshal(dAtA []byte, depth int) error {
 			if err != nil {
 				return err
 			}
+			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -4816,9 +4169,10 @@ func (m *NumberDataPoint) unmarshal(dAtA []byte, depth int) error {
 		}
 	}
 	for iNdEx < l {
+		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -4892,7 +4246,6 @@ func (m *NumberDataPoint) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.StartTimeUnixNano = v
-			m.fieldsPresent[0] |= 1 << 0
 		case 3: // time_unix_nano
 			if wireType != 1 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4908,7 +4261,6 @@ func (m *NumberDataPoint) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.TimeUnixNano = v
-			m.fieldsPresent[0] |= 1 << 1
 		case 4: // as_double
 			if wireType != 1 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5004,12 +4356,12 @@ func (m *NumberDataPoint) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.Flags = uint32(v)
-			m.fieldsPresent[0] |= 1 << 2
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
+			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -5095,9 +4447,10 @@ func (m *HistogramDataPoint) unmarshal(dAtA []byte, depth int) error {
 		}
 	}
 	for iNdEx < l {
+		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -5171,7 +4524,6 @@ func (m *HistogramDataPoint) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.StartTimeUnixNano = v
-			m.fieldsPresent[0] |= 1 << 0
 		case 3: // time_unix_nano
 			if wireType != 1 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5187,7 +4539,6 @@ func (m *HistogramDataPoint) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.TimeUnixNano = v
-			m.fieldsPresent[0] |= 1 << 1
 		case 4: // count
 			if wireType != 1 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5203,7 +4554,6 @@ func (m *HistogramDataPoint) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.Count = v
-			m.fieldsPresent[0] |= 1 << 2
 		case 5: // sum
 			if wireType != 1 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5395,7 +4745,6 @@ func (m *HistogramDataPoint) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.Flags = uint32(v)
-			m.fieldsPresent[0] |= 1 << 3
 		case 11: // min
 			if wireType != 1 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5433,6 +4782,7 @@ func (m *HistogramDataPoint) unmarshal(dAtA []byte, depth int) error {
 			if err != nil {
 				return err
 			}
+			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -5453,9 +4803,10 @@ func (m *ExponentialHistogramDataPoint_Buckets) unmarshal(dAtA []byte, depth int
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
+		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -5499,7 +4850,6 @@ func (m *ExponentialHistogramDataPoint_Buckets) unmarshal(dAtA []byte, depth int
 				}
 			}
 			m.Offset = int32(uint32(v)>>1) ^ int32(uint32(v))<<31>>31
-			m.fieldsPresent[0] |= 1 << 0
 		case 2: // bucket_counts
 			if wireType == 2 {
 				var byteLen uint64
@@ -5576,6 +4926,7 @@ func (m *ExponentialHistogramDataPoint_Buckets) unmarshal(dAtA []byte, depth int
 			if err != nil {
 				return err
 			}
+			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -5661,9 +5012,10 @@ func (m *ExponentialHistogramDataPoint) unmarshal(dAtA []byte, depth int) error 
 		}
 	}
 	for iNdEx < l {
+		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -5737,7 +5089,6 @@ func (m *ExponentialHistogramDataPoint) unmarshal(dAtA []byte, depth int) error 
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.StartTimeUnixNano = v
-			m.fieldsPresent[0] |= 1 << 0
 		case 3: // time_unix_nano
 			if wireType != 1 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5753,7 +5104,6 @@ func (m *ExponentialHistogramDataPoint) unmarshal(dAtA []byte, depth int) error 
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.TimeUnixNano = v
-			m.fieldsPresent[0] |= 1 << 1
 		case 4: // count
 			if wireType != 1 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5769,7 +5119,6 @@ func (m *ExponentialHistogramDataPoint) unmarshal(dAtA []byte, depth int) error 
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.Count = v
-			m.fieldsPresent[0] |= 1 << 2
 		case 5: // sum
 			if wireType != 1 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5811,7 +5160,6 @@ func (m *ExponentialHistogramDataPoint) unmarshal(dAtA []byte, depth int) error 
 				}
 			}
 			m.Scale = int32(uint32(v)>>1) ^ int32(uint32(v))<<31>>31
-			m.fieldsPresent[0] |= 1 << 3
 		case 7: // zero_count
 			if wireType != 1 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5827,7 +5175,6 @@ func (m *ExponentialHistogramDataPoint) unmarshal(dAtA []byte, depth int) error 
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.ZeroCount = v
-			m.fieldsPresent[0] |= 1 << 4
 		case 8: // positive
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5867,7 +5214,6 @@ func (m *ExponentialHistogramDataPoint) unmarshal(dAtA []byte, depth int) error 
 				return err
 			}
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 5
 		case 9: // negative
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5907,7 +5253,6 @@ func (m *ExponentialHistogramDataPoint) unmarshal(dAtA []byte, depth int) error 
 				return err
 			}
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 6
 		case 10: // flags
 			if wireType != 0 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5933,7 +5278,6 @@ func (m *ExponentialHistogramDataPoint) unmarshal(dAtA []byte, depth int) error 
 				}
 			}
 			m.Flags = uint32(v)
-			m.fieldsPresent[0] |= 1 << 7
 		case 11: // exemplars
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -6021,12 +5365,12 @@ func (m *ExponentialHistogramDataPoint) unmarshal(dAtA []byte, depth int) error 
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.ZeroThreshold = math.Float64frombits(v)
-			m.fieldsPresent[0] |= 1 << 8
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
+			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -6047,9 +5391,10 @@ func (m *SummaryDataPoint_ValueAtQuantile) unmarshal(dAtA []byte, depth int) err
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
+		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -6083,7 +5428,6 @@ func (m *SummaryDataPoint_ValueAtQuantile) unmarshal(dAtA []byte, depth int) err
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.Quantile = math.Float64frombits(v)
-			m.fieldsPresent[0] |= 1 << 0
 		case 2: // value
 			if wireType != 1 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -6099,12 +5443,12 @@ func (m *SummaryDataPoint_ValueAtQuantile) unmarshal(dAtA []byte, depth int) err
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.Value = math.Float64frombits(v)
-			m.fieldsPresent[0] |= 1 << 1
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
+			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -6190,9 +5534,10 @@ func (m *SummaryDataPoint) unmarshal(dAtA []byte, depth int) error {
 		}
 	}
 	for iNdEx < l {
+		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -6266,7 +5611,6 @@ func (m *SummaryDataPoint) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.StartTimeUnixNano = v
-			m.fieldsPresent[0] |= 1 << 0
 		case 3: // time_unix_nano
 			if wireType != 1 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -6282,7 +5626,6 @@ func (m *SummaryDataPoint) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.TimeUnixNano = v
-			m.fieldsPresent[0] |= 1 << 1
 		case 4: // count
 			if wireType != 1 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -6298,7 +5641,6 @@ func (m *SummaryDataPoint) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.Count = v
-			m.fieldsPresent[0] |= 1 << 2
 		case 5: // sum
 			if wireType != 1 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -6314,7 +5656,6 @@ func (m *SummaryDataPoint) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.Sum = math.Float64frombits(v)
-			m.fieldsPresent[0] |= 1 << 3
 		case 6: // quantile_values
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -6380,12 +5721,12 @@ func (m *SummaryDataPoint) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.Flags = uint32(v)
-			m.fieldsPresent[0] |= 1 << 4
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
+			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -6465,9 +5806,10 @@ func (m *Exemplar) unmarshal(dAtA []byte, depth int) error {
 		}
 	}
 	for iNdEx < l {
+		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -6541,7 +5883,6 @@ func (m *Exemplar) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.TimeUnixNano = v
-			m.fieldsPresent[0] |= 1 << 0
 		case 3: // as_double
 			if wireType != 1 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -6609,7 +5950,6 @@ func (m *Exemplar) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.SpanId = append(m.SpanId[:0], dAtA[iNdEx:postIndex]...)
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 1
 		case 5: // trace_id
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -6647,12 +5987,12 @@ func (m *Exemplar) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.TraceId = append(m.TraceId[:0], dAtA[iNdEx:postIndex]...)
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 2
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
+			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -6688,6 +6028,9 @@ func (this *MetricsData) Equal(that interface{}) bool {
 		if !this.ResourceMetrics[i].Equal(that1.ResourceMetrics[i]) {
 			return false
 		}
+	}
+	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
+		return false
 	}
 	return true
 }
@@ -6725,6 +6068,9 @@ func (this *ResourceMetrics) Equal(that interface{}) bool {
 	if this.SchemaUrl != that1.SchemaUrl {
 		return false
 	}
+	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
+		return false
+	}
 	return true
 }
 
@@ -6759,6 +6105,9 @@ func (this *ScopeMetrics) Equal(that interface{}) bool {
 		}
 	}
 	if this.SchemaUrl != that1.SchemaUrl {
+		return false
+	}
+	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
 		return false
 	}
 	return true
@@ -6849,6 +6198,9 @@ func (this *Metric) Equal(that interface{}) bool {
 			return false
 		}
 	}
+	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
+		return false
+	}
 	return true
 }
 
@@ -6878,6 +6230,9 @@ func (this *Gauge) Equal(that interface{}) bool {
 		if !this.DataPoints[i].Equal(that1.DataPoints[i]) {
 			return false
 		}
+	}
+	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
+		return false
 	}
 	return true
 }
@@ -6915,6 +6270,9 @@ func (this *Sum) Equal(that interface{}) bool {
 	if this.IsMonotonic != that1.IsMonotonic {
 		return false
 	}
+	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
+		return false
+	}
 	return true
 }
 
@@ -6946,6 +6304,9 @@ func (this *Histogram) Equal(that interface{}) bool {
 		}
 	}
 	if this.AggregationTemporality != that1.AggregationTemporality {
+		return false
+	}
+	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
 		return false
 	}
 	return true
@@ -6981,6 +6342,9 @@ func (this *ExponentialHistogram) Equal(that interface{}) bool {
 	if this.AggregationTemporality != that1.AggregationTemporality {
 		return false
 	}
+	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
+		return false
+	}
 	return true
 }
 
@@ -7010,6 +6374,9 @@ func (this *Summary) Equal(that interface{}) bool {
 		if !this.DataPoints[i].Equal(that1.DataPoints[i]) {
 			return false
 		}
+	}
+	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
+		return false
 	}
 	return true
 }
@@ -7081,6 +6448,9 @@ func (this *NumberDataPoint) Equal(that interface{}) bool {
 		}
 	}
 	if this.Flags != that1.Flags {
+		return false
+	}
+	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
 		return false
 	}
 	return true
@@ -7173,6 +6543,9 @@ func (this *HistogramDataPoint) Equal(that interface{}) bool {
 			return false
 		}
 	}
+	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
+		return false
+	}
 	return true
 }
 
@@ -7205,6 +6578,9 @@ func (this *ExponentialHistogramDataPoint_Buckets) Equal(that interface{}) bool 
 		if this.BucketCounts[i] != that1.BucketCounts[i] {
 			return false
 		}
+	}
+	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
+		return false
 	}
 	return true
 }
@@ -7295,6 +6671,9 @@ func (this *ExponentialHistogramDataPoint) Equal(that interface{}) bool {
 	if this.ZeroThreshold != that1.ZeroThreshold {
 		return false
 	}
+	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
+		return false
+	}
 	return true
 }
 
@@ -7321,6 +6700,9 @@ func (this *SummaryDataPoint_ValueAtQuantile) Equal(that interface{}) bool {
 		return false
 	}
 	if this.Value != that1.Value {
+		return false
+	}
+	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
 		return false
 	}
 	return true
@@ -7374,6 +6756,9 @@ func (this *SummaryDataPoint) Equal(that interface{}) bool {
 		}
 	}
 	if this.Flags != that1.Flags {
+		return false
+	}
+	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
 		return false
 	}
 	return true
@@ -7438,6 +6823,9 @@ func (this *Exemplar) Equal(that interface{}) bool {
 		return false
 	}
 	if !bytes.Equal(this.TraceId, that1.TraceId) {
+		return false
+	}
+	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
 		return false
 	}
 	return true

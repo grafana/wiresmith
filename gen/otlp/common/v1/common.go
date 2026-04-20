@@ -71,14 +71,16 @@ func (*AnyValue_StringValueStrindex) isAnyValue_Value() {}
 type AnyValue struct {
 	// The value is one of the listed fields. It is valid for all values to be unspecified
 	// in which case this AnyValue is considered to be "empty".
-	Value AnyValue_Value
+	Value         AnyValue_Value
+	unknownFields []byte
 }
 
 // ArrayValue is a list of AnyValue messages. We need ArrayValue as a message
 // since oneof in AnyValue does not allow repeated fields.
 type ArrayValue struct {
 	// Array of values. The array may be empty (contain 0 elements).
-	Values []AnyValue
+	Values        []AnyValue
+	unknownFields []byte
 }
 
 // KeyValueList is a list of KeyValue messages. We need KeyValueList as a message
@@ -93,7 +95,8 @@ type KeyValueList struct {
 	// The keys MUST be unique (it is not allowed to have more than one
 	// value with the same key).
 	// The behavior of software that receives duplicated keys can be unpredictable.
-	Values []KeyValue
+	Values        []KeyValue
+	unknownFields []byte
 }
 
 // Represents a key-value pair that is used to store Span attributes, Link
@@ -115,9 +118,8 @@ type KeyValue struct {
 	// empty, ignoring its semantic content for the non-Profiling signal.
 	//
 	// Status: [Alpha]
-	KeyStrindex int32
-
-	fieldsPresent [1]uint64
+	KeyStrindex   int32
+	unknownFields []byte
 }
 
 // InstrumentationScope is a message representing the instrumentation scope information
@@ -138,8 +140,7 @@ type InstrumentationScope struct {
 	// can be discarded because their keys are too long or because there are too many
 	// attributes. If this value is 0, then no attributes were dropped.
 	DroppedAttributesCount uint32
-
-	fieldsPresent [1]uint64
+	unknownFields          []byte
 }
 
 // A reference to an Entity.
@@ -171,212 +172,7 @@ type EntityRef struct {
 	// These attribute keys are not part of entity's identity.
 	// These keys MUST exist in the containing {message}.attributes.
 	DescriptionKeys []string
-
-	fieldsPresent [1]uint64
-}
-
-func (m *AnyValue) Reset()      { *m = AnyValue{} }
-func (*AnyValue) ProtoMessage() {}
-
-func (m *ArrayValue) Reset()      { *m = ArrayValue{} }
-func (*ArrayValue) ProtoMessage() {}
-
-func (m *KeyValueList) Reset()      { *m = KeyValueList{} }
-func (*KeyValueList) ProtoMessage() {}
-
-func (m *KeyValue) Reset()      { *m = KeyValue{} }
-func (*KeyValue) ProtoMessage() {}
-
-func (m *InstrumentationScope) Reset()      { *m = InstrumentationScope{} }
-func (*InstrumentationScope) ProtoMessage() {}
-
-func (m *EntityRef) Reset()      { *m = EntityRef{} }
-func (*EntityRef) ProtoMessage() {}
-
-func (m *KeyValue) HasKey() bool {
-	return m.fieldsPresent[0]&(1<<0) != 0
-}
-
-func (m *KeyValue) HasValue() bool {
-	return m.fieldsPresent[0]&(1<<1) != 0
-}
-
-func (m *KeyValue) HasKeyStrindex() bool {
-	return m.fieldsPresent[0]&(1<<2) != 0
-}
-
-func (m *InstrumentationScope) HasName() bool {
-	return m.fieldsPresent[0]&(1<<0) != 0
-}
-
-func (m *InstrumentationScope) HasVersion() bool {
-	return m.fieldsPresent[0]&(1<<1) != 0
-}
-
-func (m *InstrumentationScope) HasDroppedAttributesCount() bool {
-	return m.fieldsPresent[0]&(1<<2) != 0
-}
-
-func (m *EntityRef) HasSchemaUrl() bool {
-	return m.fieldsPresent[0]&(1<<0) != 0
-}
-
-func (m *EntityRef) HasType() bool {
-	return m.fieldsPresent[0]&(1<<1) != 0
-}
-
-func (m *AnyValue) GetValue() AnyValue_Value {
-	if m != nil {
-		return m.Value
-	}
-	return nil
-}
-
-func (m *AnyValue) GetStringValue() string {
-	if x, ok := m.GetValue().(*AnyValue_StringValue); ok {
-		return x.StringValue
-	}
-	return ""
-}
-
-func (m *AnyValue) GetBoolValue() bool {
-	if x, ok := m.GetValue().(*AnyValue_BoolValue); ok {
-		return x.BoolValue
-	}
-	return false
-}
-
-func (m *AnyValue) GetIntValue() int64 {
-	if x, ok := m.GetValue().(*AnyValue_IntValue); ok {
-		return x.IntValue
-	}
-	return 0
-}
-
-func (m *AnyValue) GetDoubleValue() float64 {
-	if x, ok := m.GetValue().(*AnyValue_DoubleValue); ok {
-		return x.DoubleValue
-	}
-	return 0
-}
-
-func (m *AnyValue) GetArrayValue() *ArrayValue {
-	if x, ok := m.GetValue().(*AnyValue_ArrayValue); ok {
-		return &x.ArrayValue
-	}
-	return nil
-}
-
-func (m *AnyValue) GetKvlistValue() *KeyValueList {
-	if x, ok := m.GetValue().(*AnyValue_KvlistValue); ok {
-		return &x.KvlistValue
-	}
-	return nil
-}
-
-func (m *AnyValue) GetBytesValue() []byte {
-	if x, ok := m.GetValue().(*AnyValue_BytesValue); ok {
-		return x.BytesValue
-	}
-	return nil
-}
-
-func (m *AnyValue) GetStringValueStrindex() int32 {
-	if x, ok := m.GetValue().(*AnyValue_StringValueStrindex); ok {
-		return x.StringValueStrindex
-	}
-	return 0
-}
-
-func (m *ArrayValue) GetValues() []AnyValue {
-	if m != nil {
-		return m.Values
-	}
-	return nil
-}
-
-func (m *KeyValueList) GetValues() []KeyValue {
-	if m != nil {
-		return m.Values
-	}
-	return nil
-}
-
-func (m *KeyValue) GetKey() string {
-	if m != nil {
-		return m.Key
-	}
-	return ""
-}
-
-func (m *KeyValue) GetValue() *AnyValue {
-	if m != nil && m.fieldsPresent[0]&(1<<1) != 0 {
-		return &m.Value
-	}
-	return nil
-}
-
-func (m *KeyValue) GetKeyStrindex() int32 {
-	if m != nil {
-		return m.KeyStrindex
-	}
-	return 0
-}
-
-func (m *InstrumentationScope) GetName() string {
-	if m != nil {
-		return m.Name
-	}
-	return ""
-}
-
-func (m *InstrumentationScope) GetVersion() string {
-	if m != nil {
-		return m.Version
-	}
-	return ""
-}
-
-func (m *InstrumentationScope) GetAttributes() []KeyValue {
-	if m != nil {
-		return m.Attributes
-	}
-	return nil
-}
-
-func (m *InstrumentationScope) GetDroppedAttributesCount() uint32 {
-	if m != nil {
-		return m.DroppedAttributesCount
-	}
-	return 0
-}
-
-func (m *EntityRef) GetSchemaUrl() string {
-	if m != nil {
-		return m.SchemaUrl
-	}
-	return ""
-}
-
-func (m *EntityRef) GetType() string {
-	if m != nil {
-		return m.Type
-	}
-	return ""
-}
-
-func (m *EntityRef) GetIdKeys() []string {
-	if m != nil {
-		return m.IdKeys
-	}
-	return nil
-}
-
-func (m *EntityRef) GetDescriptionKeys() []string {
-	if m != nil {
-		return m.DescriptionKeys
-	}
-	return nil
+	unknownFields   []byte
 }
 
 func (m *AnyValue) Size() int {
@@ -405,6 +201,7 @@ func (m *AnyValue) Size() int {
 	case *AnyValue_StringValueStrindex:
 		n += 1 + protowire.SizeVarint(uint64(v.StringValueStrindex))
 	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -414,6 +211,7 @@ func (m *ArrayValue) Size() int {
 		s := m.Values[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -423,6 +221,7 @@ func (m *KeyValueList) Size() int {
 		s := m.Values[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -440,6 +239,7 @@ func (m *KeyValue) Size() int {
 	if m.KeyStrindex != 0 {
 		n += 1 + protowire.SizeVarint(uint64(m.KeyStrindex))
 	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -458,6 +258,7 @@ func (m *InstrumentationScope) Size() int {
 	if m.DroppedAttributesCount != 0 {
 		n += 1 + protowire.SizeVarint(uint64(m.DroppedAttributesCount))
 	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -475,6 +276,7 @@ func (m *EntityRef) Size() int {
 	for _, v := range m.DescriptionKeys {
 		n += 1 + protowire.SizeVarint(uint64(len(v))) + len(v)
 	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -498,6 +300,10 @@ func (m *AnyValue) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *AnyValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
+	if len(m.unknownFields) > 0 {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
 	switch v := m.Value.(type) {
 	case *AnyValue_StringValueStrindex:
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(v.StringValueStrindex))
@@ -575,6 +381,10 @@ func (m *ArrayValue) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *ArrayValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
+	if len(m.unknownFields) > 0 {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
 	for iNdEx := len(m.Values) - 1; iNdEx >= 0; iNdEx-- {
 		size, err := m.Values[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 		if err != nil {
@@ -608,6 +418,10 @@ func (m *KeyValueList) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *KeyValueList) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
+	if len(m.unknownFields) > 0 {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
 	for iNdEx := len(m.Values) - 1; iNdEx >= 0; iNdEx-- {
 		size, err := m.Values[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 		if err != nil {
@@ -641,6 +455,10 @@ func (m *KeyValue) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *KeyValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
+	if len(m.unknownFields) > 0 {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
 	if m.KeyStrindex != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.KeyStrindex))
 		i--
@@ -688,6 +506,10 @@ func (m *InstrumentationScope) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *InstrumentationScope) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
+	if len(m.unknownFields) > 0 {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
 	if m.DroppedAttributesCount != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.DroppedAttributesCount))
 		i--
@@ -740,6 +562,10 @@ func (m *EntityRef) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *EntityRef) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
+	if len(m.unknownFields) > 0 {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
 	for iNdEx := len(m.DescriptionKeys) - 1; iNdEx >= 0; iNdEx-- {
 		i -= len(m.DescriptionKeys[iNdEx])
 		copy(dAtA[i:], m.DescriptionKeys[iNdEx])
@@ -881,9 +707,10 @@ func (m *AnyValue) unmarshal(dAtA []byte, depth int) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
+		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -1040,6 +867,9 @@ func (m *AnyValue) unmarshal(dAtA []byte, depth int) error {
 				return io.ErrUnexpectedEOF
 			}
 			var msg ArrayValue
+			if ov, ok := m.Value.(*AnyValue_ArrayValue); ok {
+				msg = ov.ArrayValue
+			}
 			if err := msg.unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
@@ -1081,6 +911,9 @@ func (m *AnyValue) unmarshal(dAtA []byte, depth int) error {
 				return io.ErrUnexpectedEOF
 			}
 			var msg KeyValueList
+			if ov, ok := m.Value.(*AnyValue_KvlistValue); ok {
+				msg = ov.KvlistValue
+			}
 			if err := msg.unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
@@ -1153,6 +986,7 @@ func (m *AnyValue) unmarshal(dAtA []byte, depth int) error {
 			if err != nil {
 				return err
 			}
+			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -1232,9 +1066,10 @@ func (m *ArrayValue) unmarshal(dAtA []byte, depth int) error {
 		}
 	}
 	for iNdEx < l {
+		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -1298,6 +1133,7 @@ func (m *ArrayValue) unmarshal(dAtA []byte, depth int) error {
 			if err != nil {
 				return err
 			}
+			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -1377,9 +1213,10 @@ func (m *KeyValueList) unmarshal(dAtA []byte, depth int) error {
 		}
 	}
 	for iNdEx < l {
+		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -1443,6 +1280,7 @@ func (m *KeyValueList) unmarshal(dAtA []byte, depth int) error {
 			if err != nil {
 				return err
 			}
+			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -1463,9 +1301,10 @@ func (m *KeyValue) unmarshal(dAtA []byte, depth int) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
+		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -1521,7 +1360,6 @@ func (m *KeyValue) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Key = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
 		case 2: // value
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1561,7 +1399,6 @@ func (m *KeyValue) unmarshal(dAtA []byte, depth int) error {
 				return err
 			}
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 1
 		case 3: // key_strindex
 			if wireType != 0 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1587,12 +1424,12 @@ func (m *KeyValue) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.KeyStrindex = int32(v)
-			m.fieldsPresent[0] |= 1 << 2
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
+			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -1672,9 +1509,10 @@ func (m *InstrumentationScope) unmarshal(dAtA []byte, depth int) error {
 		}
 	}
 	for iNdEx < l {
+		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -1730,7 +1568,6 @@ func (m *InstrumentationScope) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Name = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
 		case 2: // version
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1768,7 +1605,6 @@ func (m *InstrumentationScope) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Version = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 1
 		case 3: // attributes
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1834,12 +1670,12 @@ func (m *InstrumentationScope) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.DroppedAttributesCount = uint32(v)
-			m.fieldsPresent[0] |= 1 << 2
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
+			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -1925,9 +1761,10 @@ func (m *EntityRef) unmarshal(dAtA []byte, depth int) error {
 		}
 	}
 	for iNdEx < l {
+		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -1983,7 +1820,6 @@ func (m *EntityRef) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.SchemaUrl = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
 		case 2: // type
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2021,7 +1857,6 @@ func (m *EntityRef) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Type = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 1
 		case 3: // id_keys
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2101,6 +1936,7 @@ func (m *EntityRef) unmarshal(dAtA []byte, depth int) error {
 			if err != nil {
 				return err
 			}
+			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -2202,6 +2038,9 @@ func (this *AnyValue) Equal(that interface{}) bool {
 			return false
 		}
 	}
+	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
+		return false
+	}
 	return true
 }
 
@@ -2231,6 +2070,9 @@ func (this *ArrayValue) Equal(that interface{}) bool {
 		if !this.Values[i].Equal(that1.Values[i]) {
 			return false
 		}
+	}
+	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
+		return false
 	}
 	return true
 }
@@ -2262,6 +2104,9 @@ func (this *KeyValueList) Equal(that interface{}) bool {
 			return false
 		}
 	}
+	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
+		return false
+	}
 	return true
 }
 
@@ -2291,6 +2136,9 @@ func (this *KeyValue) Equal(that interface{}) bool {
 		return false
 	}
 	if this.KeyStrindex != that1.KeyStrindex {
+		return false
+	}
+	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
 		return false
 	}
 	return true
@@ -2330,6 +2178,9 @@ func (this *InstrumentationScope) Equal(that interface{}) bool {
 		}
 	}
 	if this.DroppedAttributesCount != that1.DroppedAttributesCount {
+		return false
+	}
+	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
 		return false
 	}
 	return true
@@ -2375,6 +2226,9 @@ func (this *EntityRef) Equal(that interface{}) bool {
 		if this.DescriptionKeys[i] != that1.DescriptionKeys[i] {
 			return false
 		}
+	}
+	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
+		return false
 	}
 	return true
 }

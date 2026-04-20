@@ -210,11 +210,12 @@ func (fg *FileGenerator) emitUnmarshal(md protoreflect.MessageDescriptor) {
 
 	// Main parse loop with inline tag decoding.
 	fmt.Fprintf(fg.body, "\tfor iNdEx < l {\n")
+	fmt.Fprintf(fg.body, "\t\ttagStart := iNdEx\n")
 
 	// Inline tag decode
 	fmt.Fprintf(fg.body, "\t\tvar wire uint64\n")
 	fmt.Fprintf(fg.body, "\t\tfor shift := uint(0); ; shift += 7 {\n")
-	fmt.Fprintf(fg.body, "\t\t\tif shift >= 64 {\n\t\t\t\treturn fmt.Errorf(\"proto: integer overflow\")\n\t\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\t\tif shift >= 35 {\n\t\t\t\treturn fmt.Errorf(\"proto: integer overflow\")\n\t\t\t}\n")
 	fmt.Fprintf(fg.body, "\t\t\tif iNdEx >= l {\n\t\t\t\treturn io.ErrUnexpectedEOF\n\t\t\t}\n")
 	fmt.Fprintf(fg.body, "\t\t\tb := dAtA[iNdEx]\n")
 	fmt.Fprintf(fg.body, "\t\t\tiNdEx++\n")
@@ -245,6 +246,7 @@ func (fg *FileGenerator) emitUnmarshal(md protoreflect.MessageDescriptor) {
 	fmt.Fprintf(fg.body, "\t\tdefault:\n")
 	fmt.Fprintf(fg.body, "\t\t\tn, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)\n")
 	fmt.Fprintf(fg.body, "\t\t\tif err != nil {\n\t\t\t\treturn err\n\t\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\t\tm.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)\n")
 	fmt.Fprintf(fg.body, "\t\t\tiNdEx += n\n")
 	fmt.Fprintf(fg.body, "\t\t}\n") // end switch
 	fmt.Fprintf(fg.body, "\t}\n")   // end for
@@ -311,7 +313,12 @@ func (fg *FileGenerator) emitFieldUnmarshal(md protoreflect.MessageDescriptor, f
 		switch kind {
 		case protoreflect.MessageKind:
 			// EmitConsume set postIndex for length-delimited types.
+			// Merge semantics: if the oneof already holds the same variant,
+			// unmarshal into the existing message instead of replacing it.
 			fmt.Fprintf(fg.body, "\t\t\tvar msg %s\n", ctx.MessageType)
+			fmt.Fprintf(fg.body, "\t\t\tif ov, ok := m.%s.(*%s); ok {\n", ooFieldName, variantName)
+			fmt.Fprintf(fg.body, "\t\t\t\tmsg = ov.%s\n", fieldName)
+			fmt.Fprintf(fg.body, "\t\t\t}\n")
 			if ctx.IsSamePackage {
 				fmt.Fprintf(fg.body, "\t\t\tif err := msg.unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n")
 			} else {

@@ -57,7 +57,7 @@ Not supported (not needed for OTel protos): services/RPCs, extensions, well-know
 
 ## Conformance test status
 
-693 passing, 7 expected failures (4 message merge, 1 overlong varint tag, 2 unknown field preservation). Run with `make conformance`.
+698 passing, 2 expected failures (1 empty message presence, 1 map message merge with recursive messages). Run with `make conformance`.
 
 **Updating the failure list:** The conformance runner errors when a failure list entry matches a now-passing test ("is in the failure list, but test succeeded"). After fixing conformance-related bugs, run conformance and remove entries that the runner flags:
 

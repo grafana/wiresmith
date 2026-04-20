@@ -26,9 +26,7 @@ func (fg *FileGenerator) emitEqualMethods(md protoreflect.MessageDescriptor) {
 func (fg *FileGenerator) emitEqual(md protoreflect.MessageDescriptor) {
 	name := goMessageTypeName(md)
 
-	if needsBytesImportForEqual(md) {
-		fg.imports.addImport("bytes", "")
-	}
+	fg.imports.addImport("bytes", "")
 
 	fmt.Fprintf(fg.body, "func (this *%s) Equal(that interface{}) bool {\n", name)
 	fmt.Fprintf(fg.body, "\tif that == nil {\n\t\treturn this == nil\n\t}\n\n")
@@ -58,6 +56,7 @@ func (fg *FileGenerator) emitEqual(md protoreflect.MessageDescriptor) {
 		fg.emitFieldEqual(fd, goName)
 	}
 
+	fmt.Fprintf(fg.body, "\tif !bytes.Equal(this.unknownFields, that1.unknownFields) {\n\t\treturn false\n\t}\n")
 	fmt.Fprintf(fg.body, "\treturn true\n")
 	fmt.Fprintf(fg.body, "}\n\n")
 }
@@ -163,20 +162,4 @@ func (fg *FileGenerator) emitRepeatedFieldEqual(fd protoreflect.FieldDescriptor,
 	}
 
 	fmt.Fprintf(fg.body, "\t}\n")
-}
-
-func needsBytesImportForEqual(md protoreflect.MessageDescriptor) bool {
-	for i := 0; i < md.Fields().Len(); i++ {
-		fd := md.Fields().Get(i)
-		if fd.Kind() == protoreflect.BytesKind {
-			return true
-		}
-		if fd.IsMap() {
-			valFd := fd.Message().Fields().ByNumber(2)
-			if valFd.Kind() == protoreflect.BytesKind {
-				return true
-			}
-		}
-	}
-	return false
 }

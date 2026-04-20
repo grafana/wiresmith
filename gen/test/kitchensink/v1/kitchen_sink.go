@@ -135,8 +135,7 @@ type AllScalars struct {
 	FieldBool     bool
 	FieldString   string
 	FieldBytes    []byte
-
-	fieldsPresent [1]uint64
+	unknownFields []byte
 }
 
 // Message with every optional scalar type
@@ -156,6 +155,7 @@ type AllOptionalScalars struct {
 	FieldBool     *bool
 	FieldString   *string
 	FieldBytes    []byte
+	unknownFields []byte
 }
 
 // Message with every repeated (packed) scalar type
@@ -175,75 +175,73 @@ type AllRepeatedScalars struct {
 	FieldBool     []bool
 	FieldString   []string
 	FieldBytes    [][]byte
+	unknownFields []byte
 }
 
 // Oneof with various types
 type OneofVariants struct {
-	Value OneofVariants_Value
+	Value         OneofVariants_Value
+	unknownFields []byte
 }
 
 // Nested messages for depth testing
 type Outer struct {
-	Middle  Middle
-	Middles []Middle
-	Name    string
-
-	fieldsPresent [1]uint64
+	Middle        Middle
+	Middles       []Middle
+	Name          string
+	unknownFields []byte
 }
 
 type Middle struct {
-	Inner  Inner
-	Inners []Inner
-	Value  int64
-
-	fieldsPresent [1]uint64
+	Inner         Inner
+	Inners        []Inner
+	Value         int64
+	unknownFields []byte
 }
 
 type Inner struct {
-	Data      string
-	Raw       []byte
-	SignedVal int64
-	FixedVal  int32
-
-	fieldsPresent [1]uint64
+	Data          string
+	Raw           []byte
+	SignedVal     int64
+	FixedVal      int32
+	unknownFields []byte
 }
 
 // High field numbers (multi-byte tags)
 type HighFieldNumbers struct {
-	Field1     string
-	Field16    string
-	Field128   string
-	Field2048  string
-	Field16384 string
-
-	fieldsPresent [1]uint64
+	Field1        string
+	Field16       string
+	Field128      string
+	Field2048     string
+	Field16384    string
+	unknownFields []byte
 }
 
 type WithEnum struct {
-	Color  Color
-	Colors []Color
-
-	fieldsPresent [1]uint64
+	Color         Color
+	Colors        []Color
+	unknownFields []byte
 }
 
 // Empty message
 type Empty struct {
+	unknownFields []byte
 }
 
 // Message with only repeated fields
 type OnlyRepeated struct {
-	Names  []string
-	Values []int64
-	Items  []Inner
+	Names         []string
+	Values        []int64
+	Items         []Inner
+	unknownFields []byte
 }
 
 // Message referencing another message with oneof
 type Container struct {
-	Variant  OneofVariants
-	Scalars  AllScalars
-	Variants []OneofVariants
-
-	fieldsPresent [1]uint64
+	Variant       OneofVariants
+	Scalars       AllScalars
+	Variants      []OneofVariants
+	unknownFields []byte
 }
 
 // Maps with all supported key/value type combinations
@@ -265,876 +263,7 @@ type AllMaps struct {
 	MapInt32Double      map[int32]float64
 	MapStringMessage    map[string]Inner
 	MapStringEnum       map[string]Color
-}
-
-func (m *AllScalars) Reset()      { *m = AllScalars{} }
-func (*AllScalars) ProtoMessage() {}
-
-func (m *AllOptionalScalars) Reset()      { *m = AllOptionalScalars{} }
-func (*AllOptionalScalars) ProtoMessage() {}
-
-func (m *AllRepeatedScalars) Reset()      { *m = AllRepeatedScalars{} }
-func (*AllRepeatedScalars) ProtoMessage() {}
-
-func (m *OneofVariants) Reset()      { *m = OneofVariants{} }
-func (*OneofVariants) ProtoMessage() {}
-
-func (m *Outer) Reset()      { *m = Outer{} }
-func (*Outer) ProtoMessage() {}
-
-func (m *Middle) Reset()      { *m = Middle{} }
-func (*Middle) ProtoMessage() {}
-
-func (m *Inner) Reset()      { *m = Inner{} }
-func (*Inner) ProtoMessage() {}
-
-func (m *HighFieldNumbers) Reset()      { *m = HighFieldNumbers{} }
-func (*HighFieldNumbers) ProtoMessage() {}
-
-func (m *WithEnum) Reset()      { *m = WithEnum{} }
-func (*WithEnum) ProtoMessage() {}
-
-func (m *Empty) Reset()      { *m = Empty{} }
-func (*Empty) ProtoMessage() {}
-
-func (m *OnlyRepeated) Reset()      { *m = OnlyRepeated{} }
-func (*OnlyRepeated) ProtoMessage() {}
-
-func (m *Container) Reset()      { *m = Container{} }
-func (*Container) ProtoMessage() {}
-
-func (m *AllMaps) Reset()      { *m = AllMaps{} }
-func (*AllMaps) ProtoMessage() {}
-
-func (m *AllScalars) HasFieldDouble() bool {
-	return m.fieldsPresent[0]&(1<<0) != 0
-}
-
-func (m *AllScalars) HasFieldFloat() bool {
-	return m.fieldsPresent[0]&(1<<1) != 0
-}
-
-func (m *AllScalars) HasFieldInt32() bool {
-	return m.fieldsPresent[0]&(1<<2) != 0
-}
-
-func (m *AllScalars) HasFieldInt64() bool {
-	return m.fieldsPresent[0]&(1<<3) != 0
-}
-
-func (m *AllScalars) HasFieldUint32() bool {
-	return m.fieldsPresent[0]&(1<<4) != 0
-}
-
-func (m *AllScalars) HasFieldUint64() bool {
-	return m.fieldsPresent[0]&(1<<5) != 0
-}
-
-func (m *AllScalars) HasFieldSint32() bool {
-	return m.fieldsPresent[0]&(1<<6) != 0
-}
-
-func (m *AllScalars) HasFieldSint64() bool {
-	return m.fieldsPresent[0]&(1<<7) != 0
-}
-
-func (m *AllScalars) HasFieldFixed32() bool {
-	return m.fieldsPresent[0]&(1<<8) != 0
-}
-
-func (m *AllScalars) HasFieldFixed64() bool {
-	return m.fieldsPresent[0]&(1<<9) != 0
-}
-
-func (m *AllScalars) HasFieldSfixed32() bool {
-	return m.fieldsPresent[0]&(1<<10) != 0
-}
-
-func (m *AllScalars) HasFieldSfixed64() bool {
-	return m.fieldsPresent[0]&(1<<11) != 0
-}
-
-func (m *AllScalars) HasFieldBool() bool {
-	return m.fieldsPresent[0]&(1<<12) != 0
-}
-
-func (m *AllScalars) HasFieldString() bool {
-	return m.fieldsPresent[0]&(1<<13) != 0
-}
-
-func (m *AllScalars) HasFieldBytes() bool {
-	return m.fieldsPresent[0]&(1<<14) != 0
-}
-
-func (m *Outer) HasMiddle() bool {
-	return m.fieldsPresent[0]&(1<<0) != 0
-}
-
-func (m *Outer) HasName() bool {
-	return m.fieldsPresent[0]&(1<<1) != 0
-}
-
-func (m *Middle) HasInner() bool {
-	return m.fieldsPresent[0]&(1<<0) != 0
-}
-
-func (m *Middle) HasValue() bool {
-	return m.fieldsPresent[0]&(1<<1) != 0
-}
-
-func (m *Inner) HasData() bool {
-	return m.fieldsPresent[0]&(1<<0) != 0
-}
-
-func (m *Inner) HasRaw() bool {
-	return m.fieldsPresent[0]&(1<<1) != 0
-}
-
-func (m *Inner) HasSignedVal() bool {
-	return m.fieldsPresent[0]&(1<<2) != 0
-}
-
-func (m *Inner) HasFixedVal() bool {
-	return m.fieldsPresent[0]&(1<<3) != 0
-}
-
-func (m *HighFieldNumbers) HasField1() bool {
-	return m.fieldsPresent[0]&(1<<0) != 0
-}
-
-func (m *HighFieldNumbers) HasField16() bool {
-	return m.fieldsPresent[0]&(1<<1) != 0
-}
-
-func (m *HighFieldNumbers) HasField128() bool {
-	return m.fieldsPresent[0]&(1<<2) != 0
-}
-
-func (m *HighFieldNumbers) HasField2048() bool {
-	return m.fieldsPresent[0]&(1<<3) != 0
-}
-
-func (m *HighFieldNumbers) HasField16384() bool {
-	return m.fieldsPresent[0]&(1<<4) != 0
-}
-
-func (m *WithEnum) HasColor() bool {
-	return m.fieldsPresent[0]&(1<<0) != 0
-}
-
-func (m *Container) HasVariant() bool {
-	return m.fieldsPresent[0]&(1<<0) != 0
-}
-
-func (m *Container) HasScalars() bool {
-	return m.fieldsPresent[0]&(1<<1) != 0
-}
-
-func (m *AllScalars) GetFieldDouble() float64 {
-	if m != nil {
-		return m.FieldDouble
-	}
-	return 0
-}
-
-func (m *AllScalars) GetFieldFloat() float32 {
-	if m != nil {
-		return m.FieldFloat
-	}
-	return 0
-}
-
-func (m *AllScalars) GetFieldInt32() int32 {
-	if m != nil {
-		return m.FieldInt32
-	}
-	return 0
-}
-
-func (m *AllScalars) GetFieldInt64() int64 {
-	if m != nil {
-		return m.FieldInt64
-	}
-	return 0
-}
-
-func (m *AllScalars) GetFieldUint32() uint32 {
-	if m != nil {
-		return m.FieldUint32
-	}
-	return 0
-}
-
-func (m *AllScalars) GetFieldUint64() uint64 {
-	if m != nil {
-		return m.FieldUint64
-	}
-	return 0
-}
-
-func (m *AllScalars) GetFieldSint32() int32 {
-	if m != nil {
-		return m.FieldSint32
-	}
-	return 0
-}
-
-func (m *AllScalars) GetFieldSint64() int64 {
-	if m != nil {
-		return m.FieldSint64
-	}
-	return 0
-}
-
-func (m *AllScalars) GetFieldFixed32() uint32 {
-	if m != nil {
-		return m.FieldFixed32
-	}
-	return 0
-}
-
-func (m *AllScalars) GetFieldFixed64() uint64 {
-	if m != nil {
-		return m.FieldFixed64
-	}
-	return 0
-}
-
-func (m *AllScalars) GetFieldSfixed32() int32 {
-	if m != nil {
-		return m.FieldSfixed32
-	}
-	return 0
-}
-
-func (m *AllScalars) GetFieldSfixed64() int64 {
-	if m != nil {
-		return m.FieldSfixed64
-	}
-	return 0
-}
-
-func (m *AllScalars) GetFieldBool() bool {
-	if m != nil {
-		return m.FieldBool
-	}
-	return false
-}
-
-func (m *AllScalars) GetFieldString() string {
-	if m != nil {
-		return m.FieldString
-	}
-	return ""
-}
-
-func (m *AllScalars) GetFieldBytes() []byte {
-	if m != nil {
-		return m.FieldBytes
-	}
-	return nil
-}
-
-func (m *AllOptionalScalars) GetFieldDouble() float64 {
-	if m != nil && m.FieldDouble != nil {
-		return *m.FieldDouble
-	}
-	return 0
-}
-
-func (m *AllOptionalScalars) GetFieldFloat() float32 {
-	if m != nil && m.FieldFloat != nil {
-		return *m.FieldFloat
-	}
-	return 0
-}
-
-func (m *AllOptionalScalars) GetFieldInt32() int32 {
-	if m != nil && m.FieldInt32 != nil {
-		return *m.FieldInt32
-	}
-	return 0
-}
-
-func (m *AllOptionalScalars) GetFieldInt64() int64 {
-	if m != nil && m.FieldInt64 != nil {
-		return *m.FieldInt64
-	}
-	return 0
-}
-
-func (m *AllOptionalScalars) GetFieldUint32() uint32 {
-	if m != nil && m.FieldUint32 != nil {
-		return *m.FieldUint32
-	}
-	return 0
-}
-
-func (m *AllOptionalScalars) GetFieldUint64() uint64 {
-	if m != nil && m.FieldUint64 != nil {
-		return *m.FieldUint64
-	}
-	return 0
-}
-
-func (m *AllOptionalScalars) GetFieldSint32() int32 {
-	if m != nil && m.FieldSint32 != nil {
-		return *m.FieldSint32
-	}
-	return 0
-}
-
-func (m *AllOptionalScalars) GetFieldSint64() int64 {
-	if m != nil && m.FieldSint64 != nil {
-		return *m.FieldSint64
-	}
-	return 0
-}
-
-func (m *AllOptionalScalars) GetFieldFixed32() uint32 {
-	if m != nil && m.FieldFixed32 != nil {
-		return *m.FieldFixed32
-	}
-	return 0
-}
-
-func (m *AllOptionalScalars) GetFieldFixed64() uint64 {
-	if m != nil && m.FieldFixed64 != nil {
-		return *m.FieldFixed64
-	}
-	return 0
-}
-
-func (m *AllOptionalScalars) GetFieldSfixed32() int32 {
-	if m != nil && m.FieldSfixed32 != nil {
-		return *m.FieldSfixed32
-	}
-	return 0
-}
-
-func (m *AllOptionalScalars) GetFieldSfixed64() int64 {
-	if m != nil && m.FieldSfixed64 != nil {
-		return *m.FieldSfixed64
-	}
-	return 0
-}
-
-func (m *AllOptionalScalars) GetFieldBool() bool {
-	if m != nil && m.FieldBool != nil {
-		return *m.FieldBool
-	}
-	return false
-}
-
-func (m *AllOptionalScalars) GetFieldString() string {
-	if m != nil && m.FieldString != nil {
-		return *m.FieldString
-	}
-	return ""
-}
-
-func (m *AllOptionalScalars) GetFieldBytes() []byte {
-	if m != nil {
-		return m.FieldBytes
-	}
-	return nil
-}
-
-func (m *AllRepeatedScalars) GetFieldDouble() []float64 {
-	if m != nil {
-		return m.FieldDouble
-	}
-	return nil
-}
-
-func (m *AllRepeatedScalars) GetFieldFloat() []float32 {
-	if m != nil {
-		return m.FieldFloat
-	}
-	return nil
-}
-
-func (m *AllRepeatedScalars) GetFieldInt32() []int32 {
-	if m != nil {
-		return m.FieldInt32
-	}
-	return nil
-}
-
-func (m *AllRepeatedScalars) GetFieldInt64() []int64 {
-	if m != nil {
-		return m.FieldInt64
-	}
-	return nil
-}
-
-func (m *AllRepeatedScalars) GetFieldUint32() []uint32 {
-	if m != nil {
-		return m.FieldUint32
-	}
-	return nil
-}
-
-func (m *AllRepeatedScalars) GetFieldUint64() []uint64 {
-	if m != nil {
-		return m.FieldUint64
-	}
-	return nil
-}
-
-func (m *AllRepeatedScalars) GetFieldSint32() []int32 {
-	if m != nil {
-		return m.FieldSint32
-	}
-	return nil
-}
-
-func (m *AllRepeatedScalars) GetFieldSint64() []int64 {
-	if m != nil {
-		return m.FieldSint64
-	}
-	return nil
-}
-
-func (m *AllRepeatedScalars) GetFieldFixed32() []uint32 {
-	if m != nil {
-		return m.FieldFixed32
-	}
-	return nil
-}
-
-func (m *AllRepeatedScalars) GetFieldFixed64() []uint64 {
-	if m != nil {
-		return m.FieldFixed64
-	}
-	return nil
-}
-
-func (m *AllRepeatedScalars) GetFieldSfixed32() []int32 {
-	if m != nil {
-		return m.FieldSfixed32
-	}
-	return nil
-}
-
-func (m *AllRepeatedScalars) GetFieldSfixed64() []int64 {
-	if m != nil {
-		return m.FieldSfixed64
-	}
-	return nil
-}
-
-func (m *AllRepeatedScalars) GetFieldBool() []bool {
-	if m != nil {
-		return m.FieldBool
-	}
-	return nil
-}
-
-func (m *AllRepeatedScalars) GetFieldString() []string {
-	if m != nil {
-		return m.FieldString
-	}
-	return nil
-}
-
-func (m *AllRepeatedScalars) GetFieldBytes() [][]byte {
-	if m != nil {
-		return m.FieldBytes
-	}
-	return nil
-}
-
-func (m *OneofVariants) GetValue() OneofVariants_Value {
-	if m != nil {
-		return m.Value
-	}
-	return nil
-}
-
-func (m *OneofVariants) GetDoubleValue() float64 {
-	if x, ok := m.GetValue().(*OneofVariants_DoubleValue); ok {
-		return x.DoubleValue
-	}
-	return 0
-}
-
-func (m *OneofVariants) GetFloatValue() float32 {
-	if x, ok := m.GetValue().(*OneofVariants_FloatValue); ok {
-		return x.FloatValue
-	}
-	return 0
-}
-
-func (m *OneofVariants) GetInt32Value() int32 {
-	if x, ok := m.GetValue().(*OneofVariants_Int32Value); ok {
-		return x.Int32Value
-	}
-	return 0
-}
-
-func (m *OneofVariants) GetInt64Value() int64 {
-	if x, ok := m.GetValue().(*OneofVariants_Int64Value); ok {
-		return x.Int64Value
-	}
-	return 0
-}
-
-func (m *OneofVariants) GetUint32Value() uint32 {
-	if x, ok := m.GetValue().(*OneofVariants_Uint32Value); ok {
-		return x.Uint32Value
-	}
-	return 0
-}
-
-func (m *OneofVariants) GetUint64Value() uint64 {
-	if x, ok := m.GetValue().(*OneofVariants_Uint64Value); ok {
-		return x.Uint64Value
-	}
-	return 0
-}
-
-func (m *OneofVariants) GetSint32Value() int32 {
-	if x, ok := m.GetValue().(*OneofVariants_Sint32Value); ok {
-		return x.Sint32Value
-	}
-	return 0
-}
-
-func (m *OneofVariants) GetSint64Value() int64 {
-	if x, ok := m.GetValue().(*OneofVariants_Sint64Value); ok {
-		return x.Sint64Value
-	}
-	return 0
-}
-
-func (m *OneofVariants) GetFixed32Value() uint32 {
-	if x, ok := m.GetValue().(*OneofVariants_Fixed32Value); ok {
-		return x.Fixed32Value
-	}
-	return 0
-}
-
-func (m *OneofVariants) GetFixed64Value() uint64 {
-	if x, ok := m.GetValue().(*OneofVariants_Fixed64Value); ok {
-		return x.Fixed64Value
-	}
-	return 0
-}
-
-func (m *OneofVariants) GetSfixed32Value() int32 {
-	if x, ok := m.GetValue().(*OneofVariants_Sfixed32Value); ok {
-		return x.Sfixed32Value
-	}
-	return 0
-}
-
-func (m *OneofVariants) GetSfixed64Value() int64 {
-	if x, ok := m.GetValue().(*OneofVariants_Sfixed64Value); ok {
-		return x.Sfixed64Value
-	}
-	return 0
-}
-
-func (m *OneofVariants) GetBoolValue() bool {
-	if x, ok := m.GetValue().(*OneofVariants_BoolValue); ok {
-		return x.BoolValue
-	}
-	return false
-}
-
-func (m *OneofVariants) GetStringValue() string {
-	if x, ok := m.GetValue().(*OneofVariants_StringValue); ok {
-		return x.StringValue
-	}
-	return ""
-}
-
-func (m *OneofVariants) GetBytesValue() []byte {
-	if x, ok := m.GetValue().(*OneofVariants_BytesValue); ok {
-		return x.BytesValue
-	}
-	return nil
-}
-
-func (m *Outer) GetMiddle() *Middle {
-	if m != nil && m.fieldsPresent[0]&(1<<0) != 0 {
-		return &m.Middle
-	}
-	return nil
-}
-
-func (m *Outer) GetMiddles() []Middle {
-	if m != nil {
-		return m.Middles
-	}
-	return nil
-}
-
-func (m *Outer) GetName() string {
-	if m != nil {
-		return m.Name
-	}
-	return ""
-}
-
-func (m *Middle) GetInner() *Inner {
-	if m != nil && m.fieldsPresent[0]&(1<<0) != 0 {
-		return &m.Inner
-	}
-	return nil
-}
-
-func (m *Middle) GetInners() []Inner {
-	if m != nil {
-		return m.Inners
-	}
-	return nil
-}
-
-func (m *Middle) GetValue() int64 {
-	if m != nil {
-		return m.Value
-	}
-	return 0
-}
-
-func (m *Inner) GetData() string {
-	if m != nil {
-		return m.Data
-	}
-	return ""
-}
-
-func (m *Inner) GetRaw() []byte {
-	if m != nil {
-		return m.Raw
-	}
-	return nil
-}
-
-func (m *Inner) GetSignedVal() int64 {
-	if m != nil {
-		return m.SignedVal
-	}
-	return 0
-}
-
-func (m *Inner) GetFixedVal() int32 {
-	if m != nil {
-		return m.FixedVal
-	}
-	return 0
-}
-
-func (m *HighFieldNumbers) GetField1() string {
-	if m != nil {
-		return m.Field1
-	}
-	return ""
-}
-
-func (m *HighFieldNumbers) GetField16() string {
-	if m != nil {
-		return m.Field16
-	}
-	return ""
-}
-
-func (m *HighFieldNumbers) GetField128() string {
-	if m != nil {
-		return m.Field128
-	}
-	return ""
-}
-
-func (m *HighFieldNumbers) GetField2048() string {
-	if m != nil {
-		return m.Field2048
-	}
-	return ""
-}
-
-func (m *HighFieldNumbers) GetField16384() string {
-	if m != nil {
-		return m.Field16384
-	}
-	return ""
-}
-
-func (m *WithEnum) GetColor() Color {
-	if m != nil {
-		return m.Color
-	}
-	return 0
-}
-
-func (m *WithEnum) GetColors() []Color {
-	if m != nil {
-		return m.Colors
-	}
-	return nil
-}
-
-func (m *OnlyRepeated) GetNames() []string {
-	if m != nil {
-		return m.Names
-	}
-	return nil
-}
-
-func (m *OnlyRepeated) GetValues() []int64 {
-	if m != nil {
-		return m.Values
-	}
-	return nil
-}
-
-func (m *OnlyRepeated) GetItems() []Inner {
-	if m != nil {
-		return m.Items
-	}
-	return nil
-}
-
-func (m *Container) GetVariant() *OneofVariants {
-	if m != nil && m.fieldsPresent[0]&(1<<0) != 0 {
-		return &m.Variant
-	}
-	return nil
-}
-
-func (m *Container) GetScalars() *AllScalars {
-	if m != nil && m.fieldsPresent[0]&(1<<1) != 0 {
-		return &m.Scalars
-	}
-	return nil
-}
-
-func (m *Container) GetVariants() []OneofVariants {
-	if m != nil {
-		return m.Variants
-	}
-	return nil
-}
-
-func (m *AllMaps) GetMapInt32Int32() map[int32]int32 {
-	if m != nil {
-		return m.MapInt32Int32
-	}
-	return nil
-}
-
-func (m *AllMaps) GetMapInt64Int64() map[int64]int64 {
-	if m != nil {
-		return m.MapInt64Int64
-	}
-	return nil
-}
-
-func (m *AllMaps) GetMapUint32Uint32() map[uint32]uint32 {
-	if m != nil {
-		return m.MapUint32Uint32
-	}
-	return nil
-}
-
-func (m *AllMaps) GetMapUint64Uint64() map[uint64]uint64 {
-	if m != nil {
-		return m.MapUint64Uint64
-	}
-	return nil
-}
-
-func (m *AllMaps) GetMapSint32Sint32() map[int32]int32 {
-	if m != nil {
-		return m.MapSint32Sint32
-	}
-	return nil
-}
-
-func (m *AllMaps) GetMapSint64Sint64() map[int64]int64 {
-	if m != nil {
-		return m.MapSint64Sint64
-	}
-	return nil
-}
-
-func (m *AllMaps) GetMapFixed32Fixed32() map[uint32]uint32 {
-	if m != nil {
-		return m.MapFixed32Fixed32
-	}
-	return nil
-}
-
-func (m *AllMaps) GetMapFixed64Fixed64() map[uint64]uint64 {
-	if m != nil {
-		return m.MapFixed64Fixed64
-	}
-	return nil
-}
-
-func (m *AllMaps) GetMapSfixed32Sfixed32() map[int32]int32 {
-	if m != nil {
-		return m.MapSfixed32Sfixed32
-	}
-	return nil
-}
-
-func (m *AllMaps) GetMapSfixed64Sfixed64() map[int64]int64 {
-	if m != nil {
-		return m.MapSfixed64Sfixed64
-	}
-	return nil
-}
-
-func (m *AllMaps) GetMapBoolBool() map[bool]bool {
-	if m != nil {
-		return m.MapBoolBool
-	}
-	return nil
-}
-
-func (m *AllMaps) GetMapStringString() map[string]string {
-	if m != nil {
-		return m.MapStringString
-	}
-	return nil
-}
-
-func (m *AllMaps) GetMapStringBytes() map[string][]byte {
-	if m != nil {
-		return m.MapStringBytes
-	}
-	return nil
-}
-
-func (m *AllMaps) GetMapInt32Float() map[int32]float32 {
-	if m != nil {
-		return m.MapInt32Float
-	}
-	return nil
-}
-
-func (m *AllMaps) GetMapInt32Double() map[int32]float64 {
-	if m != nil {
-		return m.MapInt32Double
-	}
-	return nil
-}
-
-func (m *AllMaps) GetMapStringMessage() map[string]Inner {
-	if m != nil {
-		return m.MapStringMessage
-	}
-	return nil
-}
-
-func (m *AllMaps) GetMapStringEnum() map[string]Color {
-	if m != nil {
-		return m.MapStringEnum
-	}
-	return nil
+	unknownFields       []byte
 }
 
 func (m *AllScalars) Size() int {
@@ -1184,6 +313,7 @@ func (m *AllScalars) Size() int {
 	if len(m.FieldBytes) > 0 {
 		n += 1 + protowire.SizeVarint(uint64(len(m.FieldBytes))) + len(m.FieldBytes)
 	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -1234,6 +364,7 @@ func (m *AllOptionalScalars) Size() int {
 	if m.FieldBytes != nil {
 		n += 1 + protowire.SizeVarint(uint64(len(m.FieldBytes))) + len(m.FieldBytes)
 	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -1315,6 +446,7 @@ func (m *AllRepeatedScalars) Size() int {
 	for _, v := range m.FieldBytes {
 		n += 1 + protowire.SizeVarint(uint64(len(v))) + len(v)
 	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -1361,6 +493,7 @@ func (m *OneofVariants) Size() int {
 		l := len(v.BytesValue)
 		n += 1 + protowire.SizeVarint(uint64(l)) + l
 	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -1379,6 +512,7 @@ func (m *Outer) Size() int {
 	if len(m.Name) > 0 {
 		n += 1 + protowire.SizeVarint(uint64(len(m.Name))) + len(m.Name)
 	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -1397,6 +531,7 @@ func (m *Middle) Size() int {
 	if m.Value != 0 {
 		n += 1 + protowire.SizeVarint(uint64(m.Value))
 	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -1414,6 +549,7 @@ func (m *Inner) Size() int {
 	if m.FixedVal != 0 {
 		n += 5
 	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -1434,6 +570,7 @@ func (m *HighFieldNumbers) Size() int {
 	if len(m.Field16384) > 0 {
 		n += 3 + protowire.SizeVarint(uint64(len(m.Field16384))) + len(m.Field16384)
 	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -1449,11 +586,13 @@ func (m *WithEnum) Size() int {
 		}
 		n += 1 + protowire.SizeVarint(uint64(dataLen)) + dataLen
 	}
+	n += len(m.unknownFields)
 	return n
 }
 
 func (m *Empty) Size() int {
 	var n int
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -1473,6 +612,7 @@ func (m *OnlyRepeated) Size() int {
 		s := m.Items[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -1494,6 +634,7 @@ func (m *Container) Size() int {
 		s := m.Variants[i].Size()
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -1602,6 +743,7 @@ func (m *AllMaps) Size() int {
 		entrySize += 1 + protowire.SizeVarint(uint64(v))
 		n += 2 + protowire.SizeVarint(uint64(entrySize)) + entrySize
 	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -1625,6 +767,10 @@ func (m *AllScalars) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *AllScalars) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
+	if len(m.unknownFields) > 0 {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
 	if len(m.FieldBytes) > 0 {
 		i -= len(m.FieldBytes)
 		copy(dAtA[i:], m.FieldBytes)
@@ -1738,6 +884,10 @@ func (m *AllOptionalScalars) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *AllOptionalScalars) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
+	if len(m.unknownFields) > 0 {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
 	if m.FieldBytes != nil {
 		i -= len(m.FieldBytes)
 		copy(dAtA[i:], m.FieldBytes)
@@ -1853,6 +1003,10 @@ func (m *AllRepeatedScalars) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *AllRepeatedScalars) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
+	if len(m.unknownFields) > 0 {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
 	for iNdEx := len(m.FieldBytes) - 1; iNdEx >= 0; iNdEx-- {
 		i -= len(m.FieldBytes[iNdEx])
 		copy(dAtA[i:], m.FieldBytes[iNdEx])
@@ -2019,6 +1173,10 @@ func (m *OneofVariants) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *OneofVariants) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
+	if len(m.unknownFields) > 0 {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
 	switch v := m.Value.(type) {
 	case *OneofVariants_BytesValue:
 		i -= len(v.BytesValue)
@@ -2119,6 +1277,10 @@ func (m *Outer) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *Outer) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
+	if len(m.unknownFields) > 0 {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
 	if len(m.Name) > 0 {
 		i -= len(m.Name)
 		copy(dAtA[i:], m.Name)
@@ -2171,6 +1333,10 @@ func (m *Middle) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *Middle) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
+	if len(m.unknownFields) > 0 {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
 	if m.Value != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.Value))
 		i--
@@ -2221,6 +1387,10 @@ func (m *Inner) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *Inner) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
+	if len(m.unknownFields) > 0 {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
 	if m.FixedVal != 0 {
 		i -= 4
 		binary.LittleEndian.PutUint32(dAtA[i:], uint32(m.FixedVal))
@@ -2269,6 +1439,10 @@ func (m *HighFieldNumbers) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *HighFieldNumbers) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
+	if len(m.unknownFields) > 0 {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
 	if len(m.Field16384) > 0 {
 		i -= len(m.Field16384)
 		copy(dAtA[i:], m.Field16384)
@@ -2339,6 +1513,10 @@ func (m *WithEnum) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *WithEnum) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
+	if len(m.unknownFields) > 0 {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
 	if len(m.Colors) > 0 {
 		var j int
 		pStart := i
@@ -2377,6 +1555,10 @@ func (m *Empty) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *Empty) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
+	if len(m.unknownFields) > 0 {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
 	return len(dAtA) - i, nil
 }
 
@@ -2400,6 +1582,10 @@ func (m *OnlyRepeated) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *OnlyRepeated) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
+	if len(m.unknownFields) > 0 {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
 	for iNdEx := len(m.Items) - 1; iNdEx >= 0; iNdEx-- {
 		size, err := m.Items[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 		if err != nil {
@@ -2450,6 +1636,10 @@ func (m *Container) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *Container) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
+	if len(m.unknownFields) > 0 {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
 	for iNdEx := len(m.Variants) - 1; iNdEx >= 0; iNdEx-- {
 		size, err := m.Variants[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 		if err != nil {
@@ -2507,6 +1697,10 @@ func (m *AllMaps) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *AllMaps) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
+	if len(m.unknownFields) > 0 {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
 	for k, v := range m.MapStringEnum {
 		baseI := i
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(v))
@@ -2865,9 +2059,10 @@ func (m *AllScalars) unmarshal(dAtA []byte, depth int) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
+		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -2901,7 +2096,6 @@ func (m *AllScalars) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.FieldDouble = math.Float64frombits(v)
-			m.fieldsPresent[0] |= 1 << 0
 		case 2: // field_float
 			if wireType != 5 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2917,7 +2111,6 @@ func (m *AllScalars) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint32(dAtA[iNdEx:])
 			iNdEx += 4
 			m.FieldFloat = math.Float32frombits(v)
-			m.fieldsPresent[0] |= 1 << 1
 		case 3: // field_int32
 			if wireType != 0 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2943,7 +2136,6 @@ func (m *AllScalars) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.FieldInt32 = int32(v)
-			m.fieldsPresent[0] |= 1 << 2
 		case 4: // field_int64
 			if wireType != 0 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2969,7 +2161,6 @@ func (m *AllScalars) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.FieldInt64 = int64(v)
-			m.fieldsPresent[0] |= 1 << 3
 		case 5: // field_uint32
 			if wireType != 0 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2995,7 +2186,6 @@ func (m *AllScalars) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.FieldUint32 = uint32(v)
-			m.fieldsPresent[0] |= 1 << 4
 		case 6: // field_uint64
 			if wireType != 0 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -3021,7 +2211,6 @@ func (m *AllScalars) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.FieldUint64 = v
-			m.fieldsPresent[0] |= 1 << 5
 		case 7: // field_sint32
 			if wireType != 0 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -3047,7 +2236,6 @@ func (m *AllScalars) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.FieldSint32 = int32(uint32(v)>>1) ^ int32(uint32(v))<<31>>31
-			m.fieldsPresent[0] |= 1 << 6
 		case 8: // field_sint64
 			if wireType != 0 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -3073,7 +2261,6 @@ func (m *AllScalars) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.FieldSint64 = int64(v>>1) ^ int64(v)<<63>>63
-			m.fieldsPresent[0] |= 1 << 7
 		case 9: // field_fixed32
 			if wireType != 5 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -3089,7 +2276,6 @@ func (m *AllScalars) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint32(dAtA[iNdEx:])
 			iNdEx += 4
 			m.FieldFixed32 = v
-			m.fieldsPresent[0] |= 1 << 8
 		case 10: // field_fixed64
 			if wireType != 1 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -3105,7 +2291,6 @@ func (m *AllScalars) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.FieldFixed64 = v
-			m.fieldsPresent[0] |= 1 << 9
 		case 11: // field_sfixed32
 			if wireType != 5 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -3121,7 +2306,6 @@ func (m *AllScalars) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint32(dAtA[iNdEx:])
 			iNdEx += 4
 			m.FieldSfixed32 = int32(v)
-			m.fieldsPresent[0] |= 1 << 10
 		case 12: // field_sfixed64
 			if wireType != 1 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -3137,7 +2321,6 @@ func (m *AllScalars) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.FieldSfixed64 = int64(v)
-			m.fieldsPresent[0] |= 1 << 11
 		case 13: // field_bool
 			if wireType != 0 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -3163,7 +2346,6 @@ func (m *AllScalars) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.FieldBool = v != 0
-			m.fieldsPresent[0] |= 1 << 12
 		case 14: // field_string
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -3201,7 +2383,6 @@ func (m *AllScalars) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.FieldString = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 13
 		case 15: // field_bytes
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -3239,12 +2420,12 @@ func (m *AllScalars) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.FieldBytes = append(m.FieldBytes[:0], dAtA[iNdEx:postIndex]...)
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 14
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
+			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -3265,9 +2446,10 @@ func (m *AllOptionalScalars) unmarshal(dAtA []byte, depth int) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
+		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -3641,6 +2823,7 @@ func (m *AllOptionalScalars) unmarshal(dAtA []byte, depth int) error {
 			if err != nil {
 				return err
 			}
+			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -3726,9 +2909,10 @@ func (m *AllRepeatedScalars) unmarshal(dAtA []byte, depth int) error {
 		}
 	}
 	for iNdEx < l {
+		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -4647,6 +3831,7 @@ func (m *AllRepeatedScalars) unmarshal(dAtA []byte, depth int) error {
 			if err != nil {
 				return err
 			}
+			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -4667,9 +3852,10 @@ func (m *OneofVariants) unmarshal(dAtA []byte, depth int) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
+		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -5032,6 +4218,7 @@ func (m *OneofVariants) unmarshal(dAtA []byte, depth int) error {
 			if err != nil {
 				return err
 			}
+			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -5111,9 +4298,10 @@ func (m *Outer) unmarshal(dAtA []byte, depth int) error {
 		}
 	}
 	for iNdEx < l {
+		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -5171,7 +4359,6 @@ func (m *Outer) unmarshal(dAtA []byte, depth int) error {
 				return err
 			}
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
 		case 2: // middles
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5249,12 +4436,12 @@ func (m *Outer) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Name = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 1
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
+			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -5334,9 +4521,10 @@ func (m *Middle) unmarshal(dAtA []byte, depth int) error {
 		}
 	}
 	for iNdEx < l {
+		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -5394,7 +4582,6 @@ func (m *Middle) unmarshal(dAtA []byte, depth int) error {
 				return err
 			}
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
 		case 2: // inners
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5460,12 +4647,12 @@ func (m *Middle) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.Value = int64(v)
-			m.fieldsPresent[0] |= 1 << 1
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
+			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -5486,9 +4673,10 @@ func (m *Inner) unmarshal(dAtA []byte, depth int) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
+		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -5544,7 +4732,6 @@ func (m *Inner) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Data = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
 		case 2: // raw
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5582,7 +4769,6 @@ func (m *Inner) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Raw = append(m.Raw[:0], dAtA[iNdEx:postIndex]...)
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 1
 		case 3: // signed_val
 			if wireType != 0 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5608,7 +4794,6 @@ func (m *Inner) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.SignedVal = int64(v>>1) ^ int64(v)<<63>>63
-			m.fieldsPresent[0] |= 1 << 2
 		case 4: // fixed_val
 			if wireType != 5 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5624,12 +4809,12 @@ func (m *Inner) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint32(dAtA[iNdEx:])
 			iNdEx += 4
 			m.FixedVal = int32(v)
-			m.fieldsPresent[0] |= 1 << 3
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
+			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -5650,9 +4835,10 @@ func (m *HighFieldNumbers) unmarshal(dAtA []byte, depth int) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
+		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -5708,7 +4894,6 @@ func (m *HighFieldNumbers) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Field1 = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
 		case 16: // field_16
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5746,7 +4931,6 @@ func (m *HighFieldNumbers) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Field16 = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 1
 		case 128: // field_128
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5784,7 +4968,6 @@ func (m *HighFieldNumbers) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Field128 = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 2
 		case 2048: // field_2048
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5822,7 +5005,6 @@ func (m *HighFieldNumbers) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Field2048 = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 3
 		case 16384: // field_16384
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5860,12 +5042,12 @@ func (m *HighFieldNumbers) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Field16384 = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 4
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
+			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -5886,9 +5068,10 @@ func (m *WithEnum) unmarshal(dAtA []byte, depth int) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
+		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -5932,7 +5115,6 @@ func (m *WithEnum) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.Color = Color(v)
-			m.fieldsPresent[0] |= 1 << 0
 		case 2: // colors
 			if wireType == 2 {
 				var byteLen uint64
@@ -6009,6 +5191,7 @@ func (m *WithEnum) unmarshal(dAtA []byte, depth int) error {
 			if err != nil {
 				return err
 			}
+			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -6029,9 +5212,10 @@ func (m *Empty) unmarshal(dAtA []byte, depth int) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
+		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -6055,6 +5239,7 @@ func (m *Empty) unmarshal(dAtA []byte, depth int) error {
 			if err != nil {
 				return err
 			}
+			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -6140,9 +5325,10 @@ func (m *OnlyRepeated) unmarshal(dAtA []byte, depth int) error {
 		}
 	}
 	for iNdEx < l {
+		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -6314,6 +5500,7 @@ func (m *OnlyRepeated) unmarshal(dAtA []byte, depth int) error {
 			if err != nil {
 				return err
 			}
+			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -6393,9 +5580,10 @@ func (m *Container) unmarshal(dAtA []byte, depth int) error {
 		}
 	}
 	for iNdEx < l {
+		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -6453,7 +5641,6 @@ func (m *Container) unmarshal(dAtA []byte, depth int) error {
 				return err
 			}
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
 		case 2: // scalars
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -6493,7 +5680,6 @@ func (m *Container) unmarshal(dAtA []byte, depth int) error {
 				return err
 			}
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 1
 		case 3: // variants
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -6539,6 +5725,7 @@ func (m *Container) unmarshal(dAtA []byte, depth int) error {
 			if err != nil {
 				return err
 			}
+			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -6714,9 +5901,10 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 		}
 	}
 	for iNdEx < l {
+		tagStart := iNdEx
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
+			if shift >= 35 {
 				return fmt.Errorf("proto: integer overflow")
 			}
 			if iNdEx >= l {
@@ -8095,6 +7283,7 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			}
 			var mapkey string
 			var mapvalue Inner
+			var mapValueBytes []byte
 			entryData := dAtA[iNdEx:postIndex]
 			for len(entryData) > 0 {
 				entryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)
@@ -8135,6 +7324,7 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 						return err
 					}
 					entryData = entryData[tmpN:]
+					mapValueBytes = tmpVal
 				default:
 					skipN, skipErr := skipField(entryData, entryNum, entryTyp)
 					if skipErr != nil {
@@ -8143,7 +7333,14 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 					entryData = entryData[skipN:]
 				}
 			}
-			m.MapStringMessage[mapkey] = mapvalue
+			if existing, ok := m.MapStringMessage[mapkey]; ok && len(mapValueBytes) > 0 {
+				if err := existing.unmarshal(mapValueBytes, depth+1); err != nil {
+					return err
+				}
+				m.MapStringMessage[mapkey] = existing
+			} else {
+				m.MapStringMessage[mapkey] = mapvalue
+			}
 			iNdEx = postIndex
 		case 17: // map_string_enum
 			if wireType != 2 {
@@ -8238,6 +7435,7 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			if err != nil {
 				return err
 			}
+			m.unknownFields = append(m.unknownFields, dAtA[tagStart:iNdEx+n]...)
 			iNdEx += n
 		}
 	}
@@ -8309,6 +7507,9 @@ func (this *AllScalars) Equal(that interface{}) bool {
 		return false
 	}
 	if !bytes.Equal(this.FieldBytes, that1.FieldBytes) {
+		return false
+	}
+	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
 		return false
 	}
 	return true
@@ -8449,6 +7650,9 @@ func (this *AllOptionalScalars) Equal(that interface{}) bool {
 		return false
 	}
 	if !bytes.Equal(this.FieldBytes, that1.FieldBytes) {
+		return false
+	}
+	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
 		return false
 	}
 	return true
@@ -8592,6 +7796,9 @@ func (this *AllRepeatedScalars) Equal(that interface{}) bool {
 		if !bytes.Equal(this.FieldBytes[i], that1.FieldBytes[i]) {
 			return false
 		}
+	}
+	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
+		return false
 	}
 	return true
 }
@@ -8744,6 +7951,9 @@ func (this *OneofVariants) Equal(that interface{}) bool {
 			return false
 		}
 	}
+	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
+		return false
+	}
 	return true
 }
 
@@ -8778,6 +7988,9 @@ func (this *Outer) Equal(that interface{}) bool {
 		}
 	}
 	if this.Name != that1.Name {
+		return false
+	}
+	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
 		return false
 	}
 	return true
@@ -8816,6 +8029,9 @@ func (this *Middle) Equal(that interface{}) bool {
 	if this.Value != that1.Value {
 		return false
 	}
+	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
+		return false
+	}
 	return true
 }
 
@@ -8848,6 +8064,9 @@ func (this *Inner) Equal(that interface{}) bool {
 		return false
 	}
 	if this.FixedVal != that1.FixedVal {
+		return false
+	}
+	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
 		return false
 	}
 	return true
@@ -8887,6 +8106,9 @@ func (this *HighFieldNumbers) Equal(that interface{}) bool {
 	if this.Field16384 != that1.Field16384 {
 		return false
 	}
+	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
+		return false
+	}
 	return true
 }
 
@@ -8920,6 +8142,9 @@ func (this *WithEnum) Equal(that interface{}) bool {
 			return false
 		}
 	}
+	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
+		return false
+	}
 	return true
 }
 
@@ -8940,6 +8165,9 @@ func (this *Empty) Equal(that interface{}) bool {
 	if that1 == nil {
 		return this == nil
 	} else if this == nil {
+		return false
+	}
+	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
 		return false
 	}
 	return true
@@ -8988,6 +8216,9 @@ func (this *OnlyRepeated) Equal(that interface{}) bool {
 			return false
 		}
 	}
+	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
+		return false
+	}
 	return true
 }
 
@@ -9023,6 +8254,9 @@ func (this *Container) Equal(that interface{}) bool {
 		if !this.Variants[i].Equal(that1.Variants[i]) {
 			return false
 		}
+	}
+	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
+		return false
 	}
 	return true
 }
@@ -9249,6 +8483,9 @@ func (this *AllMaps) Equal(that interface{}) bool {
 		if v != v2 {
 			return false
 		}
+	}
+	if !bytes.Equal(this.unknownFields, that1.unknownFields) {
+		return false
 	}
 	return true
 }

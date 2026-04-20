@@ -30,6 +30,7 @@ func (fg *FileGenerator) emitSize(md protoreflect.MessageDescriptor) {
 		fg.emitFieldSize(fd)
 	}
 
+	fmt.Fprintf(fg.body, "\tn += len(m.unknownFields)\n")
 	fmt.Fprintf(fg.body, "\treturn n\n")
 	fmt.Fprintf(fg.body, "}\n\n")
 }
