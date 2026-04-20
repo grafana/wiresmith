@@ -57,13 +57,15 @@ func (s StringType) EmitValueMarshal(e Emitter, indent, access string, num proto
 
 // --- Unmarshal ---
 
-func (StringType) EmitConsume(e Emitter)                            { emitConsumeString(e) }
-func (StringType) CastExpr(varName string, ctx FieldContext) string { return varName }
+func (StringType) EmitConsume(e Emitter) { emitConsumeBytesLen(e) }
+func (StringType) CastExpr(varName string, ctx FieldContext) string {
+	return "string(" + varName + ")"
+}
 
 func (StringType) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
-	emitConsumeString(e)
-	e.Writef("\t\t\t%s = v\n", access)
-	emitAdvanceBytes(e)
+	emitConsumeBytesLen(e)
+	e.Writef("\t\t\t%s = string(dAtA[iNdEx:postIndex])\n", access)
+	e.Writef("\t\t\tiNdEx = postIndex\n")
 }
 
 func (StringType) EmitMapEntryUnmarshal(e Emitter, varName, indent string, ctx FieldContext) {

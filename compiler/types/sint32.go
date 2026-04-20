@@ -63,19 +63,18 @@ func (s Sint32Type) EmitValueMarshal(e Emitter, indent, access string, num proto
 func (Sint32Type) EmitConsume(e Emitter) { emitConsumeVarint(e) }
 
 func (Sint32Type) CastExpr(varName string, ctx FieldContext) string {
-	return fmt.Sprintf("int32(protowire.DecodeZigZag(%s))", varName)
+	return fmt.Sprintf("int32(uint32(%s)>>1) ^ int32(uint32(%s))<<31>>31", varName, varName)
 }
 
 func (Sint32Type) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
 	emitConsumeVarint(e)
-	e.Writef("\t\t\t%s = int32(protowire.DecodeZigZag(v))\n", access)
-	emitAdvanceBytes(e)
+	e.Writef("\t\t\t%s = int32(uint32(v)>>1) ^ int32(uint32(v))<<31>>31\n", access)
 }
 
 func (Sint32Type) EmitMapEntryUnmarshal(e Emitter, varName, indent string, ctx FieldContext) {
 	e.Writef("%stmpVal, tmpN := protowire.ConsumeVarint(entryData)\n", indent)
 	e.Writef("%sif tmpN < 0 {\n%s\treturn fmt.Errorf(\"invalid varint\")\n%s}\n", indent, indent, indent)
-	e.Writef("%s%s = int32(protowire.DecodeZigZag(tmpVal))\n", indent, varName)
+	e.Writef("%s%s = int32(uint32(tmpVal)>>1) ^ int32(uint32(tmpVal))<<31>>31\n", indent, varName)
 	e.Writef("%sentryData = entryData[tmpN:]\n", indent)
 }
 

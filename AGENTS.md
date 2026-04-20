@@ -53,9 +53,9 @@ Not supported (not needed for OTel protos): services/RPCs, extensions, well-know
 
 ## Conformance test status
 
-682 passing, 11 expected failures (4 sint normalization, 4 message merge, 1 overlong varint tag, 2 unknown field preservation). Run with `make conformance`.
+693 passing, 7 expected failures (4 message merge, 1 overlong varint tag, 2 unknown field preservation). Run with `make conformance`.
 
-**Updating the failure list:** The conformance runner silently ignores failure list entries that no longer match any test (e.g. after a bug fix resolves a previously-failing test). It does not report "unexpected passes." After changing supported features or fixing conformance-related bugs, run without the failure list to get the true failure set:
+**Updating the failure list:** The conformance runner errors when a failure list entry matches a now-passing test ("is in the failure list, but test succeeded"). After fixing conformance-related bugs, run conformance and remove entries that the runner flags:
 
 ```
 docker run --rm --entrypoint conformance_test_runner wiresmith-conformance /usr/local/bin/testee

@@ -62,16 +62,16 @@ func (MessageType) EmitValueMarshal(e Emitter, indent, access string, num protow
 
 // --- Unmarshal ---
 
-func (MessageType) EmitConsume(e Emitter) { emitConsumeBytes(e) }
+func (MessageType) EmitConsume(e Emitter) { emitConsumeBytesLen(e) }
 
 func (MessageType) CastExpr(varName string, ctx FieldContext) string {
 	panic("CastExpr called on message type")
 }
 
 func (MessageType) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
-	emitConsumeBytes(e)
+	emitConsumeBytesLen(e)
 	emitUnmarshalCall(e, access, ctx.IsSamePackage)
-	emitAdvanceBytes(e)
+	e.Writef("\t\t\tiNdEx = postIndex\n")
 }
 
 func (MessageType) EmitMapEntryUnmarshal(e Emitter, varName, indent string, ctx FieldContext) {

@@ -69,7 +69,6 @@ func (v varintBase) CastExpr(varName string, ctx FieldContext) string {
 func (v varintBase) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
 	emitConsumeVarint(e)
 	e.Writef("\t\t\t%s = %s\n", access, v.cast("v"))
-	emitAdvanceBytes(e)
 }
 
 func (v varintBase) EmitMapEntryUnmarshal(e Emitter, varName, indent string, ctx FieldContext) {

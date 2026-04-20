@@ -69,14 +69,14 @@ func (m *MapField) EmitMarshal(e Emitter, access string, num protowire.Number) {
 }
 
 func (m *MapField) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
-	emitConsumeBytes(e)
+	emitConsumeBytesLen(e)
 
 	e.Writef("\t\t\tif %s == nil {\n", access)
 	e.Writef("\t\t\t\t%s = make(%s)\n", access, m.MapType)
 	e.Writef("\t\t\t}\n")
 	e.Writef("\t\t\tvar mapkey %s\n", m.KeyGoType)
 	e.Writef("\t\t\tvar mapvalue %s\n", m.ValGoType)
-	e.Writef("\t\t\tentryData := v\n")
+	e.Writef("\t\t\tentryData := dAtA[iNdEx:postIndex]\n")
 	e.Writef("\t\t\tfor len(entryData) > 0 {\n")
 	e.Writef("\t\t\t\tentryNum, entryTyp, entryTagLen := protowire.ConsumeTag(entryData)\n")
 	e.Writef("\t\t\t\tif entryTagLen < 0 {\n\t\t\t\t\treturn fmt.Errorf(\"invalid map entry tag\")\n\t\t\t\t}\n")
@@ -102,8 +102,7 @@ func (m *MapField) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
 	e.Writef("\t\t\t\t}\n") // end switch
 	e.Writef("\t\t\t}\n")   // end for
 	e.Writef("\t\t\t%s[mapkey] = mapvalue\n", access)
-
-	emitAdvanceBytes(e)
+	e.Writef("\t\t\tiNdEx = postIndex\n")
 }
 
 func (m *MapField) emitMapEntryWireTypeCheck(e Emitter, wt string) {

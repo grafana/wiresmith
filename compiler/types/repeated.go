@@ -130,15 +130,17 @@ func (r *RepeatedField) emitNonPackableUnmarshal(e Emitter, access string, ctx F
 		sliceAccess := fmt.Sprintf("%s[len(%s)-1]", access, access)
 		emitUnmarshalCall(e, sliceAccess, ctx.IsSamePackage)
 	} else {
-		e.Writef("\t\t\t%s = append(%s, %s)\n", access, access, r.Inner.CastExpr("v", ctx))
+		e.Writef("\t\t\t%s = append(%s, %s)\n", access, access, r.Inner.CastExpr("dAtA[iNdEx:postIndex]", ctx))
 	}
-	emitAdvanceBytes(e)
+	e.Writef("\t\t\tiNdEx = postIndex\n")
 }
 
 func (r *RepeatedField) emitPackedUnmarshal(e Emitter, access string, ctx FieldContext) {
-	e.Writef("\t\t\tif typ == protowire.BytesType {\n")
-	e.Writef("\t\t\t\tdata, n := protowire.ConsumeBytes(b)\n")
-	e.Writef("\t\t\t\tif n < 0 {\n\t\t\t\t\treturn fmt.Errorf(\"invalid packed field\")\n\t\t\t\t}\n")
+	e.Writef("\t\t\tif wireType == 2 {\n")
+
+	// Inline length decode for the packed data envelope.
+	emitConsumeBytesLenAt(e, "\t\t\t\t")
+	e.Writef("\t\t\t\tdata := dAtA[iNdEx:postIndex]\n")
 
 	// Pre-allocate with exact capacity
 	switch r.Inner.FixedSize() {
@@ -166,7 +168,7 @@ func (r *RepeatedField) emitPackedUnmarshal(e Emitter, access string, ctx FieldC
 		e.Writef("\t\t\t\t}\n")
 	}
 
-	// Decode loop
+	// Decode loop (uses protowire on bounded data slice)
 	e.Writef("\t\t\t\tfor len(data) > 0 {\n")
 	if r.Inner.IsFixed64() {
 		e.Writef("\t\t\t\t\tv, vn := protowire.ConsumeFixed64(data)\n")
@@ -181,28 +183,29 @@ func (r *RepeatedField) emitPackedUnmarshal(e Emitter, access string, ctx FieldC
 	e.Writef("\t\t\t\t\t%s = append(%s, %s)\n", access, access, r.Inner.CastExpr("v", ctx))
 	e.Writef("\t\t\t\t\tdata = data[vn:]\n")
 	e.Writef("\t\t\t\t}\n")
-	e.Writef("\t\t\t\tb = b[n:]\n")
+	e.Writef("\t\t\t\tiNdEx = postIndex\n")
 
-	// Non-packed single element path
-	nativeWt := r.Inner.WireType()
-	e.Writef("\t\t\t} else if typ == %s {\n", nativeWt)
+	// Non-packed single element path (inline decode)
+	nativeWtInt := 0 // varint by default
 	if r.Inner.IsFixed64() {
-		e.Writef("\t\t\t\tv, n := protowire.ConsumeFixed64(b)\n")
-		e.Writef("\t\t\t\tif n < 0 {\n\t\t\t\t\treturn fmt.Errorf(\"invalid fixed64\")\n\t\t\t\t}\n")
+		nativeWtInt = 1
 	} else if r.Inner.IsFixed32() {
-		e.Writef("\t\t\t\tv, n := protowire.ConsumeFixed32(b)\n")
-		e.Writef("\t\t\t\tif n < 0 {\n\t\t\t\t\treturn fmt.Errorf(\"invalid fixed32\")\n\t\t\t\t}\n")
-	} else {
-		e.Writef("\t\t\t\tv, n := protowire.ConsumeVarint(b)\n")
-		e.Writef("\t\t\t\tif n < 0 {\n\t\t\t\t\treturn fmt.Errorf(\"invalid varint\")\n\t\t\t\t}\n")
+		nativeWtInt = 5
 	}
-	e.Writef("\t\t\t\t\t%s = append(%s, %s)\n", access, access, r.Inner.CastExpr("v", ctx))
-	e.Writef("\t\t\t\tb = b[n:]\n")
+	e.Writef("\t\t\t} else if wireType == %d {\n", nativeWtInt)
+	if r.Inner.IsFixed64() {
+		emitConsumeFixed64At(e, "\t\t\t\t")
+	} else if r.Inner.IsFixed32() {
+		emitConsumeFixed32At(e, "\t\t\t\t")
+	} else {
+		emitConsumeVarintAt(e, "\t\t\t\t")
+	}
+	e.Writef("\t\t\t\t%s = append(%s, %s)\n", access, access, r.Inner.CastExpr("v", ctx))
 
 	// Skip unknown wire type
 	e.Writef("\t\t\t} else {\n")
-	e.Writef("\t\t\t\tn, err := skipField(b, num, typ)\n")
+	e.Writef("\t\t\t\tn, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)\n")
 	e.Writef("\t\t\t\tif err != nil {\n\t\t\t\t\treturn err\n\t\t\t\t}\n")
-	e.Writef("\t\t\t\tb = b[n:]\n")
+	e.Writef("\t\t\t\tiNdEx += n\n")
 	e.Writef("\t\t\t}\n")
 }

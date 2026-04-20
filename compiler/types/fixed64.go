@@ -76,7 +76,6 @@ func (f fixed64Base) CastExpr(varName string, ctx FieldContext) string {
 func (f fixed64Base) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
 	emitConsumeFixed64(e)
 	e.Writef("\t\t\t%s = %s\n", access, f.get("v"))
-	emitAdvanceBytes(e)
 }
 
 func (f fixed64Base) EmitMapEntryUnmarshal(e Emitter, varName, indent string, ctx FieldContext) {
