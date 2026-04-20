@@ -1,7 +1,6 @@
 package protohelpers
 
 import (
-	"maps"
 	"reflect"
 )
 
@@ -35,12 +34,8 @@ func MessageType(fullName string) reflect.Type {
 	return messageTypes[fullName]
 }
 
-// EnumValueMap returns a copy of the string→int32 map for a registered enum,
+// EnumValueMap returns the string→int32 map for a registered enum name,
 // or nil if not registered.
 func EnumValueMap(fullName string) map[string]int32 {
-	m := enumValues[fullName]
-	if m == nil {
-		return nil
-	}
-	return maps.Clone(m)
+	return enumValues[fullName]
 }
