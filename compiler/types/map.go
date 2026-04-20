@@ -88,10 +88,10 @@ func (m *MapField) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
 	e.AddImport("io", "")
 	e.Writef("\t\t\tfor iNdEx < postIndex {\n")
 
-	// Inline tag decode with shift overflow guard
+	// Inline tag decode — tags are 32-bit, reject after 5 bytes
 	e.Writef("\t\t\t\tvar entryWire uint64\n")
 	e.Writef("\t\t\t\tfor shift := uint(0); ; shift += 7 {\n")
-	e.Writef("\t\t\t\t\tif shift >= 64 {\n\t\t\t\t\t\treturn fmt.Errorf(\"proto: integer overflow\")\n\t\t\t\t\t}\n")
+	e.Writef("\t\t\t\t\tif shift >= 35 {\n\t\t\t\t\t\treturn fmt.Errorf(\"proto: integer overflow\")\n\t\t\t\t\t}\n")
 	e.Writef("\t\t\t\t\tif iNdEx >= l {\n\t\t\t\t\t\treturn io.ErrUnexpectedEOF\n\t\t\t\t\t}\n")
 	e.Writef("\t\t\t\t\tb := dAtA[iNdEx]\n")
 	e.Writef("\t\t\t\t\tiNdEx++\n")

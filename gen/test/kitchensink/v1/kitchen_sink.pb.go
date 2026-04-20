@@ -6963,7 +6963,7 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
+					if shift >= 35 {
 						return fmt.Errorf("proto: integer overflow")
 					}
 					if iNdEx >= l {
@@ -7080,7 +7080,7 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
+					if shift >= 35 {
 						return fmt.Errorf("proto: integer overflow")
 					}
 					if iNdEx >= l {
@@ -7197,7 +7197,7 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
+					if shift >= 35 {
 						return fmt.Errorf("proto: integer overflow")
 					}
 					if iNdEx >= l {
@@ -7314,7 +7314,7 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
+					if shift >= 35 {
 						return fmt.Errorf("proto: integer overflow")
 					}
 					if iNdEx >= l {
@@ -7431,7 +7431,7 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
+					if shift >= 35 {
 						return fmt.Errorf("proto: integer overflow")
 					}
 					if iNdEx >= l {
@@ -7548,7 +7548,7 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
+					if shift >= 35 {
 						return fmt.Errorf("proto: integer overflow")
 					}
 					if iNdEx >= l {
@@ -7665,7 +7665,7 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
+					if shift >= 35 {
 						return fmt.Errorf("proto: integer overflow")
 					}
 					if iNdEx >= l {
@@ -7762,7 +7762,7 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
+					if shift >= 35 {
 						return fmt.Errorf("proto: integer overflow")
 					}
 					if iNdEx >= l {
@@ -7859,7 +7859,7 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
+					if shift >= 35 {
 						return fmt.Errorf("proto: integer overflow")
 					}
 					if iNdEx >= l {
@@ -7956,7 +7956,7 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
+					if shift >= 35 {
 						return fmt.Errorf("proto: integer overflow")
 					}
 					if iNdEx >= l {
@@ -8053,7 +8053,7 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
+					if shift >= 35 {
 						return fmt.Errorf("proto: integer overflow")
 					}
 					if iNdEx >= l {
@@ -8170,7 +8170,7 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
+					if shift >= 35 {
 						return fmt.Errorf("proto: integer overflow")
 					}
 					if iNdEx >= l {
@@ -8311,7 +8311,7 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
+					if shift >= 35 {
 						return fmt.Errorf("proto: integer overflow")
 					}
 					if iNdEx >= l {
@@ -8452,7 +8452,7 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
+					if shift >= 35 {
 						return fmt.Errorf("proto: integer overflow")
 					}
 					if iNdEx >= l {
@@ -8559,7 +8559,7 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
+					if shift >= 35 {
 						return fmt.Errorf("proto: integer overflow")
 					}
 					if iNdEx >= l {
@@ -8667,7 +8667,7 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
+					if shift >= 35 {
 						return fmt.Errorf("proto: integer overflow")
 					}
 					if iNdEx >= l {
@@ -8819,7 +8819,7 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
+					if shift >= 35 {
 						return fmt.Errorf("proto: integer overflow")
 					}
 					if iNdEx >= l {
