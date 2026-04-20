@@ -88,9 +88,10 @@ func (m *MapField) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
 	e.AddImport("io", "")
 	e.Writef("\t\t\tfor iNdEx < postIndex {\n")
 
-	// Inline tag decode
+	// Inline tag decode with shift overflow guard
 	e.Writef("\t\t\t\tvar entryWire uint64\n")
 	e.Writef("\t\t\t\tfor shift := uint(0); ; shift += 7 {\n")
+	e.Writef("\t\t\t\t\tif shift >= 64 {\n\t\t\t\t\t\treturn fmt.Errorf(\"proto: integer overflow\")\n\t\t\t\t\t}\n")
 	e.Writef("\t\t\t\t\tif iNdEx >= l {\n\t\t\t\t\t\treturn io.ErrUnexpectedEOF\n\t\t\t\t\t}\n")
 	e.Writef("\t\t\t\t\tb := dAtA[iNdEx]\n")
 	e.Writef("\t\t\t\t\tiNdEx++\n")
@@ -124,16 +125,18 @@ func (m *MapField) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
 	e.Writef("\t\t\t}\n")   // end for
 
 	if isMsg {
-		// Merge semantics: if the key already exists, unmarshal the new
-		// value bytes into the existing message instead of replacing it.
-		e.Writef("\t\t\tif existing, ok := %s[mapkey]; ok && len(mapValueBytes) > 0 {\n", access)
+		// Merge semantics: if the key already exists and the value field
+		// was present (even if empty), merge into the existing message.
+		// When value is absent (mapValueBytes == nil) and key exists,
+		// preserve the existing entry per proto merge rules.
+		e.Writef("\t\t\tif existing, ok := %s[mapkey]; ok && mapValueBytes != nil {\n", access)
 		if m.ValCtx.IsSamePackage {
 			e.Writef("\t\t\t\tif err := existing.unmarshal(mapValueBytes, depth+1); err != nil {\n\t\t\t\t\treturn err\n\t\t\t\t}\n")
 		} else {
 			e.Writef("\t\t\t\tif err := existing.Unmarshal(mapValueBytes); err != nil {\n\t\t\t\t\treturn err\n\t\t\t\t}\n")
 		}
 		e.Writef("\t\t\t\t%s[mapkey] = existing\n", access)
-		e.Writef("\t\t\t} else {\n")
+		e.Writef("\t\t\t} else if !ok {\n")
 		e.Writef("\t\t\t\t%s[mapkey] = mapvalue\n", access)
 		e.Writef("\t\t\t}\n")
 	} else {

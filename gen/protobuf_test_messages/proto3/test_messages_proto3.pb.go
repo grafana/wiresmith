@@ -5450,6 +5450,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
 					if iNdEx >= l {
 						return io.ErrUnexpectedEOF
 					}
@@ -5564,6 +5567,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
 					if iNdEx >= l {
 						return io.ErrUnexpectedEOF
 					}
@@ -5678,6 +5684,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
 					if iNdEx >= l {
 						return io.ErrUnexpectedEOF
 					}
@@ -5792,6 +5801,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
 					if iNdEx >= l {
 						return io.ErrUnexpectedEOF
 					}
@@ -5906,6 +5918,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
 					if iNdEx >= l {
 						return io.ErrUnexpectedEOF
 					}
@@ -6020,6 +6035,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
 					if iNdEx >= l {
 						return io.ErrUnexpectedEOF
 					}
@@ -6134,6 +6152,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
 					if iNdEx >= l {
 						return io.ErrUnexpectedEOF
 					}
@@ -6228,6 +6249,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
 					if iNdEx >= l {
 						return io.ErrUnexpectedEOF
 					}
@@ -6322,6 +6346,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
 					if iNdEx >= l {
 						return io.ErrUnexpectedEOF
 					}
@@ -6416,6 +6443,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
 					if iNdEx >= l {
 						return io.ErrUnexpectedEOF
 					}
@@ -6510,6 +6540,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
 					if iNdEx >= l {
 						return io.ErrUnexpectedEOF
 					}
@@ -6614,6 +6647,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
 					if iNdEx >= l {
 						return io.ErrUnexpectedEOF
 					}
@@ -6718,6 +6754,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
 					if iNdEx >= l {
 						return io.ErrUnexpectedEOF
 					}
@@ -6832,6 +6871,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
 					if iNdEx >= l {
 						return io.ErrUnexpectedEOF
 					}
@@ -6970,6 +7012,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
 					if iNdEx >= l {
 						return io.ErrUnexpectedEOF
 					}
@@ -7109,6 +7154,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
 					if iNdEx >= l {
 						return io.ErrUnexpectedEOF
 					}
@@ -7206,12 +7254,12 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					iNdEx += n
 				}
 			}
-			if existing, ok := m.MapStringNestedMessage[mapkey]; ok && len(mapValueBytes) > 0 {
+			if existing, ok := m.MapStringNestedMessage[mapkey]; ok && mapValueBytes != nil {
 				if err := existing.unmarshal(mapValueBytes, depth+1); err != nil {
 					return err
 				}
 				m.MapStringNestedMessage[mapkey] = existing
-			} else {
+			} else if !ok {
 				m.MapStringNestedMessage[mapkey] = mapvalue
 			}
 			iNdEx = postIndex
@@ -7259,6 +7307,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
 					if iNdEx >= l {
 						return io.ErrUnexpectedEOF
 					}
@@ -7356,12 +7407,12 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					iNdEx += n
 				}
 			}
-			if existing, ok := m.MapStringForeignMessage[mapkey]; ok && len(mapValueBytes) > 0 {
+			if existing, ok := m.MapStringForeignMessage[mapkey]; ok && mapValueBytes != nil {
 				if err := existing.unmarshal(mapValueBytes, depth+1); err != nil {
 					return err
 				}
 				m.MapStringForeignMessage[mapkey] = existing
-			} else {
+			} else if !ok {
 				m.MapStringForeignMessage[mapkey] = mapvalue
 			}
 			iNdEx = postIndex
@@ -7408,6 +7459,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
 					if iNdEx >= l {
 						return io.ErrUnexpectedEOF
 					}
@@ -7534,6 +7588,9 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
 					if iNdEx >= l {
 						return io.ErrUnexpectedEOF
 					}

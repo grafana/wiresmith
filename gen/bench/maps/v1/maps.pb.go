@@ -466,6 +466,9 @@ func (m *MapBench) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
 					if iNdEx >= l {
 						return io.ErrUnexpectedEOF
 					}
@@ -604,6 +607,9 @@ func (m *MapBench) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
 					if iNdEx >= l {
 						return io.ErrUnexpectedEOF
 					}
@@ -719,6 +725,9 @@ func (m *MapBench) unmarshal(dAtA []byte, depth int) error {
 			for iNdEx < postIndex {
 				var entryWire uint64
 				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
 					if iNdEx >= l {
 						return io.ErrUnexpectedEOF
 					}
@@ -816,12 +825,12 @@ func (m *MapBench) unmarshal(dAtA []byte, depth int) error {
 					iNdEx += n
 				}
 			}
-			if existing, ok := m.MessageMap[mapkey]; ok && len(mapValueBytes) > 0 {
+			if existing, ok := m.MessageMap[mapkey]; ok && mapValueBytes != nil {
 				if err := existing.unmarshal(mapValueBytes, depth+1); err != nil {
 					return err
 				}
 				m.MessageMap[mapkey] = existing
-			} else {
+			} else if !ok {
 				m.MessageMap[mapkey] = mapvalue
 			}
 			iNdEx = postIndex
