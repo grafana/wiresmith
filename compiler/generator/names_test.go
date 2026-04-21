@@ -123,6 +123,11 @@ func TestParseGoPackage(t *testing.T) {
 		{"wiresmith/gen/test/kitchensink/v1", "wiresmith/gen/test/kitchensink/v1", "v1"},
 		{"go.opentelemetry.io/proto/otlp/common/v1", "go.opentelemetry.io/proto/otlp/common/v1", "v1"},
 		{"", "", ""},
+		// Empty semicolon name falls back to path.Base.
+		{"path/to/pkg;", "path/to/pkg", "pkg"},
+		// Dashes in path are sanitized to underscores.
+		{"example.com/my-pkg", "example.com/my-pkg", "my_pkg"},
+		{"example.com/my-pkg;clean", "example.com/my-pkg", "clean"},
 	}
 	for _, tt := range tests {
 		gotPath, gotName := parseGoPackage(tt.input)
@@ -258,5 +263,27 @@ func TestUniqueAliasSelfNameCollision(t *testing.T) {
 	got := it.uniqueAlias("v1", "example.com/common/v1", "v1")
 	if got != "v11" {
 		t.Errorf("uniqueAlias with selfName collision: got %q, want %q", got, "v11")
+	}
+}
+
+func TestCleanPackageName(t *testing.T) {
+	tests := []struct {
+		input string
+		want  string
+	}{
+		{"pkg", "pkg"},
+		{"my-pkg", "my_pkg"},
+		{"my.pkg", "my_pkg"},
+		{"123pkg", "_23pkg"},
+		{"", "_"},
+		{"v1", "v1"},
+		{"my_pkg", "my_pkg"},
+		{"pkg-with-many-dashes", "pkg_with_many_dashes"},
+	}
+	for _, tt := range tests {
+		got := cleanPackageName(tt.input)
+		if got != tt.want {
+			t.Errorf("cleanPackageName(%q) = %q, want %q", tt.input, got, tt.want)
+		}
 	}
 }

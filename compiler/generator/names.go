@@ -81,9 +81,31 @@ func parseGoPackage(goPackage string) (importPath, pkgName string) {
 		return "", ""
 	}
 	if i := strings.LastIndex(goPackage, ";"); i >= 0 {
-		return goPackage[:i], goPackage[i+1:]
+		importPath = goPackage[:i]
+		pkgName = goPackage[i+1:]
+		if pkgName == "" {
+			pkgName = cleanPackageName(path.Base(importPath))
+		}
+		return importPath, pkgName
 	}
-	return goPackage, path.Base(goPackage)
+	return goPackage, cleanPackageName(path.Base(goPackage))
+}
+
+// cleanPackageName replaces characters that are not valid in Go identifiers,
+// matching protogen/gogoproto behavior.
+func cleanPackageName(name string) string {
+	var b strings.Builder
+	for i, r := range name {
+		if r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r == '_' || (i > 0 && r >= '0' && r <= '9') {
+			b.WriteRune(r)
+		} else {
+			b.WriteByte('_')
+		}
+	}
+	if b.Len() == 0 {
+		return "_"
+	}
+	return b.String()
 }
 
 // resolveGoPackage checks whether protoPkg has a go_package option matching
