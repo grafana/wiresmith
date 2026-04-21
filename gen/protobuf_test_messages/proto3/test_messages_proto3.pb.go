@@ -11345,11 +11345,11 @@ func (this *EnumOnlyProto3) Equal(that interface{}) bool {
 
 func init() {
 	protohelpers.RegisterEnum("protobuf_test_messages.proto3.ForeignEnum", ForeignEnum_name, ForeignEnum_value)
-	protohelpers.RegisterEnum("protobuf_test_messages.proto3.TestAllTypesProto3.NestedEnum", TestAllTypesProto3_NestedEnum_name, TestAllTypesProto3_NestedEnum_value)
-	protohelpers.RegisterEnum("protobuf_test_messages.proto3.EnumOnlyProto3.Bool", EnumOnlyProto3_Bool_name, EnumOnlyProto3_Bool_value)
-	protohelpers.RegisterType((*TestAllTypesProto3)(nil), "protobuf_test_messages.proto3.TestAllTypesProto3")
 	protohelpers.RegisterType((*TestAllTypesProto3_NestedMessage)(nil), "protobuf_test_messages.proto3.TestAllTypesProto3.NestedMessage")
+	protohelpers.RegisterEnum("protobuf_test_messages.proto3.TestAllTypesProto3.NestedEnum", TestAllTypesProto3_NestedEnum_name, TestAllTypesProto3_NestedEnum_value)
+	protohelpers.RegisterType((*TestAllTypesProto3)(nil), "protobuf_test_messages.proto3.TestAllTypesProto3")
 	protohelpers.RegisterType((*ForeignMessage)(nil), "protobuf_test_messages.proto3.ForeignMessage")
 	protohelpers.RegisterType((*NullHypothesisProto3)(nil), "protobuf_test_messages.proto3.NullHypothesisProto3")
+	protohelpers.RegisterEnum("protobuf_test_messages.proto3.EnumOnlyProto3.Bool", EnumOnlyProto3_Bool_name, EnumOnlyProto3_Bool_value)
 	protohelpers.RegisterType((*EnumOnlyProto3)(nil), "protobuf_test_messages.proto3.EnumOnlyProto3")
 }

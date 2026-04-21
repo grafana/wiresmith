@@ -7,20 +7,7 @@ import (
 )
 
 func (fg *FileGenerator) emitAllEqualMethods(fd protoreflect.FileDescriptor) {
-	for i := 0; i < fd.Messages().Len(); i++ {
-		fg.emitEqualMethods(fd.Messages().Get(i))
-	}
-}
-
-func (fg *FileGenerator) emitEqualMethods(md protoreflect.MessageDescriptor) {
-	for i := 0; i < md.Messages().Len(); i++ {
-		nested := md.Messages().Get(i)
-		if nested.IsMapEntry() {
-			continue
-		}
-		fg.emitEqualMethods(nested)
-	}
-	fg.emitEqual(md)
+	forEachMessage(fd, fg.emitEqual)
 }
 
 func (fg *FileGenerator) emitEqual(md protoreflect.MessageDescriptor) {

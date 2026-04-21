@@ -7,20 +7,7 @@ import (
 )
 
 func (fg *FileGenerator) emitAllResetMethods(fd protoreflect.FileDescriptor) {
-	for i := 0; i < fd.Messages().Len(); i++ {
-		fg.emitResetMethods(fd.Messages().Get(i))
-	}
-}
-
-func (fg *FileGenerator) emitResetMethods(md protoreflect.MessageDescriptor) {
-	for i := 0; i < md.Messages().Len(); i++ {
-		nested := md.Messages().Get(i)
-		if nested.IsMapEntry() {
-			continue
-		}
-		fg.emitResetMethods(nested)
-	}
-	fg.emitReset(md)
+	forEachMessage(fd, fg.emitReset)
 }
 
 func (fg *FileGenerator) emitReset(md protoreflect.MessageDescriptor) {

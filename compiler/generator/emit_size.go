@@ -48,12 +48,10 @@ func (fg *FileGenerator) emitMessageSizeWithPresence(fd protoreflect.FieldDescri
 	goName := snakeToPascal(string(fd.Name()))
 	access := "m." + goName
 	tagSize := protowire.SizeTag(protowire.Number(fd.Number()))
-	wordIndex := bitIndex / 64
-	bitOffset := bitIndex % 64
 
 	fmt.Fprintf(fg.body, "\t{\n\t\ts := %s.Size()\n", access)
 	fmt.Fprintf(fg.body, "\t\tif s > 0 {\n\t\t\tn += %d + protowire.SizeVarint(uint64(s)) + s\n\t\t}", tagSize)
-	fmt.Fprintf(fg.body, " else if m.fieldsPresent[%d]&(1<<%d) != 0 {\n\t\t\tn += %d\n\t\t}\n", wordIndex, bitOffset, tagSize+1)
+	fmt.Fprintf(fg.body, " else if %s {\n\t\t\tn += %d\n\t\t}\n", presenceCheck(bitIndex), tagSize+1)
 	fmt.Fprintf(fg.body, "\t}\n")
 }
 

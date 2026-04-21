@@ -51,15 +51,25 @@ func presenceMap(md protoreflect.MessageDescriptor) map[protoreflect.FieldNumber
 	return m
 }
 
+// presenceCheck returns the Go expression "m.fieldsPresent[W]&(1<<B) != 0"
+// for the given bit index.
+func presenceCheck(bitIndex int) string {
+	return fmt.Sprintf("m.fieldsPresent[%d]&(1<<%d) != 0", bitIndex/64, bitIndex%64)
+}
+
+// presenceSet returns the Go statement "m.fieldsPresent[W] |= 1 << B"
+// for the given bit index.
+func presenceSet(bitIndex int) string {
+	return fmt.Sprintf("m.fieldsPresent[%d] |= 1 << %d", bitIndex/64, bitIndex%64)
+}
+
 func (fg *FileGenerator) emitHasMethods(md protoreflect.MessageDescriptor) {
 	name := goMessageTypeName(md)
 	for _, pf := range fieldsForPresence(md) {
 		goName := snakeToPascal(string(pf.fd.Name()))
-		wordIndex := pf.bitIndex / 64
-		bitOffset := pf.bitIndex % 64
 		fmt.Fprintf(fg.body, "func (m *%s) Has%s() bool {\n", name, goName)
 		fmt.Fprintf(fg.body, "\tif m == nil {\n\t\treturn false\n\t}\n")
-		fmt.Fprintf(fg.body, "\treturn m.fieldsPresent[%d]&(1<<%d) != 0\n", wordIndex, bitOffset)
+		fmt.Fprintf(fg.body, "\treturn %s\n", presenceCheck(pf.bitIndex))
 		fmt.Fprintf(fg.body, "}\n\n")
 	}
 }

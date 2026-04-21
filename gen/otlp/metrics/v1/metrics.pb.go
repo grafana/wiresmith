@@ -7712,9 +7712,9 @@ func init() {
 	protohelpers.RegisterType((*Summary)(nil), "opentelemetry.proto.metrics.v1.Summary")
 	protohelpers.RegisterType((*NumberDataPoint)(nil), "opentelemetry.proto.metrics.v1.NumberDataPoint")
 	protohelpers.RegisterType((*HistogramDataPoint)(nil), "opentelemetry.proto.metrics.v1.HistogramDataPoint")
-	protohelpers.RegisterType((*ExponentialHistogramDataPoint)(nil), "opentelemetry.proto.metrics.v1.ExponentialHistogramDataPoint")
 	protohelpers.RegisterType((*ExponentialHistogramDataPoint_Buckets)(nil), "opentelemetry.proto.metrics.v1.ExponentialHistogramDataPoint.Buckets")
-	protohelpers.RegisterType((*SummaryDataPoint)(nil), "opentelemetry.proto.metrics.v1.SummaryDataPoint")
+	protohelpers.RegisterType((*ExponentialHistogramDataPoint)(nil), "opentelemetry.proto.metrics.v1.ExponentialHistogramDataPoint")
 	protohelpers.RegisterType((*SummaryDataPoint_ValueAtQuantile)(nil), "opentelemetry.proto.metrics.v1.SummaryDataPoint.ValueAtQuantile")
+	protohelpers.RegisterType((*SummaryDataPoint)(nil), "opentelemetry.proto.metrics.v1.SummaryDataPoint")
 	protohelpers.RegisterType((*Exemplar)(nil), "opentelemetry.proto.metrics.v1.Exemplar")
 }
