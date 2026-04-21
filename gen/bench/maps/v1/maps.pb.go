@@ -12,15 +12,15 @@ import (
 )
 
 type MapBench struct {
-	StringMap  map[string]string
-	IntMap     map[int64]int64
-	MessageMap map[string]Inner
+	StringMap  map[string]string `protobuf:"bytes,1,rep,name=string_map,json=stringMap,proto3" json:"string_map,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	IntMap     map[int64]int64   `protobuf:"bytes,2,rep,name=int_map,json=intMap,proto3" json:"int_map,omitempty" protobuf_key:"varint,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	MessageMap map[string]Inner  `protobuf:"bytes,3,rep,name=message_map,json=messageMap,proto3" json:"message_map,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 }
 
 type Inner struct {
-	Name  string
-	Value int64
-	Data  []byte
+	Name  string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Value int64  `protobuf:"varint,2,opt,name=value,proto3" json:"value,omitempty"`
+	Data  []byte `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
 
 	fieldsPresent [1]uint64
 }
