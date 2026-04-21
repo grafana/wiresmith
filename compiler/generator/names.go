@@ -64,7 +64,7 @@ func goImportPath(module, protoPkg, stripPrefix, importBase string) string {
 	if importBase != "" {
 		return importBase + "/" + goPackageDir(protoPkg, stripPrefix)
 	}
-	return module + "/gen/" + goPackageDir(protoPkg, "")
+	return module + "/gen/" + goPackageDir(protoPkg, stripPrefix)
 }
 
 func helpersImportPath(module, helpersImport string) string {
@@ -95,11 +95,15 @@ func resolveGoPackage(protoPkg string, goPackages map[string]string, base string
 		return "", "", "", false
 	}
 	importPath, pkgName = parseGoPackage(goPkg)
-	if !strings.HasPrefix(importPath, base+"/") {
+	switch {
+	case importPath == base:
+		return importPath, "", pkgName, true
+	case strings.HasPrefix(importPath, base+"/"):
+		relDir = strings.TrimPrefix(importPath, base+"/")
+		return importPath, relDir, pkgName, true
+	default:
 		return "", "", "", false
 	}
-	relDir = strings.TrimPrefix(importPath, base+"/")
-	return importPath, relDir, pkgName, true
 }
 
 func goMessageTypeName(md protoreflect.MessageDescriptor) string {

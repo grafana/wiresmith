@@ -521,6 +521,100 @@ message Request { string id = 1; }`)
 	}
 }
 
+func TestGenerateStripPrefixWithoutImportBase(t *testing.T) {
+	// Regression: --strip_prefix without --import_base must produce
+	// consistent output dirs and import paths. Previously goImportPath
+	// ignored stripPrefix in the default branch, causing import/output mismatch.
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "common/v1/common.proto", `
+syntax = "proto3";
+package tempopb.common.v1;
+message KeyValue { string key = 1; }`)
+	writeProto(t, protoDir, "trace/v1/trace.proto", `
+syntax = "proto3";
+package tempopb.trace.v1;
+import "common/v1/common.proto";
+message Span { repeated tempopb.common.v1.KeyValue attrs = 1; }`)
+
+	outDir := t.TempDir()
+	g := &Generator{
+		Module:      "mymod",
+		OutDir:      outDir,
+		ProtoDir:    protoDir,
+		StripPrefix: "tempopb",
+	}
+	if err := g.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
+	}
+
+	traceFile := filepath.Join(outDir, "common", "v1", "common.pb.go")
+	if _, err := os.ReadFile(traceFile); err != nil {
+		t.Fatalf("expected output at common/v1/: %v", err)
+	}
+
+	traceContent, err := os.ReadFile(filepath.Join(outDir, "trace", "v1", "trace.pb.go"))
+	if err != nil {
+		t.Fatalf("expected output at trace/v1/: %v", err)
+	}
+	trace := string(traceContent)
+
+	// Import path must use stripped dir (common/v1), not unstripped (tempopb/common/v1).
+	if !strings.Contains(trace, `"mymod/gen/common/v1"`) {
+		t.Errorf("trace: expected import mymod/gen/common/v1, got:\n%s", trace)
+	}
+	if strings.Contains(trace, "tempopb/common") {
+		t.Error("trace: import path still contains unstripped prefix")
+	}
+}
+
+func TestGenerateAliasCollisionBetweenImports(t *testing.T) {
+	// Regression: two imported packages collapsing to the same alias (e.g. both "v1")
+	// must not produce duplicate import aliases.
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "common/v1/common.proto", `
+syntax = "proto3";
+package ns.common.v1;
+message Foo { string name = 1; }`)
+	writeProto(t, protoDir, "trace/v1/trace.proto", `
+syntax = "proto3";
+package ns.trace.v1;
+message Bar { string id = 1; }`)
+	writeProto(t, protoDir, "api/v1/api.proto", `
+syntax = "proto3";
+package ns.api.v1;
+import "common/v1/common.proto";
+import "trace/v1/trace.proto";
+message Request {
+  ns.common.v1.Foo foo = 1;
+  ns.trace.v1.Bar bar = 2;
+}`)
+
+	outDir := t.TempDir()
+	g := &Generator{
+		Module:      "testmod",
+		OutDir:      outDir,
+		ProtoDir:    protoDir,
+		StripPrefix: "ns",
+		ImportBase:  "testmod/gen",
+	}
+	if err := g.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
+	}
+
+	apiContent, err := os.ReadFile(filepath.Join(outDir, "api", "v1", "api.pb.go"))
+	if err != nil {
+		t.Fatalf("expected output at api/v1/: %v", err)
+	}
+	api := string(apiContent)
+
+	// Both common/v1 and trace/v1 would get alias "v1" which collides with
+	// the current package. One should be disambiguated to "commonv1" or "tracev1".
+	// The generated file must compile — no duplicate aliases.
+	if strings.Count(api, "\tv1 \"") > 1 {
+		t.Error("api: duplicate v1 alias in imports")
+	}
+}
+
 func TestGeneratorDeterminismRecursive(t *testing.T) {
 	protoDir := t.TempDir()
 	writeProto(t, protoDir, "common/v1/common.proto",

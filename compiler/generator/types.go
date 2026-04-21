@@ -48,18 +48,28 @@ func (it *ImportTracker) addProtoImport(protoPkg string) string {
 
 	if importPath, _, pkgName, ok := resolveGoPackage(protoPkg, it.goPackages, base); ok {
 		alias := pkgName
-		if alias == selfName {
+		if alias == selfName || it.aliasInUse(alias, importPath) {
 			alias = disambiguateAlias(protoPkg, it.stripPrefix)
 		}
 		return it.addImport(importPath, alias)
 	}
 
 	alias := goPackageName(protoPkg, it.stripPrefix)
-	if alias == selfName {
+	importPath := goImportPath(it.module, protoPkg, it.stripPrefix, it.importBase)
+	if alias == selfName || it.aliasInUse(alias, importPath) {
 		alias = disambiguateAlias(protoPkg, it.stripPrefix)
 	}
-	importPath := goImportPath(it.module, protoPkg, it.stripPrefix, it.importBase)
 	return it.addImport(importPath, alias)
+}
+
+// aliasInUse returns true if the alias is already used by a different import path.
+func (it *ImportTracker) aliasInUse(alias, forPath string) bool {
+	for path, a := range it.imports {
+		if a == alias && path != forPath {
+			return true
+		}
+	}
+	return false
 }
 
 func (it *ImportTracker) goType(fd protoreflect.FieldDescriptor) string {

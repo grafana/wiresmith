@@ -78,6 +78,11 @@ func TestGoImportPath(t *testing.T) {
 			"github.com/grafana/tempo/pkg/tempopb",
 			"github.com/grafana/tempo/pkg/tempopb/tempopb/common/v1",
 		},
+		// Strip prefix without import base — stripPrefix must be applied.
+		{
+			"mymod", "tempopb.common.v1", "tempopb", "",
+			"mymod/gen/common/v1",
+		},
 	}
 	for _, tt := range tests {
 		got := goImportPath(tt.module, tt.protoPkg, tt.stripPrefix, tt.importBase)
@@ -189,6 +194,8 @@ func TestResolveGoPackage(t *testing.T) {
 		{"external.pkg", "wiresmith/gen", "", "", "", false},
 		// Not in map.
 		{"unknown.pkg", "wiresmith/gen", "", "", "", false},
+		// Exact base match (proto at root of import base).
+		{"external.pkg", "some.other/module/pkg", "some.other/module/pkg", "", "pkg", true},
 	}
 	for _, tt := range tests {
 		gotImport, gotDir, gotPkg, gotOk := resolveGoPackage(tt.protoPkg, goPackages, tt.base)
