@@ -283,9 +283,13 @@ func TestBuildImportMappingFlat(t *testing.T) {
 	if len(importPaths) != 1 {
 		t.Fatalf("expected 1 import path, got %d", len(importPaths))
 	}
-	// Top-level file uses package-derived key.
+	// Top-level file uses package-derived key for compilation.
 	if _, ok := mapping["test/foo/foo.proto"]; !ok {
 		t.Errorf("expected key test/foo/foo.proto, got keys: %v", importPaths)
+	}
+	// Plain filename also registered in resolver for cross-directory imports.
+	if _, ok := mapping["foo.proto"]; !ok {
+		t.Error("expected plain key foo.proto in mapping for resolver")
 	}
 }
 
@@ -547,8 +551,8 @@ message Span { repeated tempopb.common.v1.KeyValue attrs = 1; }`)
 		t.Fatalf("Generate: %v", err)
 	}
 
-	traceFile := filepath.Join(outDir, "common", "v1", "common.pb.go")
-	if _, err := os.ReadFile(traceFile); err != nil {
+	commonFile := filepath.Join(outDir, "common", "v1", "common.pb.go")
+	if _, err := os.ReadFile(commonFile); err != nil {
 		t.Fatalf("expected output at common/v1/: %v", err)
 	}
 
@@ -641,8 +645,14 @@ func TestGeneratorDeterminismRecursive(t *testing.T) {
 			if err != nil || info.IsDir() {
 				return err
 			}
-			rel, _ := filepath.Rel(dirA, pathA)
-			contentA, _ := os.ReadFile(pathA)
+			rel, err := filepath.Rel(dirA, pathA)
+			if err != nil {
+				return err
+			}
+			contentA, err := os.ReadFile(pathA)
+			if err != nil {
+				return err
+			}
 			contentB, err := os.ReadFile(filepath.Join(dirB, rel))
 			if err != nil {
 				t.Errorf("iteration %d: %s missing in second output", i, rel)

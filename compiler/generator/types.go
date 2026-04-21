@@ -43,7 +43,7 @@ func (it *ImportTracker) resolvePkgName(protoPkg string) string {
 }
 
 func (it *ImportTracker) addProtoImport(protoPkg string) string {
-	selfName := goPackageName(it.selfPkg, it.stripPrefix)
+	selfName := it.resolvePkgName(it.selfPkg)
 	base := effectiveBase(it.module, it.importBase)
 
 	if importPath, _, pkgName, ok := resolveGoPackage(protoPkg, it.goPackages, base); ok {

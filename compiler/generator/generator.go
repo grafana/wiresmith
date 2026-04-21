@@ -292,18 +292,29 @@ func buildImportMapping(protoDir string) (map[string][]byte, []string, error) {
 		}
 		rel = filepath.ToSlash(rel)
 
-		// Nested file: use relative path as import key (matches proto import statements).
-		// Top-level file: use package-derived path (backwards compat).
-		var importPath string
 		if strings.Contains(rel, "/") {
-			importPath = rel
+			// Nested file: use relative path as import key.
+			if _, exists := mapping[rel]; exists {
+				return fmt.Errorf("duplicate import key %q (from %s)", rel, path)
+			}
+			mapping[rel] = content
+			importPaths = append(importPaths, rel)
 		} else {
+			// Top-level file: compile under the package-derived path
+			// (backwards compat), but also register the plain filename
+			// in the resolver so nested protos can import by relative path.
 			pkg := string(m[1])
-			importPath = strings.ReplaceAll(pkg, ".", "/") + "/" + d.Name()
+			pkgKey := strings.ReplaceAll(pkg, ".", "/") + "/" + d.Name()
+			if _, exists := mapping[pkgKey]; exists {
+				return fmt.Errorf("duplicate import key %q (from %s)", pkgKey, path)
+			}
+			mapping[pkgKey] = content
+			importPaths = append(importPaths, pkgKey)
+			// Also register the plain filename for resolver lookups.
+			if rel != pkgKey {
+				mapping[rel] = content
+			}
 		}
-
-		mapping[importPath] = content
-		importPaths = append(importPaths, importPath)
 		return nil
 	})
 	if err != nil {

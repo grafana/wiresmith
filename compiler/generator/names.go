@@ -55,21 +55,21 @@ func goPackageDir(protoPkg, stripPrefix string) string {
 
 func effectiveBase(module, importBase string) string {
 	if importBase != "" {
-		return importBase
+		return strings.TrimRight(importBase, "/")
 	}
 	return module + "/gen"
 }
 
 func goImportPath(module, protoPkg, stripPrefix, importBase string) string {
 	if importBase != "" {
-		return importBase + "/" + goPackageDir(protoPkg, stripPrefix)
+		return strings.TrimRight(importBase, "/") + "/" + goPackageDir(protoPkg, stripPrefix)
 	}
 	return module + "/gen/" + goPackageDir(protoPkg, stripPrefix)
 }
 
 func helpersImportPath(module, helpersImport string) string {
 	if helpersImport != "" {
-		return helpersImport
+		return strings.TrimRight(helpersImport, "/")
 	}
 	return module + "/gen/protohelpers"
 }
