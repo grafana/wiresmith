@@ -209,8 +209,9 @@ func (fg *FileGenerator) emitAllUnmarshalMethods(fd protoreflect.FileDescriptor)
 	forEachMessage(fd, fg.emitUnmarshal)
 }
 
-// forEachMessage calls fn for every non-map-entry message reachable from fd,
-// visiting nested messages before their parent (post-order).
+// forEachMessage calls fn for every message reachable from fd, skipping
+// nested map-entry messages and visiting nested messages before their
+// parent (post-order).
 func forEachMessage(fd protoreflect.FileDescriptor, fn func(protoreflect.MessageDescriptor)) {
 	for i := 0; i < fd.Messages().Len(); i++ {
 		walkMessages(fd.Messages().Get(i), fn)
