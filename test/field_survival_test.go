@@ -22,6 +22,30 @@ import (
 	otlptrace "go.opentelemetry.io/proto/otlp/trace/v1"
 )
 
+// withPresence returns a copy of v with all fieldsPresent bitmaps populated
+// by doing a marshal→unmarshal roundtrip. This lets reflect.DeepEqual compare
+// Go-constructed structs against wire-decoded structs.
+func withPresence[T any, PT interface {
+	*T
+	Marshal() ([]byte, error)
+	Unmarshal([]byte) error
+}](t *testing.T, v T) T {
+	t.Helper()
+	b, err := PT(&v).Marshal()
+	require.NoError(t, err)
+	require.NotEmpty(t, b, "withPresence: marshal produced empty bytes")
+
+	var out T
+	require.NoError(t, PT(&out).Unmarshal(b))
+
+	// Verify the roundtrip is stable: re-marshal must produce identical bytes.
+	b2, err := PT(&out).Marshal()
+	require.NoError(t, err)
+	require.Equal(t, b, b2, "withPresence: re-marshal produced different bytes")
+
+	return out
+}
+
 // makeNestedAnyValue builds a deeply nested AnyValue to exercise
 // kvlist, array, and scalar variants together.
 func makeNestedAnyValue() commonv1.AnyValue {
@@ -77,7 +101,7 @@ func makeFullScope() commonv1.InstrumentationScope {
 // TestFieldSurvival_TracesData verifies that every field in a maximally-populated
 // TracesData survives a marshal->unmarshal round-trip using reflect.DeepEqual.
 func TestFieldSurvival_TracesData(t *testing.T) {
-	original := tracev1.TracesData{
+	original := withPresence(t, tracev1.TracesData{
 		ResourceSpans: []tracev1.ResourceSpans{
 			{
 				Resource: makeFullResource(),
@@ -142,7 +166,8 @@ func TestFieldSurvival_TracesData(t *testing.T) {
 				SchemaUrl: "https://example.com/resource-schema",
 			},
 		},
-	}
+	},
+	)
 
 	// Step 1: self round-trip
 	oursBytes, err := original.Marshal()
@@ -187,7 +212,7 @@ func TestFieldSurvival_MetricsData(t *testing.T) {
 	// Histogram zero-value optional: pointer to 0.0 differs from nil
 	zeroVal := 0.0
 
-	original := metricsv1.MetricsData{
+	original := withPresence(t, metricsv1.MetricsData{
 		ResourceMetrics: []metricsv1.ResourceMetrics{
 			{
 				Resource: makeFullResource(),
@@ -375,7 +400,8 @@ func TestFieldSurvival_MetricsData(t *testing.T) {
 				SchemaUrl: "https://example.com/resource-metrics-schema",
 			},
 		},
-	}
+	},
+	)
 
 	// Step 1: self round-trip
 	oursBytes, err := original.Marshal()
@@ -410,7 +436,7 @@ func TestFieldSurvival_MetricsData(t *testing.T) {
 
 // TestFieldSurvival_LogsData verifies all LogRecord fields survive round-trip.
 func TestFieldSurvival_LogsData(t *testing.T) {
-	original := logsv1.LogsData{
+	original := withPresence(t, logsv1.LogsData{
 		ResourceLogs: []logsv1.ResourceLogs{
 			{
 				Resource: makeFullResource(),
@@ -441,7 +467,8 @@ func TestFieldSurvival_LogsData(t *testing.T) {
 				SchemaUrl: "https://example.com/resource-logs-schema",
 			},
 		},
-	}
+	},
+	)
 
 	// Step 1: self round-trip
 	oursBytes, err := original.Marshal()
@@ -477,7 +504,7 @@ func TestFieldSurvival_LogsData(t *testing.T) {
 // TestFieldSurvival_ProfilesData verifies all Profile dictionary tables and
 // nested fields survive a self-roundtrip (no official Go proto for profiles).
 func TestFieldSurvival_ProfilesData(t *testing.T) {
-	original := profilesv1.ProfilesData{
+	original := withPresence(t, profilesv1.ProfilesData{
 		ResourceProfiles: []profilesv1.ResourceProfiles{
 			{
 				Resource: makeFullResource(),
@@ -580,7 +607,8 @@ func TestFieldSurvival_ProfilesData(t *testing.T) {
 				{LocationIndices: []int32{0, 1}},
 			},
 		},
-	}
+	},
+	)
 
 	// Step 1: self round-trip
 	oursBytes, err := original.Marshal()
@@ -604,7 +632,7 @@ func TestFieldSurvival_ProfilesData(t *testing.T) {
 // wiresmith marshal -> official unmarshal -> official marshal -> wiresmith unmarshal
 // and compares the final result to the original using reflect.DeepEqual.
 func TestFieldSurvival_CrossLibrary_Traces(t *testing.T) {
-	original := buildFullTracesData()
+	original := withPresence(t, buildFullTracesData())
 
 	// wiresmith -> bytes
 	oursBytes, err := original.Marshal()
@@ -640,7 +668,7 @@ func TestFieldSurvival_CrossLibrary_Metrics(t *testing.T) {
 	sum := 456.789
 	min := 0.5
 	max := 123.4
-	original := metricsv1.MetricsData{
+	original := withPresence(t, metricsv1.MetricsData{
 		ResourceMetrics: []metricsv1.ResourceMetrics{
 			{
 				Resource: resourcev1.Resource{
@@ -685,7 +713,8 @@ func TestFieldSurvival_CrossLibrary_Metrics(t *testing.T) {
 				SchemaUrl: "https://res-schema.example.com",
 			},
 		},
-	}
+	},
+	)
 
 	oursBytes, err := original.Marshal()
 	require.NoError(t, err)
@@ -705,7 +734,7 @@ func TestFieldSurvival_CrossLibrary_Metrics(t *testing.T) {
 
 // TestFieldSurvival_CrossLibrary_Logs verifies the full cross-library chain for logs.
 func TestFieldSurvival_CrossLibrary_Logs(t *testing.T) {
-	original := logsv1.LogsData{
+	original := withPresence(t, logsv1.LogsData{
 		ResourceLogs: []logsv1.ResourceLogs{
 			{
 				Resource: resourcev1.Resource{
@@ -740,7 +769,8 @@ func TestFieldSurvival_CrossLibrary_Logs(t *testing.T) {
 				SchemaUrl: "https://cross-res-schema.example.com",
 			},
 		},
-	}
+	},
+	)
 
 	oursBytes, err := original.Marshal()
 	require.NoError(t, err)
@@ -762,13 +792,13 @@ func TestFieldSurvival_CrossLibrary_Logs(t *testing.T) {
 // to zero (e.g., *float64 = 0.0) survive round-trip and are not confused with nil.
 func TestFieldSurvival_OptionalZeroPointers(t *testing.T) {
 	zero := 0.0
-	original := metricsv1.HistogramDataPoint{
+	original := withPresence(t, metricsv1.HistogramDataPoint{
 		TimeUnixNano: 1,
 		Count:        0,
 		Sum:          &zero,
 		Min:          &zero,
 		Max:          &zero,
-	}
+	})
 
 	oursBytes, err := original.Marshal()
 	require.NoError(t, err)
