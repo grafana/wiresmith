@@ -74,9 +74,6 @@ func makeFullScope() commonv1.InstrumentationScope {
 	}
 }
 
-// floatPtr returns a pointer to the given float64.
-func floatPtr(f float64) *float64 { return &f }
-
 // TestFieldSurvival_TracesData verifies that every field in a maximally-populated
 // TracesData survives a marshal->unmarshal round-trip using reflect.DeepEqual.
 func TestFieldSurvival_TracesData(t *testing.T) {
