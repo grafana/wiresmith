@@ -162,21 +162,21 @@ type AllScalars struct {
 
 // Message with every optional scalar type
 type AllOptionalScalars struct {
-	FieldDouble   *float64 `protobuf:"fixed64,1,opt,name=field_double,json=fieldDouble,proto3" json:"field_double,omitempty"`
-	FieldFloat    *float32 `protobuf:"fixed32,2,opt,name=field_float,json=fieldFloat,proto3" json:"field_float,omitempty"`
-	FieldInt32    *int32   `protobuf:"varint,3,opt,name=field_int32,json=fieldInt32,proto3" json:"field_int32,omitempty"`
-	FieldInt64    *int64   `protobuf:"varint,4,opt,name=field_int64,json=fieldInt64,proto3" json:"field_int64,omitempty"`
-	FieldUint32   *uint32  `protobuf:"varint,5,opt,name=field_uint32,json=fieldUint32,proto3" json:"field_uint32,omitempty"`
-	FieldUint64   *uint64  `protobuf:"varint,6,opt,name=field_uint64,json=fieldUint64,proto3" json:"field_uint64,omitempty"`
-	FieldSint32   *int32   `protobuf:"zigzag32,7,opt,name=field_sint32,json=fieldSint32,proto3" json:"field_sint32,omitempty"`
-	FieldSint64   *int64   `protobuf:"zigzag64,8,opt,name=field_sint64,json=fieldSint64,proto3" json:"field_sint64,omitempty"`
-	FieldFixed32  *uint32  `protobuf:"fixed32,9,opt,name=field_fixed32,json=fieldFixed32,proto3" json:"field_fixed32,omitempty"`
-	FieldFixed64  *uint64  `protobuf:"fixed64,10,opt,name=field_fixed64,json=fieldFixed64,proto3" json:"field_fixed64,omitempty"`
-	FieldSfixed32 *int32   `protobuf:"fixed32,11,opt,name=field_sfixed32,json=fieldSfixed32,proto3" json:"field_sfixed32,omitempty"`
-	FieldSfixed64 *int64   `protobuf:"fixed64,12,opt,name=field_sfixed64,json=fieldSfixed64,proto3" json:"field_sfixed64,omitempty"`
-	FieldBool     *bool    `protobuf:"varint,13,opt,name=field_bool,json=fieldBool,proto3" json:"field_bool,omitempty"`
-	FieldString   *string  `protobuf:"bytes,14,opt,name=field_string,json=fieldString,proto3" json:"field_string,omitempty"`
-	FieldBytes    []byte   `protobuf:"bytes,15,opt,name=field_bytes,json=fieldBytes,proto3" json:"field_bytes,omitempty"`
+	FieldDouble   *float64 `protobuf:"fixed64,1,opt,name=field_double,json=fieldDouble,proto3,oneof" json:"field_double,omitempty"`
+	FieldFloat    *float32 `protobuf:"fixed32,2,opt,name=field_float,json=fieldFloat,proto3,oneof" json:"field_float,omitempty"`
+	FieldInt32    *int32   `protobuf:"varint,3,opt,name=field_int32,json=fieldInt32,proto3,oneof" json:"field_int32,omitempty"`
+	FieldInt64    *int64   `protobuf:"varint,4,opt,name=field_int64,json=fieldInt64,proto3,oneof" json:"field_int64,omitempty"`
+	FieldUint32   *uint32  `protobuf:"varint,5,opt,name=field_uint32,json=fieldUint32,proto3,oneof" json:"field_uint32,omitempty"`
+	FieldUint64   *uint64  `protobuf:"varint,6,opt,name=field_uint64,json=fieldUint64,proto3,oneof" json:"field_uint64,omitempty"`
+	FieldSint32   *int32   `protobuf:"zigzag32,7,opt,name=field_sint32,json=fieldSint32,proto3,oneof" json:"field_sint32,omitempty"`
+	FieldSint64   *int64   `protobuf:"zigzag64,8,opt,name=field_sint64,json=fieldSint64,proto3,oneof" json:"field_sint64,omitempty"`
+	FieldFixed32  *uint32  `protobuf:"fixed32,9,opt,name=field_fixed32,json=fieldFixed32,proto3,oneof" json:"field_fixed32,omitempty"`
+	FieldFixed64  *uint64  `protobuf:"fixed64,10,opt,name=field_fixed64,json=fieldFixed64,proto3,oneof" json:"field_fixed64,omitempty"`
+	FieldSfixed32 *int32   `protobuf:"fixed32,11,opt,name=field_sfixed32,json=fieldSfixed32,proto3,oneof" json:"field_sfixed32,omitempty"`
+	FieldSfixed64 *int64   `protobuf:"fixed64,12,opt,name=field_sfixed64,json=fieldSfixed64,proto3,oneof" json:"field_sfixed64,omitempty"`
+	FieldBool     *bool    `protobuf:"varint,13,opt,name=field_bool,json=fieldBool,proto3,oneof" json:"field_bool,omitempty"`
+	FieldString   *string  `protobuf:"bytes,14,opt,name=field_string,json=fieldString,proto3,oneof" json:"field_string,omitempty"`
+	FieldBytes    []byte   `protobuf:"bytes,15,opt,name=field_bytes,json=fieldBytes,proto3,oneof" json:"field_bytes,omitempty"`
 }
 
 // Message with every repeated (packed) scalar type
@@ -285,7 +285,7 @@ type AllMaps struct {
 	MapInt32Float       map[int32]float32 `protobuf:"bytes,14,rep,name=map_int32_float,json=mapInt32Float,proto3" json:"map_int32_float,omitempty" protobuf_key:"varint,1,opt,name=key" protobuf_val:"fixed32,2,opt,name=value"`
 	MapInt32Double      map[int32]float64 `protobuf:"bytes,15,rep,name=map_int32_double,json=mapInt32Double,proto3" json:"map_int32_double,omitempty" protobuf_key:"varint,1,opt,name=key" protobuf_val:"fixed64,2,opt,name=value"`
 	MapStringMessage    map[string]Inner  `protobuf:"bytes,16,rep,name=map_string_message,json=mapStringMessage,proto3" json:"map_string_message,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	MapStringEnum       map[string]Color  `protobuf:"bytes,17,rep,name=map_string_enum,json=mapStringEnum,proto3" json:"map_string_enum,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	MapStringEnum       map[string]Color  `protobuf:"bytes,17,rep,name=map_string_enum,json=mapStringEnum,proto3" json:"map_string_enum,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value,enum=test.kitchensink.v1.Color"`
 }
 
 func (m *AllScalars) Reset()      { *m = AllScalars{} }

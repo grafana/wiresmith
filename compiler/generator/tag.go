@@ -62,7 +62,7 @@ func fieldTag(fd protoreflect.FieldDescriptor) string {
 		parts = append(parts, "enum="+string(fd.Enum().FullName()))
 	}
 
-	if fd.ContainingOneof() != nil && !fd.ContainingOneof().IsSynthetic() {
+	if fd.ContainingOneof() != nil {
 		parts = append(parts, "oneof")
 	}
 
@@ -93,7 +93,11 @@ func mapFieldTag(fd protoreflect.FieldDescriptor) string {
 	valFd := fd.MapValue()
 
 	keyTag := fmt.Sprintf("%s,1,opt,name=key", wireTypeName(keyFd.Kind()))
+
 	valTag := fmt.Sprintf("%s,2,opt,name=value", wireTypeName(valFd.Kind()))
+	if valFd.Kind() == protoreflect.EnumKind {
+		valTag += ",enum=" + string(valFd.Enum().FullName())
+	}
 
 	protoName := string(fd.Name())
 	return fmt.Sprintf("`protobuf:%q json:%q protobuf_key:%q protobuf_val:%q`",

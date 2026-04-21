@@ -534,7 +534,7 @@ type HistogramDataPoint struct {
 	// Negative events *can* be recorded, but sum should not be filled out when
 	// doing so.  This is specifically to enforce compatibility w/ OpenMetrics,
 	// see: https://github.com/prometheus/OpenMetrics/blob/v1.0.0/specification/OpenMetrics.md#histogram
-	Sum *float64 `protobuf:"fixed64,5,opt,name=sum,proto3" json:"sum,omitempty"`
+	Sum *float64 `protobuf:"fixed64,5,opt,name=sum,proto3,oneof" json:"sum,omitempty"`
 	// bucket_counts is an optional field contains the count values of histogram
 	// for each bucket.
 	//
@@ -569,9 +569,9 @@ type HistogramDataPoint struct {
 	// for the available flags and their meaning.
 	Flags uint32 `protobuf:"varint,10,opt,name=flags,proto3" json:"flags,omitempty"`
 	// min is the minimum value over (start_time, end_time].
-	Min *float64 `protobuf:"fixed64,11,opt,name=min,proto3" json:"min,omitempty"`
+	Min *float64 `protobuf:"fixed64,11,opt,name=min,proto3,oneof" json:"min,omitempty"`
 	// max is the maximum value over (start_time, end_time].
-	Max *float64 `protobuf:"fixed64,12,opt,name=max,proto3" json:"max,omitempty"`
+	Max *float64 `protobuf:"fixed64,12,opt,name=max,proto3,oneof" json:"max,omitempty"`
 
 	fieldsPresent [1]uint64
 }
@@ -631,7 +631,7 @@ type ExponentialHistogramDataPoint struct {
 	// Negative events *can* be recorded, but sum should not be filled out when
 	// doing so.  This is specifically to enforce compatibility w/ OpenMetrics,
 	// see: https://github.com/prometheus/OpenMetrics/blob/v1.0.0/specification/OpenMetrics.md#histogram
-	Sum *float64 `protobuf:"fixed64,5,opt,name=sum,proto3" json:"sum,omitempty"`
+	Sum *float64 `protobuf:"fixed64,5,opt,name=sum,proto3,oneof" json:"sum,omitempty"`
 	// scale describes the resolution of the histogram.  Boundaries are
 	// located at powers of the base, where:
 	//
@@ -668,9 +668,9 @@ type ExponentialHistogramDataPoint struct {
 	// measurements that were used to form the data point
 	Exemplars []Exemplar `protobuf:"bytes,11,rep,name=exemplars,proto3" json:"exemplars,omitempty"`
 	// The minimum value over (start_time, end_time].
-	Min *float64 `protobuf:"fixed64,12,opt,name=min,proto3" json:"min,omitempty"`
+	Min *float64 `protobuf:"fixed64,12,opt,name=min,proto3,oneof" json:"min,omitempty"`
 	// The maximum value over (start_time, end_time].
-	Max *float64 `protobuf:"fixed64,13,opt,name=max,proto3" json:"max,omitempty"`
+	Max *float64 `protobuf:"fixed64,13,opt,name=max,proto3,oneof" json:"max,omitempty"`
 	// ZeroThreshold may be optionally set to convey the width of the zero
 	// region. Where the zero region is defined as the closed interval
 	// [-ZeroThreshold, ZeroThreshold].
