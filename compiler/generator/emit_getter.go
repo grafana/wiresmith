@@ -7,20 +7,7 @@ import (
 )
 
 func (fg *FileGenerator) emitAllGetterMethods(fd protoreflect.FileDescriptor) {
-	for i := 0; i < fd.Messages().Len(); i++ {
-		fg.emitGetterMethods(fd.Messages().Get(i))
-	}
-}
-
-func (fg *FileGenerator) emitGetterMethods(md protoreflect.MessageDescriptor) {
-	for i := 0; i < md.Messages().Len(); i++ {
-		nested := md.Messages().Get(i)
-		if nested.IsMapEntry() {
-			continue
-		}
-		fg.emitGetterMethods(nested)
-	}
-	fg.emitGetters(md)
+	forEachMessage(fd, fg.emitGetters)
 }
 
 func (fg *FileGenerator) emitGetters(md protoreflect.MessageDescriptor) {
@@ -74,7 +61,7 @@ func (fg *FileGenerator) emitGetters(md protoreflect.MessageDescriptor) {
 			bitIndex, hasBit := pm[fd.Number()]
 			fmt.Fprintf(fg.body, "func (m *%s) Get%s() *%s {\n", name, goName, msgType)
 			if hasBit {
-				fmt.Fprintf(fg.body, "\tif m != nil && m.fieldsPresent[%d]&(1<<%d) != 0 {\n", bitIndex/64, bitIndex%64)
+				fmt.Fprintf(fg.body, "\tif m != nil && %s {\n", presenceCheck(bitIndex))
 			} else {
 				// Defensive: emitted when the field has no presence-bitmap entry.
 				fmt.Fprintf(fg.body, "\tif m != nil {\n")

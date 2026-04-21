@@ -190,7 +190,7 @@ func (fg *FileGenerator) emitUnmarshal(md protoreflect.MessageDescriptor) {
 		fd := md.Fields().Get(i)
 		fg.emitFieldUnmarshal(md, fd)
 		if bitIndex, ok := pm[fd.Number()]; ok {
-			fmt.Fprintf(fg.body, "\t\t\tm.fieldsPresent[%d] |= 1 << %d\n", bitIndex/64, bitIndex%64)
+			fmt.Fprintf(fg.body, "\t\t\t%s\n", presenceSet(bitIndex))
 		}
 	}
 

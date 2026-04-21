@@ -167,133 +167,66 @@ func (fg *FileGenerator) emitAllEnums(fd protoreflect.FileDescriptor) {
 	for i := 0; i < fd.Enums().Len(); i++ {
 		fg.emitEnum(fd.Enums().Get(i))
 	}
-	for i := 0; i < fd.Messages().Len(); i++ {
-		fg.emitNestedEnums(fd.Messages().Get(i))
-	}
-}
-
-func (fg *FileGenerator) emitNestedEnums(md protoreflect.MessageDescriptor) {
-	for i := 0; i < md.Enums().Len(); i++ {
-		fg.emitEnum(md.Enums().Get(i))
-	}
-	for i := 0; i < md.Messages().Len(); i++ {
-		nested := md.Messages().Get(i)
-		if nested.IsMapEntry() {
-			continue
+	forEachMessage(fd, func(md protoreflect.MessageDescriptor) {
+		for i := 0; i < md.Enums().Len(); i++ {
+			fg.emitEnum(md.Enums().Get(i))
 		}
-		fg.emitNestedEnums(nested)
-	}
+	})
 }
 
 func (fg *FileGenerator) emitAllOneofs(fd protoreflect.FileDescriptor) {
-	for i := 0; i < fd.Messages().Len(); i++ {
-		fg.emitMessageOneofs(fd.Messages().Get(i))
-	}
-}
-
-func (fg *FileGenerator) emitMessageOneofs(md protoreflect.MessageDescriptor) {
-	for i := 0; i < md.Oneofs().Len(); i++ {
-		oo := md.Oneofs().Get(i)
-		if oo.IsSynthetic() {
-			continue
+	forEachMessage(fd, func(md protoreflect.MessageDescriptor) {
+		for i := 0; i < md.Oneofs().Len(); i++ {
+			oo := md.Oneofs().Get(i)
+			if oo.IsSynthetic() {
+				continue
+			}
+			fg.emitOneof(md, oo)
 		}
-		fg.emitOneof(md, oo)
-	}
-	for i := 0; i < md.Messages().Len(); i++ {
-		nested := md.Messages().Get(i)
-		if nested.IsMapEntry() {
-			continue
-		}
-		fg.emitMessageOneofs(nested)
-	}
+	})
 }
 
 func (fg *FileGenerator) emitAllStructs(fd protoreflect.FileDescriptor) {
-	for i := 0; i < fd.Messages().Len(); i++ {
-		fg.emitMessageStructs(fd.Messages().Get(i))
-	}
-}
-
-func (fg *FileGenerator) emitMessageStructs(md protoreflect.MessageDescriptor) {
-	for i := 0; i < md.Messages().Len(); i++ {
-		nested := md.Messages().Get(i)
-		if nested.IsMapEntry() {
-			continue
-		}
-		fg.emitMessageStructs(nested)
-	}
-	fg.emitStruct(md)
+	forEachMessage(fd, fg.emitStruct)
 }
 
 func (fg *FileGenerator) emitAllHasMethods(fd protoreflect.FileDescriptor) {
-	for i := 0; i < fd.Messages().Len(); i++ {
-		fg.emitHasMethodsRecursive(fd.Messages().Get(i))
-	}
-}
-
-func (fg *FileGenerator) emitHasMethodsRecursive(md protoreflect.MessageDescriptor) {
-	for i := 0; i < md.Messages().Len(); i++ {
-		nested := md.Messages().Get(i)
-		if nested.IsMapEntry() {
-			continue
-		}
-		fg.emitHasMethodsRecursive(nested)
-	}
-	fg.emitHasMethods(md)
+	forEachMessage(fd, fg.emitHasMethods)
 }
 
 func (fg *FileGenerator) emitAllSizeMethods(fd protoreflect.FileDescriptor) {
-	for i := 0; i < fd.Messages().Len(); i++ {
-		fg.emitSizeMethods(fd.Messages().Get(i))
-	}
-}
-
-func (fg *FileGenerator) emitSizeMethods(md protoreflect.MessageDescriptor) {
-	for i := 0; i < md.Messages().Len(); i++ {
-		nested := md.Messages().Get(i)
-		if nested.IsMapEntry() {
-			continue
-		}
-		fg.emitSizeMethods(nested)
-	}
-	fg.emitSize(md)
+	forEachMessage(fd, fg.emitSize)
 }
 
 func (fg *FileGenerator) emitAllMarshalMethods(fd protoreflect.FileDescriptor) {
-	for i := 0; i < fd.Messages().Len(); i++ {
-		fg.emitMarshalMethods(fd.Messages().Get(i))
-	}
-}
-
-func (fg *FileGenerator) emitMarshalMethods(md protoreflect.MessageDescriptor) {
-	for i := 0; i < md.Messages().Len(); i++ {
-		nested := md.Messages().Get(i)
-		if nested.IsMapEntry() {
-			continue
-		}
-		fg.emitMarshalMethods(nested)
-	}
-	fg.emitMarshal(md)
+	forEachMessage(fd, fg.emitMarshal)
 }
 
 func (fg *FileGenerator) emitAllUnmarshalMethods(fd protoreflect.FileDescriptor) {
 	// Emit the max recursion depth constant and skip helpers once per file.
 	fmt.Fprintf(fg.body, "const maxUnmarshalDepth = 10000\n\n")
 	fg.emitSkipValueHelper()
+	forEachMessage(fd, fg.emitUnmarshal)
+}
+
+// forEachMessage calls fn for every message reachable from fd, skipping
+// nested map-entry messages and visiting nested messages before their
+// parent (post-order).
+func forEachMessage(fd protoreflect.FileDescriptor, fn func(protoreflect.MessageDescriptor)) {
 	for i := 0; i < fd.Messages().Len(); i++ {
-		fg.emitUnmarshalMethods(fd.Messages().Get(i))
+		walkMessages(fd.Messages().Get(i), fn)
 	}
 }
 
-func (fg *FileGenerator) emitUnmarshalMethods(md protoreflect.MessageDescriptor) {
+func walkMessages(md protoreflect.MessageDescriptor, fn func(protoreflect.MessageDescriptor)) {
 	for i := 0; i < md.Messages().Len(); i++ {
 		nested := md.Messages().Get(i)
 		if nested.IsMapEntry() {
 			continue
 		}
-		fg.emitUnmarshalMethods(nested)
+		walkMessages(nested, fn)
 	}
-	fg.emitUnmarshal(md)
+	fn(md)
 }
 
 // isRealOneof returns true if the field belongs to a non-synthetic oneof.

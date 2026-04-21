@@ -95,8 +95,6 @@ func (fg *FileGenerator) emitMessageMarshalWithPresence(fd protoreflect.FieldDes
 	goName := snakeToPascal(string(fd.Name()))
 	access := "m." + goName
 	num := protowire.Number(fd.Number())
-	wordIndex := bitIndex / 64
-	bitOffset := bitIndex % 64
 
 	fg.imports.addImport(fg.module+"/gen/protohelpers", "")
 	fmt.Fprintf(fg.body, "\t{\n")
@@ -106,7 +104,7 @@ func (fg *FileGenerator) emitMessageMarshalWithPresence(fd protoreflect.FieldDes
 	fmt.Fprintf(fg.body, "\t\t\ti -= size\n")
 	fmt.Fprintf(fg.body, "\t\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(size))\n")
 	fg.reverseTag("\t\t\t", num, protowire.BytesType)
-	fmt.Fprintf(fg.body, "\t\t} else if m.fieldsPresent[%d]&(1<<%d) != 0 {\n", wordIndex, bitOffset)
+	fmt.Fprintf(fg.body, "\t\t} else if %s {\n", presenceCheck(bitIndex))
 	fmt.Fprintf(fg.body, "\t\t\ti--\n")
 	fmt.Fprintf(fg.body, "\t\t\tdAtA[i] = 0\n")
 	fg.reverseTag("\t\t\t", num, protowire.BytesType)
