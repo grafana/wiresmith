@@ -1,6 +1,8 @@
 package generator
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestGoPackageName(t *testing.T) {
 	tests := []struct {
@@ -204,5 +206,57 @@ func TestResolveGoPackage(t *testing.T) {
 				tt.protoPkg, tt.base, gotImport, gotDir, gotPkg, gotOk,
 				tt.wantImport, tt.wantDir, tt.wantPkg, tt.wantOk)
 		}
+	}
+}
+
+func TestAddImportIdempotent(t *testing.T) {
+	it := newImportTracker("mod", "self.pkg", "", "", "", nil)
+
+	// First call registers the alias.
+	got := it.addImport("example.com/pkg/v1", "v1")
+	if got != "v1" {
+		t.Errorf("first addImport: got %q, want %q", got, "v1")
+	}
+
+	// Second call with same path returns the cached alias, ignoring the new one.
+	got = it.addImport("example.com/pkg/v1", "different")
+	if got != "v1" {
+		t.Errorf("second addImport: got %q, want %q (should return cached)", got, "v1")
+	}
+
+	if len(it.imports) != 1 {
+		t.Errorf("expected 1 import, got %d", len(it.imports))
+	}
+}
+
+func TestUniqueAliasNumericSuffix(t *testing.T) {
+	it := newImportTracker("mod", "self.pkg", "", "", "", nil)
+
+	// Occupy "commonv1" with a different path.
+	it.addImport("example.com/a/common/v1", "commonv1")
+
+	// uniqueAlias should add numeric suffix to avoid collision.
+	got := it.uniqueAlias("commonv1", "example.com/b/common/v1", "selfpkg")
+	if got != "commonv11" {
+		t.Errorf("uniqueAlias: got %q, want %q", got, "commonv11")
+	}
+
+	// Occupy "commonv11" too.
+	it.addImport("example.com/b/common/v1", "commonv11")
+
+	// Third collision should get "commonv12".
+	got = it.uniqueAlias("commonv1", "example.com/c/common/v1", "selfpkg")
+	if got != "commonv12" {
+		t.Errorf("uniqueAlias (second collision): got %q, want %q", got, "commonv12")
+	}
+}
+
+func TestUniqueAliasSelfNameCollision(t *testing.T) {
+	it := newImportTracker("mod", "self.pkg", "", "", "", nil)
+
+	// Alias equals selfName — should get numeric suffix.
+	got := it.uniqueAlias("v1", "example.com/common/v1", "v1")
+	if got != "v11" {
+		t.Errorf("uniqueAlias with selfName collision: got %q, want %q", got, "v11")
 	}
 }

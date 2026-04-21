@@ -1,6 +1,8 @@
 package generator
 
 import (
+	"strconv"
+
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
@@ -27,6 +29,9 @@ func newImportTracker(module, selfPkg, stripPrefix, importBase, helpersImport st
 }
 
 func (it *ImportTracker) addImport(importPath, alias string) string {
+	if existing, ok := it.imports[importPath]; ok {
+		return existing
+	}
 	it.imports[importPath] = alias
 	return alias
 }
@@ -51,6 +56,7 @@ func (it *ImportTracker) addProtoImport(protoPkg string) string {
 		if alias == selfName || it.aliasInUse(alias, importPath) {
 			alias = disambiguateAlias(protoPkg, it.stripPrefix)
 		}
+		alias = it.uniqueAlias(alias, importPath, selfName)
 		return it.addImport(importPath, alias)
 	}
 
@@ -59,7 +65,17 @@ func (it *ImportTracker) addProtoImport(protoPkg string) string {
 	if alias == selfName || it.aliasInUse(alias, importPath) {
 		alias = disambiguateAlias(protoPkg, it.stripPrefix)
 	}
+	alias = it.uniqueAlias(alias, importPath, selfName)
 	return it.addImport(importPath, alias)
+}
+
+// uniqueAlias appends a numeric suffix if alias still collides after
+// disambiguation, matching the protogen/gogoproto approach.
+func (it *ImportTracker) uniqueAlias(alias, forPath, selfName string) string {
+	for i, orig := 1, alias; alias == selfName || it.aliasInUse(alias, forPath); i++ {
+		alias = orig + strconv.Itoa(i)
+	}
+	return alias
 }
 
 // aliasInUse returns true if the alias is already used by a different import path.

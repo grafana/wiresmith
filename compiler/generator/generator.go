@@ -90,7 +90,11 @@ func (g *Generator) Generate(ctx context.Context) error {
 		opts, _ := fd.Options().(*descriptorpb.FileOptions)
 		if opts != nil {
 			if goPkg := opts.GetGoPackage(); goPkg != "" {
-				g.goPackages[string(fd.Package())] = goPkg
+				pkg := string(fd.Package())
+				if existing, ok := g.goPackages[pkg]; ok && existing != goPkg {
+					return fmt.Errorf("conflicting go_package for package %s: %q (in %s) vs %q", pkg, existing, fd.Path(), goPkg)
+				}
+				g.goPackages[pkg] = goPkg
 			}
 		}
 	}

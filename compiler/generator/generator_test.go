@@ -612,10 +612,94 @@ message Request {
 	api := string(apiContent)
 
 	// Both common/v1 and trace/v1 would get alias "v1" which collides with
-	// the current package. One should be disambiguated to "commonv1" or "tracev1".
-	// The generated file must compile — no duplicate aliases.
+	// the current package. They should be disambiguated to "commonv1" and "tracev1".
 	if strings.Count(api, "\tv1 \"") > 1 {
 		t.Error("api: duplicate v1 alias in imports")
+	}
+	if !strings.Contains(api, "commonv1") {
+		t.Error("api: expected disambiguated alias 'commonv1'")
+	}
+	if !strings.Contains(api, "tracev1") {
+		t.Error("api: expected disambiguated alias 'tracev1'")
+	}
+}
+
+func TestGenerateAliasCollisionAfterDisambiguation(t *testing.T) {
+	// Two imports that produce the same alias even after disambiguateAlias
+	// (both have same penultimate+last component). The numeric suffix fallback
+	// must kick in to avoid duplicate aliases.
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "a/common/v1/a.proto", `
+syntax = "proto3";
+package ns.a.common.v1;
+message Foo { string name = 1; }`)
+	writeProto(t, protoDir, "b/common/v1/b.proto", `
+syntax = "proto3";
+package ns.b.common.v1;
+message Bar { string id = 1; }`)
+	writeProto(t, protoDir, "svc/v1/svc.proto", `
+syntax = "proto3";
+package ns.svc.v1;
+import "a/common/v1/a.proto";
+import "b/common/v1/b.proto";
+message Request {
+  ns.a.common.v1.Foo foo = 1;
+  ns.b.common.v1.Bar bar = 2;
+}`)
+
+	outDir := t.TempDir()
+	g := &Generator{
+		Module:      "testmod",
+		OutDir:      outDir,
+		ProtoDir:    protoDir,
+		StripPrefix: "ns",
+		ImportBase:  "testmod/gen",
+	}
+	if err := g.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
+	}
+
+	svcContent, err := os.ReadFile(filepath.Join(outDir, "svc", "v1", "svc.pb.go"))
+	if err != nil {
+		t.Fatalf("expected output at svc/v1/: %v", err)
+	}
+	svc := string(svcContent)
+
+	// Both would disambiguate to "commonv1", then numeric suffix must break the tie.
+	if strings.Count(svc, "commonv1") < 1 {
+		t.Error("svc: expected at least one 'commonv1' alias")
+	}
+	// The second should get a numeric suffix.
+	if !strings.Contains(svc, "commonv11") {
+		t.Errorf("svc: expected numeric suffix alias 'commonv11', got:\n%s", svc)
+	}
+}
+
+func TestGenerateConflictingGoPackage(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "a.proto", `
+syntax = "proto3";
+package mypkg;
+option go_package = "example.com/mod/gen/mypkg;a";
+message Foo { string name = 1; }`)
+	writeProto(t, protoDir, "b.proto", `
+syntax = "proto3";
+package mypkg;
+option go_package = "example.com/mod/gen/mypkg;b";
+message Bar { string id = 1; }`)
+
+	outDir := t.TempDir()
+	g := &Generator{
+		Module:   "example.com/mod",
+		OutDir:   outDir,
+		ProtoDir: protoDir,
+	}
+	err := g.Generate(context.Background())
+	if err == nil {
+		t.Fatal("expected error for conflicting go_package, got nil")
+	}
+	if !strings.Contains(err.Error(), "conflicting go_package") {
+		t.Errorf("expected 'conflicting go_package' error, got: %v", err)
 	}
 }
 
