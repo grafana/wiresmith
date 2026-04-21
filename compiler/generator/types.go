@@ -5,16 +5,24 @@ import (
 )
 
 type ImportTracker struct {
-	module  string
-	selfPkg string
-	imports map[string]string // import path -> alias
+	module        string
+	selfPkg       string
+	stripPrefix   string
+	importBase    string
+	helpersImport string
+	goPackages    map[string]string // proto pkg -> go_package value
+	imports       map[string]string // import path -> alias
 }
 
-func newImportTracker(module string, selfPkg string) *ImportTracker {
+func newImportTracker(module, selfPkg, stripPrefix, importBase, helpersImport string, goPackages map[string]string) *ImportTracker {
 	return &ImportTracker{
-		module:  module,
-		selfPkg: selfPkg,
-		imports: make(map[string]string),
+		module:        module,
+		selfPkg:       selfPkg,
+		stripPrefix:   stripPrefix,
+		importBase:    importBase,
+		helpersImport: helpersImport,
+		goPackages:    goPackages,
+		imports:       make(map[string]string),
 	}
 }
 
@@ -23,9 +31,34 @@ func (it *ImportTracker) addImport(importPath, alias string) string {
 	return alias
 }
 
+func (it *ImportTracker) addHelpersImport() {
+	it.addImport(helpersImportPath(it.module, it.helpersImport), "")
+}
+
+func (it *ImportTracker) resolvePkgName(protoPkg string) string {
+	if _, _, pkgName, ok := resolveGoPackage(protoPkg, it.goPackages, effectiveBase(it.module, it.importBase)); ok {
+		return pkgName
+	}
+	return goPackageName(protoPkg, it.stripPrefix)
+}
+
 func (it *ImportTracker) addProtoImport(protoPkg string) string {
-	alias := goPackageName(protoPkg)
-	importPath := goImportPath(it.module, protoPkg)
+	selfName := goPackageName(it.selfPkg, it.stripPrefix)
+	base := effectiveBase(it.module, it.importBase)
+
+	if importPath, _, pkgName, ok := resolveGoPackage(protoPkg, it.goPackages, base); ok {
+		alias := pkgName
+		if alias == selfName {
+			alias = disambiguateAlias(protoPkg, it.stripPrefix)
+		}
+		return it.addImport(importPath, alias)
+	}
+
+	alias := goPackageName(protoPkg, it.stripPrefix)
+	if alias == selfName {
+		alias = disambiguateAlias(protoPkg, it.stripPrefix)
+	}
+	importPath := goImportPath(it.module, protoPkg, it.stripPrefix, it.importBase)
 	return it.addImport(importPath, alias)
 }
 

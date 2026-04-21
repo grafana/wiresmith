@@ -11,7 +11,7 @@ import (
 
 func (fg *FileGenerator) emitMarshal(md protoreflect.MessageDescriptor) {
 	name := goMessageTypeName(md)
-	fg.imports.addImport(fg.module+"/gen/protohelpers", "")
+	fg.imports.addHelpersImport()
 
 	// Marshal allocates and returns the encoded bytes.
 	fmt.Fprintf(fg.body, "func (m *%s) Marshal() (dAtA []byte, err error) {\n", name)
@@ -96,7 +96,7 @@ func (fg *FileGenerator) emitMessageMarshalWithPresence(fd protoreflect.FieldDes
 	access := "m." + goName
 	num := protowire.Number(fd.Number())
 
-	fg.imports.addImport(fg.module+"/gen/protohelpers", "")
+	fg.imports.addHelpersImport()
 	fmt.Fprintf(fg.body, "\t{\n")
 	fmt.Fprintf(fg.body, "\t\tsize, err := %s.MarshalToSizedBuffer(dAtA[:i])\n", access)
 	fmt.Fprintf(fg.body, "\t\tif err != nil {\n\t\t\treturn 0, err\n\t\t}\n")

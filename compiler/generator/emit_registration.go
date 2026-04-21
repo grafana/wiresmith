@@ -25,7 +25,7 @@ func (fg *FileGenerator) emitRegistration(fd protoreflect.FileDescriptor) {
 	})
 
 	fg.body.WriteString("}\n")
-	fg.imports.addImport(fg.module+"/gen/protohelpers", "")
+	fg.imports.addHelpersImport()
 }
 
 func (fg *FileGenerator) emitEnumRegistration(ed protoreflect.EnumDescriptor) {

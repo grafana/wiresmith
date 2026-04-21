@@ -5,6 +5,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"testing"
 )
@@ -257,5 +258,309 @@ func TestGenerateMatchesCheckedIn(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func writeProto(t *testing.T, dir, relPath, content string) {
+	t.Helper()
+	full := filepath.Join(dir, relPath)
+	if err := os.MkdirAll(filepath.Dir(full), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(full, []byte(content), 0o644); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestBuildImportMappingFlat(t *testing.T) {
+	dir := t.TempDir()
+	writeProto(t, dir, "foo.proto", "syntax = \"proto3\";\npackage test.foo;\nmessage Foo {}")
+
+	mapping, importPaths, err := buildImportMapping(dir)
+	if err != nil {
+		t.Fatalf("buildImportMapping: %v", err)
+	}
+	if len(importPaths) != 1 {
+		t.Fatalf("expected 1 import path, got %d", len(importPaths))
+	}
+	// Top-level file uses package-derived key.
+	if _, ok := mapping["test/foo/foo.proto"]; !ok {
+		t.Errorf("expected key test/foo/foo.proto, got keys: %v", importPaths)
+	}
+}
+
+func TestBuildImportMappingRecursive(t *testing.T) {
+	dir := t.TempDir()
+	writeProto(t, dir, "common/v1/common.proto",
+		"syntax = \"proto3\";\npackage tempopb.common.v1;\nmessage Foo {}")
+	writeProto(t, dir, "trace/v1/trace.proto",
+		"syntax = \"proto3\";\npackage tempopb.trace.v1;\nimport \"common/v1/common.proto\";\nmessage Bar { tempopb.common.v1.Foo foo = 1; }")
+
+	mapping, importPaths, err := buildImportMapping(dir)
+	if err != nil {
+		t.Fatalf("buildImportMapping: %v", err)
+	}
+	if len(importPaths) != 2 {
+		t.Fatalf("expected 2 import paths, got %d: %v", len(importPaths), importPaths)
+	}
+	// Nested files use relative paths.
+	if _, ok := mapping["common/v1/common.proto"]; !ok {
+		t.Error("expected common/v1/common.proto in mapping")
+	}
+	if _, ok := mapping["trace/v1/trace.proto"]; !ok {
+		t.Error("expected trace/v1/trace.proto in mapping")
+	}
+	// Must be sorted for determinism.
+	sorted := make([]string, len(importPaths))
+	copy(sorted, importPaths)
+	sort.Strings(sorted)
+	for i := range importPaths {
+		if importPaths[i] != sorted[i] {
+			t.Errorf("import paths not sorted: %v", importPaths)
+			break
+		}
+	}
+}
+
+func TestBuildImportMappingMixed(t *testing.T) {
+	dir := t.TempDir()
+	writeProto(t, dir, "root.proto",
+		"syntax = \"proto3\";\npackage mypkg;\nmessage Root {}")
+	writeProto(t, dir, "sub/v1/nested.proto",
+		"syntax = \"proto3\";\npackage mypkg.sub.v1;\nmessage Nested {}")
+
+	mapping, importPaths, err := buildImportMapping(dir)
+	if err != nil {
+		t.Fatalf("buildImportMapping: %v", err)
+	}
+	if len(importPaths) != 2 {
+		t.Fatalf("expected 2 import paths, got %d: %v", len(importPaths), importPaths)
+	}
+	if _, ok := mapping["mypkg/root.proto"]; !ok {
+		t.Error("expected mypkg/root.proto for top-level file")
+	}
+	if _, ok := mapping["sub/v1/nested.proto"]; !ok {
+		t.Error("expected sub/v1/nested.proto for nested file")
+	}
+}
+
+func TestGenerateWithStripPrefix(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "common/v1/common.proto", `
+syntax = "proto3";
+package tempopb.common.v1;
+message KeyValue {
+  string key = 1;
+  string value = 2;
+}`)
+	writeProto(t, protoDir, "trace/v1/trace.proto", `
+syntax = "proto3";
+package tempopb.trace.v1;
+import "common/v1/common.proto";
+message Span {
+  string name = 1;
+  repeated tempopb.common.v1.KeyValue attributes = 2;
+}`)
+
+	outDir := t.TempDir()
+	g := &Generator{
+		Module:        "github.com/grafana/tempo",
+		OutDir:        outDir,
+		ProtoDir:      protoDir,
+		StripPrefix:   "tempopb",
+		ImportBase:    "github.com/grafana/tempo/pkg/tempopb",
+		HelpersImport: "github.com/grafana/tempo/pkg/tempopb/protohelpers",
+	}
+	if err := g.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
+	}
+
+	commonFile := filepath.Join(outDir, "common", "v1", "common.pb.go")
+	traceFile := filepath.Join(outDir, "trace", "v1", "trace.pb.go")
+
+	commonContent, err := os.ReadFile(commonFile)
+	if err != nil {
+		t.Fatalf("expected output at %s: %v", commonFile, err)
+	}
+	traceContent, err := os.ReadFile(traceFile)
+	if err != nil {
+		t.Fatalf("expected output at %s: %v", traceFile, err)
+	}
+
+	common := string(commonContent)
+	trace := string(traceContent)
+
+	// Package name: last component after stripping prefix.
+	if !strings.Contains(common, "package v1\n") {
+		t.Error("common: expected 'package v1'")
+	}
+	if !strings.Contains(trace, "package v1\n") {
+		t.Error("trace: expected 'package v1'")
+	}
+
+	// Custom helpers import.
+	if !strings.Contains(common, `"github.com/grafana/tempo/pkg/tempopb/protohelpers"`) {
+		t.Error("common: expected custom helpers import path")
+	}
+
+	// Cross-file import uses import base.
+	if !strings.Contains(trace, `"github.com/grafana/tempo/pkg/tempopb/common/v1"`) {
+		t.Error("trace: expected import of common/v1 package")
+	}
+	// Alias must not be bare "v1" (collides with own package name).
+	if strings.Contains(trace, "\tv1 \"") {
+		t.Error("trace: alias 'v1' collides with package name, should be disambiguated")
+	}
+}
+
+func TestGenerateWithGoPackage(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "a.proto", `
+syntax = "proto3";
+package myproject.a;
+option go_package = "example.com/mod/gen/myproject/a;a";
+message Foo { string name = 1; }`)
+	writeProto(t, protoDir, "b.proto", `
+syntax = "proto3";
+package myproject.b;
+option go_package = "example.com/mod/gen/myproject/b;b";
+import "myproject/a/a.proto";
+message Bar { myproject.a.Foo foo = 1; }`)
+
+	outDir := t.TempDir()
+	g := &Generator{
+		Module:   "example.com/mod",
+		OutDir:   outDir,
+		ProtoDir: protoDir,
+	}
+	if err := g.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
+	}
+
+	aFile := filepath.Join(outDir, "myproject", "a", "a.pb.go")
+	bFile := filepath.Join(outDir, "myproject", "b", "b.pb.go")
+
+	aContent, err := os.ReadFile(aFile)
+	if err != nil {
+		t.Fatalf("expected output at %s: %v", aFile, err)
+	}
+	bContent, err := os.ReadFile(bFile)
+	if err != nil {
+		t.Fatalf("expected output at %s: %v", bFile, err)
+	}
+
+	// Package name from go_package semicolon form.
+	if !strings.Contains(string(aContent), "package a\n") {
+		t.Errorf("a.pb.go: expected 'package a', got:\n%s", string(aContent)[:min(200, len(aContent))])
+	}
+	if !strings.Contains(string(bContent), "package b\n") {
+		t.Errorf("b.pb.go: expected 'package b', got:\n%s", string(bContent)[:min(200, len(bContent))])
+	}
+
+	// Cross-file import uses go_package import path.
+	if !strings.Contains(string(bContent), `"example.com/mod/gen/myproject/a"`) {
+		t.Error("b.pb.go: expected import of example.com/mod/gen/myproject/a")
+	}
+}
+
+func TestGenerateGoPackageFallback(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "x.proto", `
+syntax = "proto3";
+package mytest.x;
+option go_package = "some.other/module/pkg";
+message Msg { int32 val = 1; }`)
+
+	outDir := t.TempDir()
+	g := &Generator{
+		Module:   "wiresmith",
+		OutDir:   outDir,
+		ProtoDir: protoDir,
+	}
+	if err := g.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
+	}
+
+	outFile := filepath.Join(outDir, "mytest", "x", "x.pb.go")
+	content, err := os.ReadFile(outFile)
+	if err != nil {
+		t.Fatalf("expected fallback output at %s: %v", outFile, err)
+	}
+
+	if !strings.Contains(string(content), "package mytestx\n") {
+		t.Errorf("expected 'package mytestx', got:\n%s", string(content)[:min(200, len(content))])
+	}
+}
+
+func TestGenerateGoPackageWithSemicolon(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "svc.proto", `
+syntax = "proto3";
+package myapp.svc;
+option go_package = "example.com/app/gen/myapp/svc;service";
+message Request { string id = 1; }`)
+
+	outDir := t.TempDir()
+	g := &Generator{
+		Module:   "example.com/app",
+		OutDir:   outDir,
+		ProtoDir: protoDir,
+	}
+	if err := g.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
+	}
+
+	outFile := filepath.Join(outDir, "myapp", "svc", "svc.pb.go")
+	content, err := os.ReadFile(outFile)
+	if err != nil {
+		t.Fatalf("expected output at %s: %v", outFile, err)
+	}
+
+	if !strings.Contains(string(content), "package service\n") {
+		t.Errorf("expected 'package service', got:\n%s", string(content)[:min(200, len(content))])
+	}
+}
+
+func TestGeneratorDeterminismRecursive(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "common/v1/common.proto",
+		"syntax = \"proto3\";\npackage ns.common.v1;\nmessage Foo { string name = 1; }")
+	writeProto(t, protoDir, "svc/v1/svc.proto",
+		"syntax = \"proto3\";\npackage ns.svc.v1;\nimport \"common/v1/common.proto\";\nmessage Bar { ns.common.v1.Foo foo = 1; }")
+
+	for i := 0; i < 5; i++ {
+		dirA := t.TempDir()
+		dirB := t.TempDir()
+
+		genA := &Generator{Module: "testmod", OutDir: dirA, ProtoDir: protoDir}
+		genB := &Generator{Module: "testmod", OutDir: dirB, ProtoDir: protoDir}
+
+		ctx := context.Background()
+		if err := genA.Generate(ctx); err != nil {
+			t.Fatalf("iteration %d: first Generate: %v", i, err)
+		}
+		if err := genB.Generate(ctx); err != nil {
+			t.Fatalf("iteration %d: second Generate: %v", i, err)
+		}
+
+		err := filepath.Walk(dirA, func(pathA string, info os.FileInfo, err error) error {
+			if err != nil || info.IsDir() {
+				return err
+			}
+			rel, _ := filepath.Rel(dirA, pathA)
+			contentA, _ := os.ReadFile(pathA)
+			contentB, err := os.ReadFile(filepath.Join(dirB, rel))
+			if err != nil {
+				t.Errorf("iteration %d: %s missing in second output", i, rel)
+				return nil
+			}
+			if !bytes.Equal(contentA, contentB) {
+				t.Errorf("iteration %d: %s differs between runs", i, rel)
+			}
+			return nil
+		})
+		if err != nil {
+			t.Fatalf("iteration %d: walk: %v", i, err)
+		}
 	}
 }
