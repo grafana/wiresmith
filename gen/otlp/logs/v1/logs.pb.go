@@ -159,23 +159,23 @@ type LogsData struct {
 	// one element. Intermediary nodes that receive data from multiple origins
 	// typically batch the data before forwarding further and in that case this
 	// array will contain multiple elements.
-	ResourceLogs []ResourceLogs
+	ResourceLogs []ResourceLogs `protobuf:"bytes,1,rep,name=resource_logs,json=resourceLogs,proto3" json:"resource_logs,omitempty"`
 }
 
 // A collection of ScopeLogs from a Resource.
 type ResourceLogs struct {
 	// The resource for the logs in this message.
 	// If this field is not set then resource info is unknown.
-	Resource resourcev1.Resource
+	Resource resourcev1.Resource `protobuf:"bytes,1,opt,name=resource,proto3" json:"resource,omitempty"`
 	// A list of ScopeLogs that originate from a resource.
-	ScopeLogs []ScopeLogs
+	ScopeLogs []ScopeLogs `protobuf:"bytes,2,rep,name=scope_logs,json=scopeLogs,proto3" json:"scope_logs,omitempty"`
 	// The Schema URL, if known. This is the identifier of the Schema that the resource data
 	// is recorded in. Notably, the last part of the URL path is the version number of the
 	// schema: http[s]://server[:port]/path/<version>. To learn more about Schema URL see
 	// https://opentelemetry.io/docs/specs/otel/schemas/#schema-url
 	// This schema_url applies to the data in the "resource" field. It does not apply
 	// to the data in the "scope_logs" field which have their own schema_url field.
-	SchemaUrl string
+	SchemaUrl string `protobuf:"bytes,3,opt,name=schema_url,json=schemaUrl,proto3" json:"schema_url,omitempty"`
 
 	fieldsPresent [1]uint64
 }
@@ -185,16 +185,16 @@ type ScopeLogs struct {
 	// The instrumentation scope information for the logs in this message.
 	// Semantically when InstrumentationScope isn't set, it is equivalent with
 	// an empty instrumentation scope name (unknown).
-	Scope commonv1.InstrumentationScope
+	Scope commonv1.InstrumentationScope `protobuf:"bytes,1,opt,name=scope,proto3" json:"scope,omitempty"`
 	// A list of log records.
-	LogRecords []LogRecord
+	LogRecords []LogRecord `protobuf:"bytes,2,rep,name=log_records,json=logRecords,proto3" json:"log_records,omitempty"`
 	// The Schema URL, if known. This is the identifier of the Schema that the log data
 	// is recorded in. Notably, the last part of the URL path is the version number of the
 	// schema: http[s]://server[:port]/path/<version>. To learn more about Schema URL see
 	// https://opentelemetry.io/docs/specs/otel/schemas/#schema-url
 	// This schema_url applies to the data in the "scope" field and all logs in the
 	// "log_records" field.
-	SchemaUrl string
+	SchemaUrl string `protobuf:"bytes,3,opt,name=schema_url,json=schemaUrl,proto3" json:"schema_url,omitempty"`
 
 	fieldsPresent [1]uint64
 }
@@ -205,7 +205,7 @@ type LogRecord struct {
 	// time_unix_nano is the time when the event occurred.
 	// Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
 	// Value of 0 indicates unknown or missing timestamp.
-	TimeUnixNano uint64
+	TimeUnixNano uint64 `protobuf:"fixed64,1,opt,name=time_unix_nano,json=timeUnixNano,proto3" json:"time_unix_nano,omitempty"`
 	// Time when the event was observed by the collection system.
 	// For events that originate in OpenTelemetry (e.g. using OpenTelemetry Logging SDK)
 	// this timestamp is typically set at the generation time and is equal to Timestamp.
@@ -221,29 +221,29 @@ type LogRecord struct {
 	//
 	// Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
 	// Value of 0 indicates unknown or missing timestamp.
-	ObservedTimeUnixNano uint64
+	ObservedTimeUnixNano uint64 `protobuf:"fixed64,11,opt,name=observed_time_unix_nano,json=observedTimeUnixNano,proto3" json:"observed_time_unix_nano,omitempty"`
 	// Numerical value of the severity, normalized to values described in Log Data Model.
 	// [Optional].
-	SeverityNumber SeverityNumber
+	SeverityNumber SeverityNumber `protobuf:"varint,2,opt,name=severity_number,json=severityNumber,proto3,enum=opentelemetry.proto.logs.v1.SeverityNumber" json:"severity_number,omitempty"`
 	// The severity text (also known as log level). The original string representation as
 	// it is known at the source. [Optional].
-	SeverityText string
+	SeverityText string `protobuf:"bytes,3,opt,name=severity_text,json=severityText,proto3" json:"severity_text,omitempty"`
 	// A value containing the body of the log record. Can be for example a human-readable
 	// string message (including multi-line) describing the event in a free form or it can
 	// be a structured data composed of arrays and maps of other values. [Optional].
-	Body commonv1.AnyValue
+	Body commonv1.AnyValue `protobuf:"bytes,5,opt,name=body,proto3" json:"body,omitempty"`
 	// Additional attributes that describe the specific event occurrence. [Optional].
 	// Attribute keys MUST be unique (it is not allowed to have more than one
 	// attribute with the same key).
 	// The behavior of software that receives duplicated keys can be unpredictable.
-	Attributes             []commonv1.KeyValue
-	DroppedAttributesCount uint32
+	Attributes             []commonv1.KeyValue `protobuf:"bytes,6,rep,name=attributes,proto3" json:"attributes,omitempty"`
+	DroppedAttributesCount uint32              `protobuf:"varint,7,opt,name=dropped_attributes_count,json=droppedAttributesCount,proto3" json:"dropped_attributes_count,omitempty"`
 	// Flags, a bit field. 8 least significant bits are the trace flags as
 	// defined in W3C Trace Context specification. 24 most significant bits are reserved
 	// and must be set to 0. Readers must not assume that 24 most significant bits
 	// will be zero and must correctly mask the bits when reading 8-bit trace flag (use
 	// flags & LOG_RECORD_FLAGS_TRACE_FLAGS_MASK). [Optional].
-	Flags uint32
+	Flags uint32 `protobuf:"fixed32,8,opt,name=flags,proto3" json:"flags,omitempty"`
 	// A unique identifier for a trace. All logs from the same trace share
 	// the same `trace_id`. The ID is a 16-byte array. An ID with all zeroes OR
 	// of length other than 16 bytes is considered invalid (empty string in OTLP/JSON
@@ -255,7 +255,7 @@ type LogRecord struct {
 	// trace if any of the following is true:
 	// - the field is not present,
 	// - the field contains an invalid value.
-	TraceId []byte
+	TraceId []byte `protobuf:"bytes,9,opt,name=trace_id,json=traceId,proto3" json:"trace_id,omitempty"`
 	// A unique identifier for a span within a trace, assigned when the span
 	// is created. The ID is an 8-byte array. An ID with all zeroes OR of length
 	// other than 8 bytes is considered invalid (empty string in OTLP/JSON
@@ -268,7 +268,7 @@ type LogRecord struct {
 	// span if any of the following is true:
 	// - the field is not present,
 	// - the field contains an invalid value.
-	SpanId []byte
+	SpanId []byte `protobuf:"bytes,10,opt,name=span_id,json=spanId,proto3" json:"span_id,omitempty"`
 	// A unique identifier of event category/type.
 	// All events with the same event_name are expected to conform to the same
 	// schema for both their attributes and their body.
@@ -279,7 +279,7 @@ type LogRecord struct {
 	// as an event.
 	//
 	// [Optional].
-	EventName string
+	EventName string `protobuf:"bytes,12,opt,name=event_name,json=eventName,proto3" json:"event_name,omitempty"`
 
 	fieldsPresent [1]uint64
 }

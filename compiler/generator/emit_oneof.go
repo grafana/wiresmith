@@ -23,7 +23,7 @@ func (fg *FileGenerator) emitOneof(md protoreflect.MessageDescriptor, oo protore
 		fieldType := fg.imports.goSingularType(fd)
 
 		fmt.Fprintf(fg.body, "type %s struct {\n", variantName)
-		fmt.Fprintf(fg.body, "\t%s %s\n", fieldName, fieldType)
+		fmt.Fprintf(fg.body, "\t%s %s %s\n", fieldName, fieldType, fieldTag(fd))
 		fmt.Fprintf(fg.body, "}\n\n")
 		fmt.Fprintf(fg.body, "func (*%s) %s() {}\n\n", variantName, markerMethod)
 	}

@@ -17,16 +17,16 @@ type Resource struct {
 	// Attribute keys MUST be unique (it is not allowed to have more than one
 	// attribute with the same key).
 	// The behavior of software that receives duplicated keys can be unpredictable.
-	Attributes []commonv1.KeyValue
+	Attributes []commonv1.KeyValue `protobuf:"bytes,1,rep,name=attributes,proto3" json:"attributes,omitempty"`
 	// The number of dropped attributes. If the value is 0, then
 	// no attributes were dropped.
-	DroppedAttributesCount uint32
+	DroppedAttributesCount uint32 `protobuf:"varint,2,opt,name=dropped_attributes_count,json=droppedAttributesCount,proto3" json:"dropped_attributes_count,omitempty"`
 	// Set of entities that participate in this Resource.
 	//
 	// Note: keys in the references MUST exist in attributes of this message.
 	//
 	// Status: [Development]
-	EntityRefs []commonv1.EntityRef
+	EntityRefs []commonv1.EntityRef `protobuf:"bytes,3,rep,name=entity_refs,json=entityRefs,proto3" json:"entity_refs,omitempty"`
 
 	fieldsPresent [1]uint64
 }

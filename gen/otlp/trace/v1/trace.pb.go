@@ -166,23 +166,23 @@ type TracesData struct {
 	// one element. Intermediary nodes that receive data from multiple origins
 	// typically batch the data before forwarding further and in that case this
 	// array will contain multiple elements.
-	ResourceSpans []ResourceSpans
+	ResourceSpans []ResourceSpans `protobuf:"bytes,1,rep,name=resource_spans,json=resourceSpans,proto3" json:"resource_spans,omitempty"`
 }
 
 // A collection of ScopeSpans from a Resource.
 type ResourceSpans struct {
 	// The resource for the spans in this message.
 	// If this field is not set then no resource info is known.
-	Resource resourcev1.Resource
+	Resource resourcev1.Resource `protobuf:"bytes,1,opt,name=resource,proto3" json:"resource,omitempty"`
 	// A list of ScopeSpans that originate from a resource.
-	ScopeSpans []ScopeSpans
+	ScopeSpans []ScopeSpans `protobuf:"bytes,2,rep,name=scope_spans,json=scopeSpans,proto3" json:"scope_spans,omitempty"`
 	// The Schema URL, if known. This is the identifier of the Schema that the resource data
 	// is recorded in. Notably, the last part of the URL path is the version number of the
 	// schema: http[s]://server[:port]/path/<version>. To learn more about Schema URL see
 	// https://opentelemetry.io/docs/specs/otel/schemas/#schema-url
 	// This schema_url applies to the data in the "resource" field. It does not apply
 	// to the data in the "scope_spans" field which have their own schema_url field.
-	SchemaUrl string
+	SchemaUrl string `protobuf:"bytes,3,opt,name=schema_url,json=schemaUrl,proto3" json:"schema_url,omitempty"`
 
 	fieldsPresent [1]uint64
 }
@@ -192,16 +192,16 @@ type ScopeSpans struct {
 	// The instrumentation scope information for the spans in this message.
 	// Semantically when InstrumentationScope isn't set, it is equivalent with
 	// an empty instrumentation scope name (unknown).
-	Scope commonv1.InstrumentationScope
+	Scope commonv1.InstrumentationScope `protobuf:"bytes,1,opt,name=scope,proto3" json:"scope,omitempty"`
 	// A list of Spans that originate from an instrumentation scope.
-	Spans []Span
+	Spans []Span `protobuf:"bytes,2,rep,name=spans,proto3" json:"spans,omitempty"`
 	// The Schema URL, if known. This is the identifier of the Schema that the span data
 	// is recorded in. Notably, the last part of the URL path is the version number of the
 	// schema: http[s]://server[:port]/path/<version>. To learn more about Schema URL see
 	// https://opentelemetry.io/docs/specs/otel/schemas/#schema-url
 	// This schema_url applies to the data in the "scope" field and all spans and span
 	// events in the "spans" field.
-	SchemaUrl string
+	SchemaUrl string `protobuf:"bytes,3,opt,name=schema_url,json=schemaUrl,proto3" json:"schema_url,omitempty"`
 
 	fieldsPresent [1]uint64
 }
@@ -210,18 +210,18 @@ type ScopeSpans struct {
 // text description and key-value pairs.
 type Span_Event struct {
 	// The time the event occurred.
-	TimeUnixNano uint64
+	TimeUnixNano uint64 `protobuf:"fixed64,1,opt,name=time_unix_nano,json=timeUnixNano,proto3" json:"time_unix_nano,omitempty"`
 	// The name of the event.
 	// This field is semantically required to be set to non-empty string.
-	Name string
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	// A collection of attribute key/value pairs on the event.
 	// Attribute keys MUST be unique (it is not allowed to have more than one
 	// attribute with the same key).
 	// The behavior of software that receives duplicated keys can be unpredictable.
-	Attributes []commonv1.KeyValue
+	Attributes []commonv1.KeyValue `protobuf:"bytes,3,rep,name=attributes,proto3" json:"attributes,omitempty"`
 	// The number of dropped attributes. If the value is 0,
 	// then no attributes were dropped.
-	DroppedAttributesCount uint32
+	DroppedAttributesCount uint32 `protobuf:"varint,4,opt,name=dropped_attributes_count,json=droppedAttributesCount,proto3" json:"dropped_attributes_count,omitempty"`
 
 	fieldsPresent [1]uint64
 }
@@ -233,19 +233,19 @@ type Span_Event struct {
 type Span_Link struct {
 	// A unique identifier of a trace that this linked span is part of. The ID is a
 	// 16-byte array.
-	TraceId []byte
+	TraceId []byte `protobuf:"bytes,1,opt,name=trace_id,json=traceId,proto3" json:"trace_id,omitempty"`
 	// A unique identifier for the linked span. The ID is an 8-byte array.
-	SpanId []byte
+	SpanId []byte `protobuf:"bytes,2,opt,name=span_id,json=spanId,proto3" json:"span_id,omitempty"`
 	// The trace_state associated with the link.
-	TraceState string
+	TraceState string `protobuf:"bytes,3,opt,name=trace_state,json=traceState,proto3" json:"trace_state,omitempty"`
 	// A collection of attribute key/value pairs on the link.
 	// Attribute keys MUST be unique (it is not allowed to have more than one
 	// attribute with the same key).
 	// The behavior of software that receives duplicated keys can be unpredictable.
-	Attributes []commonv1.KeyValue
+	Attributes []commonv1.KeyValue `protobuf:"bytes,4,rep,name=attributes,proto3" json:"attributes,omitempty"`
 	// The number of dropped attributes. If the value is 0,
 	// then no attributes were dropped.
-	DroppedAttributesCount uint32
+	DroppedAttributesCount uint32 `protobuf:"varint,5,opt,name=dropped_attributes_count,json=droppedAttributesCount,proto3" json:"dropped_attributes_count,omitempty"`
 	// Flags, a bit field.
 	//
 	// Bits 0-7 (8 least significant bits) are the trace flags as defined in W3C Trace
@@ -263,7 +263,7 @@ type Span_Link struct {
 	// When creating new spans, bits 10-31 (most-significant 22-bits) MUST be zero.
 	//
 	// [Optional].
-	Flags uint32
+	Flags uint32 `protobuf:"fixed32,6,opt,name=flags,proto3" json:"flags,omitempty"`
 
 	fieldsPresent [1]uint64
 }
@@ -278,21 +278,21 @@ type Span struct {
 	// is zero-length and thus is also invalid).
 	//
 	// This field is required.
-	TraceId []byte
+	TraceId []byte `protobuf:"bytes,1,opt,name=trace_id,json=traceId,proto3" json:"trace_id,omitempty"`
 	// A unique identifier for a span within a trace, assigned when the span
 	// is created. The ID is an 8-byte array. An ID with all zeroes OR of length
 	// other than 8 bytes is considered invalid (empty string in OTLP/JSON
 	// is zero-length and thus is also invalid).
 	//
 	// This field is required.
-	SpanId []byte
+	SpanId []byte `protobuf:"bytes,2,opt,name=span_id,json=spanId,proto3" json:"span_id,omitempty"`
 	// trace_state conveys information about request position in multiple distributed tracing graphs.
 	// It is a trace_state in w3c-trace-context format: https://www.w3.org/TR/trace-context/#tracestate-header
 	// See also https://github.com/w3c/distributed-tracing for more details about this field.
-	TraceState string
+	TraceState string `protobuf:"bytes,3,opt,name=trace_state,json=traceState,proto3" json:"trace_state,omitempty"`
 	// The `span_id` of this span's parent span. If this is a root span, then this
 	// field must be empty. The ID is an 8-byte array.
-	ParentSpanId []byte
+	ParentSpanId []byte `protobuf:"bytes,4,opt,name=parent_span_id,json=parentSpanId,proto3" json:"parent_span_id,omitempty"`
 	// Flags, a bit field.
 	//
 	// Bits 0-7 (8 least significant bits) are the trace flags as defined in W3C Trace
@@ -314,7 +314,7 @@ type Span struct {
 	// Readers MUST NOT assume that bits 10-31 (22 most significant bits) will be zero.
 	//
 	// [Optional].
-	Flags uint32
+	Flags uint32 `protobuf:"fixed32,16,opt,name=flags,proto3" json:"flags,omitempty"`
 	// A description of the span's operation.
 	//
 	// For example, the name can be a qualified method name or a file name
@@ -326,25 +326,25 @@ type Span struct {
 	// Empty value is equivalent to an unknown span name.
 	//
 	// This field is required.
-	Name string
+	Name string `protobuf:"bytes,5,opt,name=name,proto3" json:"name,omitempty"`
 	// Distinguishes between spans generated in a particular context. For example,
 	// two spans with the same name may be distinguished using `CLIENT` (caller)
 	// and `SERVER` (callee) to identify queueing latency associated with the span.
-	Kind Span_SpanKind
+	Kind Span_SpanKind `protobuf:"varint,6,opt,name=kind,proto3,enum=opentelemetry.proto.trace.v1.Span.SpanKind" json:"kind,omitempty"`
 	// The start time of the span. On the client side, this is the time
 	// kept by the local machine where the span execution starts. On the server side, this
 	// is the time when the server's application handler starts running.
 	// Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
 	//
 	// This field is semantically required and it is expected that end_time >= start_time.
-	StartTimeUnixNano uint64
+	StartTimeUnixNano uint64 `protobuf:"fixed64,7,opt,name=start_time_unix_nano,json=startTimeUnixNano,proto3" json:"start_time_unix_nano,omitempty"`
 	// The end time of the span. On the client side, this is the time
 	// kept by the local machine where the span execution ends. On the server side, this
 	// is the time when the server application handler stops running.
 	// Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
 	//
 	// This field is semantically required and it is expected that end_time >= start_time.
-	EndTimeUnixNano uint64
+	EndTimeUnixNano uint64 `protobuf:"fixed64,8,opt,name=end_time_unix_nano,json=endTimeUnixNano,proto3" json:"end_time_unix_nano,omitempty"`
 	// A collection of key/value pairs. Note, global attributes
 	// like server name can be set using the resource API. Examples of attributes:
 	//
@@ -356,25 +356,25 @@ type Span struct {
 	// Attribute keys MUST be unique (it is not allowed to have more than one
 	// attribute with the same key).
 	// The behavior of software that receives duplicated keys can be unpredictable.
-	Attributes []commonv1.KeyValue
+	Attributes []commonv1.KeyValue `protobuf:"bytes,9,rep,name=attributes,proto3" json:"attributes,omitempty"`
 	// The number of attributes that were discarded. Attributes
 	// can be discarded because their keys are too long or because there are too many
 	// attributes. If this value is 0, then no attributes were dropped.
-	DroppedAttributesCount uint32
+	DroppedAttributesCount uint32 `protobuf:"varint,10,opt,name=dropped_attributes_count,json=droppedAttributesCount,proto3" json:"dropped_attributes_count,omitempty"`
 	// A collection of Event items.
-	Events []Span_Event
+	Events []Span_Event `protobuf:"bytes,11,rep,name=events,proto3" json:"events,omitempty"`
 	// The number of dropped events. If the value is 0, then no
 	// events were dropped.
-	DroppedEventsCount uint32
+	DroppedEventsCount uint32 `protobuf:"varint,12,opt,name=dropped_events_count,json=droppedEventsCount,proto3" json:"dropped_events_count,omitempty"`
 	// A collection of Links, which are references from this span to a span
 	// in the same or different trace.
-	Links []Span_Link
+	Links []Span_Link `protobuf:"bytes,13,rep,name=links,proto3" json:"links,omitempty"`
 	// The number of dropped links after the maximum size was
 	// enforced. If this value is 0, then no links were dropped.
-	DroppedLinksCount uint32
+	DroppedLinksCount uint32 `protobuf:"varint,14,opt,name=dropped_links_count,json=droppedLinksCount,proto3" json:"dropped_links_count,omitempty"`
 	// An optional final status for this span. Semantically when Status isn't set, it means
 	// span's status code is unset, i.e. assume STATUS_CODE_UNSET (code = 0).
-	Status Status
+	Status Status `protobuf:"bytes,15,opt,name=status,proto3" json:"status,omitempty"`
 
 	fieldsPresent [1]uint64
 }
@@ -383,9 +383,9 @@ type Span struct {
 // programming environments, including REST APIs and RPC APIs.
 type Status struct {
 	// A developer-facing human readable error message.
-	Message string
+	Message string `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
 	// The status code.
-	Code Status_StatusCode
+	Code Status_StatusCode `protobuf:"varint,3,opt,name=code,proto3,enum=opentelemetry.proto.trace.v1.Status.StatusCode" json:"code,omitempty"`
 
 	fieldsPresent [1]uint64
 }

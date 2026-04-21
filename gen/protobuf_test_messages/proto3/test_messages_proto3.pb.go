@@ -100,190 +100,190 @@ type TestAllTypesProto3_OneofField interface {
 }
 
 type TestAllTypesProto3_OneofUint32 struct {
-	OneofUint32 uint32
+	OneofUint32 uint32 `protobuf:"varint,111,opt,name=oneof_uint32,json=oneofUint32,proto3,oneof" json:"oneof_uint32,omitempty"`
 }
 
 func (*TestAllTypesProto3_OneofUint32) isTestAllTypesProto3_OneofField() {}
 
 type TestAllTypesProto3_OneofNestedMessage struct {
-	OneofNestedMessage TestAllTypesProto3_NestedMessage
+	OneofNestedMessage TestAllTypesProto3_NestedMessage `protobuf:"bytes,112,opt,name=oneof_nested_message,json=oneofNestedMessage,proto3,oneof" json:"oneof_nested_message,omitempty"`
 }
 
 func (*TestAllTypesProto3_OneofNestedMessage) isTestAllTypesProto3_OneofField() {}
 
 type TestAllTypesProto3_OneofString struct {
-	OneofString string
+	OneofString string `protobuf:"bytes,113,opt,name=oneof_string,json=oneofString,proto3,oneof" json:"oneof_string,omitempty"`
 }
 
 func (*TestAllTypesProto3_OneofString) isTestAllTypesProto3_OneofField() {}
 
 type TestAllTypesProto3_OneofBytes struct {
-	OneofBytes []byte
+	OneofBytes []byte `protobuf:"bytes,114,opt,name=oneof_bytes,json=oneofBytes,proto3,oneof" json:"oneof_bytes,omitempty"`
 }
 
 func (*TestAllTypesProto3_OneofBytes) isTestAllTypesProto3_OneofField() {}
 
 type TestAllTypesProto3_OneofBool struct {
-	OneofBool bool
+	OneofBool bool `protobuf:"varint,115,opt,name=oneof_bool,json=oneofBool,proto3,oneof" json:"oneof_bool,omitempty"`
 }
 
 func (*TestAllTypesProto3_OneofBool) isTestAllTypesProto3_OneofField() {}
 
 type TestAllTypesProto3_OneofUint64 struct {
-	OneofUint64 uint64
+	OneofUint64 uint64 `protobuf:"varint,116,opt,name=oneof_uint64,json=oneofUint64,proto3,oneof" json:"oneof_uint64,omitempty"`
 }
 
 func (*TestAllTypesProto3_OneofUint64) isTestAllTypesProto3_OneofField() {}
 
 type TestAllTypesProto3_OneofFloat struct {
-	OneofFloat float32
+	OneofFloat float32 `protobuf:"fixed32,117,opt,name=oneof_float,json=oneofFloat,proto3,oneof" json:"oneof_float,omitempty"`
 }
 
 func (*TestAllTypesProto3_OneofFloat) isTestAllTypesProto3_OneofField() {}
 
 type TestAllTypesProto3_OneofDouble struct {
-	OneofDouble float64
+	OneofDouble float64 `protobuf:"fixed64,118,opt,name=oneof_double,json=oneofDouble,proto3,oneof" json:"oneof_double,omitempty"`
 }
 
 func (*TestAllTypesProto3_OneofDouble) isTestAllTypesProto3_OneofField() {}
 
 type TestAllTypesProto3_OneofEnum struct {
-	OneofEnum TestAllTypesProto3_NestedEnum
+	OneofEnum TestAllTypesProto3_NestedEnum `protobuf:"varint,119,opt,name=oneof_enum,json=oneofEnum,proto3,enum=protobuf_test_messages.proto3.TestAllTypesProto3.NestedEnum,oneof" json:"oneof_enum,omitempty"`
 }
 
 func (*TestAllTypesProto3_OneofEnum) isTestAllTypesProto3_OneofField() {}
 
 type TestAllTypesProto3_NestedMessage struct {
-	A int32
+	A int32 `protobuf:"varint,1,opt,name=a,proto3" json:"a,omitempty"`
 
 	fieldsPresent [1]uint64
 }
 
 type TestAllTypesProto3 struct {
 	// Singular fields — all supported scalar types.
-	OptionalInt32    int32
-	OptionalInt64    int64
-	OptionalUint32   uint32
-	OptionalUint64   uint64
-	OptionalSint32   int32
-	OptionalSint64   int64
-	OptionalFixed32  uint32
-	OptionalFixed64  uint64
-	OptionalSfixed32 int32
-	OptionalSfixed64 int64
-	OptionalFloat    float32
-	OptionalDouble   float64
-	OptionalBool     bool
-	OptionalString   string
-	OptionalBytes    []byte
+	OptionalInt32    int32   `protobuf:"varint,1,opt,name=optional_int32,json=optionalInt32,proto3" json:"optional_int32,omitempty"`
+	OptionalInt64    int64   `protobuf:"varint,2,opt,name=optional_int64,json=optionalInt64,proto3" json:"optional_int64,omitempty"`
+	OptionalUint32   uint32  `protobuf:"varint,3,opt,name=optional_uint32,json=optionalUint32,proto3" json:"optional_uint32,omitempty"`
+	OptionalUint64   uint64  `protobuf:"varint,4,opt,name=optional_uint64,json=optionalUint64,proto3" json:"optional_uint64,omitempty"`
+	OptionalSint32   int32   `protobuf:"zigzag32,5,opt,name=optional_sint32,json=optionalSint32,proto3" json:"optional_sint32,omitempty"`
+	OptionalSint64   int64   `protobuf:"zigzag64,6,opt,name=optional_sint64,json=optionalSint64,proto3" json:"optional_sint64,omitempty"`
+	OptionalFixed32  uint32  `protobuf:"fixed32,7,opt,name=optional_fixed32,json=optionalFixed32,proto3" json:"optional_fixed32,omitempty"`
+	OptionalFixed64  uint64  `protobuf:"fixed64,8,opt,name=optional_fixed64,json=optionalFixed64,proto3" json:"optional_fixed64,omitempty"`
+	OptionalSfixed32 int32   `protobuf:"fixed32,9,opt,name=optional_sfixed32,json=optionalSfixed32,proto3" json:"optional_sfixed32,omitempty"`
+	OptionalSfixed64 int64   `protobuf:"fixed64,10,opt,name=optional_sfixed64,json=optionalSfixed64,proto3" json:"optional_sfixed64,omitempty"`
+	OptionalFloat    float32 `protobuf:"fixed32,11,opt,name=optional_float,json=optionalFloat,proto3" json:"optional_float,omitempty"`
+	OptionalDouble   float64 `protobuf:"fixed64,12,opt,name=optional_double,json=optionalDouble,proto3" json:"optional_double,omitempty"`
+	OptionalBool     bool    `protobuf:"varint,13,opt,name=optional_bool,json=optionalBool,proto3" json:"optional_bool,omitempty"`
+	OptionalString   string  `protobuf:"bytes,14,opt,name=optional_string,json=optionalString,proto3" json:"optional_string,omitempty"`
+	OptionalBytes    []byte  `protobuf:"bytes,15,opt,name=optional_bytes,json=optionalBytes,proto3" json:"optional_bytes,omitempty"`
 	// Singular message/enum fields.
-	OptionalNestedMessage  TestAllTypesProto3_NestedMessage
-	OptionalForeignMessage ForeignMessage
-	OptionalNestedEnum     TestAllTypesProto3_NestedEnum
-	OptionalForeignEnum    ForeignEnum
+	OptionalNestedMessage  TestAllTypesProto3_NestedMessage `protobuf:"bytes,18,opt,name=optional_nested_message,json=optionalNestedMessage,proto3" json:"optional_nested_message,omitempty"`
+	OptionalForeignMessage ForeignMessage                   `protobuf:"bytes,19,opt,name=optional_foreign_message,json=optionalForeignMessage,proto3" json:"optional_foreign_message,omitempty"`
+	OptionalNestedEnum     TestAllTypesProto3_NestedEnum    `protobuf:"varint,21,opt,name=optional_nested_enum,json=optionalNestedEnum,proto3,enum=protobuf_test_messages.proto3.TestAllTypesProto3.NestedEnum" json:"optional_nested_enum,omitempty"`
+	OptionalForeignEnum    ForeignEnum                      `protobuf:"varint,22,opt,name=optional_foreign_enum,json=optionalForeignEnum,proto3,enum=protobuf_test_messages.proto3.ForeignEnum" json:"optional_foreign_enum,omitempty"`
 	// field 23 (optional_aliased_enum) removed — allow_alias untested
-	OptionalStringPiece string
-	OptionalCord        string
+	OptionalStringPiece string `protobuf:"bytes,24,opt,name=optional_string_piece,json=optionalStringPiece,proto3" json:"optional_string_piece,omitempty"`
+	OptionalCord        string `protobuf:"bytes,25,opt,name=optional_cord,json=optionalCord,proto3" json:"optional_cord,omitempty"`
 	// Repeated scalar fields.
-	RepeatedInt32    []int32
-	RepeatedInt64    []int64
-	RepeatedUint32   []uint32
-	RepeatedUint64   []uint64
-	RepeatedSint32   []int32
-	RepeatedSint64   []int64
-	RepeatedFixed32  []uint32
-	RepeatedFixed64  []uint64
-	RepeatedSfixed32 []int32
-	RepeatedSfixed64 []int64
-	RepeatedFloat    []float32
-	RepeatedDouble   []float64
-	RepeatedBool     []bool
-	RepeatedString   []string
-	RepeatedBytes    [][]byte
+	RepeatedInt32    []int32   `protobuf:"varint,31,rep,packed,name=repeated_int32,json=repeatedInt32,proto3" json:"repeated_int32,omitempty"`
+	RepeatedInt64    []int64   `protobuf:"varint,32,rep,packed,name=repeated_int64,json=repeatedInt64,proto3" json:"repeated_int64,omitempty"`
+	RepeatedUint32   []uint32  `protobuf:"varint,33,rep,packed,name=repeated_uint32,json=repeatedUint32,proto3" json:"repeated_uint32,omitempty"`
+	RepeatedUint64   []uint64  `protobuf:"varint,34,rep,packed,name=repeated_uint64,json=repeatedUint64,proto3" json:"repeated_uint64,omitempty"`
+	RepeatedSint32   []int32   `protobuf:"zigzag32,35,rep,packed,name=repeated_sint32,json=repeatedSint32,proto3" json:"repeated_sint32,omitempty"`
+	RepeatedSint64   []int64   `protobuf:"zigzag64,36,rep,packed,name=repeated_sint64,json=repeatedSint64,proto3" json:"repeated_sint64,omitempty"`
+	RepeatedFixed32  []uint32  `protobuf:"fixed32,37,rep,packed,name=repeated_fixed32,json=repeatedFixed32,proto3" json:"repeated_fixed32,omitempty"`
+	RepeatedFixed64  []uint64  `protobuf:"fixed64,38,rep,packed,name=repeated_fixed64,json=repeatedFixed64,proto3" json:"repeated_fixed64,omitempty"`
+	RepeatedSfixed32 []int32   `protobuf:"fixed32,39,rep,packed,name=repeated_sfixed32,json=repeatedSfixed32,proto3" json:"repeated_sfixed32,omitempty"`
+	RepeatedSfixed64 []int64   `protobuf:"fixed64,40,rep,packed,name=repeated_sfixed64,json=repeatedSfixed64,proto3" json:"repeated_sfixed64,omitempty"`
+	RepeatedFloat    []float32 `protobuf:"fixed32,41,rep,packed,name=repeated_float,json=repeatedFloat,proto3" json:"repeated_float,omitempty"`
+	RepeatedDouble   []float64 `protobuf:"fixed64,42,rep,packed,name=repeated_double,json=repeatedDouble,proto3" json:"repeated_double,omitempty"`
+	RepeatedBool     []bool    `protobuf:"varint,43,rep,packed,name=repeated_bool,json=repeatedBool,proto3" json:"repeated_bool,omitempty"`
+	RepeatedString   []string  `protobuf:"bytes,44,rep,name=repeated_string,json=repeatedString,proto3" json:"repeated_string,omitempty"`
+	RepeatedBytes    [][]byte  `protobuf:"bytes,45,rep,name=repeated_bytes,json=repeatedBytes,proto3" json:"repeated_bytes,omitempty"`
 	// Repeated message/enum fields.
-	RepeatedNestedMessage  []TestAllTypesProto3_NestedMessage
-	RepeatedForeignMessage []ForeignMessage
-	RepeatedNestedEnum     []TestAllTypesProto3_NestedEnum
-	RepeatedForeignEnum    []ForeignEnum
-	RepeatedStringPiece    []string
-	RepeatedCord           []string
+	RepeatedNestedMessage  []TestAllTypesProto3_NestedMessage `protobuf:"bytes,48,rep,name=repeated_nested_message,json=repeatedNestedMessage,proto3" json:"repeated_nested_message,omitempty"`
+	RepeatedForeignMessage []ForeignMessage                   `protobuf:"bytes,49,rep,name=repeated_foreign_message,json=repeatedForeignMessage,proto3" json:"repeated_foreign_message,omitempty"`
+	RepeatedNestedEnum     []TestAllTypesProto3_NestedEnum    `protobuf:"varint,51,rep,packed,name=repeated_nested_enum,json=repeatedNestedEnum,proto3,enum=protobuf_test_messages.proto3.TestAllTypesProto3.NestedEnum" json:"repeated_nested_enum,omitempty"`
+	RepeatedForeignEnum    []ForeignEnum                      `protobuf:"varint,52,rep,packed,name=repeated_foreign_enum,json=repeatedForeignEnum,proto3,enum=protobuf_test_messages.proto3.ForeignEnum" json:"repeated_foreign_enum,omitempty"`
+	RepeatedStringPiece    []string                           `protobuf:"bytes,54,rep,name=repeated_string_piece,json=repeatedStringPiece,proto3" json:"repeated_string_piece,omitempty"`
+	RepeatedCord           []string                           `protobuf:"bytes,55,rep,name=repeated_cord,json=repeatedCord,proto3" json:"repeated_cord,omitempty"`
 	// Map fields.
-	MapInt32Int32           map[int32]int32
-	MapInt64Int64           map[int64]int64
-	MapUint32Uint32         map[uint32]uint32
-	MapUint64Uint64         map[uint64]uint64
-	MapSint32Sint32         map[int32]int32
-	MapSint64Sint64         map[int64]int64
-	MapFixed32Fixed32       map[uint32]uint32
-	MapFixed64Fixed64       map[uint64]uint64
-	MapSfixed32Sfixed32     map[int32]int32
-	MapSfixed64Sfixed64     map[int64]int64
-	MapInt32Float           map[int32]float32
-	MapInt32Double          map[int32]float64
-	MapBoolBool             map[bool]bool
-	MapStringString         map[string]string
-	MapStringBytes          map[string][]byte
-	MapStringNestedMessage  map[string]TestAllTypesProto3_NestedMessage
-	MapStringForeignMessage map[string]ForeignMessage
-	MapStringNestedEnum     map[string]TestAllTypesProto3_NestedEnum
-	MapStringForeignEnum    map[string]ForeignEnum
+	MapInt32Int32           map[int32]int32                             `protobuf:"bytes,56,rep,name=map_int32_int32,json=mapInt32Int32,proto3" json:"map_int32_int32,omitempty" protobuf_key:"varint,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	MapInt64Int64           map[int64]int64                             `protobuf:"bytes,57,rep,name=map_int64_int64,json=mapInt64Int64,proto3" json:"map_int64_int64,omitempty" protobuf_key:"varint,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	MapUint32Uint32         map[uint32]uint32                           `protobuf:"bytes,58,rep,name=map_uint32_uint32,json=mapUint32Uint32,proto3" json:"map_uint32_uint32,omitempty" protobuf_key:"varint,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	MapUint64Uint64         map[uint64]uint64                           `protobuf:"bytes,59,rep,name=map_uint64_uint64,json=mapUint64Uint64,proto3" json:"map_uint64_uint64,omitempty" protobuf_key:"varint,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	MapSint32Sint32         map[int32]int32                             `protobuf:"bytes,60,rep,name=map_sint32_sint32,json=mapSint32Sint32,proto3" json:"map_sint32_sint32,omitempty" protobuf_key:"zigzag32,1,opt,name=key" protobuf_val:"zigzag32,2,opt,name=value"`
+	MapSint64Sint64         map[int64]int64                             `protobuf:"bytes,61,rep,name=map_sint64_sint64,json=mapSint64Sint64,proto3" json:"map_sint64_sint64,omitempty" protobuf_key:"zigzag64,1,opt,name=key" protobuf_val:"zigzag64,2,opt,name=value"`
+	MapFixed32Fixed32       map[uint32]uint32                           `protobuf:"bytes,62,rep,name=map_fixed32_fixed32,json=mapFixed32Fixed32,proto3" json:"map_fixed32_fixed32,omitempty" protobuf_key:"fixed32,1,opt,name=key" protobuf_val:"fixed32,2,opt,name=value"`
+	MapFixed64Fixed64       map[uint64]uint64                           `protobuf:"bytes,63,rep,name=map_fixed64_fixed64,json=mapFixed64Fixed64,proto3" json:"map_fixed64_fixed64,omitempty" protobuf_key:"fixed64,1,opt,name=key" protobuf_val:"fixed64,2,opt,name=value"`
+	MapSfixed32Sfixed32     map[int32]int32                             `protobuf:"bytes,64,rep,name=map_sfixed32_sfixed32,json=mapSfixed32Sfixed32,proto3" json:"map_sfixed32_sfixed32,omitempty" protobuf_key:"fixed32,1,opt,name=key" protobuf_val:"fixed32,2,opt,name=value"`
+	MapSfixed64Sfixed64     map[int64]int64                             `protobuf:"bytes,65,rep,name=map_sfixed64_sfixed64,json=mapSfixed64Sfixed64,proto3" json:"map_sfixed64_sfixed64,omitempty" protobuf_key:"fixed64,1,opt,name=key" protobuf_val:"fixed64,2,opt,name=value"`
+	MapInt32Float           map[int32]float32                           `protobuf:"bytes,66,rep,name=map_int32_float,json=mapInt32Float,proto3" json:"map_int32_float,omitempty" protobuf_key:"varint,1,opt,name=key" protobuf_val:"fixed32,2,opt,name=value"`
+	MapInt32Double          map[int32]float64                           `protobuf:"bytes,67,rep,name=map_int32_double,json=mapInt32Double,proto3" json:"map_int32_double,omitempty" protobuf_key:"varint,1,opt,name=key" protobuf_val:"fixed64,2,opt,name=value"`
+	MapBoolBool             map[bool]bool                               `protobuf:"bytes,68,rep,name=map_bool_bool,json=mapBoolBool,proto3" json:"map_bool_bool,omitempty" protobuf_key:"varint,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	MapStringString         map[string]string                           `protobuf:"bytes,69,rep,name=map_string_string,json=mapStringString,proto3" json:"map_string_string,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	MapStringBytes          map[string][]byte                           `protobuf:"bytes,70,rep,name=map_string_bytes,json=mapStringBytes,proto3" json:"map_string_bytes,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	MapStringNestedMessage  map[string]TestAllTypesProto3_NestedMessage `protobuf:"bytes,71,rep,name=map_string_nested_message,json=mapStringNestedMessage,proto3" json:"map_string_nested_message,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	MapStringForeignMessage map[string]ForeignMessage                   `protobuf:"bytes,72,rep,name=map_string_foreign_message,json=mapStringForeignMessage,proto3" json:"map_string_foreign_message,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	MapStringNestedEnum     map[string]TestAllTypesProto3_NestedEnum    `protobuf:"bytes,73,rep,name=map_string_nested_enum,json=mapStringNestedEnum,proto3" json:"map_string_nested_enum,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value,enum=protobuf_test_messages.proto3.TestAllTypesProto3.NestedEnum"`
+	MapStringForeignEnum    map[string]ForeignEnum                      `protobuf:"bytes,74,rep,name=map_string_foreign_enum,json=mapStringForeignEnum,proto3" json:"map_string_foreign_enum,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value,enum=protobuf_test_messages.proto3.ForeignEnum"`
 	// Packed repeated fields (explicit packed = true).
-	PackedInt32      []int32
-	PackedInt64      []int64
-	PackedUint32     []uint32
-	PackedUint64     []uint64
-	PackedSint32     []int32
-	PackedSint64     []int64
-	PackedFixed32    []uint32
-	PackedFixed64    []uint64
-	PackedSfixed32   []int32
-	PackedSfixed64   []int64
-	PackedFloat      []float32
-	PackedDouble     []float64
-	PackedBool       []bool
-	PackedNestedEnum []TestAllTypesProto3_NestedEnum
+	PackedInt32      []int32                         `protobuf:"varint,75,rep,packed,name=packed_int32,json=packedInt32,proto3" json:"packed_int32,omitempty"`
+	PackedInt64      []int64                         `protobuf:"varint,76,rep,packed,name=packed_int64,json=packedInt64,proto3" json:"packed_int64,omitempty"`
+	PackedUint32     []uint32                        `protobuf:"varint,77,rep,packed,name=packed_uint32,json=packedUint32,proto3" json:"packed_uint32,omitempty"`
+	PackedUint64     []uint64                        `protobuf:"varint,78,rep,packed,name=packed_uint64,json=packedUint64,proto3" json:"packed_uint64,omitempty"`
+	PackedSint32     []int32                         `protobuf:"zigzag32,79,rep,packed,name=packed_sint32,json=packedSint32,proto3" json:"packed_sint32,omitempty"`
+	PackedSint64     []int64                         `protobuf:"zigzag64,80,rep,packed,name=packed_sint64,json=packedSint64,proto3" json:"packed_sint64,omitempty"`
+	PackedFixed32    []uint32                        `protobuf:"fixed32,81,rep,packed,name=packed_fixed32,json=packedFixed32,proto3" json:"packed_fixed32,omitempty"`
+	PackedFixed64    []uint64                        `protobuf:"fixed64,82,rep,packed,name=packed_fixed64,json=packedFixed64,proto3" json:"packed_fixed64,omitempty"`
+	PackedSfixed32   []int32                         `protobuf:"fixed32,83,rep,packed,name=packed_sfixed32,json=packedSfixed32,proto3" json:"packed_sfixed32,omitempty"`
+	PackedSfixed64   []int64                         `protobuf:"fixed64,84,rep,packed,name=packed_sfixed64,json=packedSfixed64,proto3" json:"packed_sfixed64,omitempty"`
+	PackedFloat      []float32                       `protobuf:"fixed32,85,rep,packed,name=packed_float,json=packedFloat,proto3" json:"packed_float,omitempty"`
+	PackedDouble     []float64                       `protobuf:"fixed64,86,rep,packed,name=packed_double,json=packedDouble,proto3" json:"packed_double,omitempty"`
+	PackedBool       []bool                          `protobuf:"varint,87,rep,packed,name=packed_bool,json=packedBool,proto3" json:"packed_bool,omitempty"`
+	PackedNestedEnum []TestAllTypesProto3_NestedEnum `protobuf:"varint,88,rep,packed,name=packed_nested_enum,json=packedNestedEnum,proto3,enum=protobuf_test_messages.proto3.TestAllTypesProto3.NestedEnum" json:"packed_nested_enum,omitempty"`
 	// Unpacked repeated fields (explicit packed = false).
-	UnpackedInt32      []int32
-	UnpackedInt64      []int64
-	UnpackedUint32     []uint32
-	UnpackedUint64     []uint64
-	UnpackedSint32     []int32
-	UnpackedSint64     []int64
-	UnpackedFixed32    []uint32
-	UnpackedFixed64    []uint64
-	UnpackedSfixed32   []int32
-	UnpackedSfixed64   []int64
-	UnpackedFloat      []float32
-	UnpackedDouble     []float64
-	UnpackedBool       []bool
-	UnpackedNestedEnum []TestAllTypesProto3_NestedEnum
+	UnpackedInt32      []int32                         `protobuf:"varint,89,rep,name=unpacked_int32,json=unpackedInt32,proto3" json:"unpacked_int32,omitempty"`
+	UnpackedInt64      []int64                         `protobuf:"varint,90,rep,name=unpacked_int64,json=unpackedInt64,proto3" json:"unpacked_int64,omitempty"`
+	UnpackedUint32     []uint32                        `protobuf:"varint,91,rep,name=unpacked_uint32,json=unpackedUint32,proto3" json:"unpacked_uint32,omitempty"`
+	UnpackedUint64     []uint64                        `protobuf:"varint,92,rep,name=unpacked_uint64,json=unpackedUint64,proto3" json:"unpacked_uint64,omitempty"`
+	UnpackedSint32     []int32                         `protobuf:"zigzag32,93,rep,name=unpacked_sint32,json=unpackedSint32,proto3" json:"unpacked_sint32,omitempty"`
+	UnpackedSint64     []int64                         `protobuf:"zigzag64,94,rep,name=unpacked_sint64,json=unpackedSint64,proto3" json:"unpacked_sint64,omitempty"`
+	UnpackedFixed32    []uint32                        `protobuf:"fixed32,95,rep,name=unpacked_fixed32,json=unpackedFixed32,proto3" json:"unpacked_fixed32,omitempty"`
+	UnpackedFixed64    []uint64                        `protobuf:"fixed64,96,rep,name=unpacked_fixed64,json=unpackedFixed64,proto3" json:"unpacked_fixed64,omitempty"`
+	UnpackedSfixed32   []int32                         `protobuf:"fixed32,97,rep,name=unpacked_sfixed32,json=unpackedSfixed32,proto3" json:"unpacked_sfixed32,omitempty"`
+	UnpackedSfixed64   []int64                         `protobuf:"fixed64,98,rep,name=unpacked_sfixed64,json=unpackedSfixed64,proto3" json:"unpacked_sfixed64,omitempty"`
+	UnpackedFloat      []float32                       `protobuf:"fixed32,99,rep,name=unpacked_float,json=unpackedFloat,proto3" json:"unpacked_float,omitempty"`
+	UnpackedDouble     []float64                       `protobuf:"fixed64,100,rep,name=unpacked_double,json=unpackedDouble,proto3" json:"unpacked_double,omitempty"`
+	UnpackedBool       []bool                          `protobuf:"varint,101,rep,name=unpacked_bool,json=unpackedBool,proto3" json:"unpacked_bool,omitempty"`
+	UnpackedNestedEnum []TestAllTypesProto3_NestedEnum `protobuf:"varint,102,rep,name=unpacked_nested_enum,json=unpackedNestedEnum,proto3,enum=protobuf_test_messages.proto3.TestAllTypesProto3.NestedEnum" json:"unpacked_nested_enum,omitempty"`
 	// Oneof field — supported variants only.
-	OneofField TestAllTypesProto3_OneofField
+	OneofField TestAllTypesProto3_OneofField `protobuf_oneof:"oneof_field"`
 	// Field name convention tests — all int32, exercising name mangling.
-	Fieldname1  int32
-	FieldName2  int32
-	FieldName3  int32
-	FieldName4  int32
-	Field0name5 int32
-	Field0Name6 int32
-	FieldName7  int32
-	FieldName8  int32
-	FieldName9  int32
-	FieldName10 int32
-	FIELDNAME11 int32
-	FIELDName12 int32
-	FieldName13 int32
-	FieldName14 int32
-	FieldName15 int32
-	FieldName16 int32
-	FieldName17 int32
-	FieldName18 int32
+	Fieldname1  int32 `protobuf:"varint,401,opt,name=fieldname1,proto3" json:"fieldname1,omitempty"`
+	FieldName2  int32 `protobuf:"varint,402,opt,name=field_name2,json=fieldName2,proto3" json:"field_name2,omitempty"`
+	FieldName3  int32 `protobuf:"varint,403,opt,name=_field_name3,json=FieldName3,proto3" json:"_field_name3,omitempty"`
+	FieldName4  int32 `protobuf:"varint,404,opt,name=field__name4_,json=fieldName4,proto3" json:"field__name4_,omitempty"`
+	Field0name5 int32 `protobuf:"varint,405,opt,name=field0name5,proto3" json:"field0name5,omitempty"`
+	Field0Name6 int32 `protobuf:"varint,406,opt,name=field_0_name6,json=field0Name6,proto3" json:"field_0_name6,omitempty"`
+	FieldName7  int32 `protobuf:"varint,407,opt,name=fieldName7,proto3" json:"fieldName7,omitempty"`
+	FieldName8  int32 `protobuf:"varint,408,opt,name=FieldName8,proto3" json:"FieldName8,omitempty"`
+	FieldName9  int32 `protobuf:"varint,409,opt,name=field_Name9,json=fieldName9,proto3" json:"field_Name9,omitempty"`
+	FieldName10 int32 `protobuf:"varint,410,opt,name=Field_Name10,json=FieldName10,proto3" json:"Field_Name10,omitempty"`
+	FIELDNAME11 int32 `protobuf:"varint,411,opt,name=FIELD_NAME11,json=FIELDNAME11,proto3" json:"FIELD_NAME11,omitempty"`
+	FIELDName12 int32 `protobuf:"varint,412,opt,name=FIELD_name12,json=FIELDName12,proto3" json:"FIELD_name12,omitempty"`
+	FieldName13 int32 `protobuf:"varint,413,opt,name=_field_name13,json=FieldName13,proto3" json:"_field_name13,omitempty"`
+	FieldName14 int32 `protobuf:"varint,414,opt,name=__field_name14,json=FieldName14,proto3" json:"__field_name14,omitempty"`
+	FieldName15 int32 `protobuf:"varint,415,opt,name=field__name15,json=fieldName15,proto3" json:"field__name15,omitempty"`
+	FieldName16 int32 `protobuf:"varint,416,opt,name=field__Name16,json=fieldName16,proto3" json:"field__Name16,omitempty"`
+	FieldName17 int32 `protobuf:"varint,417,opt,name=field_name17__,json=fieldName17,proto3" json:"field_name17__,omitempty"`
+	FieldName18 int32 `protobuf:"varint,418,opt,name=Field_name18__,json=FieldName18,proto3" json:"Field_name18__,omitempty"`
 
 	fieldsPresent [1]uint64
 }
 
 type ForeignMessage struct {
-	C int32
+	C int32 `protobuf:"varint,1,opt,name=c,proto3" json:"c,omitempty"`
 
 	fieldsPresent [1]uint64
 }

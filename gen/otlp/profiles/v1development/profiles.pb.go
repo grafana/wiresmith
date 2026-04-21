@@ -44,23 +44,23 @@ type ProfilesDictionary struct {
 	// into that address range referenced by locations via Location.mapping_index.
 	//
 	// mapping_table[0] must always be zero value (Mapping{}) and present.
-	MappingTable []Mapping
+	MappingTable []Mapping `protobuf:"bytes,1,rep,name=mapping_table,json=mappingTable,proto3" json:"mapping_table,omitempty"`
 	// Locations referenced by samples via Stack.location_indices.
 	//
 	// location_table[0] must always be zero value (Location{}) and present.
-	LocationTable []Location
+	LocationTable []Location `protobuf:"bytes,2,rep,name=location_table,json=locationTable,proto3" json:"location_table,omitempty"`
 	// Functions referenced by locations via Line.function_index.
 	//
 	// function_table[0] must always be zero value (Function{}) and present.
-	FunctionTable []Function
+	FunctionTable []Function `protobuf:"bytes,3,rep,name=function_table,json=functionTable,proto3" json:"function_table,omitempty"`
 	// Links referenced by samples via Sample.link_index.
 	//
 	// link_table[0] must always be zero value (Link{}) and present.
-	LinkTable []Link
+	LinkTable []Link `protobuf:"bytes,4,rep,name=link_table,json=linkTable,proto3" json:"link_table,omitempty"`
 	// A common table for strings referenced by various messages.
 	//
 	// string_table[0] must always be "" and present.
-	StringTable []string
+	StringTable []string `protobuf:"bytes,5,rep,name=string_table,json=stringTable,proto3" json:"string_table,omitempty"`
 	// A common table for attributes referenced by the Profile, Sample, Mapping
 	// and Location messages below through attribute_indices field. Each entry is
 	// a key/value pair with an optional unit. Since this is a dictionary table,
@@ -81,11 +81,11 @@ type ProfilesDictionary struct {
 	// "allocation_size": 128 bytes
 	//
 	// attribute_table[0] must always be zero value (KeyValueAndUnit{}) and present.
-	AttributeTable []KeyValueAndUnit
+	AttributeTable []KeyValueAndUnit `protobuf:"bytes,6,rep,name=attribute_table,json=attributeTable,proto3" json:"attribute_table,omitempty"`
 	// Stacks referenced by samples via Sample.stack_index.
 	//
 	// stack_table[0] must always be zero value (Stack{}) and present.
-	StackTable []Stack
+	StackTable []Stack `protobuf:"bytes,7,rep,name=stack_table,json=stackTable,proto3" json:"stack_table,omitempty"`
 }
 
 // ProfilesData represents the profiles data that can be stored in persistent storage,
@@ -110,9 +110,9 @@ type ProfilesData struct {
 	// Resource.attributes and semantic conventions.
 	// Tools that visualize profiles should prefer displaying
 	// resources_profiles[0].scope_profiles[0].profiles[0] by default.
-	ResourceProfiles []ResourceProfiles
+	ResourceProfiles []ResourceProfiles `protobuf:"bytes,1,rep,name=resource_profiles,json=resourceProfiles,proto3" json:"resource_profiles,omitempty"`
 	// One instance of ProfilesDictionary
-	Dictionary ProfilesDictionary
+	Dictionary ProfilesDictionary `protobuf:"bytes,2,opt,name=dictionary,proto3" json:"dictionary,omitempty"`
 
 	fieldsPresent [1]uint64
 }
@@ -123,16 +123,16 @@ type ProfilesData struct {
 type ResourceProfiles struct {
 	// The resource for the profiles in this message.
 	// If this field is not set then no resource info is known.
-	Resource resourcev1.Resource
+	Resource resourcev1.Resource `protobuf:"bytes,1,opt,name=resource,proto3" json:"resource,omitempty"`
 	// A list of ScopeProfiles that originate from a resource.
-	ScopeProfiles []ScopeProfiles
+	ScopeProfiles []ScopeProfiles `protobuf:"bytes,2,rep,name=scope_profiles,json=scopeProfiles,proto3" json:"scope_profiles,omitempty"`
 	// The Schema URL, if known. This is the identifier of the Schema that the resource data
 	// is recorded in. Notably, the last part of the URL path is the version number of the
 	// schema: http[s]://server[:port]/path/<version>. To learn more about Schema URL see
 	// https://opentelemetry.io/docs/specs/otel/schemas/#schema-url
 	// This schema_url applies to the data in the "resource" field. It does not apply
 	// to the data in the "scope_profiles" field which have their own schema_url field.
-	SchemaUrl string
+	SchemaUrl string `protobuf:"bytes,3,opt,name=schema_url,json=schemaUrl,proto3" json:"schema_url,omitempty"`
 
 	fieldsPresent [1]uint64
 }
@@ -144,16 +144,16 @@ type ScopeProfiles struct {
 	// The instrumentation scope information for the profiles in this message.
 	// Semantically when InstrumentationScope isn't set, it is equivalent with
 	// an empty instrumentation scope name (unknown).
-	Scope commonv1.InstrumentationScope
+	Scope commonv1.InstrumentationScope `protobuf:"bytes,1,opt,name=scope,proto3" json:"scope,omitempty"`
 	// A list of Profiles that originate from an instrumentation scope.
-	Profiles []Profile
+	Profiles []Profile `protobuf:"bytes,2,rep,name=profiles,proto3" json:"profiles,omitempty"`
 	// The Schema URL, if known. This is the identifier of the Schema that the profile data
 	// is recorded in. Notably, the last part of the URL path is the version number of the
 	// schema: http[s]://server[:port]/path/<version>. To learn more about Schema URL see
 	// https://opentelemetry.io/docs/specs/otel/schemas/#schema-url
 	// This schema_url applies to the data in the "scope" field and all profiles in the
 	// "profiles" field.
-	SchemaUrl string
+	SchemaUrl string `protobuf:"bytes,3,opt,name=schema_url,json=schemaUrl,proto3" json:"schema_url,omitempty"`
 
 	fieldsPresent [1]uint64
 }
@@ -174,34 +174,34 @@ type Profile struct {
 	// ["cpu","nanoseconds"] or ["off_cpu","nanoseconds"]
 	// For a heap profile, this might be:
 	// ["allocated_objects","count"] or ["allocated_space","bytes"],
-	SampleType ValueType
+	SampleType ValueType `protobuf:"bytes,1,opt,name=sample_type,json=sampleType,proto3" json:"sample_type,omitempty"`
 	// The set of samples recorded in this profile.
-	Samples []Sample
+	Samples []Sample `protobuf:"bytes,2,rep,name=samples,proto3" json:"samples,omitempty"`
 	// Time of collection. Value is UNIX Epoch time in nanoseconds since 00:00:00
 	// UTC on 1 January 1970.
-	TimeUnixNano uint64
+	TimeUnixNano uint64 `protobuf:"fixed64,3,opt,name=time_unix_nano,json=timeUnixNano,proto3" json:"time_unix_nano,omitempty"`
 	// Duration of the profile. For instant profiles like live heap snapshot, the
 	// duration can be zero but it may be preferable to set time_unix_nano to the
 	// process start time and duration_nano to the relative time when the profile
 	// was gathered. This ensures Sample.timestamps_unix_nano values such as
 	// allocation timestamp fall into the profile time range.
-	DurationNano uint64
+	DurationNano uint64 `protobuf:"varint,4,opt,name=duration_nano,json=durationNano,proto3" json:"duration_nano,omitempty"`
 	// The kind of events between sampled occurrences.
 	// e.g [ "cpu","cycles" ] or [ "heap","bytes" ]
-	PeriodType ValueType
+	PeriodType ValueType `protobuf:"bytes,5,opt,name=period_type,json=periodType,proto3" json:"period_type,omitempty"`
 	// The number of events between sampled occurrences.
-	Period int64
+	Period int64 `protobuf:"varint,6,opt,name=period,proto3" json:"period,omitempty"`
 	// A globally unique identifier for a profile. The ID is a 16-byte array. An ID with
 	// all zeroes is considered invalid. It may be used for deduplication and signal
 	// correlation purposes. It is acceptable to treat two profiles with different values
 	// in this field as not equal, even if they represented the same object at an earlier
 	// time.
 	// This field is optional; an ID may be assigned to an ID-less profile in a later step.
-	ProfileId []byte
+	ProfileId []byte `protobuf:"bytes,7,opt,name=profile_id,json=profileId,proto3" json:"profile_id,omitempty"`
 	// The number of attributes that were discarded. Attributes
 	// can be discarded because their keys are too long or because there are too many
 	// attributes. If this value is 0, then no attributes were dropped.
-	DroppedAttributesCount uint32
+	DroppedAttributesCount uint32 `protobuf:"varint,8,opt,name=dropped_attributes_count,json=droppedAttributesCount,proto3" json:"dropped_attributes_count,omitempty"`
 	// The original payload format. See also original_payload. Optional, but the
 	// format and the bytes must be set or unset together.
 	//
@@ -221,12 +221,12 @@ type Profile struct {
 	// The original payload can be large in size, so including the original
 	// payload should be configurable by the profiler or collector options. The
 	// default behavior should be to not include the original payload.
-	OriginalPayloadFormat string
+	OriginalPayloadFormat string `protobuf:"bytes,9,opt,name=original_payload_format,json=originalPayloadFormat,proto3" json:"original_payload_format,omitempty"`
 	// The original payload bytes. See also original_payload_format. Optional, but
 	// format and the bytes must be set or unset together.
-	OriginalPayload []byte
+	OriginalPayload []byte `protobuf:"bytes,10,opt,name=original_payload,json=originalPayload,proto3" json:"original_payload,omitempty"`
 	// References to attributes in attribute_table. [optional]
-	AttributeIndices []int32
+	AttributeIndices []int32 `protobuf:"varint,11,rep,packed,name=attribute_indices,json=attributeIndices,proto3" json:"attribute_indices,omitempty"`
 
 	fieldsPresent [1]uint64
 }
@@ -238,9 +238,9 @@ type Profile struct {
 type Link struct {
 	// A unique identifier of a trace that this linked span is part of. The ID is a
 	// 16-byte array.
-	TraceId []byte
+	TraceId []byte `protobuf:"bytes,1,opt,name=trace_id,json=traceId,proto3" json:"trace_id,omitempty"`
 	// A unique identifier for the linked span. The ID is an 8-byte array.
-	SpanId []byte
+	SpanId []byte `protobuf:"bytes,2,opt,name=span_id,json=spanId,proto3" json:"span_id,omitempty"`
 
 	fieldsPresent [1]uint64
 }
@@ -250,9 +250,9 @@ type Link struct {
 // Status: [Alpha]
 type ValueType struct {
 	// Index into ProfilesDictionary.string_table.
-	TypeStrindex int32
+	TypeStrindex int32 `protobuf:"varint,1,opt,name=type_strindex,json=typeStrindex,proto3" json:"type_strindex,omitempty"`
 	// Index into ProfilesDictionary.string_table.
-	UnitStrindex int32
+	UnitStrindex int32 `protobuf:"varint,2,opt,name=unit_strindex,json=unitStrindex,proto3" json:"unit_strindex,omitempty"`
 
 	fieldsPresent [1]uint64
 }
@@ -290,19 +290,19 @@ type ValueType struct {
 // Status: [Alpha]
 type Sample struct {
 	// Reference to stack in ProfilesDictionary.stack_table.
-	StackIndex int32
+	StackIndex int32 `protobuf:"varint,1,opt,name=stack_index,json=stackIndex,proto3" json:"stack_index,omitempty"`
 	// References to attributes in ProfilesDictionary.attribute_table. [optional]
-	AttributeIndices []int32
+	AttributeIndices []int32 `protobuf:"varint,2,rep,packed,name=attribute_indices,json=attributeIndices,proto3" json:"attribute_indices,omitempty"`
 	// Reference to link in ProfilesDictionary.link_table. [optional]
 	// It can be unset / set to 0 if no link exists, as link_table[0] is always a 'null' default value.
-	LinkIndex int32
+	LinkIndex int32 `protobuf:"varint,3,opt,name=link_index,json=linkIndex,proto3" json:"link_index,omitempty"`
 	// The type and unit of each value is defined by Profile.sample_type.
-	Values []int64
+	Values []int64 `protobuf:"varint,4,rep,packed,name=values,proto3" json:"values,omitempty"`
 	// Timestamps associated with Sample. Value is UNIX Epoch time in nanoseconds
 	// since 00:00:00 UTC on 1 January 1970. The timestamps should fall within the
 	// [Profile.time_unix_nano, Profile.time_unix_nano + Profile.duration_nano)
 	// time range.
-	TimestampsUnixNano []uint64
+	TimestampsUnixNano []uint64 `protobuf:"fixed64,5,rep,packed,name=timestamps_unix_nano,json=timestampsUnixNano,proto3" json:"timestamps_unix_nano,omitempty"`
 
 	fieldsPresent [1]uint64
 }
@@ -313,17 +313,17 @@ type Sample struct {
 // Status: [Alpha]
 type Mapping struct {
 	// Address at which the binary (or DLL) is loaded into memory.
-	MemoryStart uint64
+	MemoryStart uint64 `protobuf:"varint,1,opt,name=memory_start,json=memoryStart,proto3" json:"memory_start,omitempty"`
 	// The limit of the address range occupied by this mapping.
-	MemoryLimit uint64
+	MemoryLimit uint64 `protobuf:"varint,2,opt,name=memory_limit,json=memoryLimit,proto3" json:"memory_limit,omitempty"`
 	// Offset in the binary that corresponds to the first mapped address.
-	FileOffset uint64
+	FileOffset uint64 `protobuf:"varint,3,opt,name=file_offset,json=fileOffset,proto3" json:"file_offset,omitempty"`
 	// The object this entry is loaded from.  This can be a filename on
 	// disk for the main binary and shared libraries, or virtual
 	// abstractions like "[vdso]".
-	FilenameStrindex int32
+	FilenameStrindex int32 `protobuf:"varint,4,opt,name=filename_strindex,json=filenameStrindex,proto3" json:"filename_strindex,omitempty"`
 	// References to attributes in ProfilesDictionary.attribute_table. [optional]
-	AttributeIndices []int32
+	AttributeIndices []int32 `protobuf:"varint,5,rep,packed,name=attribute_indices,json=attributeIndices,proto3" json:"attribute_indices,omitempty"`
 
 	fieldsPresent [1]uint64
 }
@@ -334,7 +334,7 @@ type Mapping struct {
 type Stack struct {
 	// References to locations in ProfilesDictionary.location_table.
 	// The first location is the leaf frame.
-	LocationIndices []int32
+	LocationIndices []int32 `protobuf:"varint,1,rep,packed,name=location_indices,json=locationIndices,proto3" json:"location_indices,omitempty"`
 }
 
 // Describes function and line table debug information.
@@ -344,13 +344,13 @@ type Location struct {
 	// Reference to mapping in ProfilesDictionary.mapping_table.
 	// It can be unset / set to 0 if the mapping is unknown or not applicable for
 	// this profile type, as mapping_table[0] is always a 'null' default mapping.
-	MappingIndex int32
+	MappingIndex int32 `protobuf:"varint,1,opt,name=mapping_index,json=mappingIndex,proto3" json:"mapping_index,omitempty"`
 	// The instruction address for this location, if available.  It
 	// should be within [Mapping.memory_start...Mapping.memory_limit]
 	// for the corresponding mapping. A non-leaf address may be in the
 	// middle of a call instruction. It is up to display tools to find
 	// the beginning of the instruction if necessary.
-	Address uint64
+	Address uint64 `protobuf:"varint,2,opt,name=address,proto3" json:"address,omitempty"`
 	// Multiple line indicates this location has inlined functions,
 	// where the last entry represents the caller into which the
 	// preceding entries were inlined.
@@ -358,9 +358,9 @@ type Location struct {
 	// E.g., if memcpy() is inlined into printf:
 	// lines[0].function_name == "memcpy"
 	// lines[1].function_name == "printf"
-	Lines []Line
+	Lines []Line `protobuf:"bytes,3,rep,name=lines,proto3" json:"lines,omitempty"`
 	// References to attributes in ProfilesDictionary.attribute_table. [optional]
-	AttributeIndices []int32
+	AttributeIndices []int32 `protobuf:"varint,4,rep,packed,name=attribute_indices,json=attributeIndices,proto3" json:"attribute_indices,omitempty"`
 
 	fieldsPresent [1]uint64
 }
@@ -370,11 +370,11 @@ type Location struct {
 // Status: [Alpha]
 type Line struct {
 	// Reference to function in ProfilesDictionary.function_table.
-	FunctionIndex int32
+	FunctionIndex int32 `protobuf:"varint,1,opt,name=function_index,json=functionIndex,proto3" json:"function_index,omitempty"`
 	// Line number in source code. 0 means unset.
-	Line int64
+	Line int64 `protobuf:"varint,2,opt,name=line,proto3" json:"line,omitempty"`
 	// Column number in source code. 0 means unset.
-	Column int64
+	Column int64 `protobuf:"varint,3,opt,name=column,proto3" json:"column,omitempty"`
 
 	fieldsPresent [1]uint64
 }
@@ -385,14 +385,14 @@ type Line struct {
 // Status: [Alpha]
 type Function struct {
 	// The function name. Empty string if not available.
-	NameStrindex int32
+	NameStrindex int32 `protobuf:"varint,1,opt,name=name_strindex,json=nameStrindex,proto3" json:"name_strindex,omitempty"`
 	// Function name, as identified by the system. For instance,
 	// it can be a C++ mangled name. Empty string if not available.
-	SystemNameStrindex int32
+	SystemNameStrindex int32 `protobuf:"varint,2,opt,name=system_name_strindex,json=systemNameStrindex,proto3" json:"system_name_strindex,omitempty"`
 	// Source file containing the function. Empty string if not available.
-	FilenameStrindex int32
+	FilenameStrindex int32 `protobuf:"varint,3,opt,name=filename_strindex,json=filenameStrindex,proto3" json:"filename_strindex,omitempty"`
 	// Line number in source file. 0 means unset.
-	StartLine int64
+	StartLine int64 `protobuf:"varint,4,opt,name=start_line,json=startLine,proto3" json:"start_line,omitempty"`
 
 	fieldsPresent [1]uint64
 }
@@ -404,12 +404,12 @@ type Function struct {
 // Status: [Alpha]
 type KeyValueAndUnit struct {
 	// The index into the string table for the attribute's key.
-	KeyStrindex int32
+	KeyStrindex int32 `protobuf:"varint,1,opt,name=key_strindex,json=keyStrindex,proto3" json:"key_strindex,omitempty"`
 	// The value of the attribute.
-	Value commonv1.AnyValue
+	Value commonv1.AnyValue `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
 	// The index into the string table for the attribute's unit.
 	// zero indicates implicit (by semconv) or non-defined unit.
-	UnitStrindex int32
+	UnitStrindex int32 `protobuf:"varint,3,opt,name=unit_strindex,json=unitStrindex,proto3" json:"unit_strindex,omitempty"`
 
 	fieldsPresent [1]uint64
 }

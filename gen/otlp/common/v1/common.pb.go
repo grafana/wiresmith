@@ -18,49 +18,49 @@ type AnyValue_Value interface {
 }
 
 type AnyValue_StringValue struct {
-	StringValue string
+	StringValue string `protobuf:"bytes,1,opt,name=string_value,json=stringValue,proto3,oneof" json:"string_value,omitempty"`
 }
 
 func (*AnyValue_StringValue) isAnyValue_Value() {}
 
 type AnyValue_BoolValue struct {
-	BoolValue bool
+	BoolValue bool `protobuf:"varint,2,opt,name=bool_value,json=boolValue,proto3,oneof" json:"bool_value,omitempty"`
 }
 
 func (*AnyValue_BoolValue) isAnyValue_Value() {}
 
 type AnyValue_IntValue struct {
-	IntValue int64
+	IntValue int64 `protobuf:"varint,3,opt,name=int_value,json=intValue,proto3,oneof" json:"int_value,omitempty"`
 }
 
 func (*AnyValue_IntValue) isAnyValue_Value() {}
 
 type AnyValue_DoubleValue struct {
-	DoubleValue float64
+	DoubleValue float64 `protobuf:"fixed64,4,opt,name=double_value,json=doubleValue,proto3,oneof" json:"double_value,omitempty"`
 }
 
 func (*AnyValue_DoubleValue) isAnyValue_Value() {}
 
 type AnyValue_ArrayValue struct {
-	ArrayValue ArrayValue
+	ArrayValue ArrayValue `protobuf:"bytes,5,opt,name=array_value,json=arrayValue,proto3,oneof" json:"array_value,omitempty"`
 }
 
 func (*AnyValue_ArrayValue) isAnyValue_Value() {}
 
 type AnyValue_KvlistValue struct {
-	KvlistValue KeyValueList
+	KvlistValue KeyValueList `protobuf:"bytes,6,opt,name=kvlist_value,json=kvlistValue,proto3,oneof" json:"kvlist_value,omitempty"`
 }
 
 func (*AnyValue_KvlistValue) isAnyValue_Value() {}
 
 type AnyValue_BytesValue struct {
-	BytesValue []byte
+	BytesValue []byte `protobuf:"bytes,7,opt,name=bytes_value,json=bytesValue,proto3,oneof" json:"bytes_value,omitempty"`
 }
 
 func (*AnyValue_BytesValue) isAnyValue_Value() {}
 
 type AnyValue_StringValueStrindex struct {
-	StringValueStrindex int32
+	StringValueStrindex int32 `protobuf:"varint,8,opt,name=string_value_strindex,json=stringValueStrindex,proto3,oneof" json:"string_value_strindex,omitempty"`
 }
 
 func (*AnyValue_StringValueStrindex) isAnyValue_Value() {}
@@ -71,14 +71,14 @@ func (*AnyValue_StringValueStrindex) isAnyValue_Value() {}
 type AnyValue struct {
 	// The value is one of the listed fields. It is valid for all values to be unspecified
 	// in which case this AnyValue is considered to be "empty".
-	Value AnyValue_Value
+	Value AnyValue_Value `protobuf_oneof:"value"`
 }
 
 // ArrayValue is a list of AnyValue messages. We need ArrayValue as a message
 // since oneof in AnyValue does not allow repeated fields.
 type ArrayValue struct {
 	// Array of values. The array may be empty (contain 0 elements).
-	Values []AnyValue
+	Values []AnyValue `protobuf:"bytes,1,rep,name=values,proto3" json:"values,omitempty"`
 }
 
 // KeyValueList is a list of KeyValue messages. We need KeyValueList as a message
@@ -93,7 +93,7 @@ type KeyValueList struct {
 	// The keys MUST be unique (it is not allowed to have more than one
 	// value with the same key).
 	// The behavior of software that receives duplicated keys can be unpredictable.
-	Values []KeyValue
+	Values []KeyValue `protobuf:"bytes,1,rep,name=values,proto3" json:"values,omitempty"`
 }
 
 // Represents a key-value pair that is used to store Span attributes, Link
@@ -101,9 +101,9 @@ type KeyValueList struct {
 type KeyValue struct {
 	// The key name of the pair.
 	// key_strindex MUST NOT be set if key is used.
-	Key string
+	Key string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
 	// The value of the pair.
-	Value AnyValue
+	Value AnyValue `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
 	// Reference to the string key in ProfilesDictionary.string_table.
 	// key MUST NOT be set if key_strindex is used.
 	//
@@ -115,7 +115,7 @@ type KeyValue struct {
 	// empty, ignoring its semantic content for the non-Profiling signal.
 	//
 	// Status: [Alpha]
-	KeyStrindex int32
+	KeyStrindex int32 `protobuf:"varint,3,opt,name=key_strindex,json=keyStrindex,proto3" json:"key_strindex,omitempty"`
 
 	fieldsPresent [1]uint64
 }
@@ -125,19 +125,19 @@ type KeyValue struct {
 type InstrumentationScope struct {
 	// A name denoting the Instrumentation scope.
 	// An empty instrumentation scope name means the name is unknown.
-	Name string
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	// Defines the version of the instrumentation scope.
 	// An empty instrumentation scope version means the version is unknown.
-	Version string
+	Version string `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
 	// Additional attributes that describe the scope. [Optional].
 	// Attribute keys MUST be unique (it is not allowed to have more than one
 	// attribute with the same key).
 	// The behavior of software that receives duplicated keys can be unpredictable.
-	Attributes []KeyValue
+	Attributes []KeyValue `protobuf:"bytes,3,rep,name=attributes,proto3" json:"attributes,omitempty"`
 	// The number of attributes that were discarded. Attributes
 	// can be discarded because their keys are too long or because there are too many
 	// attributes. If this value is 0, then no attributes were dropped.
-	DroppedAttributesCount uint32
+	DroppedAttributesCount uint32 `protobuf:"varint,4,opt,name=dropped_attributes_count,json=droppedAttributesCount,proto3" json:"dropped_attributes_count,omitempty"`
 
 	fieldsPresent [1]uint64
 }
@@ -157,20 +157,20 @@ type EntityRef struct {
 	// the schema_url applies to.
 	//
 	// This field obsoletes the schema_url field in ResourceMetrics/ResourceSpans/ResourceLogs.
-	SchemaUrl string
+	SchemaUrl string `protobuf:"bytes,1,opt,name=schema_url,json=schemaUrl,proto3" json:"schema_url,omitempty"`
 	// Defines the type of the entity. MUST not change during the lifetime of the entity.
 	// For example: "service" or "host". This field is required and MUST not be empty
 	// for valid entities.
-	Type string
+	Type string `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
 	// Attribute Keys that identify the entity.
 	// MUST not change during the lifetime of the entity. The Id must contain at least one attribute.
 	// These keys MUST exist in the containing {message}.attributes.
-	IdKeys []string
+	IdKeys []string `protobuf:"bytes,3,rep,name=id_keys,json=idKeys,proto3" json:"id_keys,omitempty"`
 	// Descriptive (non-identifying) attribute keys of the entity.
 	// MAY change over the lifetime of the entity. MAY be empty.
 	// These attribute keys are not part of entity's identity.
 	// These keys MUST exist in the containing {message}.attributes.
-	DescriptionKeys []string
+	DescriptionKeys []string `protobuf:"bytes,4,rep,name=description_keys,json=descriptionKeys,proto3" json:"description_keys,omitempty"`
 
 	fieldsPresent [1]uint64
 }
