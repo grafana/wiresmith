@@ -12,7 +12,6 @@ func (fg *FileGenerator) emitAllGetterMethods(fd protoreflect.FileDescriptor) {
 
 func (fg *FileGenerator) emitGetters(md protoreflect.MessageDescriptor) {
 	name := goMessageTypeName(md)
-	pm := presenceMap(md)
 
 	seenOneofs := map[string]bool{}
 	for i := 0; i < md.Fields().Len(); i++ {
@@ -52,20 +51,14 @@ func (fg *FileGenerator) emitGetters(md protoreflect.MessageDescriptor) {
 			continue
 		}
 
-		// Message value-type fields: return pointer, nil when bitmap says absent.
-		// Currently the bitmap entry always exists here (same filter predicate
-		// as fieldsForPresence), but we keep the fallback so the getter
-		// degrades to a plain nil-safe accessor if the predicates ever diverge.
+		// Message value-type fields: return pointer to the embedded value.
+		// No presence-bitmap check — callers may construct structs directly
+		// in Go without going through Unmarshal, so the bitmap may be zero
+		// even when the field is meaningfully populated.
 		if fd.Kind() == protoreflect.MessageKind {
 			msgType := fg.imports.goSingularType(fd)
-			bitIndex, hasBit := pm[fd.Number()]
 			fmt.Fprintf(fg.body, "func (m *%s) Get%s() *%s {\n", name, goName, msgType)
-			if hasBit {
-				fmt.Fprintf(fg.body, "\tif m != nil && %s {\n", presenceCheck(bitIndex))
-			} else {
-				// Defensive: emitted when the field has no presence-bitmap entry.
-				fmt.Fprintf(fg.body, "\tif m != nil {\n")
-			}
+			fmt.Fprintf(fg.body, "\tif m != nil {\n")
 			fmt.Fprintf(fg.body, "\t\treturn &m.%s\n\t}\n", goName)
 			fmt.Fprintf(fg.body, "\treturn nil\n}\n\n")
 			continue

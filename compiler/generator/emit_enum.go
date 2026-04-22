@@ -9,6 +9,10 @@ import (
 func (fg *FileGenerator) emitEnum(ed protoreflect.EnumDescriptor) {
 	typeName := goEnumTypeName(ed)
 
+	// Prefix for enum value constants: parent message names joined with "_".
+	// e.g. Span.SpanKind.SPAN_KIND_CLIENT → Span_SPAN_KIND_CLIENT
+	valuePrefix := goEnumValuePrefix(ed)
+
 	if c := leadingComment(ed); c != "" {
 		fg.body.WriteString(c)
 	}
@@ -20,7 +24,7 @@ func (fg *FileGenerator) emitEnum(ed protoreflect.EnumDescriptor) {
 		if c := leadingComment(v); c != "" {
 			fg.body.WriteString(indentComment(c))
 		}
-		fmt.Fprintf(fg.body, "\t%s %s = %d\n", string(v.Name()), typeName, v.Number())
+		fmt.Fprintf(fg.body, "\t%s%s %s = %d\n", valuePrefix, string(v.Name()), typeName, v.Number())
 	}
 	fmt.Fprintf(fg.body, ")\n\n")
 
@@ -54,4 +58,31 @@ func (fg *FileGenerator) emitEnum(ed protoreflect.EnumDescriptor) {
 	fmt.Fprintf(fg.body, "\treturn strconv.FormatInt(int64(x), 10)\n")
 	fmt.Fprintf(fg.body, "}\n\n")
 	fg.imports.addImport("strconv", "")
+
+	// UnmarshalJSON: accepts both string names and integer values.
+	fmt.Fprintf(fg.body, "func (x *%s) UnmarshalJSON(data []byte) error {\n", typeName)
+	fmt.Fprintf(fg.body, "\tif len(data) > 0 && data[0] == '\"' {\n")
+	fmt.Fprintf(fg.body, "\t\tvar s string\n")
+	fmt.Fprintf(fg.body, "\t\tif err := json.Unmarshal(data, &s); err != nil {\n")
+	fmt.Fprintf(fg.body, "\t\t\treturn err\n")
+	fmt.Fprintf(fg.body, "\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\tif v, ok := %s_value[s]; ok {\n", typeName)
+	fmt.Fprintf(fg.body, "\t\t\t*x = %s(v)\n", typeName)
+	fmt.Fprintf(fg.body, "\t\t\treturn nil\n")
+	fmt.Fprintf(fg.body, "\t\t}\n")
+	fmt.Fprintf(fg.body, "\t\treturn fmt.Errorf(\"unknown enum value %%q for %s\", s)\n", typeName)
+	fmt.Fprintf(fg.body, "\t}\n")
+	fmt.Fprintf(fg.body, "\tvar v int32\n")
+	fmt.Fprintf(fg.body, "\tif err := json.Unmarshal(data, &v); err != nil {\n")
+	fmt.Fprintf(fg.body, "\t\treturn err\n")
+	fmt.Fprintf(fg.body, "\t}\n")
+	fmt.Fprintf(fg.body, "\t*x = %s(v)\n", typeName)
+	fmt.Fprintf(fg.body, "\treturn nil\n")
+	fmt.Fprintf(fg.body, "}\n\n")
+	fg.imports.addImport("encoding/json", "")
+
+	// MarshalJSON: emit string name.
+	fmt.Fprintf(fg.body, "func (x %s) MarshalJSON() ([]byte, error) {\n", typeName)
+	fmt.Fprintf(fg.body, "\treturn json.Marshal(x.String())\n")
+	fmt.Fprintf(fg.body, "}\n\n")
 }

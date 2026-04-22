@@ -124,6 +124,7 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 	fg.emitAllMarshalMethods(fd)
 	fg.emitAllUnmarshalMethods(fd)
 	fg.emitAllEqualMethods(fd)
+	fg.emitAllCompatMethods(fd)
 	fg.emitRegistration(fd)
 
 	var out bytes.Buffer

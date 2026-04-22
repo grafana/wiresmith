@@ -156,6 +156,26 @@ func goEnumTypeName(ed protoreflect.EnumDescriptor) string {
 	return name
 }
 
+// goEnumValuePrefix returns the parent message prefix for enum value constants.
+// For enums nested in messages (e.g. Span.SpanKind), returns "Span_".
+// For top-level enums, returns "".
+func goEnumValuePrefix(ed protoreflect.EnumDescriptor) string {
+	var parts []string
+	parent := ed.Parent()
+	for {
+		pm, ok := parent.(protoreflect.MessageDescriptor)
+		if !ok {
+			break
+		}
+		parts = append([]string{string(pm.Name())}, parts...)
+		parent = pm.Parent()
+	}
+	if len(parts) == 0 {
+		return ""
+	}
+	return strings.Join(parts, "_") + "_"
+}
+
 // disambiguateAlias returns a longer alias when the short package name
 // collides with the current file's package name (e.g. both are "v1").
 func disambiguateAlias(protoPkg, stripPrefix string) string {
