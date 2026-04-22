@@ -26,7 +26,7 @@ RUN cmake . \
  && cmake --build . --target conformance_test_runner -- -j"$(nproc)"
 
 # --- Stage 2: Build Go testee ---
-FROM golang:1.26@sha256:f7159064a17ccc65d0e10e342ae8783026182704bf4af8f6df8d5ba9af2be2fd AS testee-builder
+FROM golang:1.26@sha256:1e598ea5752ae26c093b746fd73c5095af97d6f2d679c43e83e0eac484a33dc3 AS testee-builder
 
 WORKDIR /src
 COPY go.mod go.sum ./
