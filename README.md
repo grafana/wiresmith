@@ -2,6 +2,10 @@
 
 Custom protobuf compiler that generates high-performance Go code from OpenTelemetry `.proto` files. Built on `google.golang.org/protobuf/encoding/protowire` and reverse-write marshaling.
 
+## Status
+
+Early alpha - currently working on compatibility, so breaking API changes and significant rewrites are to be expected
+
 ## Why
 
 The official Go protobuf runtime uses reflection-based marshaling, which adds overhead that matters at scale. Existing alternatives like [vtprotobuf](https://github.com/planetscale/vtprotobuf) and [gogoproto](https://github.com/gogo/protobuf) generate faster code but still use pointer-based message fields, trading heap allocations for indirection on every access.
