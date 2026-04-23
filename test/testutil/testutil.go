@@ -16,7 +16,7 @@ type Message interface {
 	Size() int
 }
 
-// AllMessageConstructors returns a constructor for every generated message type.
+// AllMessageConstructors returns a constructor for every OTLP generated message type.
 func AllMessageConstructors() map[string]func() Message {
 	return map[string]func() Message{
 		// common/v1

@@ -119,7 +119,8 @@ func (fg *FileGenerator) emitOneofVariantGetter(md protoreflect.MessageDescripto
 }
 
 // emitOptionalGetter emits a getter for an optional (pointer) field.
-// Returns the dereferenced value, or zero if nil.
+// For scalar and enum fields, it returns the dereferenced value or the zero value if unset.
+// For message and bytes fields, it returns the stored pointer/slice value, or nil if unset.
 func (fg *FileGenerator) emitOptionalGetter(typeName string, fd protoreflect.FieldDescriptor, goName string) {
 	if fd.Kind() == protoreflect.MessageKind {
 		msgType := fg.imports.goSingularType(fd)
