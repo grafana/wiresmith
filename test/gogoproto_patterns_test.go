@@ -59,13 +59,13 @@ func TestMarshalToSizedBuffer(t *testing.T) {
 			"Span": &tracev1.Span{
 				TraceId: []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
 				SpanId:  []byte{1, 2, 3, 4, 5, 6, 7, 8}, Name: "test",
-				Kind: tracev1.SPAN_KIND_SERVER, StartTimeUnixNano: 1000, EndTimeUnixNano: 2000,
+				Kind: tracev1.Span_SpanKind_SPAN_KIND_SERVER, StartTimeUnixNano: 1000, EndTimeUnixNano: 2000,
 				Events: []tracev1.Span_Event{{TimeUnixNano: 1500, Name: "ev"}},
 				Links:  []tracev1.Span_Link{{TraceId: make([]byte, 16), SpanId: make([]byte, 8)}},
-				Status: tracev1.Status{Code: tracev1.STATUS_CODE_OK, Message: "ok"},
+				Status: tracev1.Status{Code: tracev1.Status_StatusCode_STATUS_CODE_OK, Message: "ok"},
 			},
 			"LogRecord": &logsv1.LogRecord{
-				TimeUnixNano: 1000, SeverityNumber: logsv1.SEVERITY_NUMBER_ERROR, SeverityText: "ERROR",
+				TimeUnixNano: 1000, SeverityNumber: logsv1.SeverityNumber_SEVERITY_NUMBER_ERROR, SeverityText: "ERROR",
 				Body: commonv1.AnyValue{Value: &commonv1.AnyValue_StringValue{StringValue: "msg"}},
 			},
 			"HistogramDataPoint": &metricsv1.HistogramDataPoint{
@@ -103,7 +103,7 @@ func TestMarshalToSizedBuffer(t *testing.T) {
 			},
 			"Metric_Sum": &metricsv1.Metric{
 				Name: "s", Data: &metricsv1.Metric_Sum{Sum: metricsv1.Sum{
-					IsMonotonic: true, AggregationTemporality: metricsv1.AGGREGATION_TEMPORALITY_CUMULATIVE,
+					IsMonotonic: true, AggregationTemporality: metricsv1.AggregationTemporality_AGGREGATION_TEMPORALITY_CUMULATIVE,
 					DataPoints: []metricsv1.NumberDataPoint{{TimeUnixNano: 1, Value: &metricsv1.NumberDataPoint_AsInt{AsInt: 100}}},
 				}},
 			},
@@ -184,12 +184,12 @@ func TestLittleFuzz(t *testing.T) {
 		"Span": &tracev1.Span{
 			TraceId: []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
 			SpanId:  []byte{1, 2, 3, 4, 5, 6, 7, 8}, Name: "test",
-			Kind: tracev1.SPAN_KIND_SERVER, StartTimeUnixNano: 1000, EndTimeUnixNano: 2000,
+			Kind: tracev1.Span_SpanKind_SPAN_KIND_SERVER, StartTimeUnixNano: 1000, EndTimeUnixNano: 2000,
 			Events: []tracev1.Span_Event{{TimeUnixNano: 1500, Name: "ev"}},
-			Status: tracev1.Status{Code: tracev1.STATUS_CODE_OK},
+			Status: tracev1.Status{Code: tracev1.Status_StatusCode_STATUS_CODE_OK},
 		},
 		"LogRecord": &logsv1.LogRecord{
-			TimeUnixNano: 1000, SeverityNumber: logsv1.SEVERITY_NUMBER_ERROR,
+			TimeUnixNano: 1000, SeverityNumber: logsv1.SeverityNumber_SEVERITY_NUMBER_ERROR,
 			Body: commonv1.AnyValue{Value: &commonv1.AnyValue_KvlistValue{KvlistValue: commonv1.KeyValueList{
 				Values: []commonv1.KeyValue{{Key: "msg", Value: commonv1.AnyValue{Value: &commonv1.AnyValue_StringValue{StringValue: "err"}}}},
 			}}},
@@ -752,7 +752,7 @@ func TestNonCanonicalFieldOrder(t *testing.T) {
 
 		// Kind (field 6) second
 		wire = protowire.AppendTag(wire, 6, protowire.VarintType)
-		wire = protowire.AppendVarint(wire, uint64(tracev1.SPAN_KIND_SERVER))
+		wire = protowire.AppendVarint(wire, uint64(tracev1.Span_SpanKind_SPAN_KIND_SERVER))
 
 		// Name (field 5) third
 		wire = protowire.AppendTag(wire, 5, protowire.BytesType)
@@ -765,8 +765,8 @@ func TestNonCanonicalFieldOrder(t *testing.T) {
 		var s tracev1.Span
 		require.NoError(t, s.Unmarshal(wire))
 		assert.Equal(t, "reverse", s.Name)
-		assert.Equal(t, tracev1.SPAN_KIND_SERVER, s.Kind)
-		assert.Equal(t, tracev1.STATUS_CODE_OK, s.Status.Code)
+		assert.Equal(t, tracev1.Span_SpanKind_SPAN_KIND_SERVER, s.Kind)
+		assert.Equal(t, tracev1.Status_StatusCode_STATUS_CODE_OK, s.Status.Code)
 	})
 
 	t.Run("HistogramDataPoint_InterleavedKnownAndUnknown", func(t *testing.T) {
@@ -819,7 +819,7 @@ func TestNonCanonicalFieldOrder(t *testing.T) {
 
 		// SeverityNumber (field 2) third
 		wire = protowire.AppendTag(wire, 2, protowire.VarintType)
-		wire = protowire.AppendVarint(wire, uint64(logsv1.SEVERITY_NUMBER_WARN))
+		wire = protowire.AppendVarint(wire, uint64(logsv1.SeverityNumber_SEVERITY_NUMBER_WARN))
 
 		// Flags (field 8) fourth
 		wire = protowire.AppendTag(wire, 8, protowire.Fixed32Type)
@@ -829,7 +829,7 @@ func TestNonCanonicalFieldOrder(t *testing.T) {
 		require.NoError(t, lr.Unmarshal(wire))
 		assert.Equal(t, "WARN", lr.SeverityText)
 		assert.Equal(t, uint64(5000), lr.TimeUnixNano)
-		assert.Equal(t, logsv1.SEVERITY_NUMBER_WARN, lr.SeverityNumber)
+		assert.Equal(t, logsv1.SeverityNumber_SEVERITY_NUMBER_WARN, lr.SeverityNumber)
 		assert.Equal(t, uint32(1), lr.Flags)
 	})
 

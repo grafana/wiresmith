@@ -23,7 +23,7 @@ type AggregationTemporality int32
 
 const (
 	// UNSPECIFIED is the default AggregationTemporality, it MUST not be used.
-	AGGREGATION_TEMPORALITY_UNSPECIFIED AggregationTemporality = 0
+	AggregationTemporality_AGGREGATION_TEMPORALITY_UNSPECIFIED AggregationTemporality = 0
 	// DELTA is an AggregationTemporality for a metric aggregator which reports
 	// changes since last report time. Successive metrics contain aggregation of
 	// values from continuous and non-overlapping intervals.
@@ -48,7 +48,7 @@ const (
 	// 8. The 1 second collection cycle ends. A metric is exported for the
 	// number of requests received over the interval of time t_0+1 to
 	// t_0+2 with a value of 2.
-	AGGREGATION_TEMPORALITY_DELTA AggregationTemporality = 1
+	AggregationTemporality_AGGREGATION_TEMPORALITY_DELTA AggregationTemporality = 1
 	// CUMULATIVE is an AggregationTemporality for a metric aggregator which
 	// reports changes since a fixed start time. This means that current values
 	// of a CUMULATIVE metric depend on all previous measurements since the
@@ -84,7 +84,7 @@ const (
 	// CUMULATIVE is valid, it is not recommended. This may cause problems for
 	// systems that do not use start_time to determine when the aggregation
 	// value was reset (e.g. Prometheus).
-	AGGREGATION_TEMPORALITY_CUMULATIVE AggregationTemporality = 2
+	AggregationTemporality_AGGREGATION_TEMPORALITY_CUMULATIVE AggregationTemporality = 2
 )
 
 var AggregationTemporality_name = map[int32]string{
@@ -117,11 +117,11 @@ type DataPointFlags int32
 const (
 	// The zero value for the enum. Should not be used for comparisons.
 	// Instead use bitwise "and" with the appropriate mask as shown above.
-	DATA_POINT_FLAGS_DO_NOT_USE DataPointFlags = 0
+	DataPointFlags_DATA_POINT_FLAGS_DO_NOT_USE DataPointFlags = 0
 	// This DataPoint is valid but has no recorded value.  This value
 	// SHOULD be used to reflect explicitly missing data in a series, as
 	// for an equivalent to the Prometheus "staleness marker".
-	DATA_POINT_FLAGS_NO_RECORDED_VALUE_MASK DataPointFlags = 1
+	DataPointFlags_DATA_POINT_FLAGS_NO_RECORDED_VALUE_MASK DataPointFlags = 1
 )
 
 var DataPointFlags_name = map[int32]string{

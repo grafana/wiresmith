@@ -289,7 +289,7 @@ func TestUnmarshalIntoNonZeroStruct(t *testing.T) {
 			TraceId:           []byte{0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF},
 			SpanId:            []byte{0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF},
 			Name:              "old-name",
-			Kind:              tracev1.SPAN_KIND_SERVER,
+			Kind:              tracev1.Span_SpanKind_SPAN_KIND_SERVER,
 			StartTimeUnixNano: 9999,
 			EndTimeUnixNano:   9999,
 		}
@@ -298,7 +298,7 @@ func TestUnmarshalIntoNonZeroStruct(t *testing.T) {
 			TraceId:           []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
 			SpanId:            []byte{1, 2, 3, 4, 5, 6, 7, 8},
 			Name:              "new-name",
-			Kind:              tracev1.SPAN_KIND_CLIENT,
+			Kind:              tracev1.Span_SpanKind_SPAN_KIND_CLIENT,
 			StartTimeUnixNano: 1000,
 			EndTimeUnixNano:   2000,
 		}
@@ -307,7 +307,7 @@ func TestUnmarshalIntoNonZeroStruct(t *testing.T) {
 
 		require.NoError(t, existing.Unmarshal(newBytes))
 		assert.Equal(t, "new-name", existing.Name)
-		assert.Equal(t, tracev1.SPAN_KIND_CLIENT, existing.Kind)
+		assert.Equal(t, tracev1.Span_SpanKind_SPAN_KIND_CLIENT, existing.Kind)
 		assert.Equal(t, uint64(1000), existing.StartTimeUnixNano)
 		assert.Equal(t, []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, existing.TraceId)
 	})
@@ -336,7 +336,7 @@ func TestUnmarshalIntoNonZeroStruct(t *testing.T) {
 		existing := logsv1.LogRecord{
 			TimeUnixNano:           5000,
 			ObservedTimeUnixNano:   6000,
-			SeverityNumber:         logsv1.SEVERITY_NUMBER_FATAL,
+			SeverityNumber:         logsv1.SeverityNumber_SEVERITY_NUMBER_FATAL,
 			SeverityText:           "FATAL",
 			Body:                   commonv1.AnyValue{Value: &commonv1.AnyValue_StringValue{StringValue: "old body"}},
 			TraceId:                []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
@@ -346,14 +346,14 @@ func TestUnmarshalIntoNonZeroStruct(t *testing.T) {
 
 		// New message only has severity fields
 		newMsg := logsv1.LogRecord{
-			SeverityNumber: logsv1.SEVERITY_NUMBER_INFO,
+			SeverityNumber: logsv1.SeverityNumber_SEVERITY_NUMBER_INFO,
 			SeverityText:   "INFO",
 		}
 		newBytes, err := newMsg.Marshal()
 		require.NoError(t, err)
 
 		require.NoError(t, existing.Unmarshal(newBytes))
-		assert.Equal(t, logsv1.SEVERITY_NUMBER_INFO, existing.SeverityNumber)
+		assert.Equal(t, logsv1.SeverityNumber_SEVERITY_NUMBER_INFO, existing.SeverityNumber)
 		assert.Equal(t, "INFO", existing.SeverityText)
 	})
 }
@@ -652,12 +652,12 @@ func TestCrossLibraryEdgeCases(t *testing.T) {
 	t.Run("AllEnumValues", func(t *testing.T) {
 		// Test that all known enum values for SpanKind produce matching wire bytes
 		for _, kind := range []tracev1.Span_SpanKind{
-			tracev1.SPAN_KIND_UNSPECIFIED,
-			tracev1.SPAN_KIND_INTERNAL,
-			tracev1.SPAN_KIND_SERVER,
-			tracev1.SPAN_KIND_CLIENT,
-			tracev1.SPAN_KIND_PRODUCER,
-			tracev1.SPAN_KIND_CONSUMER,
+			tracev1.Span_SpanKind_SPAN_KIND_UNSPECIFIED,
+			tracev1.Span_SpanKind_SPAN_KIND_INTERNAL,
+			tracev1.Span_SpanKind_SPAN_KIND_SERVER,
+			tracev1.Span_SpanKind_SPAN_KIND_CLIENT,
+			tracev1.Span_SpanKind_SPAN_KIND_PRODUCER,
+			tracev1.Span_SpanKind_SPAN_KIND_CONSUMER,
 		} {
 			ours := tracev1.Span{
 				TraceId: make([]byte, 16),
@@ -729,13 +729,13 @@ func TestScalarFieldLastValueWins(t *testing.T) {
 		var wire []byte
 		// Field 6 (kind) = varint (enum)
 		wire = protowire.AppendTag(wire, 6, protowire.VarintType)
-		wire = protowire.AppendVarint(wire, uint64(tracev1.SPAN_KIND_SERVER))
+		wire = protowire.AppendVarint(wire, uint64(tracev1.Span_SpanKind_SPAN_KIND_SERVER))
 		wire = protowire.AppendTag(wire, 6, protowire.VarintType)
-		wire = protowire.AppendVarint(wire, uint64(tracev1.SPAN_KIND_CLIENT))
+		wire = protowire.AppendVarint(wire, uint64(tracev1.Span_SpanKind_SPAN_KIND_CLIENT))
 
 		var s tracev1.Span
 		require.NoError(t, s.Unmarshal(wire))
-		assert.Equal(t, tracev1.SPAN_KIND_CLIENT, s.Kind, "last enum value should win")
+		assert.Equal(t, tracev1.Span_SpanKind_SPAN_KIND_CLIENT, s.Kind, "last enum value should win")
 	})
 }
 
@@ -821,14 +821,14 @@ func TestConcurrentMarshalSafety(t *testing.T) {
 								TraceId:           []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
 								SpanId:            []byte{1, 2, 3, 4, 5, 6, 7, 8},
 								Name:              "concurrent-span",
-								Kind:              tracev1.SPAN_KIND_SERVER,
+								Kind:              tracev1.Span_SpanKind_SPAN_KIND_SERVER,
 								StartTimeUnixNano: 1000,
 								EndTimeUnixNano:   2000,
 								Attributes: []commonv1.KeyValue{
 									{Key: "k", Value: commonv1.AnyValue{Value: &commonv1.AnyValue_DoubleValue{DoubleValue: 3.14}}},
 								},
 								Events: []tracev1.Span_Event{{TimeUnixNano: 1500, Name: "ev"}},
-								Status: tracev1.Status{Code: tracev1.STATUS_CODE_OK},
+								Status: tracev1.Status{Code: tracev1.Status_StatusCode_STATUS_CODE_OK},
 							},
 						},
 					},

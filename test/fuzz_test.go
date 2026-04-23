@@ -530,7 +530,7 @@ func FuzzStructuredMetrics(f *testing.F) {
 			{
 				Name: "fuzz.sum",
 				Data: &metricsv1.Metric_Sum{Sum: metricsv1.Sum{
-					AggregationTemporality: metricsv1.AGGREGATION_TEMPORALITY_CUMULATIVE,
+					AggregationTemporality: metricsv1.AggregationTemporality_AGGREGATION_TEMPORALITY_CUMULATIVE,
 					IsMonotonic:            true,
 					DataPoints:             numberPoints,
 				}},
@@ -538,7 +538,7 @@ func FuzzStructuredMetrics(f *testing.F) {
 			{
 				Name: "fuzz.histogram",
 				Data: &metricsv1.Metric_Histogram{Histogram: metricsv1.Histogram{
-					AggregationTemporality: metricsv1.AGGREGATION_TEMPORALITY_DELTA,
+					AggregationTemporality: metricsv1.AggregationTemporality_AGGREGATION_TEMPORALITY_DELTA,
 					DataPoints: []metricsv1.HistogramDataPoint{
 						{
 							StartTimeUnixNano: startTime,
@@ -556,7 +556,7 @@ func FuzzStructuredMetrics(f *testing.F) {
 			{
 				Name: "fuzz.exp_histogram",
 				Data: &metricsv1.Metric_ExponentialHistogram{ExponentialHistogram: metricsv1.ExponentialHistogram{
-					AggregationTemporality: metricsv1.AGGREGATION_TEMPORALITY_CUMULATIVE,
+					AggregationTemporality: metricsv1.AggregationTemporality_AGGREGATION_TEMPORALITY_CUMULATIVE,
 					DataPoints: []metricsv1.ExponentialHistogramDataPoint{
 						{
 							StartTimeUnixNano: startTime,
@@ -745,7 +745,7 @@ func marshaledSeeds() [][]byte {
 						SpanId:            []byte{1, 2, 3, 4, 5, 6, 7, 8},
 						ParentSpanId:      []byte{8, 7, 6, 5, 4, 3, 2, 1},
 						Name:              "op",
-						Kind:              tracev1.SPAN_KIND_SERVER,
+						Kind:              tracev1.Span_SpanKind_SPAN_KIND_SERVER,
 						StartTimeUnixNano: 100,
 						EndTimeUnixNano:   200,
 						Attributes:        []commonv1.KeyValue{strAttr("k", "v"), nestedAttr("n")},
@@ -755,7 +755,7 @@ func marshaledSeeds() [][]byte {
 						Links: []tracev1.Span_Link{
 							{TraceId: []byte{16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1}, SpanId: []byte{8, 7, 6, 5, 4, 3, 2, 1}},
 						},
-						Status: tracev1.Status{Code: tracev1.STATUS_CODE_OK, Message: "ok"},
+						Status: tracev1.Status{Code: tracev1.Status_StatusCode_STATUS_CODE_OK, Message: "ok"},
 					},
 				},
 			}},
@@ -776,7 +776,7 @@ func marshaledSeeds() [][]byte {
 						}},
 					}}},
 					{Name: "hist", Data: &metricsv1.Metric_Histogram{Histogram: metricsv1.Histogram{
-						AggregationTemporality: metricsv1.AGGREGATION_TEMPORALITY_DELTA,
+						AggregationTemporality: metricsv1.AggregationTemporality_AGGREGATION_TEMPORALITY_DELTA,
 						DataPoints: []metricsv1.HistogramDataPoint{{
 							Count: 50, Sum: &sum, BucketCounts: []uint64{10, 20, 15, 5},
 							ExplicitBounds: []float64{1, 10, 100}, Min: &min, Max: &max,
@@ -807,7 +807,7 @@ func marshaledSeeds() [][]byte {
 				Scope: commonv1.InstrumentationScope{Name: "l-lib"},
 				LogRecords: []logsv1.LogRecord{
 					{
-						TimeUnixNano: 1000, SeverityNumber: logsv1.SEVERITY_NUMBER_WARN, SeverityText: "WARN",
+						TimeUnixNano: 1000, SeverityNumber: logsv1.SeverityNumber_SEVERITY_NUMBER_WARN, SeverityText: "WARN",
 						Body: commonv1.AnyValue{Value: &commonv1.AnyValue_KvlistValue{KvlistValue: commonv1.KeyValueList{
 							Values: []commonv1.KeyValue{
 								strAttr("msg", "nested body"),
