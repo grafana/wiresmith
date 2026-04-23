@@ -692,8 +692,8 @@ const file_conformance_proto_rawDesc = "" +
 	"\tJSON_TEST\x10\x02\x12$\n" +
 	" JSON_IGNORE_UNKNOWN_PARSING_TEST\x10\x03\x12\r\n" +
 	"\tJSPB_TEST\x10\x04\x12\x14\n" +
-	"\x10TEXT_FORMAT_TEST\x10\x05B]\n" +
-	"\x1fcom.google.protobuf.conformanceZ,wiresmith/conformance/internal/conformancepb\xa2\x02\vConformanceb\x06proto3"
+	"\x10TEXT_FORMAT_TEST\x10\x05Bb\n" +
+	"\x1fcom.google.protobuf.conformanceZ1wiresmith/test/conformance/internal/conformancepb\xa2\x02\vConformanceb\x06proto3"
 
 var (
 	file_conformance_proto_rawDescOnce sync.Once

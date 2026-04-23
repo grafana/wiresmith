@@ -1,4 +1,4 @@
-package test
+package fuzz
 
 import (
 	"bytes"
@@ -9,6 +9,7 @@ import (
 	logsv1 "wiresmith/gen/otlp/logs/v1"
 	metricsv1 "wiresmith/gen/otlp/metrics/v1"
 	tracev1 "wiresmith/gen/otlp/trace/v1"
+	"wiresmith/test/testutil"
 
 	otlplogs "go.opentelemetry.io/proto/otlp/logs/v1"
 	otlpmetrics "go.opentelemetry.io/proto/otlp/metrics/v1"
@@ -36,7 +37,7 @@ func FuzzDifferentialBytewise(f *testing.F) {
 
 	f.Fuzz(func(t *testing.T, data []byte) {
 		differentialCheck(t, data, "TracesData",
-			func() message { return new(tracev1.TracesData) },
+			func() testutil.Message { return new(tracev1.TracesData) },
 			func(b []byte) ([]byte, error) {
 				var m otlptrace.TracesData
 				if err := proto.Unmarshal(b, &m); err != nil {
@@ -47,7 +48,7 @@ func FuzzDifferentialBytewise(f *testing.F) {
 		)
 
 		differentialCheck(t, data, "MetricsData",
-			func() message { return new(metricsv1.MetricsData) },
+			func() testutil.Message { return new(metricsv1.MetricsData) },
 			func(b []byte) ([]byte, error) {
 				var m otlpmetrics.MetricsData
 				if err := proto.Unmarshal(b, &m); err != nil {
@@ -58,7 +59,7 @@ func FuzzDifferentialBytewise(f *testing.F) {
 		)
 
 		differentialCheck(t, data, "LogsData",
-			func() message { return new(logsv1.LogsData) },
+			func() testutil.Message { return new(logsv1.LogsData) },
 			func(b []byte) ([]byte, error) {
 				var m otlplogs.LogsData
 				if err := proto.Unmarshal(b, &m); err != nil {
@@ -77,7 +78,7 @@ func differentialCheck(
 	t *testing.T,
 	data []byte,
 	name string,
-	newOurs func() message,
+	newOurs func() testutil.Message,
 	officialRoundTrip func([]byte) ([]byte, error),
 ) {
 	t.Helper()

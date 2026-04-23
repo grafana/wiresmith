@@ -16,9 +16,14 @@ Custom protobuf compiler that generates high-performance Go code from OpenTeleme
 - `gen/vtpb/` - vtproto-generated code for benchmark comparison
 - `gen/gogopb/` - gogoproto-generated code for benchmark comparison
 - `gen/protohelpers/` - Shared reverse-write encoding helpers (based on vtprotobuf's protohelpers, Apache 2.0)
-- `test/` - Round-trip correctness tests against official `google.golang.org/protobuf`
+- `test/` - All tests, organized by purpose:
+  - `testutil/` - Shared test helpers (message interface, constructors)
+  - `basic/` - Code-path exercise tests (roundtrip, equal, has_field, kitchen_sink, map, etc.)
+  - `fuzz/` - Fuzz tests (unmarshal, roundtrip, cross-library, structured, differential)
+  - `differential/` - Cross-library comparison tests (official protobuf, pdata)
+  - `peer/` - Tests sourced from vtproto/gogoproto patterns
+  - `conformance/` - Google protobuf conformance tests (Docker-based), see [test/conformance/AGENTS.md](test/conformance/AGENTS.md)
 - `bench/` - Comparative benchmarks (ours vs official protobuf vs vtproto vs gogoproto)
-- `conformance/` - Google protobuf conformance tests (Docker-based), see [conformance/AGENTS.md](conformance/AGENTS.md)
 
 ## Commands
 
@@ -68,7 +73,7 @@ Not supported (not needed for OTel protos): services/RPCs, extensions, well-know
 docker run --rm --entrypoint conformance_test_runner wiresmith-conformance /usr/local/bin/testee
 ```
 
-Compare the `unexpected failures` output against `conformance/failure_list.txt` and remove entries that no longer appear. The expected failure count in the runner output should equal the number of entries in the file.
+Compare the `unexpected failures` output against `test/conformance/failure_list.txt` and remove entries that no longer appear. The expected failure count in the runner output should equal the number of entries in the file.
 
 ## Common review caveats
 
@@ -103,4 +108,4 @@ The generator smoke test (`TestGenerateMatchesCheckedIn`) only checks files that
 
 ## Known issues
 
-- `go test ./...` panics in `bench/` with `proto: file "maps.proto" is already registered` due to conflicting proto registrations between `gen/bench/official`, `gen/bench/vtpb`, and `gen/bench/gogopb`. Use `go test ./test/ ./compiler/...` to run tests without the bench package, or `GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn go test ./bench/` to run benchmarks.
+- `go test ./...` panics in `bench/` with `proto: file "maps.proto" is already registered` due to conflicting proto registrations between `gen/bench/official`, `gen/bench/vtpb`, and `gen/bench/gogopb`. Use `go test ./test/... ./compiler/...` to run tests without the bench package, or `GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn go test ./bench/` to run benchmarks.

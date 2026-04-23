@@ -15,8 +15,8 @@ import (
 
 	"google.golang.org/protobuf/proto"
 
-	pb "wiresmith/conformance/internal/conformancepb"
 	testmsg "wiresmith/gen/protobuf_test_messages/proto3"
+	pb "wiresmith/test/conformance/internal/conformancepb"
 )
 
 func main() {

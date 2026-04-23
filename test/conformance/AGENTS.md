@@ -6,8 +6,8 @@ Everything runs in Docker (`make conformance`). The Dockerfile builds the C++ ru
 
 ## Directory layout
 
-- `../proto/conformance/conformance.proto` — Runner/testee protocol (standard protoc-gen-go)
-- `../proto/conformance/test_messages_proto3.proto` — Stripped test messages (wiresmith-supported features only, original field numbers preserved)
+- `../../proto/conformance/conformance.proto` — Runner/testee protocol (standard protoc-gen-go)
+- `../../proto/conformance/test_messages_proto3.proto` — Stripped test messages (wiresmith-supported features only, original field numbers preserved)
 - `testee/` — Go binary: wiresmith unmarshal/marshal, standard proto for the envelope
 - `internal/conformancepb/` — Generated Go code for the conformance protocol
 

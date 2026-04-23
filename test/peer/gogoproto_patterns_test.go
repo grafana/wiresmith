@@ -1,4 +1,4 @@
-package test
+package peer
 
 import (
 	"bytes"
@@ -17,11 +17,12 @@ import (
 	profilesv1 "wiresmith/gen/otlp/profiles/v1development"
 	resourcev1 "wiresmith/gen/otlp/resource/v1"
 	tracev1 "wiresmith/gen/otlp/trace/v1"
+	"wiresmith/test/testutil"
 )
 
 // sizedBufferMarshaler is implemented by all generated types.
 type sizedBufferMarshaler interface {
-	message
+	testutil.Message
 	MarshalToSizedBuffer([]byte) (int, error)
 }
 
@@ -32,7 +33,7 @@ type sizedBufferMarshaler interface {
 
 func TestMarshalToSizedBuffer(t *testing.T) {
 	t.Run("EmptyMessages", func(t *testing.T) {
-		for name, ctor := range allMessageConstructors() {
+		for name, ctor := range testutil.AllMessageConstructors() {
 			t.Run(name, func(t *testing.T) {
 				m := ctor().(sizedBufferMarshaler)
 				size := m.Size()
@@ -176,7 +177,7 @@ func TestLittleFuzz(t *testing.T) {
 	rng := rand.New(rand.NewSource(42))
 
 	sum := 42.0
-	messages := map[string]message{
+	messages := map[string]testutil.Message{
 		"Resource": &resourcev1.Resource{
 			Attributes:             []commonv1.KeyValue{{Key: "k", Value: commonv1.AnyValue{Value: &commonv1.AnyValue_StringValue{StringValue: "v"}}}},
 			DroppedAttributesCount: 5,
@@ -237,7 +238,7 @@ func TestLittleFuzz(t *testing.T) {
 				if rng.Intn(5) == 0 {
 					littlefuzz = append(littlefuzz, byte(rng.Intn(256)))
 				}
-				m2 := reflect.New(reflect.TypeOf(msg).Elem()).Interface().(message)
+				m2 := reflect.New(reflect.TypeOf(msg).Elem()).Interface().(testutil.Message)
 				// Must not panic — errors are expected and fine
 				_ = m2.Unmarshal(littlefuzz)
 			}
@@ -254,7 +255,7 @@ func TestRandomPopulatedRoundTrip(t *testing.T) {
 	const iterations = 50
 	rng := rand.New(rand.NewSource(616)) // Same seed as gogoproto benchmarks
 
-	for name, ctor := range allMessageConstructors() {
+	for name, ctor := range testutil.AllMessageConstructors() {
 		t.Run(name, func(t *testing.T) {
 			for i := range iterations {
 				m := ctor()
@@ -277,7 +278,7 @@ func TestRandomPopulatedRoundTrip(t *testing.T) {
 }
 
 // populateRandom fills exported fields of a message struct with random values.
-func populateRandom(m message, rng *rand.Rand) {
+func populateRandom(m testutil.Message, rng *rand.Rand) {
 	v := reflect.ValueOf(m).Elem()
 	populateRandomValue(v, rng, 0)
 }

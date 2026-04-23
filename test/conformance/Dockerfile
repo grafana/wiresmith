@@ -5,7 +5,7 @@
 # Stage 3: Minimal runtime image that runs the conformance tests.
 #
 # Usage:
-#   docker build -f conformance/Dockerfile -t wiresmith-conformance .
+#   docker build -f test/conformance/Dockerfile -t wiresmith-conformance .
 #   docker run --rm wiresmith-conformance
 
 # --- Stage 1: Build conformance_test_runner ---
@@ -35,9 +35,9 @@ RUN go mod download
 # when dependencies change, not on unrelated file edits.
 COPY gen/protohelpers/ gen/protohelpers/
 COPY gen/protobuf_test_messages/ gen/protobuf_test_messages/
-COPY conformance/internal/ conformance/internal/
-COPY conformance/testee/ conformance/testee/
-RUN CGO_ENABLED=0 go build -o /testee ./conformance/testee/
+COPY test/conformance/internal/ test/conformance/internal/
+COPY test/conformance/testee/ test/conformance/testee/
+RUN CGO_ENABLED=0 go build -o /testee ./test/conformance/testee/
 
 # --- Stage 3: Run conformance tests ---
 FROM debian:trixie-slim@sha256:cedb1ef40439206b673ee8b33a46a03a0c9fa90bf3732f54704f99cb061d2c5a
@@ -48,6 +48,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY --from=runner-builder /protobuf/conformance_test_runner /usr/local/bin/
 COPY --from=testee-builder /testee /usr/local/bin/
-COPY conformance/failure_list.txt /failure_list.txt
+COPY test/conformance/failure_list.txt /failure_list.txt
 
 ENTRYPOINT ["conformance_test_runner", "--failure_list", "/failure_list.txt", "/usr/local/bin/testee"]

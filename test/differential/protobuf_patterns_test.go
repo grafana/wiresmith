@@ -1,4 +1,4 @@
-package test
+package differential
 
 import (
 	"encoding/binary"
@@ -15,6 +15,7 @@ import (
 	metricsv1 "wiresmith/gen/otlp/metrics/v1"
 	resourcev1 "wiresmith/gen/otlp/resource/v1"
 	tracev1 "wiresmith/gen/otlp/trace/v1"
+	"wiresmith/test/testutil"
 
 	otlpcommon "go.opentelemetry.io/proto/otlp/common/v1"
 	otlpresource "go.opentelemetry.io/proto/otlp/resource/v1"
@@ -22,7 +23,7 @@ import (
 )
 
 // overify marshals, unmarshals, re-marshals, and asserts byte-level determinism.
-func overify(t *testing.T, m message) {
+func overify(t *testing.T, m testutil.Message) {
 	t.Helper()
 	b1, err := m.Marshal()
 	require.NoError(t, err)
@@ -37,7 +38,7 @@ func overify(t *testing.T, m message) {
 }
 
 // newMessage returns a zero-value instance of the same concrete type as m.
-func newMessage(m message) message {
+func newMessage(m testutil.Message) testutil.Message {
 	switch m.(type) {
 	case *commonv1.AnyValue:
 		return new(commonv1.AnyValue)
@@ -584,7 +585,7 @@ func TestRawWireFormat(t *testing.T) {
 func TestSizeConsistency(t *testing.T) {
 	t.Run("PopulatedMessages", func(t *testing.T) {
 		sum42 := 42.0
-		messages := map[string]message{
+		messages := map[string]testutil.Message{
 			"Resource": &resourcev1.Resource{
 				Attributes:             []commonv1.KeyValue{{Key: "k", Value: commonv1.AnyValue{Value: &commonv1.AnyValue_StringValue{StringValue: "v"}}}},
 				DroppedAttributesCount: 5,
@@ -640,7 +641,7 @@ func TestSizeConsistency(t *testing.T) {
 	})
 
 	t.Run("EmptyMessages", func(t *testing.T) {
-		for name, ctor := range allMessageConstructors() {
+		for name, ctor := range testutil.AllMessageConstructors() {
 			t.Run(name, func(t *testing.T) {
 				m := ctor()
 				b, err := m.Marshal()
@@ -814,7 +815,7 @@ func TestMalformedWireErrors(t *testing.T) {
 	t.Run("TruncatedVarint", func(t *testing.T) {
 		// A varint where the last byte has the continuation bit set (no terminator)
 		wire := []byte{0x08, 0x80} // tag(1, varint) + incomplete varint (high bit set, no follow-up)
-		for name, ctor := range allMessageConstructors() {
+		for name, ctor := range testutil.AllMessageConstructors() {
 			t.Run(name, func(t *testing.T) {
 				m := ctor()
 				// Must not panic
@@ -831,7 +832,7 @@ func TestMalformedWireErrors(t *testing.T) {
 		}
 		wire = append(wire, 0x01) // terminator
 
-		for name, ctor := range allMessageConstructors() {
+		for name, ctor := range testutil.AllMessageConstructors() {
 			t.Run(name, func(t *testing.T) {
 				m := ctor()
 				_ = m.Unmarshal(wire)
@@ -845,7 +846,7 @@ func TestMalformedWireErrors(t *testing.T) {
 		wire = protowire.AppendTag(wire, 1, protowire.BytesType)
 		wire = protowire.AppendVarint(wire, uint64(math.MaxInt64)+1) // wraps negative as int64
 
-		for name, ctor := range allMessageConstructors() {
+		for name, ctor := range testutil.AllMessageConstructors() {
 			t.Run(name, func(t *testing.T) {
 				m := ctor()
 				err := m.Unmarshal(wire)
@@ -861,7 +862,7 @@ func TestMalformedWireErrors(t *testing.T) {
 		wire = protowire.AppendVarint(wire, 100)
 		wire = append(wire, []byte("short")...)
 
-		for name, ctor := range allMessageConstructors() {
+		for name, ctor := range testutil.AllMessageConstructors() {
 			t.Run(name, func(t *testing.T) {
 				m := ctor()
 				err := m.Unmarshal(wire)
@@ -873,7 +874,7 @@ func TestMalformedWireErrors(t *testing.T) {
 	t.Run("InvalidWireType", func(t *testing.T) {
 		// Wire type 6 is invalid
 		wire := []byte{0x0E} // tag = (1 << 3) | 6 = field 1, wire type 6
-		for name, ctor := range allMessageConstructors() {
+		for name, ctor := range testutil.AllMessageConstructors() {
 			t.Run(name, func(t *testing.T) {
 				m := ctor()
 				err := m.Unmarshal(wire)
@@ -887,7 +888,7 @@ func TestMalformedWireErrors(t *testing.T) {
 		wire = protowire.AppendTag(wire, 1, protowire.Fixed32Type)
 		wire = append(wire, 0x01, 0x02) // only 2 bytes, need 4
 
-		for name, ctor := range allMessageConstructors() {
+		for name, ctor := range testutil.AllMessageConstructors() {
 			t.Run(name, func(t *testing.T) {
 				m := ctor()
 				_ = m.Unmarshal(wire)
@@ -900,7 +901,7 @@ func TestMalformedWireErrors(t *testing.T) {
 		wire = protowire.AppendTag(wire, 1, protowire.Fixed64Type)
 		wire = append(wire, 0x01, 0x02, 0x03) // only 3 bytes, need 8
 
-		for name, ctor := range allMessageConstructors() {
+		for name, ctor := range testutil.AllMessageConstructors() {
 			t.Run(name, func(t *testing.T) {
 				m := ctor()
 				_ = m.Unmarshal(wire)
@@ -927,7 +928,7 @@ func TestMalformedWireErrors(t *testing.T) {
 
 	t.Run("EmptyInputIsValid", func(t *testing.T) {
 		// Empty input should always succeed (zero-value message)
-		for name, ctor := range allMessageConstructors() {
+		for name, ctor := range testutil.AllMessageConstructors() {
 			t.Run(name, func(t *testing.T) {
 				m := ctor()
 				err := m.Unmarshal([]byte{})
@@ -937,7 +938,7 @@ func TestMalformedWireErrors(t *testing.T) {
 	})
 
 	t.Run("NilInputIsValid", func(t *testing.T) {
-		for name, ctor := range allMessageConstructors() {
+		for name, ctor := range testutil.AllMessageConstructors() {
 			t.Run(name, func(t *testing.T) {
 				m := ctor()
 				err := m.Unmarshal(nil)
@@ -949,7 +950,7 @@ func TestMalformedWireErrors(t *testing.T) {
 	t.Run("TagOnly", func(t *testing.T) {
 		// Just a tag with no payload
 		wire := []byte{0x08} // tag(1, varint) with no varint payload
-		for name, ctor := range allMessageConstructors() {
+		for name, ctor := range testutil.AllMessageConstructors() {
 			t.Run(name, func(t *testing.T) {
 				m := ctor()
 				_ = m.Unmarshal(wire)

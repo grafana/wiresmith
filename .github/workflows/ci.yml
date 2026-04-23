@@ -52,10 +52,10 @@ jobs:
       - name: Install protoc-gen-go
         run: go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.11
       - run: make generate-ours
-      - run: git add gen/ conformance/internal/conformancepb/ --intent-to-add
+      - run: git add gen/ test/conformance/internal/conformancepb/ --intent-to-add
       - name: Check generated code is up to date
         run: |
-          if ! git diff --exit-code gen/otlp/ gen/test/ gen/bench/maps/ gen/bench/official/ gen/protobuf_test_messages/ conformance/internal/conformancepb/; then
+          if ! git diff --exit-code gen/otlp/ gen/test/ gen/bench/maps/ gen/bench/official/ gen/protobuf_test_messages/ test/conformance/internal/conformancepb/; then
             echo "::error::Generated code is stale. Run 'make generate-ours' and commit the result."
             exit 1
           fi
@@ -108,7 +108,7 @@ jobs:
       - uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7.1.0
         with:
           context: .
-          file: conformance/Dockerfile
+          file: test/conformance/Dockerfile
           tags: wiresmith-conformance:latest
           load: true
           cache-from: type=gha

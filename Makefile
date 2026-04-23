@@ -38,10 +38,10 @@ build: ## Build all packages
 	go build ./...
 
 test: ## Run correctness tests
-	go test ./test/ -v
+	go test ./test/... -v
 
 coverage: ## Run tests with coverage report
-	go test ./test/ ./compiler/... -coverprofile=coverage.out
+	go test ./test/... ./compiler/... -coverprofile=coverage.out
 	go tool cover -func=coverage.out
 	@echo ""
 	@echo "HTML report: go tool cover -html=coverage.out"
@@ -50,7 +50,7 @@ fuzz: ## Fuzz all targets (30s each)
 	@for target in FuzzUnmarshal FuzzRoundTrip FuzzMarshalSize FuzzCrossLibrary FuzzStructuredTrace FuzzStructuredMetrics FuzzStructuredLogs; do \
 		echo "==> Fuzzing $$target..."; \
 		GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn \
-			go test ./test/ -fuzz $$target -fuzztime 30s -run='^$$' || exit 1; \
+			go test ./test/fuzz/ -fuzz $$target -fuzztime 30s -run='^$$' || exit 1; \
 	done
 
 generate: generate-ours generate-vtproto generate-gogoproto ## Regenerate all code (ours + vtproto + gogoproto)
@@ -80,7 +80,7 @@ bench-compare: ## Run per-library benchmarks and compare with benchstat
 		"GogoProto=$(TMPDIR)/GogoProto.txt"
 
 conformance: ## Run conformance tests (requires Docker)
-	docker build -f conformance/Dockerfile -t wiresmith-conformance .
+	docker build -f test/conformance/Dockerfile -t wiresmith-conformance .
 	docker run --rm wiresmith-conformance
 
 clean: ## Remove all generated code under gen/
@@ -116,7 +116,7 @@ generate-ours: ## Regenerate all wiresmith + conformance code
 	@cp proto/conformance/test_messages_proto3.proto "$(CONF_TMP)/"
 	$(WIRESMITH) --proto_path="$(CONF_TMP)" --out=gen --module=$(MODULE)
 	@rm -rf "$(CONF_TMP)"
-	@echo "==> Generating conformance protocol code → conformance/internal/conformancepb/"
+	@echo "==> Generating conformance protocol code → test/conformance/internal/conformancepb/"
 	protoc -I proto/conformance \
 		--go_out=. --go_opt=module=$(MODULE) \
 		proto/conformance/conformance.proto

@@ -1,4 +1,4 @@
-package test
+package fuzz
 
 import (
 	"bytes"
@@ -12,9 +12,9 @@ import (
 	commonv1 "wiresmith/gen/otlp/common/v1"
 	logsv1 "wiresmith/gen/otlp/logs/v1"
 	metricsv1 "wiresmith/gen/otlp/metrics/v1"
-	profilesv1 "wiresmith/gen/otlp/profiles/v1development"
 	resourcev1 "wiresmith/gen/otlp/resource/v1"
 	tracev1 "wiresmith/gen/otlp/trace/v1"
+	"wiresmith/test/testutil"
 
 	otlpcommon "go.opentelemetry.io/proto/otlp/common/v1"
 	otlplogs "go.opentelemetry.io/proto/otlp/logs/v1"
@@ -22,78 +22,6 @@ import (
 	otlpresource "go.opentelemetry.io/proto/otlp/resource/v1"
 	otlptrace "go.opentelemetry.io/proto/otlp/trace/v1"
 )
-
-// message is implemented by all generated message types.
-type message interface {
-	Unmarshal([]byte) error
-	Marshal() ([]byte, error)
-	Size() int
-}
-
-// allMessageConstructors returns a constructor for every generated message type.
-// Each fuzz iteration calls every constructor so that a single corpus entry
-// exercises all unmarshal paths.
-func allMessageConstructors() map[string]func() message {
-	return map[string]func() message{
-		// common/v1
-		"AnyValue":             func() message { return new(commonv1.AnyValue) },
-		"ArrayValue":           func() message { return new(commonv1.ArrayValue) },
-		"InstrumentationScope": func() message { return new(commonv1.InstrumentationScope) },
-		"KeyValue":             func() message { return new(commonv1.KeyValue) },
-		"KeyValueList":         func() message { return new(commonv1.KeyValueList) },
-
-		// resource/v1
-		"Resource": func() message { return new(resourcev1.Resource) },
-
-		// trace/v1
-		"TracesData":    func() message { return new(tracev1.TracesData) },
-		"ResourceSpans": func() message { return new(tracev1.ResourceSpans) },
-		"ScopeSpans":    func() message { return new(tracev1.ScopeSpans) },
-		"Span":          func() message { return new(tracev1.Span) },
-		"Span_Event":    func() message { return new(tracev1.Span_Event) },
-		"Span_Link":     func() message { return new(tracev1.Span_Link) },
-		"Status":        func() message { return new(tracev1.Status) },
-
-		// logs/v1
-		"LogsData":     func() message { return new(logsv1.LogsData) },
-		"ResourceLogs": func() message { return new(logsv1.ResourceLogs) },
-		"ScopeLogs":    func() message { return new(logsv1.ScopeLogs) },
-		"LogRecord":    func() message { return new(logsv1.LogRecord) },
-
-		// metrics/v1
-		"MetricsData":                           func() message { return new(metricsv1.MetricsData) },
-		"ResourceMetrics":                       func() message { return new(metricsv1.ResourceMetrics) },
-		"ScopeMetrics":                          func() message { return new(metricsv1.ScopeMetrics) },
-		"Metric":                                func() message { return new(metricsv1.Metric) },
-		"Gauge":                                 func() message { return new(metricsv1.Gauge) },
-		"Sum":                                   func() message { return new(metricsv1.Sum) },
-		"Histogram":                             func() message { return new(metricsv1.Histogram) },
-		"HistogramDataPoint":                    func() message { return new(metricsv1.HistogramDataPoint) },
-		"ExponentialHistogram":                  func() message { return new(metricsv1.ExponentialHistogram) },
-		"ExponentialHistogramDataPoint":         func() message { return new(metricsv1.ExponentialHistogramDataPoint) },
-		"ExponentialHistogramDataPoint_Buckets": func() message { return new(metricsv1.ExponentialHistogramDataPoint_Buckets) },
-		"Summary":                               func() message { return new(metricsv1.Summary) },
-		"SummaryDataPoint":                      func() message { return new(metricsv1.SummaryDataPoint) },
-		"SummaryDataPoint_ValueAtQuantile":      func() message { return new(metricsv1.SummaryDataPoint_ValueAtQuantile) },
-		"NumberDataPoint":                       func() message { return new(metricsv1.NumberDataPoint) },
-		"Exemplar":                              func() message { return new(metricsv1.Exemplar) },
-
-		// profiles/v1development
-		"ProfilesData":       func() message { return new(profilesv1.ProfilesData) },
-		"ResourceProfiles":   func() message { return new(profilesv1.ResourceProfiles) },
-		"ScopeProfiles":      func() message { return new(profilesv1.ScopeProfiles) },
-		"Profile":            func() message { return new(profilesv1.Profile) },
-		"ProfilesDictionary": func() message { return new(profilesv1.ProfilesDictionary) },
-		"ValueType":          func() message { return new(profilesv1.ValueType) },
-		"Sample":             func() message { return new(profilesv1.Sample) },
-		"Mapping":            func() message { return new(profilesv1.Mapping) },
-		"Location":           func() message { return new(profilesv1.Location) },
-		"Line":               func() message { return new(profilesv1.Line) },
-		"Function":           func() message { return new(profilesv1.Function) },
-		"Link":               func() message { return new(profilesv1.Link) },
-		"Stack":              func() message { return new(profilesv1.Stack) },
-	}
-}
 
 // FuzzUnmarshal feeds random bytes into every generated Unmarshal
 // method. The test passes as long as no method panics — errors are expected.
@@ -109,7 +37,7 @@ func FuzzUnmarshal(f *testing.F) {
 	f.Add([]byte{0x0d, 0x01, 0x02, 0x03, 0x04})                         // fixed32 field
 	f.Add([]byte{0x09, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08}) // fixed64 field
 
-	ctors := allMessageConstructors()
+	ctors := testutil.AllMessageConstructors()
 
 	f.Fuzz(func(t *testing.T, data []byte) {
 		for name, newMsg := range ctors {
@@ -129,7 +57,7 @@ func FuzzRoundTrip(f *testing.F) {
 		f.Add(seed)
 	}
 
-	ctors := allMessageConstructors()
+	ctors := testutil.AllMessageConstructors()
 
 	f.Fuzz(func(t *testing.T, data []byte) {
 		for name, newMsg := range ctors {
@@ -170,7 +98,7 @@ func FuzzMarshalSize(f *testing.F) {
 		f.Add(seed)
 	}
 
-	ctors := allMessageConstructors()
+	ctors := testutil.AllMessageConstructors()
 
 	f.Fuzz(func(t *testing.T, data []byte) {
 		for name, newMsg := range ctors {
@@ -202,7 +130,7 @@ func FuzzCrossLibrary(f *testing.F) {
 	f.Fuzz(func(t *testing.T, data []byte) {
 		// TracesData
 		crossCheck(t, data, "TracesData",
-			func() message { return new(tracev1.TracesData) },
+			func() testutil.Message { return new(tracev1.TracesData) },
 			func(b []byte) (int, error) {
 				var m otlptrace.TracesData
 				if err := proto.Unmarshal(b, &m); err != nil {
@@ -210,7 +138,7 @@ func FuzzCrossLibrary(f *testing.F) {
 				}
 				return countTraceSpans(&m), nil
 			},
-			func(msg message) int {
+			func(msg testutil.Message) int {
 				m := msg.(*tracev1.TracesData)
 				n := 0
 				for i := range m.ResourceSpans {
@@ -224,7 +152,7 @@ func FuzzCrossLibrary(f *testing.F) {
 
 		// LogsData
 		crossCheck(t, data, "LogsData",
-			func() message { return new(logsv1.LogsData) },
+			func() testutil.Message { return new(logsv1.LogsData) },
 			func(b []byte) (int, error) {
 				var m otlplogs.LogsData
 				if err := proto.Unmarshal(b, &m); err != nil {
@@ -232,7 +160,7 @@ func FuzzCrossLibrary(f *testing.F) {
 				}
 				return countLogRecords(&m), nil
 			},
-			func(msg message) int {
+			func(msg testutil.Message) int {
 				m := msg.(*logsv1.LogsData)
 				n := 0
 				for i := range m.ResourceLogs {
@@ -246,7 +174,7 @@ func FuzzCrossLibrary(f *testing.F) {
 
 		// MetricsData
 		crossCheck(t, data, "MetricsData",
-			func() message { return new(metricsv1.MetricsData) },
+			func() testutil.Message { return new(metricsv1.MetricsData) },
 			func(b []byte) (int, error) {
 				var m otlpmetrics.MetricsData
 				if err := proto.Unmarshal(b, &m); err != nil {
@@ -254,7 +182,7 @@ func FuzzCrossLibrary(f *testing.F) {
 				}
 				return countMetrics(&m), nil
 			},
-			func(msg message) int {
+			func(msg testutil.Message) int {
 				m := msg.(*metricsv1.MetricsData)
 				n := 0
 				for i := range m.ResourceMetrics {
@@ -268,7 +196,7 @@ func FuzzCrossLibrary(f *testing.F) {
 
 		// Resource (leaf type — compare attribute count)
 		crossCheck(t, data, "Resource",
-			func() message { return new(resourcev1.Resource) },
+			func() testutil.Message { return new(resourcev1.Resource) },
 			func(b []byte) (int, error) {
 				var m otlpresource.Resource
 				if err := proto.Unmarshal(b, &m); err != nil {
@@ -276,14 +204,14 @@ func FuzzCrossLibrary(f *testing.F) {
 				}
 				return len(m.Attributes), nil
 			},
-			func(msg message) int {
+			func(msg testutil.Message) int {
 				return len(msg.(*resourcev1.Resource).Attributes)
 			},
 		)
 
 		// AnyValue (compare which oneof variant is set)
 		crossCheck(t, data, "AnyValue",
-			func() message { return new(commonv1.AnyValue) },
+			func() testutil.Message { return new(commonv1.AnyValue) },
 			func(b []byte) (int, error) {
 				var m otlpcommon.AnyValue
 				if err := proto.Unmarshal(b, &m); err != nil {
@@ -291,7 +219,7 @@ func FuzzCrossLibrary(f *testing.F) {
 				}
 				return anyValueTag(&m), nil
 			},
-			func(msg message) int {
+			func(msg testutil.Message) int {
 				return ourAnyValueTag(msg.(*commonv1.AnyValue))
 			},
 		)
@@ -306,9 +234,9 @@ func crossCheck(
 	t *testing.T,
 	data []byte,
 	name string,
-	newOurs func() message,
+	newOurs func() testutil.Message,
 	officialMetric func([]byte) (int, error),
-	ourMetric func(message) int,
+	ourMetric func(testutil.Message) int,
 ) {
 	t.Helper()
 
@@ -692,7 +620,7 @@ func FuzzStructuredLogs(f *testing.F) {
 
 // assertRoundTrip marshals a message and verifies Unmarshal→Marshal→Unmarshal
 // produces identical structs, and that Size() matches Marshal() length.
-func assertRoundTrip(t *testing.T, msg message) {
+func assertRoundTrip(t *testing.T, msg testutil.Message) {
 	t.Helper()
 
 	size := msg.Size()
@@ -705,7 +633,7 @@ func assertRoundTrip(t *testing.T, msg message) {
 	}
 
 	// Create a new zero-value instance of the same concrete type
-	msg2 := reflect.New(reflect.TypeOf(msg).Elem()).Interface().(message)
+	msg2 := reflect.New(reflect.TypeOf(msg).Elem()).Interface().(testutil.Message)
 	if err := msg2.Unmarshal(bytes1); err != nil {
 		t.Fatalf("Unmarshal failed: %v", err)
 	}
@@ -829,7 +757,7 @@ func marshaledSeeds() [][]byte {
 	}
 
 	seeds := make([][]byte, 0, 3)
-	for _, msg := range []message{&traces, &metrics, &logs} {
+	for _, msg := range []testutil.Message{&traces, &metrics, &logs} {
 		b, err := msg.Marshal()
 		if err != nil {
 			panic(err)
