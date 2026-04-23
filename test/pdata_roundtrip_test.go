@@ -93,14 +93,14 @@ func TestPdataTracesRoundTrip(t *testing.T) {
 
 	s := ours.ResourceSpans[0].ScopeSpans[0].Spans[0]
 	assert.Equal(t, "pdata-span", s.Name)
-	assert.Equal(t, tracev1.SPAN_KIND_CLIENT, s.Kind)
+	assert.Equal(t, tracev1.Span_SPAN_KIND_CLIENT, s.Kind)
 	assert.Equal(t, uint64(1700000000000000000), s.StartTimeUnixNano)
 	assert.Equal(t, uint64(1700000001000000000), s.EndTimeUnixNano)
 	assert.Len(t, s.Attributes, 4)
 	assert.Len(t, s.Events, 1)
 	assert.Equal(t, "exception", s.Events[0].Name)
 	assert.Len(t, s.Links, 1)
-	assert.Equal(t, tracev1.STATUS_CODE_ERROR, s.Status.Code)
+	assert.Equal(t, tracev1.Status_STATUS_CODE_ERROR, s.Status.Code)
 	assert.Equal(t, "deadline exceeded", s.Status.Message)
 
 	// Re-marshal with our code
@@ -222,7 +222,7 @@ func TestPdataMetricsRoundTrip(t *testing.T) {
 	assert.Equal(t, "requests_total", scopeMetrics.Metrics[1].Name)
 	sumData := scopeMetrics.Metrics[1].Data.(*metricsv1.Metric_Sum)
 	assert.True(t, sumData.Sum.IsMonotonic)
-	assert.Equal(t, metricsv1.AGGREGATION_TEMPORALITY_CUMULATIVE, sumData.Sum.AggregationTemporality)
+	assert.Equal(t, metricsv1.AggregationTemporality_AGGREGATION_TEMPORALITY_CUMULATIVE, sumData.Sum.AggregationTemporality)
 	require.Len(t, sumData.Sum.DataPoints, 1)
 	assert.Equal(t, int64(42567), sumData.Sum.DataPoints[0].Value.(*metricsv1.NumberDataPoint_AsInt).AsInt)
 
@@ -317,14 +317,14 @@ func TestPdataLogsRoundTrip(t *testing.T) {
 	// INFO log
 	bodyStr := scopeLogs.LogRecords[0].Body.Value.(*commonv1.AnyValue_StringValue)
 	assert.Equal(t, "User login successful", bodyStr.StringValue)
-	assert.Equal(t, logsv1.SEVERITY_NUMBER_INFO, scopeLogs.LogRecords[0].SeverityNumber)
+	assert.Equal(t, logsv1.SeverityNumber_SEVERITY_NUMBER_INFO, scopeLogs.LogRecords[0].SeverityNumber)
 	assert.Equal(t, "INFO", scopeLogs.LogRecords[0].SeverityText)
 	assert.Equal(t, uint64(1700000000000000000), scopeLogs.LogRecords[0].TimeUnixNano)
 	assert.Equal(t, uint64(1700000000001000000), scopeLogs.LogRecords[0].ObservedTimeUnixNano)
 	assert.Len(t, scopeLogs.LogRecords[0].Attributes, 2)
 
 	// ERROR log
-	assert.Equal(t, logsv1.SEVERITY_NUMBER_ERROR, scopeLogs.LogRecords[1].SeverityNumber)
+	assert.Equal(t, logsv1.SeverityNumber_SEVERITY_NUMBER_ERROR, scopeLogs.LogRecords[1].SeverityNumber)
 	assert.Equal(t, uint32(1), scopeLogs.LogRecords[1].DroppedAttributesCount)
 
 	// Re-marshal with our code

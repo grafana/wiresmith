@@ -56,7 +56,7 @@ func TestAllMaps_FullyPopulated(t *testing.T) {
 		MapInt32Float:       map[int32]float32{1: 3.14, -1: float32(math.Inf(-1))},
 		MapInt32Double:      map[int32]float64{1: math.MaxFloat64, -1: math.SmallestNonzeroFloat64},
 		MapStringMessage:    map[string]ks.Inner{"a": {Data: "inner-a", SignedVal: -100}, "b": {Raw: []byte{0xFF}}},
-		MapStringEnum:       map[string]ks.Color{"red": ks.COLOR_RED, "blue": ks.COLOR_BLUE, "zero": ks.COLOR_UNSPECIFIED},
+		MapStringEnum:       map[string]ks.Color{"red": ks.Color_COLOR_RED, "blue": ks.Color_COLOR_BLUE, "zero": ks.Color_COLOR_UNSPECIFIED},
 	}
 	mapRoundTrip(t, msg)
 }

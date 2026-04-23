@@ -18,10 +18,10 @@ import (
 type Color int32
 
 const (
-	COLOR_UNSPECIFIED Color = 0
-	COLOR_RED         Color = 1
-	COLOR_GREEN       Color = 2
-	COLOR_BLUE        Color = 3
+	Color_COLOR_UNSPECIFIED Color = 0
+	Color_COLOR_RED         Color = 1
+	Color_COLOR_GREEN       Color = 2
+	Color_COLOR_BLUE        Color = 3
 )
 
 var Color_name = map[int32]string{

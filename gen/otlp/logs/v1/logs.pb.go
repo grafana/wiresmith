@@ -19,31 +19,31 @@ import (
 type SeverityNumber int32
 
 const (
-	SEVERITY_NUMBER_UNSPECIFIED SeverityNumber = 0
-	SEVERITY_NUMBER_TRACE       SeverityNumber = 1
-	SEVERITY_NUMBER_TRACE2      SeverityNumber = 2
-	SEVERITY_NUMBER_TRACE3      SeverityNumber = 3
-	SEVERITY_NUMBER_TRACE4      SeverityNumber = 4
-	SEVERITY_NUMBER_DEBUG       SeverityNumber = 5
-	SEVERITY_NUMBER_DEBUG2      SeverityNumber = 6
-	SEVERITY_NUMBER_DEBUG3      SeverityNumber = 7
-	SEVERITY_NUMBER_DEBUG4      SeverityNumber = 8
-	SEVERITY_NUMBER_INFO        SeverityNumber = 9
-	SEVERITY_NUMBER_INFO2       SeverityNumber = 10
-	SEVERITY_NUMBER_INFO3       SeverityNumber = 11
-	SEVERITY_NUMBER_INFO4       SeverityNumber = 12
-	SEVERITY_NUMBER_WARN        SeverityNumber = 13
-	SEVERITY_NUMBER_WARN2       SeverityNumber = 14
-	SEVERITY_NUMBER_WARN3       SeverityNumber = 15
-	SEVERITY_NUMBER_WARN4       SeverityNumber = 16
-	SEVERITY_NUMBER_ERROR       SeverityNumber = 17
-	SEVERITY_NUMBER_ERROR2      SeverityNumber = 18
-	SEVERITY_NUMBER_ERROR3      SeverityNumber = 19
-	SEVERITY_NUMBER_ERROR4      SeverityNumber = 20
-	SEVERITY_NUMBER_FATAL       SeverityNumber = 21
-	SEVERITY_NUMBER_FATAL2      SeverityNumber = 22
-	SEVERITY_NUMBER_FATAL3      SeverityNumber = 23
-	SEVERITY_NUMBER_FATAL4      SeverityNumber = 24
+	SeverityNumber_SEVERITY_NUMBER_UNSPECIFIED SeverityNumber = 0
+	SeverityNumber_SEVERITY_NUMBER_TRACE       SeverityNumber = 1
+	SeverityNumber_SEVERITY_NUMBER_TRACE2      SeverityNumber = 2
+	SeverityNumber_SEVERITY_NUMBER_TRACE3      SeverityNumber = 3
+	SeverityNumber_SEVERITY_NUMBER_TRACE4      SeverityNumber = 4
+	SeverityNumber_SEVERITY_NUMBER_DEBUG       SeverityNumber = 5
+	SeverityNumber_SEVERITY_NUMBER_DEBUG2      SeverityNumber = 6
+	SeverityNumber_SEVERITY_NUMBER_DEBUG3      SeverityNumber = 7
+	SeverityNumber_SEVERITY_NUMBER_DEBUG4      SeverityNumber = 8
+	SeverityNumber_SEVERITY_NUMBER_INFO        SeverityNumber = 9
+	SeverityNumber_SEVERITY_NUMBER_INFO2       SeverityNumber = 10
+	SeverityNumber_SEVERITY_NUMBER_INFO3       SeverityNumber = 11
+	SeverityNumber_SEVERITY_NUMBER_INFO4       SeverityNumber = 12
+	SeverityNumber_SEVERITY_NUMBER_WARN        SeverityNumber = 13
+	SeverityNumber_SEVERITY_NUMBER_WARN2       SeverityNumber = 14
+	SeverityNumber_SEVERITY_NUMBER_WARN3       SeverityNumber = 15
+	SeverityNumber_SEVERITY_NUMBER_WARN4       SeverityNumber = 16
+	SeverityNumber_SEVERITY_NUMBER_ERROR       SeverityNumber = 17
+	SeverityNumber_SEVERITY_NUMBER_ERROR2      SeverityNumber = 18
+	SeverityNumber_SEVERITY_NUMBER_ERROR3      SeverityNumber = 19
+	SeverityNumber_SEVERITY_NUMBER_ERROR4      SeverityNumber = 20
+	SeverityNumber_SEVERITY_NUMBER_FATAL       SeverityNumber = 21
+	SeverityNumber_SEVERITY_NUMBER_FATAL2      SeverityNumber = 22
+	SeverityNumber_SEVERITY_NUMBER_FATAL3      SeverityNumber = 23
+	SeverityNumber_SEVERITY_NUMBER_FATAL4      SeverityNumber = 24
 )
 
 var SeverityNumber_name = map[int32]string{
@@ -121,9 +121,9 @@ type LogRecordFlags int32
 const (
 	// The zero value for the enum. Should not be used for comparisons.
 	// Instead use bitwise "and" with the appropriate mask as shown above.
-	LOG_RECORD_FLAGS_DO_NOT_USE LogRecordFlags = 0
+	LogRecordFlags_LOG_RECORD_FLAGS_DO_NOT_USE LogRecordFlags = 0
 	// Bits 0-7 are used for trace flags.
-	LOG_RECORD_FLAGS_TRACE_FLAGS_MASK LogRecordFlags = 255
+	LogRecordFlags_LOG_RECORD_FLAGS_TRACE_FLAGS_MASK LogRecordFlags = 255
 )
 
 var LogRecordFlags_name = map[int32]string{

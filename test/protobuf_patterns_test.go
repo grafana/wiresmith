@@ -132,7 +132,7 @@ func TestMarshalDeterminism(t *testing.T) {
 			TraceId:           []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
 			SpanId:            []byte{1, 2, 3, 4, 5, 6, 7, 8},
 			Name:              "test-span",
-			Kind:              tracev1.SPAN_KIND_SERVER,
+			Kind:              tracev1.Span_SPAN_KIND_SERVER,
 			StartTimeUnixNano: 1000000000,
 			EndTimeUnixNano:   2000000000,
 			Events: []tracev1.Span_Event{
@@ -141,7 +141,7 @@ func TestMarshalDeterminism(t *testing.T) {
 			Links: []tracev1.Span_Link{
 				{TraceId: []byte{16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1}, SpanId: []byte{8, 7, 6, 5, 4, 3, 2, 1}},
 			},
-			Status: tracev1.Status{Message: "ok", Code: tracev1.STATUS_CODE_OK},
+			Status: tracev1.Status{Message: "ok", Code: tracev1.Status_STATUS_CODE_OK},
 		})
 	})
 
@@ -149,7 +149,7 @@ func TestMarshalDeterminism(t *testing.T) {
 		overify(t, &logsv1.LogRecord{
 			TimeUnixNano:         1000,
 			ObservedTimeUnixNano: 2000,
-			SeverityNumber:       logsv1.SEVERITY_NUMBER_ERROR,
+			SeverityNumber:       logsv1.SeverityNumber_SEVERITY_NUMBER_ERROR,
 			SeverityText:         "ERROR",
 			Body:                 commonv1.AnyValue{Value: &commonv1.AnyValue_StringValue{StringValue: "something broke"}},
 			TraceId:              []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
@@ -212,8 +212,8 @@ func TestMarshalDeterminism(t *testing.T) {
 					ScopeLogs: []logsv1.ScopeLogs{
 						{
 							LogRecords: []logsv1.LogRecord{
-								{SeverityNumber: logsv1.SEVERITY_NUMBER_INFO, Body: commonv1.AnyValue{Value: &commonv1.AnyValue_StringValue{StringValue: "hello"}}},
-								{SeverityNumber: logsv1.SEVERITY_NUMBER_WARN, Body: commonv1.AnyValue{Value: &commonv1.AnyValue_IntValue{IntValue: 999}}},
+								{SeverityNumber: logsv1.SeverityNumber_SEVERITY_NUMBER_INFO, Body: commonv1.AnyValue{Value: &commonv1.AnyValue_StringValue{StringValue: "hello"}}},
+								{SeverityNumber: logsv1.SeverityNumber_SEVERITY_NUMBER_WARN, Body: commonv1.AnyValue{Value: &commonv1.AnyValue_IntValue{IntValue: 999}}},
 							},
 						},
 					},
@@ -536,7 +536,7 @@ func TestRawWireFormat(t *testing.T) {
 
 	t.Run("ReverseStatusToBytes", func(t *testing.T) {
 		// Status: field 2 (message) = bytes, field 3 (code) = varint
-		s := tracev1.Status{Message: "err", Code: tracev1.STATUS_CODE_ERROR}
+		s := tracev1.Status{Message: "err", Code: tracev1.Status_STATUS_CODE_ERROR}
 		b, err := s.Marshal()
 		require.NoError(t, err)
 
@@ -565,7 +565,7 @@ func TestRawWireFormat(t *testing.T) {
 		var ours tracev1.Span
 		require.NoError(t, ours.Unmarshal(officialBytes))
 		assert.Equal(t, "official-span", ours.Name)
-		assert.Equal(t, tracev1.SPAN_KIND_CLIENT, ours.Kind)
+		assert.Equal(t, tracev1.Span_SPAN_KIND_CLIENT, ours.Kind)
 		assert.Equal(t, uint64(5000), ours.StartTimeUnixNano)
 
 		// And reverse: wiresmith → official
@@ -591,10 +591,10 @@ func TestSizeConsistency(t *testing.T) {
 			},
 			"Span": &tracev1.Span{
 				TraceId: make([]byte, 16), SpanId: make([]byte, 8), Name: "s",
-				Kind: tracev1.SPAN_KIND_SERVER, StartTimeUnixNano: 1, EndTimeUnixNano: 2,
+				Kind: tracev1.Span_SPAN_KIND_SERVER, StartTimeUnixNano: 1, EndTimeUnixNano: 2,
 			},
 			"LogRecord": &logsv1.LogRecord{
-				TimeUnixNano: 1000, SeverityNumber: logsv1.SEVERITY_NUMBER_ERROR,
+				TimeUnixNano: 1000, SeverityNumber: logsv1.SeverityNumber_SEVERITY_NUMBER_ERROR,
 				Body: commonv1.AnyValue{Value: &commonv1.AnyValue_StringValue{StringValue: "msg"}},
 			},
 			"HistogramDataPoint": &metricsv1.HistogramDataPoint{

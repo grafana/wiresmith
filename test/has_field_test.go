@@ -151,7 +151,7 @@ func TestHasField_PartialScalars(t *testing.T) {
 }
 
 func TestHasField_EnumPresent(t *testing.T) {
-	msg := &ks.WithEnum{Color: ks.COLOR_BLUE}
+	msg := &ks.WithEnum{Color: ks.Color_COLOR_BLUE}
 	b, err := msg.Marshal()
 	require.NoError(t, err)
 
