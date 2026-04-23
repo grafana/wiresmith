@@ -63,7 +63,7 @@ func TestSpanRoundTrip(t *testing.T) {
 		ParentSpanId:      []byte{8, 7, 6, 5, 4, 3, 2, 1},
 		Flags:             0x00000100,
 		Name:              "test-span",
-		Kind:              tracev1.Span_SpanKind_SPAN_KIND_SERVER,
+		Kind:              tracev1.Span_SPAN_KIND_SERVER,
 		StartTimeUnixNano: 1000000000,
 		EndTimeUnixNano:   2000000000,
 		Attributes: []commonv1.KeyValue{
@@ -90,7 +90,7 @@ func TestSpanRoundTrip(t *testing.T) {
 		},
 		DroppedLinksCount: 2,
 		Status: tracev1.Status{
-			Code:    tracev1.Status_StatusCode_STATUS_CODE_OK,
+			Code:    tracev1.Status_STATUS_CODE_OK,
 			Message: "success",
 		},
 	}
@@ -433,7 +433,7 @@ func TestTracesDataFullRoundTrip(t *testing.T) {
 								TraceId:           []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
 								SpanId:            []byte{1, 2, 3, 4, 5, 6, 7, 8},
 								Name:              "op",
-								Kind:              tracev1.Span_SpanKind_SPAN_KIND_INTERNAL,
+								Kind:              tracev1.Span_SPAN_KIND_INTERNAL,
 								StartTimeUnixNano: 100,
 								EndTimeUnixNano:   200,
 							},

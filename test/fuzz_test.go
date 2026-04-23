@@ -745,7 +745,7 @@ func marshaledSeeds() [][]byte {
 						SpanId:            []byte{1, 2, 3, 4, 5, 6, 7, 8},
 						ParentSpanId:      []byte{8, 7, 6, 5, 4, 3, 2, 1},
 						Name:              "op",
-						Kind:              tracev1.Span_SpanKind_SPAN_KIND_SERVER,
+						Kind:              tracev1.Span_SPAN_KIND_SERVER,
 						StartTimeUnixNano: 100,
 						EndTimeUnixNano:   200,
 						Attributes:        []commonv1.KeyValue{strAttr("k", "v"), nestedAttr("n")},
@@ -755,7 +755,7 @@ func marshaledSeeds() [][]byte {
 						Links: []tracev1.Span_Link{
 							{TraceId: []byte{16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1}, SpanId: []byte{8, 7, 6, 5, 4, 3, 2, 1}},
 						},
-						Status: tracev1.Status{Code: tracev1.Status_StatusCode_STATUS_CODE_OK, Message: "ok"},
+						Status: tracev1.Status{Code: tracev1.Status_STATUS_CODE_OK, Message: "ok"},
 					},
 				},
 			}},

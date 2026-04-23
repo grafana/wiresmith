@@ -44,10 +44,10 @@ func (x ForeignEnum) String() string {
 type TestAllTypesProto3_NestedEnum int32
 
 const (
-	TestAllTypesProto3_NestedEnum_FOO TestAllTypesProto3_NestedEnum = 0
-	TestAllTypesProto3_NestedEnum_BAR TestAllTypesProto3_NestedEnum = 1
-	TestAllTypesProto3_NestedEnum_BAZ TestAllTypesProto3_NestedEnum = 2
-	TestAllTypesProto3_NestedEnum_NEG TestAllTypesProto3_NestedEnum = -1
+	TestAllTypesProto3_FOO TestAllTypesProto3_NestedEnum = 0
+	TestAllTypesProto3_BAR TestAllTypesProto3_NestedEnum = 1
+	TestAllTypesProto3_BAZ TestAllTypesProto3_NestedEnum = 2
+	TestAllTypesProto3_NEG TestAllTypesProto3_NestedEnum = -1
 )
 
 var TestAllTypesProto3_NestedEnum_name = map[int32]string{
@@ -74,8 +74,8 @@ func (x TestAllTypesProto3_NestedEnum) String() string {
 type EnumOnlyProto3_Bool int32
 
 const (
-	EnumOnlyProto3_Bool_kFalse EnumOnlyProto3_Bool = 0
-	EnumOnlyProto3_Bool_kTrue  EnumOnlyProto3_Bool = 1
+	EnumOnlyProto3_kFalse EnumOnlyProto3_Bool = 0
+	EnumOnlyProto3_kTrue  EnumOnlyProto3_Bool = 1
 )
 
 var EnumOnlyProto3_Bool_name = map[int32]string{

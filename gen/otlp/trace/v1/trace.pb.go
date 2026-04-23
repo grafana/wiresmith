@@ -72,24 +72,24 @@ type Span_SpanKind int32
 const (
 	// Unspecified. Do NOT use as default.
 	// Implementations MAY assume SpanKind to be INTERNAL when receiving UNSPECIFIED.
-	Span_SpanKind_SPAN_KIND_UNSPECIFIED Span_SpanKind = 0
+	Span_SPAN_KIND_UNSPECIFIED Span_SpanKind = 0
 	// Indicates that the span represents an internal operation within an application,
 	// as opposed to an operation happening at the boundaries. Default value.
-	Span_SpanKind_SPAN_KIND_INTERNAL Span_SpanKind = 1
+	Span_SPAN_KIND_INTERNAL Span_SpanKind = 1
 	// Indicates that the span covers server-side handling of an RPC or other
 	// remote network request.
-	Span_SpanKind_SPAN_KIND_SERVER Span_SpanKind = 2
+	Span_SPAN_KIND_SERVER Span_SpanKind = 2
 	// Indicates that the span describes a request to some remote service.
-	Span_SpanKind_SPAN_KIND_CLIENT Span_SpanKind = 3
+	Span_SPAN_KIND_CLIENT Span_SpanKind = 3
 	// Indicates that the span describes a producer sending a message to a broker.
 	// Unlike CLIENT and SERVER, there is often no direct critical path latency relationship
 	// between producer and consumer spans. A PRODUCER span ends when the message was accepted
 	// by the broker while the logical processing of the message might span a much longer time.
-	Span_SpanKind_SPAN_KIND_PRODUCER Span_SpanKind = 4
+	Span_SPAN_KIND_PRODUCER Span_SpanKind = 4
 	// Indicates that the span describes consumer receiving a message from a broker.
 	// Like the PRODUCER kind, there is often no direct critical path latency relationship
 	// between producer and consumer spans.
-	Span_SpanKind_SPAN_KIND_CONSUMER Span_SpanKind = 5
+	Span_SPAN_KIND_CONSUMER Span_SpanKind = 5
 )
 
 var Span_SpanKind_name = map[int32]string{
@@ -123,12 +123,12 @@ type Status_StatusCode int32
 
 const (
 	// The default status.
-	Status_StatusCode_STATUS_CODE_UNSET Status_StatusCode = 0
+	Status_STATUS_CODE_UNSET Status_StatusCode = 0
 	// The Span has been validated by an Application developer or Operator to
 	// have completed successfully.
-	Status_StatusCode_STATUS_CODE_OK Status_StatusCode = 1
+	Status_STATUS_CODE_OK Status_StatusCode = 1
 	// The Span contains an error.
-	Status_StatusCode_STATUS_CODE_ERROR Status_StatusCode = 2
+	Status_STATUS_CODE_ERROR Status_StatusCode = 2
 )
 
 var Status_StatusCode_name = map[int32]string{

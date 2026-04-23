@@ -93,14 +93,14 @@ func TestPdataTracesRoundTrip(t *testing.T) {
 
 	s := ours.ResourceSpans[0].ScopeSpans[0].Spans[0]
 	assert.Equal(t, "pdata-span", s.Name)
-	assert.Equal(t, tracev1.Span_SpanKind_SPAN_KIND_CLIENT, s.Kind)
+	assert.Equal(t, tracev1.Span_SPAN_KIND_CLIENT, s.Kind)
 	assert.Equal(t, uint64(1700000000000000000), s.StartTimeUnixNano)
 	assert.Equal(t, uint64(1700000001000000000), s.EndTimeUnixNano)
 	assert.Len(t, s.Attributes, 4)
 	assert.Len(t, s.Events, 1)
 	assert.Equal(t, "exception", s.Events[0].Name)
 	assert.Len(t, s.Links, 1)
-	assert.Equal(t, tracev1.Status_StatusCode_STATUS_CODE_ERROR, s.Status.Code)
+	assert.Equal(t, tracev1.Status_STATUS_CODE_ERROR, s.Status.Code)
 	assert.Equal(t, "deadline exceeded", s.Status.Message)
 
 	// Re-marshal with our code

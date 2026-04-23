@@ -59,10 +59,10 @@ func TestMarshalToSizedBuffer(t *testing.T) {
 			"Span": &tracev1.Span{
 				TraceId: []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
 				SpanId:  []byte{1, 2, 3, 4, 5, 6, 7, 8}, Name: "test",
-				Kind: tracev1.Span_SpanKind_SPAN_KIND_SERVER, StartTimeUnixNano: 1000, EndTimeUnixNano: 2000,
+				Kind: tracev1.Span_SPAN_KIND_SERVER, StartTimeUnixNano: 1000, EndTimeUnixNano: 2000,
 				Events: []tracev1.Span_Event{{TimeUnixNano: 1500, Name: "ev"}},
 				Links:  []tracev1.Span_Link{{TraceId: make([]byte, 16), SpanId: make([]byte, 8)}},
-				Status: tracev1.Status{Code: tracev1.Status_StatusCode_STATUS_CODE_OK, Message: "ok"},
+				Status: tracev1.Status{Code: tracev1.Status_STATUS_CODE_OK, Message: "ok"},
 			},
 			"LogRecord": &logsv1.LogRecord{
 				TimeUnixNano: 1000, SeverityNumber: logsv1.SeverityNumber_SEVERITY_NUMBER_ERROR, SeverityText: "ERROR",
@@ -184,9 +184,9 @@ func TestLittleFuzz(t *testing.T) {
 		"Span": &tracev1.Span{
 			TraceId: []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
 			SpanId:  []byte{1, 2, 3, 4, 5, 6, 7, 8}, Name: "test",
-			Kind: tracev1.Span_SpanKind_SPAN_KIND_SERVER, StartTimeUnixNano: 1000, EndTimeUnixNano: 2000,
+			Kind: tracev1.Span_SPAN_KIND_SERVER, StartTimeUnixNano: 1000, EndTimeUnixNano: 2000,
 			Events: []tracev1.Span_Event{{TimeUnixNano: 1500, Name: "ev"}},
-			Status: tracev1.Status{Code: tracev1.Status_StatusCode_STATUS_CODE_OK},
+			Status: tracev1.Status{Code: tracev1.Status_STATUS_CODE_OK},
 		},
 		"LogRecord": &logsv1.LogRecord{
 			TimeUnixNano: 1000, SeverityNumber: logsv1.SeverityNumber_SEVERITY_NUMBER_ERROR,
@@ -752,7 +752,7 @@ func TestNonCanonicalFieldOrder(t *testing.T) {
 
 		// Kind (field 6) second
 		wire = protowire.AppendTag(wire, 6, protowire.VarintType)
-		wire = protowire.AppendVarint(wire, uint64(tracev1.Span_SpanKind_SPAN_KIND_SERVER))
+		wire = protowire.AppendVarint(wire, uint64(tracev1.Span_SPAN_KIND_SERVER))
 
 		// Name (field 5) third
 		wire = protowire.AppendTag(wire, 5, protowire.BytesType)
@@ -765,8 +765,8 @@ func TestNonCanonicalFieldOrder(t *testing.T) {
 		var s tracev1.Span
 		require.NoError(t, s.Unmarshal(wire))
 		assert.Equal(t, "reverse", s.Name)
-		assert.Equal(t, tracev1.Span_SpanKind_SPAN_KIND_SERVER, s.Kind)
-		assert.Equal(t, tracev1.Status_StatusCode_STATUS_CODE_OK, s.Status.Code)
+		assert.Equal(t, tracev1.Span_SPAN_KIND_SERVER, s.Kind)
+		assert.Equal(t, tracev1.Status_STATUS_CODE_OK, s.Status.Code)
 	})
 
 	t.Run("HistogramDataPoint_InterleavedKnownAndUnknown", func(t *testing.T) {

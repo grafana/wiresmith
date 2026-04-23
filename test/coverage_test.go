@@ -457,7 +457,7 @@ func TestUnknownFieldsSkippedAllTypes(t *testing.T) {
 	})
 
 	t.Run("Status", func(t *testing.T) {
-		st := tracev1.Status{Message: "ok", Code: tracev1.Status_StatusCode_STATUS_CODE_OK}
+		st := tracev1.Status{Message: "ok", Code: tracev1.Status_STATUS_CODE_OK}
 		b, err := st.Marshal()
 		require.NoError(t, err)
 		b = append(b, buildUnknownFields()...)
@@ -634,14 +634,14 @@ func TestChildTypeMarshalRoundTrip(t *testing.T) {
 	})
 
 	t.Run("Status", func(t *testing.T) {
-		st := tracev1.Status{Message: "cancelled", Code: tracev1.Status_StatusCode_STATUS_CODE_ERROR}
+		st := tracev1.Status{Message: "cancelled", Code: tracev1.Status_STATUS_CODE_ERROR}
 		b, err := st.Marshal()
 		require.NoError(t, err)
 
 		var decoded tracev1.Status
 		require.NoError(t, decoded.Unmarshal(b))
 		assert.Equal(t, "cancelled", decoded.Message)
-		assert.Equal(t, tracev1.Status_StatusCode_STATUS_CODE_ERROR, decoded.Code)
+		assert.Equal(t, tracev1.Status_STATUS_CODE_ERROR, decoded.Code)
 	})
 
 	t.Run("ResourceLogs", func(t *testing.T) {
