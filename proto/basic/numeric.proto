@@ -1,0 +1,113 @@
+syntax = "proto3";
+
+package basic.numeric.v1;
+
+option go_package = "wiresmith/gen/basic/numeric/v1";
+
+// Unpacked repeated scalars — all packable types with [packed = false].
+// Exercises the non-packed wire format (individual tag+value per element).
+message UnpackedScalars {
+  repeated double   field_double   = 1  [packed = false];
+  repeated float    field_float    = 2  [packed = false];
+  repeated int32    field_int32    = 3  [packed = false];
+  repeated int64    field_int64    = 4  [packed = false];
+  repeated uint32   field_uint32   = 5  [packed = false];
+  repeated uint64   field_uint64   = 6  [packed = false];
+  repeated sint32   field_sint32   = 7  [packed = false];
+  repeated sint64   field_sint64   = 8  [packed = false];
+  repeated fixed32  field_fixed32  = 9  [packed = false];
+  repeated fixed64  field_fixed64  = 10 [packed = false];
+  repeated sfixed32 field_sfixed32 = 11 [packed = false];
+  repeated sfixed64 field_sfixed64 = 12 [packed = false];
+  repeated bool     field_bool     = 13 [packed = false];
+}
+
+// Mixed modifiers — regular, optional, and repeated of the same type in one message.
+message MixedModifiers {
+  int64           regular_int     = 1;
+  optional int64  optional_int    = 2;
+  repeated int64  repeated_int    = 3;
+  double          regular_double  = 4;
+  optional double optional_double = 5;
+  repeated double repeated_double = 6;
+  string          regular_string  = 7;
+  optional string optional_string = 8;
+  repeated string repeated_string = 9;
+  bytes           regular_bytes   = 10;
+  optional bytes  optional_bytes  = 11;
+  repeated bytes  repeated_bytes  = 12;
+}
+
+// 70 singular fields to force fieldsPresent [2]uint64 (bitmap word boundary at 64).
+message WideFields {
+  string f1  = 1;
+  string f2  = 2;
+  string f3  = 3;
+  string f4  = 4;
+  string f5  = 5;
+  string f6  = 6;
+  string f7  = 7;
+  string f8  = 8;
+  string f9  = 9;
+  string f10 = 10;
+  string f11 = 11;
+  string f12 = 12;
+  string f13 = 13;
+  string f14 = 14;
+  string f15 = 15;
+  string f16 = 16;
+  string f17 = 17;
+  string f18 = 18;
+  string f19 = 19;
+  string f20 = 20;
+  int32  f21 = 21;
+  int32  f22 = 22;
+  int32  f23 = 23;
+  int32  f24 = 24;
+  int32  f25 = 25;
+  int32  f26 = 26;
+  int32  f27 = 27;
+  int32  f28 = 28;
+  int32  f29 = 29;
+  int32  f30 = 30;
+  int32  f31 = 31;
+  int32  f32 = 32;
+  int32  f33 = 33;
+  int32  f34 = 34;
+  int32  f35 = 35;
+  int32  f36 = 36;
+  int32  f37 = 37;
+  int32  f38 = 38;
+  int32  f39 = 39;
+  int32  f40 = 40;
+  int64  f41 = 41;
+  int64  f42 = 42;
+  int64  f43 = 43;
+  int64  f44 = 44;
+  int64  f45 = 45;
+  int64  f46 = 46;
+  int64  f47 = 47;
+  int64  f48 = 48;
+  int64  f49 = 49;
+  int64  f50 = 50;
+  double f51 = 51;
+  double f52 = 52;
+  double f53 = 53;
+  double f54 = 54;
+  double f55 = 55;
+  double f56 = 56;
+  double f57 = 57;
+  double f58 = 58;
+  double f59 = 59;
+  double f60 = 60;
+  bool   f61 = 61;
+  bool   f62 = 62;
+  bool   f63 = 63;
+  bool   f64 = 64;
+  bool   f65 = 65;
+  bool   f66 = 66;
+  bool   f67 = 67;
+  bool   f68 = 68;
+  bool   f69 = 69;
+  bool   f70 = 70;
+}

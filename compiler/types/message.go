@@ -17,9 +17,10 @@ func (MessageType) FixedSize() int            { return 0 }
 func (MessageType) SizeByIndex() bool         { return true }
 func (MessageType) RequiredImports() []string { return nil }
 
-// OptionalAccess should not be called because message fields don't use HasOptionalKeyword.
+// OptionalAccess dereferences a *MessageType pointer for use by OptionalField's
+// size/marshal helpers. Parenthesized to avoid precedence issues with method calls.
 func (MessageType) OptionalAccess(access string) string {
-	panic("OptionalAccess called on message type")
+	return "(*" + access + ")"
 }
 
 func (MessageType) VarintSizeExpr(access string) string {

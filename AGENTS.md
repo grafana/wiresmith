@@ -7,12 +7,13 @@ Custom protobuf compiler that generates high-performance Go code from OpenTeleme
 - `proto/` - All .proto source files, organized by purpose:
   - `otlp/` - OpenTelemetry protos (common, resource, metrics, trace, logs, profiles)
   - `test/` - Test protos (kitchen_sink)
-  - `bench/` - Benchmark protos (maps)
+  - `basic/` - Basic type coverage protos (maps, numeric, enum, oneof, nesting, recursive)
   - `conformance/` - Conformance protos (protocol envelope + test messages)
 - `compiler/generator/` - Code generator: reads proto descriptors via `bufbuild/protocompile`, emits Go structs + marshal/unmarshal/size methods
 - `compiler/types/` - Per-kind type dispatch for code emission, see [compiler/types/AGENTS.md](compiler/types/AGENTS.md)
 - `cmd/wiresmith/` - CLI entry point
 - `gen/otlp/` - Generated Go packages (one per proto file)
+- `gen/basic/` - Generated Go packages for basic type coverage protos
 - `gen/vtpb/` - vtproto-generated code for benchmark comparison
 - `gen/gogopb/` - gogoproto-generated code for benchmark comparison
 - `gen/protohelpers/` - Shared reverse-write encoding helpers (based on vtprotobuf's protohelpers, Apache 2.0)
@@ -44,7 +45,7 @@ All commands are available via `make`:
 
 ## Design decisions
 
-- **Value-type struct fields**: Message fields are value types (`Resource Resource`, not `*Resource`). Only `optional` proto3 fields use pointers (`*float64`).
+- **Value-type struct fields**: Message fields are value types (`Resource Resource`, not `*Resource`). `optional` proto3 fields use pointers (`*float64`, `*MessageType`). This enables recursive message definitions via `optional` self-references.
 - **Reverse-write marshaling**: `MarshalToSizedBuffer` writes from the end of the buffer backwards, eliminating double size computation for nested messages. Based on the same technique vtprotobuf uses.
 - **Pre-computed tag bytes**: Tag bytes are computed at codegen time and emitted as byte literals (`dAtA[i] = 0x0a`).
 - **Packed repeated scalars**: Repeated numeric fields use packed encoding (proto3 default). Unmarshal handles both packed and unpacked for compatibility.

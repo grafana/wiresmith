@@ -55,7 +55,7 @@ jobs:
       - run: git add gen/ test/conformance/internal/conformancepb/ --intent-to-add
       - name: Check generated code is up to date
         run: |
-          if ! git diff --exit-code gen/otlp/ gen/test/ gen/bench/maps/ gen/bench/official/ gen/protobuf_test_messages/ test/conformance/internal/conformancepb/; then
+          if ! git diff --exit-code gen/otlp/ gen/test/ gen/basic/ gen/bench/official/ gen/protobuf_test_messages/ test/conformance/internal/conformancepb/; then
             echo "::error::Generated code is stale. Run 'make generate-ours' and commit the result."
             exit 1
           fi

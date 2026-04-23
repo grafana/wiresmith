@@ -95,6 +95,10 @@ func (it *ImportTracker) goOptionalType(fd protoreflect.FieldDescriptor) string 
 		return "*float64"
 	case protoreflect.StringKind:
 		return "*string"
+	case protoreflect.EnumKind:
+		return "*" + it.goEnumType(fd.Enum())
+	case protoreflect.MessageKind:
+		return "*" + it.goMessageType(fd.Message())
 	default:
 		return it.goSingularType(fd)
 	}

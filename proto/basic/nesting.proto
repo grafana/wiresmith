@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package basic.nesting.v1;
+
+option go_package = "wiresmith/gen/basic/nesting/v1";
+
+// Four-level inline message definitions.
+message Level0 {
+  message Level1 {
+    message Level2 {
+      message Level3 {
+        string deep_value = 1;
+        int64  depth      = 2;
+      }
+      Level3 child = 1;
+      string value = 2;
+    }
+    Level2          child  = 1;
+    repeated Level2 extras = 2;
+    string          value  = 3;
+  }
+  Level1 child = 1;
+  string label = 2;
+}
+
+// Cross-references to nested types from a top-level message.
+message CrossRef {
+  Level0.Level1.Level2        nested_ref = 1;
+  Level0.Level1.Level2.Level3 deep_ref   = 2;
+  string                      tag        = 3;
+}

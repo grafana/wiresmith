@@ -84,7 +84,7 @@ conformance: ## Run conformance tests (requires Docker)
 	docker run --rm wiresmith-conformance
 
 clean: ## Remove all generated code under gen/
-	rm -rf gen/otlp gen/vtpb gen/gogopb gen/protobuf_test_messages gen/test gen/bench
+	rm -rf gen/otlp gen/vtpb gen/gogopb gen/protobuf_test_messages gen/test gen/basic gen/bench
 
 # ── Generate targets ─────────────────────────────────────────────────────────
 
@@ -109,8 +109,8 @@ generate-ours: ## Regenerate all wiresmith + conformance code
 	$(WIRESMITH) --proto_path=proto/otlp --out=gen --module=$(MODULE)
 	@echo "==> Generating wiresmith code → gen/test/kitchensink/"
 	$(WIRESMITH) --proto_path=proto/test --out=gen --module=$(MODULE)
-	@echo "==> Generating wiresmith code → gen/bench/maps/"
-	$(WIRESMITH) --proto_path=proto/bench --out=gen --module=$(MODULE)
+	@echo "==> Generating wiresmith code → gen/basic/"
+	$(WIRESMITH) --proto_path=proto/basic --out=gen --module=$(MODULE)
 	@echo "==> Generating wiresmith conformance test messages → gen/protobuf_test_messages/"
 	$(eval CONF_TMP := $(shell mktemp -d))
 	@cp proto/conformance/test_messages_proto3.proto "$(CONF_TMP)/"
@@ -121,10 +121,10 @@ generate-ours: ## Regenerate all wiresmith + conformance code
 		--go_out=. --go_opt=module=$(MODULE) \
 		proto/conformance/conformance.proto
 	@echo "==> Generating official proto bench code → gen/bench/official/"
-	protoc -I proto/bench \
+	protoc -I proto/basic \
 		--go_out=. --go_opt=module=$(MODULE) \
 		--go_opt=Mmaps.proto=wiresmith/gen/bench/official \
-		proto/bench/maps.proto
+		proto/basic/maps.proto
 
 generate-vtproto:
 	$(setup_proto_root)
@@ -138,13 +138,13 @@ generate-vtproto:
 		$(ALL_PROTOS)
 	@rm -rf "$(PROTO_ROOT)"
 	@echo "==> Generating vtproto bench code → gen/bench/vtpb/"
-	protoc -I proto/bench \
+	protoc -I proto/basic \
 		--go_out=. --go_opt=module=$(MODULE) \
 		--go_opt=Mmaps.proto=wiresmith/gen/bench/vtpb \
 		--go-vtproto_out=. --go-vtproto_opt=module=$(MODULE) \
 		--go-vtproto_opt=features=marshal+unmarshal+size \
 		--go-vtproto_opt=Mmaps.proto=wiresmith/gen/bench/vtpb \
-		proto/bench/maps.proto
+		proto/basic/maps.proto
 
 generate-gogoproto:
 	$(setup_proto_root)
@@ -165,7 +165,7 @@ generate-gogoproto:
 	@rm -rf gen/gogopb
 	@mv "$(GOGO_OUT)/$(MODULE)/gen/gogopb" gen/gogopb
 	@echo "==> Generating gogoproto bench code → gen/bench/gogopb/"
-	@cp proto/bench/maps.proto "$(GOGO_ROOT)/maps.proto"
+	@cp proto/basic/maps.proto "$(GOGO_ROOT)/maps.proto"
 	@sed -i '' 's|option go_package = .*|option go_package = "$(MODULE)/gen/bench/gogopb";|' "$(GOGO_ROOT)/maps.proto"
 	@protoc -I "$(GOGO_ROOT)" \
 		--gogofast_out=Mmaps.proto=$(MODULE)/gen/bench/gogopb$(comma):"$(GOGO_OUT)" \

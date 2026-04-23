@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package basic.enum.v1;
+
+option go_package = "wiresmith/gen/basic/enum/v1";
+
+// allow_alias: multiple names for the same numeric value.
+enum AliasedPriority {
+  option allow_alias = true;
+  ALIASED_PRIORITY_UNSPECIFIED = 0;
+  ALIASED_PRIORITY_LOW         = 1;
+  ALIASED_PRIORITY_NORMAL      = 2;
+  ALIASED_PRIORITY_DEFAULT     = 2; // alias for NORMAL
+  ALIASED_PRIORITY_HIGH        = 3;
+  ALIASED_PRIORITY_CRITICAL    = 3; // alias for HIGH
+}
+
+// Negative enum values.
+enum SignedEnum {
+  SIGNED_ZERO     = 0;
+  SIGNED_POSITIVE = 1;
+  SIGNED_NEGATIVE = -1;
+}
+
+// Nested enum defined inside a message.
+message WithNestedEnum {
+  enum Priority {
+    PRIORITY_UNSPECIFIED = 0;
+    PRIORITY_LOW         = 1;
+    PRIORITY_MEDIUM      = 2;
+    PRIORITY_HIGH        = 3;
+  }
+  Priority priority            = 1;
+  repeated Priority priorities = 2;
+  string name                  = 3;
+}
+
+// Message using enums in various contexts.
+message EnumContainer {
+  AliasedPriority          aliased           = 1;
+  SignedEnum               signed            = 2;
+  optional SignedEnum      optional_signed   = 3;
+  repeated AliasedPriority repeated_aliased  = 4;
+  map<string, SignedEnum>  signed_map        = 5;
+}

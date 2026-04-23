@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package bench.maps.v1;
+package basic.maps.v1;
 
-option go_package = "wiresmith/gen/bench/maps/v1";
+option go_package = "wiresmith/gen/basic/maps/v1";
 
 message MapBench {
   map<string, string> string_map  = 1;

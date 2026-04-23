@@ -93,6 +93,12 @@ func (fg *FileGenerator) emitFieldEqual(fd protoreflect.FieldDescriptor, goName 
 			fmt.Fprintf(fg.body, "\tif !bytes.Equal(this.%s, that1.%s) {\n\t\treturn false\n\t}\n", goName, goName)
 			return
 		}
+		// optional message: nil checks + deep Equal.
+		if fd.Kind() == protoreflect.MessageKind {
+			fmt.Fprintf(fg.body, "\tif (this.%s == nil) != (that1.%s == nil) {\n\t\treturn false\n\t}\n", goName, goName)
+			fmt.Fprintf(fg.body, "\tif this.%s != nil && !this.%s.Equal(that1.%s) {\n\t\treturn false\n\t}\n", goName, goName, goName)
+			return
+		}
 		fg.emitOptionalFieldEqual(fd, goName)
 		return
 	}
