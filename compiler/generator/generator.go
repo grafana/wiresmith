@@ -29,6 +29,12 @@ type FileGenerator struct {
 	module  string
 	imports *ImportTracker
 	body    *bytes.Buffer
+
+	// fileVarName is a sanitized proto file path used as prefix for
+	// file-level variables (descriptor, MessageInfo/EnumInfo arrays).
+	fileVarName   string
+	nextMsgIndex  int
+	nextEnumIndex int
 }
 
 // Emitter interface implementation for FileGenerator.
@@ -90,10 +96,11 @@ func (g *Generator) Generate(ctx context.Context) error {
 
 func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 	fg := &FileGenerator{
-		fd:      fd,
-		module:  g.Module,
-		imports: newImportTracker(g.Module, string(fd.Package())),
-		body:    &bytes.Buffer{},
+		fd:          fd,
+		module:      g.Module,
+		imports:     newImportTracker(g.Module, string(fd.Package())),
+		body:        &bytes.Buffer{},
+		fileVarName: sanitizeFileVarName(fd.Path()),
 	}
 
 	fg.emitAllEnums(fd)
@@ -106,6 +113,7 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 	fg.emitAllMarshalMethods(fd)
 	fg.emitAllUnmarshalMethods(fd)
 	fg.emitAllEqualMethods(fd)
+	fg.emitAllProtoReflectMethods(fd)
 	fg.emitRegistration(fd)
 
 	var out bytes.Buffer

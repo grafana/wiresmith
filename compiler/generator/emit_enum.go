@@ -54,4 +54,24 @@ func (fg *FileGenerator) emitEnum(ed protoreflect.EnumDescriptor) {
 	fmt.Fprintf(fg.body, "\treturn strconv.FormatInt(int64(x), 10)\n")
 	fmt.Fprintf(fg.body, "}\n\n")
 	fg.imports.addImport("strconv", "")
+
+	// protoreflect.Enum methods
+	idx := fg.nextEnumIndex
+	fg.nextEnumIndex++
+
+	fmt.Fprintf(fg.body, "func (x %s) Descriptor() protoreflect.EnumDescriptor {\n", typeName)
+	fmt.Fprintf(fg.body, "\t%s_init()\n", fg.fileVarName)
+	fmt.Fprintf(fg.body, "\treturn %s_enumTypes[%d].Desc\n", fg.fileVarName, idx)
+	fmt.Fprintf(fg.body, "}\n\n")
+
+	fmt.Fprintf(fg.body, "func (x %s) Type() protoreflect.EnumType {\n", typeName)
+	fmt.Fprintf(fg.body, "\t%s_init()\n", fg.fileVarName)
+	fmt.Fprintf(fg.body, "\treturn &%s_enumTypes[%d]\n", fg.fileVarName, idx)
+	fmt.Fprintf(fg.body, "}\n\n")
+
+	fmt.Fprintf(fg.body, "func (x %s) Number() protoreflect.EnumNumber {\n", typeName)
+	fmt.Fprintf(fg.body, "\treturn protoreflect.EnumNumber(x)\n")
+	fmt.Fprintf(fg.body, "}\n\n")
+
+	fg.imports.addImport("google.golang.org/protobuf/reflect/protoreflect", "")
 }

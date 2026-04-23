@@ -38,10 +38,10 @@ build: ## Build all packages
 	go build ./...
 
 test: ## Run correctness tests
-	go test ./test/ -v
+	GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn go test ./test/ -v
 
 coverage: ## Run tests with coverage report
-	go test ./test/ ./compiler/... -coverprofile=coverage.out
+	GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn go test ./test/ ./compiler/... -coverprofile=coverage.out
 	go tool cover -func=coverage.out
 	@echo ""
 	@echo "HTML report: go tool cover -html=coverage.out"
