@@ -79,7 +79,7 @@ func goEnumTypeName(ed protoreflect.EnumDescriptor) string {
 func goEnumValuePrefix(ed protoreflect.EnumDescriptor) string {
 	pm, ok := ed.Parent().(protoreflect.MessageDescriptor)
 	if !ok {
-		return string(ed.Name())
+		return goEnumTypeName(ed)
 	}
 	return goMessageTypeName(pm)
 }
