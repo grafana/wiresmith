@@ -15,12 +15,12 @@ import (
 type AliasedPriority int32
 
 const (
-	ALIASED_PRIORITY_UNSPECIFIED AliasedPriority = 0
-	ALIASED_PRIORITY_LOW         AliasedPriority = 1
-	ALIASED_PRIORITY_NORMAL      AliasedPriority = 2
-	ALIASED_PRIORITY_DEFAULT     AliasedPriority = 2
-	ALIASED_PRIORITY_HIGH        AliasedPriority = 3
-	ALIASED_PRIORITY_CRITICAL    AliasedPriority = 3
+	AliasedPriority_ALIASED_PRIORITY_UNSPECIFIED AliasedPriority = 0
+	AliasedPriority_ALIASED_PRIORITY_LOW         AliasedPriority = 1
+	AliasedPriority_ALIASED_PRIORITY_NORMAL      AliasedPriority = 2
+	AliasedPriority_ALIASED_PRIORITY_DEFAULT     AliasedPriority = 2
+	AliasedPriority_ALIASED_PRIORITY_HIGH        AliasedPriority = 3
+	AliasedPriority_ALIASED_PRIORITY_CRITICAL    AliasedPriority = 3
 )
 
 var AliasedPriority_name = map[int32]string{
@@ -50,9 +50,9 @@ func (x AliasedPriority) String() string {
 type SignedEnum int32
 
 const (
-	SIGNED_ZERO     SignedEnum = 0
-	SIGNED_POSITIVE SignedEnum = 1
-	SIGNED_NEGATIVE SignedEnum = -1
+	SignedEnum_SIGNED_ZERO     SignedEnum = 0
+	SignedEnum_SIGNED_POSITIVE SignedEnum = 1
+	SignedEnum_SIGNED_NEGATIVE SignedEnum = -1
 )
 
 var SignedEnum_name = map[int32]string{
@@ -77,10 +77,10 @@ func (x SignedEnum) String() string {
 type WithNestedEnum_Priority int32
 
 const (
-	PRIORITY_UNSPECIFIED WithNestedEnum_Priority = 0
-	PRIORITY_LOW         WithNestedEnum_Priority = 1
-	PRIORITY_MEDIUM      WithNestedEnum_Priority = 2
-	PRIORITY_HIGH        WithNestedEnum_Priority = 3
+	WithNestedEnum_PRIORITY_UNSPECIFIED WithNestedEnum_Priority = 0
+	WithNestedEnum_PRIORITY_LOW         WithNestedEnum_Priority = 1
+	WithNestedEnum_PRIORITY_MEDIUM      WithNestedEnum_Priority = 2
+	WithNestedEnum_PRIORITY_HIGH        WithNestedEnum_Priority = 3
 )
 
 var WithNestedEnum_Priority_name = map[int32]string{

@@ -52,7 +52,7 @@ func TestOneofWithTypes_MessageVariant(t *testing.T) {
 
 func TestOneofWithTypes_EnumVariant(t *testing.T) {
 	msg := &oopb.OneofWithTypes{
-		Value: &oopb.OneofWithTypes_EnumVal{EnumVal: oopb.SHAPE_TRIANGLE},
+		Value: &oopb.OneofWithTypes_EnumVal{EnumVal: oopb.Shape_SHAPE_TRIANGLE},
 	}
 	roundTrip(t, msg)
 }

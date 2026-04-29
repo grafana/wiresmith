@@ -17,10 +17,10 @@ import (
 type Shape int32
 
 const (
-	SHAPE_UNSPECIFIED Shape = 0
-	SHAPE_CIRCLE      Shape = 1
-	SHAPE_SQUARE      Shape = 2
-	SHAPE_TRIANGLE    Shape = 3
+	Shape_SHAPE_UNSPECIFIED Shape = 0
+	Shape_SHAPE_CIRCLE      Shape = 1
+	Shape_SHAPE_SQUARE      Shape = 2
+	Shape_SHAPE_TRIANGLE    Shape = 3
 )
 
 var Shape_name = map[int32]string{

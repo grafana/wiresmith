@@ -27,11 +27,11 @@ func TestSignedEnum_NegativeValue(t *testing.T) {
 
 func TestWithNestedEnum_RoundTrip(t *testing.T) {
 	msg := &enumpb.WithNestedEnum{
-		Priority: enumpb.PRIORITY_HIGH,
+		Priority: enumpb.WithNestedEnum_PRIORITY_HIGH,
 		Priorities: []enumpb.WithNestedEnum_Priority{
-			enumpb.PRIORITY_LOW,
-			enumpb.PRIORITY_MEDIUM,
-			enumpb.PRIORITY_HIGH,
+			enumpb.WithNestedEnum_PRIORITY_LOW,
+			enumpb.WithNestedEnum_PRIORITY_MEDIUM,
+			enumpb.WithNestedEnum_PRIORITY_HIGH,
 		},
 		Name: "test",
 	}
@@ -39,18 +39,18 @@ func TestWithNestedEnum_RoundTrip(t *testing.T) {
 }
 
 func TestEnumContainer_FullyPopulated(t *testing.T) {
-	optSigned := enumpb.SIGNED_NEGATIVE
+	optSigned := enumpb.SignedEnum_SIGNED_NEGATIVE
 	msg := &enumpb.EnumContainer{
-		Aliased:        enumpb.ALIASED_PRIORITY_DEFAULT,
-		Signed:         enumpb.SIGNED_NEGATIVE,
+		Aliased:        enumpb.AliasedPriority_ALIASED_PRIORITY_DEFAULT,
+		Signed:         enumpb.SignedEnum_SIGNED_NEGATIVE,
 		OptionalSigned: &optSigned,
 		RepeatedAliased: []enumpb.AliasedPriority{
-			enumpb.ALIASED_PRIORITY_LOW,
-			enumpb.ALIASED_PRIORITY_CRITICAL,
+			enumpb.AliasedPriority_ALIASED_PRIORITY_LOW,
+			enumpb.AliasedPriority_ALIASED_PRIORITY_CRITICAL,
 		},
 		SignedMap: map[string]enumpb.SignedEnum{
-			"pos": enumpb.SIGNED_POSITIVE,
-			"neg": enumpb.SIGNED_NEGATIVE,
+			"pos": enumpb.SignedEnum_SIGNED_POSITIVE,
+			"neg": enumpb.SignedEnum_SIGNED_NEGATIVE,
 		},
 	}
 	mapRoundTrip(t, msg)
@@ -58,7 +58,7 @@ func TestEnumContainer_FullyPopulated(t *testing.T) {
 
 func TestEnumContainer_NilOptional(t *testing.T) {
 	msg := &enumpb.EnumContainer{
-		Signed: enumpb.SIGNED_POSITIVE,
+		Signed: enumpb.SignedEnum_SIGNED_POSITIVE,
 	}
 	roundTrip(t, msg)
 }
