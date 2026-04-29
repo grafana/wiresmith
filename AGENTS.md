@@ -110,3 +110,21 @@ The generator smoke test (`TestGenerateMatchesCheckedIn`) only checks files that
 ## Known issues
 
 - `go test ./...` panics in `bench/` with `proto: file "maps.proto" is already registered` due to conflicting proto registrations between `gen/bench/official`, `gen/bench/vtpb`, and `gen/bench/gogopb`. Use `go test ./test/... ./compiler/...` to run tests without the bench package, or `GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn go test ./bench/` to run benchmarks.
+
+## Rejected approaches
+
+Approaches that were investigated and deliberately not adopted. Documented to save future contributors from re-discovering the same dead ends.
+
+### `//go:fix inline` for hot-path helpers
+
+**Idea:** Have the generator emit calls to small helpers (`EncodeVarint`, `ConsumeVarint`, `ConsumeFixed32`, etc.) marked `//go:fix inline`, then run `go fix -inline ./...` as a codegen post-process step. Generator stays simple (single helper call per emit site); committed `.pb.go` ends up with the helper bodies inlined; we keep today's manual-inline performance.
+
+**Why it doesn't work:** Go's `inline` analyzer (Go 1.26, both `go fix -inline` and the standalone `golang.org/x/tools/go/analysis/passes/inline/cmd/inline` tool) only applies a fix when the call can be **reduced to an expression**. Multi-statement bodies — loops, early-return error paths, slice mutations — would require *literalization* (wrapping the body in `func(){...}()`), which the analyzer "discards unconditionally, on grounds of style" (per `go tool fix help inline`). The diagnostic still fires (`Call of X should be inlined [inline_call]`), but no source rewrite happens.
+
+For wiresmith specifically:
+
+- `protohelpers.EncodeVarint` has a `for` loop and slice writes → not inlined despite the directive. Confirmed: `go fix -inline ./gen/...` left every call site untouched.
+- `protohelpers.SizeOfVarint` is single-expression and *is* inlinable, but the generator already emits its body inline (`(bits.Len64(x|1)+6)/7`) so there are no call sites to fix in `gen/otlp/`, `gen/test/`, or `gen/protobuf_test_messages/`.
+- The proposed unmarshal-side helpers (`ConsumeVarint`, `ConsumeBytesLen`, `ConsumeFixed32`, `ConsumeFixed64`, `ConsumeTag`) all have loops and/or `return 0, 0, err` early-return paths → not inlinable. Extracting them would convert today's inlined unmarshal hot path into uninlined function calls, regressing the 25-28% speedup from commit `594501d` ("perf: inline varint/fixed decoding").
+
+**When this could become viable:** if the Go inliner gains the ability to apply non-literalized rewrites for multi-statement bodies at statement-level call sites (i.e. expand the body inline as a labeled block instead of refusing). Tracking issue: <https://github.com/golang/go/issues/32816> (the original `//go:fix inline` proposal). Until then, wiresmith's "emit the loop directly" approach in `compiler/types/type.go:114-196` and `compiler/generator/emit_unmarshal.go` is the only way to keep these paths inlined.
