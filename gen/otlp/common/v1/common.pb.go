@@ -2426,32 +2426,32 @@ func (this *EntityRef) Equal(that interface{}) bool {
 
 func (x *AnyValue) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_common_v1_common_proto_init()
-	return file_opentelemetry_proto_common_v1_common_proto_msgTypes[0].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_common_v1_common_proto_msgTypes[0], x)
 }
 
 func (x *ArrayValue) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_common_v1_common_proto_init()
-	return file_opentelemetry_proto_common_v1_common_proto_msgTypes[1].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_common_v1_common_proto_msgTypes[1], x)
 }
 
 func (x *KeyValueList) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_common_v1_common_proto_init()
-	return file_opentelemetry_proto_common_v1_common_proto_msgTypes[2].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_common_v1_common_proto_msgTypes[2], x)
 }
 
 func (x *KeyValue) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_common_v1_common_proto_init()
-	return file_opentelemetry_proto_common_v1_common_proto_msgTypes[3].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_common_v1_common_proto_msgTypes[3], x)
 }
 
 func (x *InstrumentationScope) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_common_v1_common_proto_init()
-	return file_opentelemetry_proto_common_v1_common_proto_msgTypes[4].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_common_v1_common_proto_msgTypes[4], x)
 }
 
 func (x *EntityRef) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_common_v1_common_proto_init()
-	return file_opentelemetry_proto_common_v1_common_proto_msgTypes[5].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_common_v1_common_proto_msgTypes[5], x)
 }
 
 const file_opentelemetry_proto_common_v1_common_proto_rawDesc = "" +

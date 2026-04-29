@@ -3753,37 +3753,37 @@ func (this *Status) Equal(that interface{}) bool {
 
 func (x *TracesData) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_trace_v1_trace_proto_init()
-	return file_opentelemetry_proto_trace_v1_trace_proto_msgTypes[0].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_trace_v1_trace_proto_msgTypes[0], x)
 }
 
 func (x *ResourceSpans) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_trace_v1_trace_proto_init()
-	return file_opentelemetry_proto_trace_v1_trace_proto_msgTypes[1].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_trace_v1_trace_proto_msgTypes[1], x)
 }
 
 func (x *ScopeSpans) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_trace_v1_trace_proto_init()
-	return file_opentelemetry_proto_trace_v1_trace_proto_msgTypes[2].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_trace_v1_trace_proto_msgTypes[2], x)
 }
 
 func (x *Span_Event) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_trace_v1_trace_proto_init()
-	return file_opentelemetry_proto_trace_v1_trace_proto_msgTypes[3].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_trace_v1_trace_proto_msgTypes[3], x)
 }
 
 func (x *Span_Link) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_trace_v1_trace_proto_init()
-	return file_opentelemetry_proto_trace_v1_trace_proto_msgTypes[4].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_trace_v1_trace_proto_msgTypes[4], x)
 }
 
 func (x *Span) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_trace_v1_trace_proto_init()
-	return file_opentelemetry_proto_trace_v1_trace_proto_msgTypes[5].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_trace_v1_trace_proto_msgTypes[5], x)
 }
 
 func (x *Status) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_trace_v1_trace_proto_init()
-	return file_opentelemetry_proto_trace_v1_trace_proto_msgTypes[6].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_trace_v1_trace_proto_msgTypes[6], x)
 }
 
 const file_opentelemetry_proto_trace_v1_trace_proto_rawDesc = "" +

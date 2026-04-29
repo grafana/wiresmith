@@ -5980,72 +5980,72 @@ func (this *KeyValueAndUnit) Equal(that interface{}) bool {
 
 func (x *ProfilesDictionary) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_profiles_v1development_profiles_proto_init()
-	return file_opentelemetry_proto_profiles_v1development_profiles_proto_msgTypes[0].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_profiles_v1development_profiles_proto_msgTypes[0], x)
 }
 
 func (x *ProfilesData) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_profiles_v1development_profiles_proto_init()
-	return file_opentelemetry_proto_profiles_v1development_profiles_proto_msgTypes[1].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_profiles_v1development_profiles_proto_msgTypes[1], x)
 }
 
 func (x *ResourceProfiles) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_profiles_v1development_profiles_proto_init()
-	return file_opentelemetry_proto_profiles_v1development_profiles_proto_msgTypes[2].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_profiles_v1development_profiles_proto_msgTypes[2], x)
 }
 
 func (x *ScopeProfiles) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_profiles_v1development_profiles_proto_init()
-	return file_opentelemetry_proto_profiles_v1development_profiles_proto_msgTypes[3].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_profiles_v1development_profiles_proto_msgTypes[3], x)
 }
 
 func (x *Profile) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_profiles_v1development_profiles_proto_init()
-	return file_opentelemetry_proto_profiles_v1development_profiles_proto_msgTypes[4].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_profiles_v1development_profiles_proto_msgTypes[4], x)
 }
 
 func (x *Link) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_profiles_v1development_profiles_proto_init()
-	return file_opentelemetry_proto_profiles_v1development_profiles_proto_msgTypes[5].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_profiles_v1development_profiles_proto_msgTypes[5], x)
 }
 
 func (x *ValueType) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_profiles_v1development_profiles_proto_init()
-	return file_opentelemetry_proto_profiles_v1development_profiles_proto_msgTypes[6].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_profiles_v1development_profiles_proto_msgTypes[6], x)
 }
 
 func (x *Sample) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_profiles_v1development_profiles_proto_init()
-	return file_opentelemetry_proto_profiles_v1development_profiles_proto_msgTypes[7].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_profiles_v1development_profiles_proto_msgTypes[7], x)
 }
 
 func (x *Mapping) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_profiles_v1development_profiles_proto_init()
-	return file_opentelemetry_proto_profiles_v1development_profiles_proto_msgTypes[8].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_profiles_v1development_profiles_proto_msgTypes[8], x)
 }
 
 func (x *Stack) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_profiles_v1development_profiles_proto_init()
-	return file_opentelemetry_proto_profiles_v1development_profiles_proto_msgTypes[9].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_profiles_v1development_profiles_proto_msgTypes[9], x)
 }
 
 func (x *Location) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_profiles_v1development_profiles_proto_init()
-	return file_opentelemetry_proto_profiles_v1development_profiles_proto_msgTypes[10].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_profiles_v1development_profiles_proto_msgTypes[10], x)
 }
 
 func (x *Line) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_profiles_v1development_profiles_proto_init()
-	return file_opentelemetry_proto_profiles_v1development_profiles_proto_msgTypes[11].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_profiles_v1development_profiles_proto_msgTypes[11], x)
 }
 
 func (x *Function) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_profiles_v1development_profiles_proto_init()
-	return file_opentelemetry_proto_profiles_v1development_profiles_proto_msgTypes[12].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_profiles_v1development_profiles_proto_msgTypes[12], x)
 }
 
 func (x *KeyValueAndUnit) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_profiles_v1development_profiles_proto_init()
-	return file_opentelemetry_proto_profiles_v1development_profiles_proto_msgTypes[13].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_profiles_v1development_profiles_proto_msgTypes[13], x)
 }
 
 const file_opentelemetry_proto_profiles_v1development_profiles_proto_rawDesc = "" +

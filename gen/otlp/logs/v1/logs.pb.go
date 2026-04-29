@@ -2181,22 +2181,22 @@ func (this *LogRecord) Equal(that interface{}) bool {
 
 func (x *LogsData) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_logs_v1_logs_proto_init()
-	return file_opentelemetry_proto_logs_v1_logs_proto_msgTypes[0].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_logs_v1_logs_proto_msgTypes[0], x)
 }
 
 func (x *ResourceLogs) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_logs_v1_logs_proto_init()
-	return file_opentelemetry_proto_logs_v1_logs_proto_msgTypes[1].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_logs_v1_logs_proto_msgTypes[1], x)
 }
 
 func (x *ScopeLogs) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_logs_v1_logs_proto_init()
-	return file_opentelemetry_proto_logs_v1_logs_proto_msgTypes[2].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_logs_v1_logs_proto_msgTypes[2], x)
 }
 
 func (x *LogRecord) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_logs_v1_logs_proto_init()
-	return file_opentelemetry_proto_logs_v1_logs_proto_msgTypes[3].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_logs_v1_logs_proto_msgTypes[3], x)
 }
 
 const file_opentelemetry_proto_logs_v1_logs_proto_rawDesc = "" +

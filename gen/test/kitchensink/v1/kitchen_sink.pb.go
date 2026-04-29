@@ -9999,67 +9999,67 @@ func (this *AllMaps) Equal(that interface{}) bool {
 
 func (x *AllScalars) ProtoReflect() protoreflect.Message {
 	file_test_kitchensink_v1_kitchen_sink_proto_init()
-	return file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[0].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[0], x)
 }
 
 func (x *AllOptionalScalars) ProtoReflect() protoreflect.Message {
 	file_test_kitchensink_v1_kitchen_sink_proto_init()
-	return file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[1].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[1], x)
 }
 
 func (x *AllRepeatedScalars) ProtoReflect() protoreflect.Message {
 	file_test_kitchensink_v1_kitchen_sink_proto_init()
-	return file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[2].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[2], x)
 }
 
 func (x *OneofVariants) ProtoReflect() protoreflect.Message {
 	file_test_kitchensink_v1_kitchen_sink_proto_init()
-	return file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[3].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[3], x)
 }
 
 func (x *Outer) ProtoReflect() protoreflect.Message {
 	file_test_kitchensink_v1_kitchen_sink_proto_init()
-	return file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[4].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[4], x)
 }
 
 func (x *Middle) ProtoReflect() protoreflect.Message {
 	file_test_kitchensink_v1_kitchen_sink_proto_init()
-	return file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[5].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[5], x)
 }
 
 func (x *Inner) ProtoReflect() protoreflect.Message {
 	file_test_kitchensink_v1_kitchen_sink_proto_init()
-	return file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[6].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[6], x)
 }
 
 func (x *HighFieldNumbers) ProtoReflect() protoreflect.Message {
 	file_test_kitchensink_v1_kitchen_sink_proto_init()
-	return file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[7].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[7], x)
 }
 
 func (x *WithEnum) ProtoReflect() protoreflect.Message {
 	file_test_kitchensink_v1_kitchen_sink_proto_init()
-	return file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[8].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[8], x)
 }
 
 func (x *Empty) ProtoReflect() protoreflect.Message {
 	file_test_kitchensink_v1_kitchen_sink_proto_init()
-	return file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[9].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[9], x)
 }
 
 func (x *OnlyRepeated) ProtoReflect() protoreflect.Message {
 	file_test_kitchensink_v1_kitchen_sink_proto_init()
-	return file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[10].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[10], x)
 }
 
 func (x *Container) ProtoReflect() protoreflect.Message {
 	file_test_kitchensink_v1_kitchen_sink_proto_init()
-	return file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[11].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[11], x)
 }
 
 func (x *AllMaps) ProtoReflect() protoreflect.Message {
 	file_test_kitchensink_v1_kitchen_sink_proto_init()
-	return file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[12].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[12], x)
 }
 
 const file_test_kitchensink_v1_kitchen_sink_proto_rawDesc = "" +

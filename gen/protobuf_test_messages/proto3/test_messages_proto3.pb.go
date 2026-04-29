@@ -11394,27 +11394,27 @@ func (this *EnumOnlyProto3) Equal(that interface{}) bool {
 
 func (x *TestAllTypesProto3_NestedMessage) ProtoReflect() protoreflect.Message {
 	file_protobuf_test_messages_proto3_test_messages_proto3_proto_init()
-	return file_protobuf_test_messages_proto3_test_messages_proto3_proto_msgTypes[0].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_protobuf_test_messages_proto3_test_messages_proto3_proto_msgTypes[0], x)
 }
 
 func (x *TestAllTypesProto3) ProtoReflect() protoreflect.Message {
 	file_protobuf_test_messages_proto3_test_messages_proto3_proto_init()
-	return file_protobuf_test_messages_proto3_test_messages_proto3_proto_msgTypes[1].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_protobuf_test_messages_proto3_test_messages_proto3_proto_msgTypes[1], x)
 }
 
 func (x *ForeignMessage) ProtoReflect() protoreflect.Message {
 	file_protobuf_test_messages_proto3_test_messages_proto3_proto_init()
-	return file_protobuf_test_messages_proto3_test_messages_proto3_proto_msgTypes[2].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_protobuf_test_messages_proto3_test_messages_proto3_proto_msgTypes[2], x)
 }
 
 func (x *NullHypothesisProto3) ProtoReflect() protoreflect.Message {
 	file_protobuf_test_messages_proto3_test_messages_proto3_proto_init()
-	return file_protobuf_test_messages_proto3_test_messages_proto3_proto_msgTypes[3].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_protobuf_test_messages_proto3_test_messages_proto3_proto_msgTypes[3], x)
 }
 
 func (x *EnumOnlyProto3) ProtoReflect() protoreflect.Message {
 	file_protobuf_test_messages_proto3_test_messages_proto3_proto_init()
-	return file_protobuf_test_messages_proto3_test_messages_proto3_proto_msgTypes[4].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_protobuf_test_messages_proto3_test_messages_proto3_proto_msgTypes[4], x)
 }
 
 const file_protobuf_test_messages_proto3_test_messages_proto3_proto_rawDesc = "" +

@@ -463,7 +463,7 @@ func (this *Resource) Equal(that interface{}) bool {
 
 func (x *Resource) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_resource_v1_resource_proto_init()
-	return file_opentelemetry_proto_resource_v1_resource_proto_msgTypes[0].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_resource_v1_resource_proto_msgTypes[0], x)
 }
 
 const file_opentelemetry_proto_resource_v1_resource_proto_rawDesc = "" +

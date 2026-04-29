@@ -7735,82 +7735,82 @@ func (this *Exemplar) Equal(that interface{}) bool {
 
 func (x *MetricsData) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_metrics_v1_metrics_proto_init()
-	return file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[0].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[0], x)
 }
 
 func (x *ResourceMetrics) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_metrics_v1_metrics_proto_init()
-	return file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[1].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[1], x)
 }
 
 func (x *ScopeMetrics) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_metrics_v1_metrics_proto_init()
-	return file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[2].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[2], x)
 }
 
 func (x *Metric) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_metrics_v1_metrics_proto_init()
-	return file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[3].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[3], x)
 }
 
 func (x *Gauge) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_metrics_v1_metrics_proto_init()
-	return file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[4].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[4], x)
 }
 
 func (x *Sum) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_metrics_v1_metrics_proto_init()
-	return file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[5].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[5], x)
 }
 
 func (x *Histogram) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_metrics_v1_metrics_proto_init()
-	return file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[6].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[6], x)
 }
 
 func (x *ExponentialHistogram) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_metrics_v1_metrics_proto_init()
-	return file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[7].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[7], x)
 }
 
 func (x *Summary) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_metrics_v1_metrics_proto_init()
-	return file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[8].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[8], x)
 }
 
 func (x *NumberDataPoint) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_metrics_v1_metrics_proto_init()
-	return file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[9].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[9], x)
 }
 
 func (x *HistogramDataPoint) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_metrics_v1_metrics_proto_init()
-	return file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[10].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[10], x)
 }
 
 func (x *ExponentialHistogramDataPoint_Buckets) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_metrics_v1_metrics_proto_init()
-	return file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[11].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[11], x)
 }
 
 func (x *ExponentialHistogramDataPoint) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_metrics_v1_metrics_proto_init()
-	return file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[12].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[12], x)
 }
 
 func (x *SummaryDataPoint_ValueAtQuantile) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_metrics_v1_metrics_proto_init()
-	return file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[13].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[13], x)
 }
 
 func (x *SummaryDataPoint) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_metrics_v1_metrics_proto_init()
-	return file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[14].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[14], x)
 }
 
 func (x *Exemplar) ProtoReflect() protoreflect.Message {
 	file_opentelemetry_proto_metrics_v1_metrics_proto_init()
-	return file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[15].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[15], x)
 }
 
 const file_opentelemetry_proto_metrics_v1_metrics_proto_rawDesc = "" +

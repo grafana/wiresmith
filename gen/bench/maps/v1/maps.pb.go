@@ -1103,12 +1103,12 @@ func (this *Inner) Equal(that interface{}) bool {
 
 func (x *MapBench) ProtoReflect() protoreflect.Message {
 	file_bench_maps_v1_maps_proto_init()
-	return file_bench_maps_v1_maps_proto_msgTypes[0].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_bench_maps_v1_maps_proto_msgTypes[0], x)
 }
 
 func (x *Inner) ProtoReflect() protoreflect.Message {
 	file_bench_maps_v1_maps_proto_init()
-	return file_bench_maps_v1_maps_proto_msgTypes[1].MessageOf(x)
+	return protohelpers.NewMessageReflect(&file_bench_maps_v1_maps_proto_msgTypes[1], x)
 }
 
 const file_bench_maps_v1_maps_proto_rawDesc = "" +
