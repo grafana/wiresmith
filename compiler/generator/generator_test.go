@@ -38,6 +38,7 @@ func TestGeneratorDeterminism(t *testing.T) {
 	}{
 		{"otlp", filepath.Join(root, "proto", "otlp")},
 		{"kitchen_sink", filepath.Join(root, "proto", "test")},
+		{"basic", filepath.Join(root, "proto", "basic")},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			checkDeterminism(t, tc.protoDir, 5)
@@ -150,8 +151,8 @@ func TestGenerateMatchesCheckedIn(t *testing.T) {
 			protoDir: filepath.Join(root, "proto", "test"),
 		},
 		{
-			name:     "bench/maps",
-			protoDir: filepath.Join(root, "proto", "bench"),
+			name:     "basic",
+			protoDir: filepath.Join(root, "proto", "basic"),
 		},
 		{
 			name:     "conformance/test_messages",
