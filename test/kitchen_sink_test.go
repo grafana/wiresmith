@@ -297,8 +297,8 @@ func TestHighFieldNumbers_LargeValues(t *testing.T) {
 
 func TestWithEnum_SingularAndRepeated(t *testing.T) {
 	msg := &ks.WithEnum{
-		Color:  ks.COLOR_BLUE,
-		Colors: []ks.Color{ks.COLOR_RED, ks.COLOR_GREEN, ks.COLOR_BLUE, ks.COLOR_UNSPECIFIED},
+		Color:  ks.Color_COLOR_BLUE,
+		Colors: []ks.Color{ks.Color_COLOR_RED, ks.Color_COLOR_GREEN, ks.Color_COLOR_BLUE, ks.Color_COLOR_UNSPECIFIED},
 	}
 	roundTrip(t, msg)
 }

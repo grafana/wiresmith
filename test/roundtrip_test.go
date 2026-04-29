@@ -63,7 +63,7 @@ func TestSpanRoundTrip(t *testing.T) {
 		ParentSpanId:      []byte{8, 7, 6, 5, 4, 3, 2, 1},
 		Flags:             0x00000100,
 		Name:              "test-span",
-		Kind:              tracev1.SPAN_KIND_SERVER,
+		Kind:              tracev1.Span_SPAN_KIND_SERVER,
 		StartTimeUnixNano: 1000000000,
 		EndTimeUnixNano:   2000000000,
 		Attributes: []commonv1.KeyValue{
@@ -90,7 +90,7 @@ func TestSpanRoundTrip(t *testing.T) {
 		},
 		DroppedLinksCount: 2,
 		Status: tracev1.Status{
-			Code:    tracev1.STATUS_CODE_OK,
+			Code:    tracev1.Status_STATUS_CODE_OK,
 			Message: "success",
 		},
 	}
@@ -229,7 +229,7 @@ func TestLogRecordRoundTrip(t *testing.T) {
 	ours := logsv1.LogRecord{
 		TimeUnixNano:         1000000000,
 		ObservedTimeUnixNano: 1000000001,
-		SeverityNumber:       logsv1.SEVERITY_NUMBER_ERROR,
+		SeverityNumber:       logsv1.SeverityNumber_SEVERITY_NUMBER_ERROR,
 		SeverityText:         "ERROR",
 		Body: commonv1.AnyValue{
 			Value: &commonv1.AnyValue_StringValue{StringValue: "something failed"},
@@ -371,7 +371,7 @@ func TestMetricOneofRoundTrip(t *testing.T) {
 		{
 			name: "sum",
 			data: &metricsv1.Metric_Sum{Sum: metricsv1.Sum{
-				AggregationTemporality: metricsv1.AGGREGATION_TEMPORALITY_CUMULATIVE,
+				AggregationTemporality: metricsv1.AggregationTemporality_AGGREGATION_TEMPORALITY_CUMULATIVE,
 				IsMonotonic:            true,
 				DataPoints: []metricsv1.NumberDataPoint{
 					{
@@ -433,7 +433,7 @@ func TestTracesDataFullRoundTrip(t *testing.T) {
 								TraceId:           []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
 								SpanId:            []byte{1, 2, 3, 4, 5, 6, 7, 8},
 								Name:              "op",
-								Kind:              tracev1.SPAN_KIND_INTERNAL,
+								Kind:              tracev1.Span_SPAN_KIND_INTERNAL,
 								StartTimeUnixNano: 100,
 								EndTimeUnixNano:   200,
 							},
@@ -559,7 +559,7 @@ func TestMetricsDataFullRoundTrip(t *testing.T) {
 							{
 								Name: "test.sum",
 								Data: &metricsv1.Metric_Sum{Sum: metricsv1.Sum{
-									AggregationTemporality: metricsv1.AGGREGATION_TEMPORALITY_CUMULATIVE,
+									AggregationTemporality: metricsv1.AggregationTemporality_AGGREGATION_TEMPORALITY_CUMULATIVE,
 									IsMonotonic:            true,
 									DataPoints: []metricsv1.NumberDataPoint{
 										{
@@ -578,7 +578,7 @@ func TestMetricsDataFullRoundTrip(t *testing.T) {
 							{
 								Name: "test.histogram",
 								Data: &metricsv1.Metric_Histogram{Histogram: metricsv1.Histogram{
-									AggregationTemporality: metricsv1.AGGREGATION_TEMPORALITY_DELTA,
+									AggregationTemporality: metricsv1.AggregationTemporality_AGGREGATION_TEMPORALITY_DELTA,
 									DataPoints: []metricsv1.HistogramDataPoint{
 										{
 											StartTimeUnixNano: 1000,
@@ -596,7 +596,7 @@ func TestMetricsDataFullRoundTrip(t *testing.T) {
 							{
 								Name: "test.exp_histogram",
 								Data: &metricsv1.Metric_ExponentialHistogram{ExponentialHistogram: metricsv1.ExponentialHistogram{
-									AggregationTemporality: metricsv1.AGGREGATION_TEMPORALITY_CUMULATIVE,
+									AggregationTemporality: metricsv1.AggregationTemporality_AGGREGATION_TEMPORALITY_CUMULATIVE,
 									DataPoints: []metricsv1.ExponentialHistogramDataPoint{
 										{
 											StartTimeUnixNano: 1000,
@@ -744,7 +744,7 @@ func TestLogsDataFullRoundTrip(t *testing.T) {
 							{
 								TimeUnixNano:         1000000000,
 								ObservedTimeUnixNano: 1000000001,
-								SeverityNumber:       logsv1.SEVERITY_NUMBER_WARN,
+								SeverityNumber:       logsv1.SeverityNumber_SEVERITY_NUMBER_WARN,
 								SeverityText:         "WARN",
 								Body: commonv1.AnyValue{
 									Value: &commonv1.AnyValue_StringValue{StringValue: "disk almost full"},
@@ -760,7 +760,7 @@ func TestLogsDataFullRoundTrip(t *testing.T) {
 							},
 							{
 								TimeUnixNano:   2000000000,
-								SeverityNumber: logsv1.SEVERITY_NUMBER_INFO,
+								SeverityNumber: logsv1.SeverityNumber_SEVERITY_NUMBER_INFO,
 								SeverityText:   "INFO",
 								Body: commonv1.AnyValue{
 									Value: &commonv1.AnyValue_StringValue{StringValue: "request completed"},
@@ -805,7 +805,7 @@ func TestLogsDataFullRoundTrip(t *testing.T) {
 	require.Len(t, decoded.ResourceLogs, 1)
 	require.Len(t, decoded.ResourceLogs[0].ScopeLogs, 1)
 	require.Len(t, decoded.ResourceLogs[0].ScopeLogs[0].LogRecords, 2)
-	assert.Equal(t, logsv1.SEVERITY_NUMBER_WARN, decoded.ResourceLogs[0].ScopeLogs[0].LogRecords[0].SeverityNumber)
+	assert.Equal(t, logsv1.SeverityNumber_SEVERITY_NUMBER_WARN, decoded.ResourceLogs[0].ScopeLogs[0].LogRecords[0].SeverityNumber)
 	assert.Equal(t, "disk.warning", decoded.ResourceLogs[0].ScopeLogs[0].LogRecords[0].EventName)
 }
 

@@ -200,8 +200,8 @@ func TestGetters_OneofFields(t *testing.T) {
 }
 
 func TestGetters_EnumField(t *testing.T) {
-	msg := &ks.WithEnum{Color: ks.COLOR_BLUE}
-	assert.Equal(t, ks.COLOR_BLUE, msg.GetColor())
+	msg := &ks.WithEnum{Color: ks.Color_COLOR_BLUE}
+	assert.Equal(t, ks.Color_COLOR_BLUE, msg.GetColor())
 
 	var nilMsg *ks.WithEnum
 	assert.Equal(t, ks.Color(0), nilMsg.GetColor())

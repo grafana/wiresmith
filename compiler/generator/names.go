@@ -73,6 +73,17 @@ func goEnumTypeName(ed protoreflect.EnumDescriptor) string {
 	return name
 }
 
+// goEnumValuePrefix returns the prefix for enum constant names, matching
+// protoc-gen-go: parent message chain for nested enums, enum name for
+// top-level enums.
+func goEnumValuePrefix(ed protoreflect.EnumDescriptor) string {
+	pm, ok := ed.Parent().(protoreflect.MessageDescriptor)
+	if !ok {
+		return goEnumTypeName(ed)
+	}
+	return goMessageTypeName(pm)
+}
+
 // leadingComment extracts the leading comment from a proto descriptor's
 // source location and formats it as a Go comment block.
 func leadingComment(d protoreflect.Descriptor) string {

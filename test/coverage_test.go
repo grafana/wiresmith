@@ -97,7 +97,7 @@ func TestUnknownFieldsSkippedAllTypes(t *testing.T) {
 	t.Run("LogRecord", func(t *testing.T) {
 		lr := logsv1.LogRecord{
 			TimeUnixNano:   5000,
-			SeverityNumber: logsv1.SEVERITY_NUMBER_ERROR,
+			SeverityNumber: logsv1.SeverityNumber_SEVERITY_NUMBER_ERROR,
 			SeverityText:   "ERROR",
 		}
 		b, err := lr.Marshal()
@@ -457,7 +457,7 @@ func TestUnknownFieldsSkippedAllTypes(t *testing.T) {
 	})
 
 	t.Run("Status", func(t *testing.T) {
-		st := tracev1.Status{Message: "ok", Code: tracev1.STATUS_CODE_OK}
+		st := tracev1.Status{Message: "ok", Code: tracev1.Status_STATUS_CODE_OK}
 		b, err := st.Marshal()
 		require.NoError(t, err)
 		b = append(b, buildUnknownFields()...)
@@ -634,14 +634,14 @@ func TestChildTypeMarshalRoundTrip(t *testing.T) {
 	})
 
 	t.Run("Status", func(t *testing.T) {
-		st := tracev1.Status{Message: "cancelled", Code: tracev1.STATUS_CODE_ERROR}
+		st := tracev1.Status{Message: "cancelled", Code: tracev1.Status_STATUS_CODE_ERROR}
 		b, err := st.Marshal()
 		require.NoError(t, err)
 
 		var decoded tracev1.Status
 		require.NoError(t, decoded.Unmarshal(b))
 		assert.Equal(t, "cancelled", decoded.Message)
-		assert.Equal(t, tracev1.STATUS_CODE_ERROR, decoded.Code)
+		assert.Equal(t, tracev1.Status_STATUS_CODE_ERROR, decoded.Code)
 	})
 
 	t.Run("ResourceLogs", func(t *testing.T) {
@@ -661,7 +661,7 @@ func TestChildTypeMarshalRoundTrip(t *testing.T) {
 		sl := logsv1.ScopeLogs{
 			Scope: commonv1.InstrumentationScope{Name: "logger"},
 			LogRecords: []logsv1.LogRecord{
-				{SeverityText: "WARN", SeverityNumber: logsv1.SEVERITY_NUMBER_WARN},
+				{SeverityText: "WARN", SeverityNumber: logsv1.SeverityNumber_SEVERITY_NUMBER_WARN},
 			},
 		}
 		b, err := sl.Marshal()
@@ -897,7 +897,7 @@ func TestChildTypeMarshalRoundTrip(t *testing.T) {
 
 	t.Run("Sum", func(t *testing.T) {
 		s := metricsv1.Sum{
-			AggregationTemporality: metricsv1.AGGREGATION_TEMPORALITY_CUMULATIVE,
+			AggregationTemporality: metricsv1.AggregationTemporality_AGGREGATION_TEMPORALITY_CUMULATIVE,
 			IsMonotonic:            true,
 			DataPoints: []metricsv1.NumberDataPoint{
 				{TimeUnixNano: 1000, Value: &metricsv1.NumberDataPoint_AsInt{AsInt: 100}},
@@ -909,12 +909,12 @@ func TestChildTypeMarshalRoundTrip(t *testing.T) {
 		var decoded metricsv1.Sum
 		require.NoError(t, decoded.Unmarshal(b))
 		assert.True(t, decoded.IsMonotonic)
-		assert.Equal(t, metricsv1.AGGREGATION_TEMPORALITY_CUMULATIVE, decoded.AggregationTemporality)
+		assert.Equal(t, metricsv1.AggregationTemporality_AGGREGATION_TEMPORALITY_CUMULATIVE, decoded.AggregationTemporality)
 	})
 
 	t.Run("Histogram", func(t *testing.T) {
 		h := metricsv1.Histogram{
-			AggregationTemporality: metricsv1.AGGREGATION_TEMPORALITY_DELTA,
+			AggregationTemporality: metricsv1.AggregationTemporality_AGGREGATION_TEMPORALITY_DELTA,
 			DataPoints: []metricsv1.HistogramDataPoint{
 				{TimeUnixNano: 1000, Count: 5},
 			},
@@ -924,12 +924,12 @@ func TestChildTypeMarshalRoundTrip(t *testing.T) {
 
 		var decoded metricsv1.Histogram
 		require.NoError(t, decoded.Unmarshal(b))
-		assert.Equal(t, metricsv1.AGGREGATION_TEMPORALITY_DELTA, decoded.AggregationTemporality)
+		assert.Equal(t, metricsv1.AggregationTemporality_AGGREGATION_TEMPORALITY_DELTA, decoded.AggregationTemporality)
 	})
 
 	t.Run("ExponentialHistogram", func(t *testing.T) {
 		eh := metricsv1.ExponentialHistogram{
-			AggregationTemporality: metricsv1.AGGREGATION_TEMPORALITY_CUMULATIVE,
+			AggregationTemporality: metricsv1.AggregationTemporality_AGGREGATION_TEMPORALITY_CUMULATIVE,
 			DataPoints: []metricsv1.ExponentialHistogramDataPoint{
 				{TimeUnixNano: 1000, Count: 10, Scale: 3},
 			},
@@ -1114,7 +1114,7 @@ func TestMetricOneofVariantsMarshal(t *testing.T) {
 		m := metricsv1.Metric{
 			Name: "sum.metric",
 			Data: &metricsv1.Metric_Sum{Sum: metricsv1.Sum{
-				AggregationTemporality: metricsv1.AGGREGATION_TEMPORALITY_CUMULATIVE,
+				AggregationTemporality: metricsv1.AggregationTemporality_AGGREGATION_TEMPORALITY_CUMULATIVE,
 				IsMonotonic:            true,
 				DataPoints: []metricsv1.NumberDataPoint{
 					{TimeUnixNano: 1000, Value: &metricsv1.NumberDataPoint_AsInt{AsInt: 42}},
@@ -1138,7 +1138,7 @@ func TestMetricOneofVariantsMarshal(t *testing.T) {
 		m := metricsv1.Metric{
 			Name: "histogram.metric",
 			Data: &metricsv1.Metric_Histogram{Histogram: metricsv1.Histogram{
-				AggregationTemporality: metricsv1.AGGREGATION_TEMPORALITY_DELTA,
+				AggregationTemporality: metricsv1.AggregationTemporality_AGGREGATION_TEMPORALITY_DELTA,
 				DataPoints: []metricsv1.HistogramDataPoint{
 					{
 						TimeUnixNano:   1000,
@@ -1167,7 +1167,7 @@ func TestMetricOneofVariantsMarshal(t *testing.T) {
 		m := metricsv1.Metric{
 			Name: "exp_histogram.metric",
 			Data: &metricsv1.Metric_ExponentialHistogram{ExponentialHistogram: metricsv1.ExponentialHistogram{
-				AggregationTemporality: metricsv1.AGGREGATION_TEMPORALITY_CUMULATIVE,
+				AggregationTemporality: metricsv1.AggregationTemporality_AGGREGATION_TEMPORALITY_CUMULATIVE,
 				DataPoints: []metricsv1.ExponentialHistogramDataPoint{
 					{
 						TimeUnixNano: 1000,

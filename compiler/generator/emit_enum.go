@@ -8,6 +8,7 @@ import (
 
 func (fg *FileGenerator) emitEnum(ed protoreflect.EnumDescriptor) {
 	typeName := goEnumTypeName(ed)
+	valuePrefix := goEnumValuePrefix(ed)
 
 	if c := leadingComment(ed); c != "" {
 		fg.body.WriteString(c)
@@ -20,7 +21,7 @@ func (fg *FileGenerator) emitEnum(ed protoreflect.EnumDescriptor) {
 		if c := leadingComment(v); c != "" {
 			fg.body.WriteString(indentComment(c))
 		}
-		fmt.Fprintf(fg.body, "\t%s %s = %d\n", string(v.Name()), typeName, v.Number())
+		fmt.Fprintf(fg.body, "\t%s_%s %s = %d\n", valuePrefix, string(v.Name()), typeName, v.Number())
 	}
 	fmt.Fprintf(fg.body, ")\n\n")
 
