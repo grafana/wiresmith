@@ -46,11 +46,15 @@ coverage: ## Run tests with coverage report
 	@echo ""
 	@echo "HTML report: go tool cover -html=coverage.out"
 
-fuzz: ## Fuzz all targets (30s each)
-	@for target in FuzzUnmarshal FuzzRoundTrip FuzzMarshalSize FuzzCrossLibrary FuzzStructuredTrace FuzzStructuredMetrics FuzzStructuredLogs; do \
+fuzz: ## Fuzz all targets (30s each) — auto-discovers Fuzz* functions in ./test/fuzz/
+	@targets=$$(go test ./test/fuzz/ -list '^Fuzz' | grep '^Fuzz'); \
+	if [ -z "$$targets" ]; then \
+		echo "No fuzz targets found in ./test/fuzz/"; exit 1; \
+	fi; \
+	for target in $$targets; do \
 		echo "==> Fuzzing $$target..."; \
 		GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn \
-			go test ./test/fuzz/ -fuzz $$target -fuzztime 30s -run='^$$' || exit 1; \
+			go test ./test/fuzz/ -fuzz "^$$target$$" -fuzztime 30s -run='^$$' || exit 1; \
 	done
 
 generate: generate-ours generate-vtproto generate-gogoproto ## Regenerate all code (ours + vtproto + gogoproto)
