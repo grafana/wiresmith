@@ -49,7 +49,7 @@ All generated code lives under `gen/`:
 - `gen/otlp/` — Our generated code (`go run ./cmd/wiresmith/`)
 - `gen/vtpb/` — vtproto (`protoc` + `protoc-gen-go` + `protoc-gen-go-vtproto`)
 - `gen/gogopb/` — gogoproto (`protoc` + `protoc-gen-gogofast`)
-- `gen/bench/` — Map benchmark code (all four implementations from `proto/bench/maps.proto`)
+- `gen/basic/maps/v1/` — wiresmith map code; `gen/bench/{official,vtpb,gogopb}/` — other implementations (all four from `proto/basic/maps.proto`)
 
 Regenerate all at once:
 ```bash
