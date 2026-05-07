@@ -37,7 +37,7 @@ func FuzzUnmarshal(f *testing.F) {
 	f.Add([]byte{0x0d, 0x01, 0x02, 0x03, 0x04})                         // fixed32 field
 	f.Add([]byte{0x09, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08}) // fixed64 field
 
-	ctors := testutil.AllMessageConstructors()
+	ctors := testutil.AllPanicSafeConstructors()
 
 	f.Fuzz(func(t *testing.T, data []byte) {
 		for name, newMsg := range ctors {
@@ -93,12 +93,14 @@ func FuzzRoundTrip(f *testing.F) {
 // FuzzMarshalSize verifies that Size() matches the actual Marshal() output
 // length. A mismatch indicates a bug in size computation for some field
 // combination — especially relevant for nested messages with length prefixes.
+// Map iteration order does not affect the marshal length, so map-bearing
+// types are safe to include here.
 func FuzzMarshalSize(f *testing.F) {
 	for _, seed := range marshaledSeeds() {
 		f.Add(seed)
 	}
 
-	ctors := testutil.AllMessageConstructors()
+	ctors := testutil.AllPanicSafeConstructors()
 
 	f.Fuzz(func(t *testing.T, data []byte) {
 		for name, newMsg := range ctors {
