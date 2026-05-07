@@ -7,18 +7,24 @@ Custom protobuf compiler that generates high-performance Go code from OpenTeleme
 - `proto/` - All .proto source files, organized by purpose:
   - `otlp/` - OpenTelemetry protos (common, resource, metrics, trace, logs, profiles)
   - `test/` - Test protos (kitchen_sink)
-  - `bench/` - Benchmark protos (maps)
+  - `basic/` - Basic type coverage protos (maps, numeric, enum, oneof, nesting, recursive)
   - `conformance/` - Conformance protos (protocol envelope + test messages)
 - `compiler/generator/` - Code generator: reads proto descriptors via `bufbuild/protocompile`, emits Go structs + marshal/unmarshal/size methods
 - `compiler/types/` - Per-kind type dispatch for code emission, see [compiler/types/AGENTS.md](compiler/types/AGENTS.md)
 - `cmd/wiresmith/` - CLI entry point
 - `gen/otlp/` - Generated Go packages (one per proto file)
+- `gen/basic/` - Generated Go packages for basic type coverage protos
 - `gen/vtpb/` - vtproto-generated code for benchmark comparison
 - `gen/gogopb/` - gogoproto-generated code for benchmark comparison
 - `gen/protohelpers/` - Shared reverse-write encoding helpers (based on vtprotobuf's protohelpers, Apache 2.0)
-- `test/` - Round-trip correctness tests against official `google.golang.org/protobuf`
+- `test/` - All tests, organized by purpose:
+  - `testutil/` - Shared test helpers (message interface, constructors)
+  - `basic/` - Code-path exercise tests (roundtrip, equal, has_field, kitchen_sink, map, etc.)
+  - `fuzz/` - Fuzz tests (unmarshal, roundtrip, cross-library, structured, differential)
+  - `differential/` - Cross-library comparison tests (official protobuf, pdata)
+  - `peer/` - Tests sourced from vtproto/gogoproto patterns
+  - `conformance/` - Google protobuf conformance tests (Docker-based), see [test/conformance/AGENTS.md](test/conformance/AGENTS.md)
 - `bench/` - Comparative benchmarks (ours vs official protobuf vs vtproto vs gogoproto)
-- `conformance/` - Google protobuf conformance tests (Docker-based), see [conformance/AGENTS.md](conformance/AGENTS.md)
 
 ## Commands
 
@@ -39,7 +45,7 @@ All commands are available via `make`:
 
 ## Design decisions
 
-- **Value-type struct fields**: Message fields are value types (`Resource Resource`, not `*Resource`). Only `optional` proto3 fields use pointers (`*float64`).
+- **Value-type struct fields**: Message fields are value types (`Resource Resource`, not `*Resource`). `optional` proto3 fields use pointers (`*float64`, `*MessageType`). This enables recursive message definitions via `optional` self-references.
 - **Reverse-write marshaling**: `MarshalToSizedBuffer` writes from the end of the buffer backwards, eliminating double size computation for nested messages. Based on the same technique vtprotobuf uses.
 - **Pre-computed tag bytes**: Tag bytes are computed at codegen time and emitted as byte literals (`dAtA[i] = 0x0a`).
 - **Packed repeated scalars**: Repeated numeric fields use packed encoding (proto3 default). Unmarshal handles both packed and unpacked for compatibility.
@@ -49,7 +55,7 @@ All commands are available via `make`:
 - **Getter methods**: `Get<Field>()` methods are generated for all fields (nil-safe like gogoproto). For value-type message fields, the getter returns `*MessageType` and uses the presence bitmap to return `nil` when the field was absent from the wire. Optional fields dereference the pointer, oneof fields type-assert, repeated/map fields return the slice/map.
 - **Reset/ProtoMessage/String**: `Reset()` zeroes the struct (`*m = Type{}`). `ProtoMessage()` is a no-op marker method, matching the standard `proto.Message` interface shape. `String()` uses `fmt.Sprintf("%v", *m)`.
 - **Enum name maps**: Each enum gets `TypeName_name` (int32→string) and `TypeName_value` (string→int32) maps, plus a `String()` method. Enum constants are prefixed matching `protoc-gen-go`: enum name for top-level enums (`Color_COLOR_RED`), parent message chain for nested enums (`Span_SPAN_KIND_SERVER`). Map string values use bare proto names.
-- **Type registration**: Generated `init()` embeds raw file descriptor bytes and registers them with `protoregistry.GlobalFiles`, then registers message types via `protoimpl.MessageInfo` and enum types via `protoimpl.EnumInfo` with `protoregistry.GlobalTypes`. Messages implement `proto.Message` via `ProtoReflect()`, enums implement `protoreflect.Enum`. Same registration pattern as protoc-gen-go.
+- **Type registration**: Generated `init()` embeds raw file descriptor bytes and registers them with `protoregistry.GlobalFiles`, then registers message types via `protoimpl.MessageInfo` and enum types via `protoimpl.EnumInfo` with `protoregistry.GlobalTypes`. Messages implement `proto.Message` via `ProtoReflect()`, enums implement `protoreflect.Enum`. Same registration pattern as protoc-gen-go. **Reflection support is partial**: `proto.Marshal`, `proto.Unmarshal`, `proto.Size`, `proto.Equal`, `proto.MessageName`, and descriptor lookups work via the `ProtoMethods` fast-path. Field-level reflection (`Range`/`Get`/`Set`/`Mutable` on the returned `protoreflect.Message`) panics — wiresmith uses value-type message fields incompatible with `protoimpl`'s field converters. Helpers built on top of field reflection (`protojson`, `prototext`, `proto.Clone`, `proto.Merge`) are unsupported.
 - **Unknown fields discarded**: Unknown fields are intentionally skipped during unmarshal and not preserved. This is a deliberate performance trade-off: wiresmith is designed for working with messages of known schema, so unknown field preservation would add per-struct overhead with no benefit for the primary use case.
 
 ## Supported proto3 features
@@ -68,7 +74,7 @@ Not supported (not needed for OTel protos): services/RPCs, extensions, well-know
 docker run --rm --entrypoint conformance_test_runner wiresmith-conformance /usr/local/bin/testee
 ```
 
-Compare the `unexpected failures` output against `conformance/failure_list.txt` and remove entries that no longer appear. The expected failure count in the runner output should equal the number of entries in the file.
+Compare the `unexpected failures` output against `test/conformance/failure_list.txt` and remove entries that no longer appear. The expected failure count in the runner output should equal the number of entries in the file.
 
 ## Common review caveats
 
@@ -103,4 +109,4 @@ The generator smoke test (`TestGenerateMatchesCheckedIn`) only checks files that
 
 ## Known issues
 
-- `go test ./...` panics with `proto: file ... is already registered` due to conflicting proto registrations between wiresmith types and official protobuf types (in `test/`) and between `gen/bench/official`, `gen/bench/vtpb`, and `gen/bench/gogopb` (in `bench/`). Use `GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn go test ./...` to run all tests, or `go test ./compiler/...` for the conflict-free subset.
+- `go test ./...` panics with `proto: file ... is already registered` due to conflicting proto registrations between wiresmith types and official protobuf types (in `test/...`) and between `gen/bench/official`, `gen/bench/vtpb`, and `gen/bench/gogopb` (in `bench/`). Use `GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn go test ./...` to run all tests, or `go test ./compiler/...` for the conflict-free subset.

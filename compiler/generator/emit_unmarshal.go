@@ -288,6 +288,20 @@ func (fg *FileGenerator) emitFieldUnmarshal(md protoreflect.MessageDescriptor, f
 	}
 
 	if fd.HasOptionalKeyword() {
+		if fd.Kind() == protoreflect.MessageKind {
+			// Optional message: allocate pointer if nil, then unmarshal into it.
+			types.AddTypeImports(fg, t)
+			t.EmitConsume(fg)
+			msgType := fg.imports.goSingularType(fd)
+			fmt.Fprintf(fg.body, "\t\t\tif %s == nil {\n\t\t\t\t%s = new(%s)\n\t\t\t}\n", access, access, msgType)
+			if ctx.IsSamePackage {
+				fmt.Fprintf(fg.body, "\t\t\tif err := %s.unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n", access)
+			} else {
+				fmt.Fprintf(fg.body, "\t\t\tif err := %s.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n", access)
+			}
+			fmt.Fprintf(fg.body, "\t\t\tiNdEx = postIndex\n")
+			return
+		}
 		of := &types.OptionalField{Inner: t}
 		types.AddTypeImports(fg, of)
 		of.EmitUnmarshal(fg, access, ctx)

@@ -3865,7 +3865,9 @@ func file_opentelemetry_proto_trace_v1_trace_proto_init() {
 		panic(err)
 	}
 	fd, err := protodesc.NewFile(fdp, protoregistry.GlobalFiles)
-	if err != nil {
+	if err == nil {
+		protoregistry.GlobalFiles.RegisterFile(fd)
+	} else {
 		var findErr error
 		fd, findErr = protoregistry.GlobalFiles.FindFileByPath(fdp.GetName())
 		if findErr != nil {
@@ -3873,7 +3875,6 @@ func file_opentelemetry_proto_trace_v1_trace_proto_init() {
 		}
 	}
 	file_opentelemetry_proto_trace_v1_trace_proto_fd = fd
-	protoregistry.GlobalFiles.RegisterFile(fd)
 
 	file_opentelemetry_proto_trace_v1_trace_proto_msgTypes[0].GoReflectType = reflect.TypeOf((*TracesData)(nil))
 	file_opentelemetry_proto_trace_v1_trace_proto_msgTypes[0].Desc = protohelpers.FindMessageDescriptor(fd, "opentelemetry.proto.trace.v1.TracesData")

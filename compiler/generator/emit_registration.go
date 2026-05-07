@@ -39,15 +39,21 @@ func (fg *FileGenerator) emitRegistration(fd protoreflect.FileDescriptor) {
 	fmt.Fprintf(fg.body, "\tif err := proto.Unmarshal([]byte(%s_rawDesc), fdp); err != nil {\n", prefix)
 	fmt.Fprintf(fg.body, "\t\tpanic(err)\n\t}\n")
 	fmt.Fprintf(fg.body, "\tfd, err := protodesc.NewFile(fdp, protoregistry.GlobalFiles)\n")
-	fmt.Fprintf(fg.body, "\tif err != nil {\n")
+	fmt.Fprintf(fg.body, "\tif err == nil {\n")
+	// NewFile succeeded — register our descriptor (the conflict handler will
+	// panic/warn/ignore per GOLANG_PROTOBUF_REGISTRATION_CONFLICT).
+	fmt.Fprintf(fg.body, "\t\tprotoregistry.GlobalFiles.RegisterFile(fd)\n")
+	fmt.Fprintf(fg.body, "\t} else {\n")
+	// NewFile failed — likely because a dependency conflicts. Reuse the
+	// already-registered file descriptor if there is one. We do not call
+	// RegisterFile again here; the existing registrant wins.
 	fmt.Fprintf(fg.body, "\t\tvar findErr error\n")
 	fmt.Fprintf(fg.body, "\t\tfd, findErr = protoregistry.GlobalFiles.FindFileByPath(fdp.GetName())\n")
 	fmt.Fprintf(fg.body, "\t\tif findErr != nil {\n")
 	fmt.Fprintf(fg.body, "\t\t\tpanic(err)\n")
 	fmt.Fprintf(fg.body, "\t\t}\n")
 	fmt.Fprintf(fg.body, "\t}\n")
-	fmt.Fprintf(fg.body, "\t%s_fd = fd\n", prefix)
-	fmt.Fprintf(fg.body, "\tprotoregistry.GlobalFiles.RegisterFile(fd)\n\n")
+	fmt.Fprintf(fg.body, "\t%s_fd = fd\n\n", prefix)
 
 	// Register messages in the same order as emitAllProtoReflectMethods.
 	msgIdx := 0

@@ -6,8 +6,8 @@ import (
 
 	"google.golang.org/protobuf/proto"
 
+	oursmaps "wiresmith/gen/basic/maps/v1"
 	gogomaps "wiresmith/gen/bench/gogopb"
-	oursmaps "wiresmith/gen/bench/maps/v1"
 	officialmaps "wiresmith/gen/bench/official"
 	vtmaps "wiresmith/gen/bench/vtpb"
 )

@@ -38,19 +38,23 @@ build: ## Build all packages
 	go build ./...
 
 test: ## Run correctness tests
-	GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn go test ./test/ -v
+	GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn go test ./test/... -v
 
 coverage: ## Run tests with coverage report
-	GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn go test ./test/ ./compiler/... -coverprofile=coverage.out
+	GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn go test ./test/... ./compiler/... -coverprofile=coverage.out
 	go tool cover -func=coverage.out
 	@echo ""
 	@echo "HTML report: go tool cover -html=coverage.out"
 
-fuzz: ## Fuzz all targets (30s each)
-	@for target in FuzzUnmarshal FuzzRoundTrip FuzzMarshalSize FuzzCrossLibrary FuzzStructuredTrace FuzzStructuredMetrics FuzzStructuredLogs; do \
+fuzz: ## Fuzz all targets (30s each) — auto-discovers Fuzz* functions in ./test/fuzz/
+	@targets=$$(go test ./test/fuzz/ -list '^Fuzz' | grep '^Fuzz'); \
+	if [ -z "$$targets" ]; then \
+		echo "No fuzz targets found in ./test/fuzz/"; exit 1; \
+	fi; \
+	for target in $$targets; do \
 		echo "==> Fuzzing $$target..."; \
 		GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn \
-			go test ./test/ -fuzz $$target -fuzztime 30s -run='^$$' || exit 1; \
+			go test ./test/fuzz/ -fuzz "^$$target$$" -fuzztime 30s -run='^$$' || exit 1; \
 	done
 
 generate: generate-ours generate-vtproto generate-gogoproto ## Regenerate all code (ours + vtproto + gogoproto)
@@ -80,11 +84,11 @@ bench-compare: ## Run per-library benchmarks and compare with benchstat
 		"GogoProto=$(TMPDIR)/GogoProto.txt"
 
 conformance: ## Run conformance tests (requires Docker)
-	docker build -f conformance/Dockerfile -t wiresmith-conformance .
+	docker build -f test/conformance/Dockerfile -t wiresmith-conformance .
 	docker run --rm wiresmith-conformance
 
 clean: ## Remove all generated code under gen/
-	rm -rf gen/otlp gen/vtpb gen/gogopb gen/protobuf_test_messages gen/test gen/bench
+	rm -rf gen/otlp gen/vtpb gen/gogopb gen/protobuf_test_messages gen/test gen/basic gen/bench
 
 # ── Generate targets ─────────────────────────────────────────────────────────
 
@@ -109,22 +113,22 @@ generate-ours: ## Regenerate all wiresmith + conformance code
 	$(WIRESMITH) --proto_path=proto/otlp --out=gen --module=$(MODULE)
 	@echo "==> Generating wiresmith code → gen/test/kitchensink/"
 	$(WIRESMITH) --proto_path=proto/test --out=gen --module=$(MODULE)
-	@echo "==> Generating wiresmith code → gen/bench/maps/"
-	$(WIRESMITH) --proto_path=proto/bench --out=gen --module=$(MODULE)
+	@echo "==> Generating wiresmith code → gen/basic/"
+	$(WIRESMITH) --proto_path=proto/basic --out=gen --module=$(MODULE)
 	@echo "==> Generating wiresmith conformance test messages → gen/protobuf_test_messages/"
 	$(eval CONF_TMP := $(shell mktemp -d))
 	@cp proto/conformance/test_messages_proto3.proto "$(CONF_TMP)/"
 	$(WIRESMITH) --proto_path="$(CONF_TMP)" --out=gen --module=$(MODULE)
 	@rm -rf "$(CONF_TMP)"
-	@echo "==> Generating conformance protocol code → conformance/internal/conformancepb/"
+	@echo "==> Generating conformance protocol code → test/conformance/internal/conformancepb/"
 	protoc -I proto/conformance \
 		--go_out=. --go_opt=module=$(MODULE) \
 		proto/conformance/conformance.proto
 	@echo "==> Generating official proto bench code → gen/bench/official/"
-	protoc -I proto/bench \
+	protoc -I proto/basic \
 		--go_out=. --go_opt=module=$(MODULE) \
 		--go_opt=Mmaps.proto=wiresmith/gen/bench/official \
-		proto/bench/maps.proto
+		proto/basic/maps.proto
 
 generate-vtproto:
 	$(setup_proto_root)
@@ -138,13 +142,13 @@ generate-vtproto:
 		$(ALL_PROTOS)
 	@rm -rf "$(PROTO_ROOT)"
 	@echo "==> Generating vtproto bench code → gen/bench/vtpb/"
-	protoc -I proto/bench \
+	protoc -I proto/basic \
 		--go_out=. --go_opt=module=$(MODULE) \
 		--go_opt=Mmaps.proto=wiresmith/gen/bench/vtpb \
 		--go-vtproto_out=. --go-vtproto_opt=module=$(MODULE) \
 		--go-vtproto_opt=features=marshal+unmarshal+size \
 		--go-vtproto_opt=Mmaps.proto=wiresmith/gen/bench/vtpb \
-		proto/bench/maps.proto
+		proto/basic/maps.proto
 
 generate-gogoproto:
 	$(setup_proto_root)
@@ -165,7 +169,7 @@ generate-gogoproto:
 	@rm -rf gen/gogopb
 	@mv "$(GOGO_OUT)/$(MODULE)/gen/gogopb" gen/gogopb
 	@echo "==> Generating gogoproto bench code → gen/bench/gogopb/"
-	@cp proto/bench/maps.proto "$(GOGO_ROOT)/maps.proto"
+	@cp proto/basic/maps.proto "$(GOGO_ROOT)/maps.proto"
 	@sed -i '' 's|option go_package = .*|option go_package = "$(MODULE)/gen/bench/gogopb";|' "$(GOGO_ROOT)/maps.proto"
 	@protoc -I "$(GOGO_ROOT)" \
 		--gogofast_out=Mmaps.proto=$(MODULE)/gen/bench/gogopb$(comma):"$(GOGO_OUT)" \

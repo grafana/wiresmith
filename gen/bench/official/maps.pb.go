@@ -146,12 +146,12 @@ var File_maps_proto protoreflect.FileDescriptor
 const file_maps_proto_rawDesc = "" +
 	"\n" +
 	"\n" +
-	"maps.proto\x12\rbench.maps.v1\"\xa7\x03\n" +
+	"maps.proto\x12\rbasic.maps.v1\"\xa7\x03\n" +
 	"\bMapBench\x12E\n" +
 	"\n" +
-	"string_map\x18\x01 \x03(\v2&.bench.maps.v1.MapBench.StringMapEntryR\tstringMap\x12<\n" +
-	"\aint_map\x18\x02 \x03(\v2#.bench.maps.v1.MapBench.IntMapEntryR\x06intMap\x12H\n" +
-	"\vmessage_map\x18\x03 \x03(\v2'.bench.maps.v1.MapBench.MessageMapEntryR\n" +
+	"string_map\x18\x01 \x03(\v2&.basic.maps.v1.MapBench.StringMapEntryR\tstringMap\x12<\n" +
+	"\aint_map\x18\x02 \x03(\v2#.basic.maps.v1.MapBench.IntMapEntryR\x06intMap\x12H\n" +
+	"\vmessage_map\x18\x03 \x03(\v2'.basic.maps.v1.MapBench.MessageMapEntryR\n" +
 	"messageMap\x1a<\n" +
 	"\x0eStringMapEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
@@ -161,11 +161,11 @@ const file_maps_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\x03R\x05value:\x028\x01\x1aS\n" +
 	"\x0fMessageMapEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12*\n" +
-	"\x05value\x18\x02 \x01(\v2\x14.bench.maps.v1.InnerR\x05value:\x028\x01\"E\n" +
+	"\x05value\x18\x02 \x01(\v2\x14.basic.maps.v1.InnerR\x05value:\x028\x01\"E\n" +
 	"\x05Inner\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\x03R\x05value\x12\x12\n" +
-	"\x04data\x18\x03 \x01(\fR\x04dataB\x1dZ\x1bwiresmith/gen/bench/maps/v1b\x06proto3"
+	"\x04data\x18\x03 \x01(\fR\x04dataB\x1dZ\x1bwiresmith/gen/basic/maps/v1b\x06proto3"
 
 var (
 	file_maps_proto_rawDescOnce sync.Once
@@ -181,17 +181,17 @@ func file_maps_proto_rawDescGZIP() []byte {
 
 var file_maps_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_maps_proto_goTypes = []any{
-	(*MapBench)(nil), // 0: bench.maps.v1.MapBench
-	(*Inner)(nil),    // 1: bench.maps.v1.Inner
-	nil,              // 2: bench.maps.v1.MapBench.StringMapEntry
-	nil,              // 3: bench.maps.v1.MapBench.IntMapEntry
-	nil,              // 4: bench.maps.v1.MapBench.MessageMapEntry
+	(*MapBench)(nil), // 0: basic.maps.v1.MapBench
+	(*Inner)(nil),    // 1: basic.maps.v1.Inner
+	nil,              // 2: basic.maps.v1.MapBench.StringMapEntry
+	nil,              // 3: basic.maps.v1.MapBench.IntMapEntry
+	nil,              // 4: basic.maps.v1.MapBench.MessageMapEntry
 }
 var file_maps_proto_depIdxs = []int32{
-	2, // 0: bench.maps.v1.MapBench.string_map:type_name -> bench.maps.v1.MapBench.StringMapEntry
-	3, // 1: bench.maps.v1.MapBench.int_map:type_name -> bench.maps.v1.MapBench.IntMapEntry
-	4, // 2: bench.maps.v1.MapBench.message_map:type_name -> bench.maps.v1.MapBench.MessageMapEntry
-	1, // 3: bench.maps.v1.MapBench.MessageMapEntry.value:type_name -> bench.maps.v1.Inner
+	2, // 0: basic.maps.v1.MapBench.string_map:type_name -> basic.maps.v1.MapBench.StringMapEntry
+	3, // 1: basic.maps.v1.MapBench.int_map:type_name -> basic.maps.v1.MapBench.IntMapEntry
+	4, // 2: basic.maps.v1.MapBench.message_map:type_name -> basic.maps.v1.MapBench.MessageMapEntry
+	1, // 3: basic.maps.v1.MapBench.MessageMapEntry.value:type_name -> basic.maps.v1.Inner
 	4, // [4:4] is the sub-list for method output_type
 	4, // [4:4] is the sub-list for method input_type
 	4, // [4:4] is the sub-list for extension type_name

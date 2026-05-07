@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package basic.recursive.v1;
+
+option go_package = "wiresmith/gen/basic/recursive/v1";
+
+// Self-referencing via optional (pointer) field.
+message LinkedList {
+  int64              value = 1;
+  optional LinkedList next = 2;
+}
+
+// Self-referencing via repeated (slice) field.
+message TreeNode {
+  string            label    = 1;
+  int64             value    = 2;
+  repeated TreeNode children = 3;
+}
+
+// Mutual recursion: NodeA references NodeB and vice versa.
+message NodeA {
+  string          name  = 1;
+  optional NodeB  peer  = 2;
+  repeated NodeB  peers = 3;
+}
+
+message NodeB {
+  int64           id     = 1;
+  optional NodeA  parent = 2;
+}

@@ -1,13 +1,15 @@
 # Only conformance tests use Docker. Keep the build context minimal:
 # the testee binary needs go.mod, go.sum, gen/protohelpers/,
-# gen/protobuf_test_messages/, and conformance/{internal,testee}/.
+# gen/protobuf_test_messages/, and test/conformance/{internal,testee,failure_list.txt}.
 .git
 bench/
 test/
+!test/conformance/
 compiler/
 cmd/
 proto/
 gen/otlp/
+gen/basic/
 gen/vtpb/
 gen/gogopb/
 *.prof

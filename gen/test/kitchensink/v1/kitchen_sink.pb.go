@@ -10243,7 +10243,9 @@ func file_test_kitchensink_v1_kitchen_sink_proto_init() {
 		panic(err)
 	}
 	fd, err := protodesc.NewFile(fdp, protoregistry.GlobalFiles)
-	if err != nil {
+	if err == nil {
+		protoregistry.GlobalFiles.RegisterFile(fd)
+	} else {
 		var findErr error
 		fd, findErr = protoregistry.GlobalFiles.FindFileByPath(fdp.GetName())
 		if findErr != nil {
@@ -10251,7 +10253,6 @@ func file_test_kitchensink_v1_kitchen_sink_proto_init() {
 		}
 	}
 	file_test_kitchensink_v1_kitchen_sink_proto_fd = fd
-	protoregistry.GlobalFiles.RegisterFile(fd)
 
 	file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[0].GoReflectType = reflect.TypeOf((*AllScalars)(nil))
 	file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[0].Desc = protohelpers.FindMessageDescriptor(fd, "test.kitchensink.v1.AllScalars")
