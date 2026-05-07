@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/encoding/protowire"
 
+	rec "wiresmith/gen/basic/recursive/v1"
 	commonv1 "wiresmith/gen/otlp/common/v1"
 )
 
@@ -64,6 +65,109 @@ func TestUnmarshalDepthLimit(t *testing.T) {
 		b := buildNestedAnyValueBytes(10001)
 		var av commonv1.AnyValue
 		err := av.Unmarshal(b)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "exceeded max recursion depth")
+	})
+}
+
+// buildNestedLinkedListBytes builds a depth-N LinkedList wire payload by
+// repeatedly wrapping the previous payload in field 2 (next, optional
+// LinkedList). Each wrap adds one level of recursion when unmarshaling.
+func buildNestedLinkedListBytes(depth int) []byte {
+	// Innermost: a LinkedList with value = 42 (field 1, varint)
+	inner := protowire.AppendTag(nil, 1, protowire.VarintType)
+	inner = protowire.AppendVarint(inner, 42)
+
+	for range depth {
+		outer := protowire.AppendTag(nil, 2, protowire.BytesType)
+		outer = protowire.AppendBytes(outer, inner)
+		inner = outer
+	}
+	return inner
+}
+
+// buildNestedTreeNodeBytes builds a depth-N TreeNode wire payload by repeatedly
+// wrapping the previous payload as a single child (field 3, repeated TreeNode).
+func buildNestedTreeNodeBytes(depth int) []byte {
+	inner := protowire.AppendTag(nil, 1, protowire.BytesType)
+	inner = protowire.AppendString(inner, "leaf")
+
+	for range depth {
+		outer := protowire.AppendTag(nil, 3, protowire.BytesType)
+		outer = protowire.AppendBytes(outer, inner)
+		inner = outer
+	}
+	return inner
+}
+
+// buildNestedNodeABytes builds a NodeA payload that nests through the
+// NodeA→NodeB→NodeA mutual-recursion chain. Each "step" alternates field 2
+// in NodeA (peer, optional NodeB) and field 2 in NodeB (parent, optional
+// NodeA), so two steps = 2 recursion increments.
+func buildNestedNodeABytes(steps int) []byte {
+	// Innermost: NodeA with name = "leaf" (field 1, string)
+	inner := protowire.AppendTag(nil, 1, protowire.BytesType)
+	inner = protowire.AppendString(inner, "leaf")
+
+	// Wrap pairs: NodeB(parent=NodeA(peer=...))
+	for range steps {
+		// Wrap as NodeB.parent (field 2, optional NodeA)
+		nb := protowire.AppendTag(nil, 2, protowire.BytesType)
+		nb = protowire.AppendBytes(nb, inner)
+		// Wrap as NodeA.peer (field 2, optional NodeB)
+		na := protowire.AppendTag(nil, 2, protowire.BytesType)
+		na = protowire.AppendBytes(na, nb)
+		inner = na
+	}
+	return inner
+}
+
+func TestRecursiveUnmarshalDepthLimit(t *testing.T) {
+	t.Run("LinkedList shallow", func(t *testing.T) {
+		b := buildNestedLinkedListBytes(5)
+		var ll rec.LinkedList
+		require.NoError(t, ll.Unmarshal(b))
+		require.NotNil(t, ll.Next)
+	})
+
+	t.Run("LinkedList exceeds limit", func(t *testing.T) {
+		// One level per wrap; 10001 wraps exceed maxUnmarshalDepth=10000.
+		b := buildNestedLinkedListBytes(10001)
+		var ll rec.LinkedList
+		err := ll.Unmarshal(b)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "exceeded max recursion depth")
+	})
+
+	t.Run("TreeNode shallow", func(t *testing.T) {
+		b := buildNestedTreeNodeBytes(5)
+		var tn rec.TreeNode
+		require.NoError(t, tn.Unmarshal(b))
+		require.Len(t, tn.Children, 1)
+	})
+
+	t.Run("TreeNode exceeds limit", func(t *testing.T) {
+		b := buildNestedTreeNodeBytes(10001)
+		var tn rec.TreeNode
+		err := tn.Unmarshal(b)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "exceeded max recursion depth")
+	})
+
+	t.Run("NodeA shallow", func(t *testing.T) {
+		b := buildNestedNodeABytes(3)
+		var na rec.NodeA
+		require.NoError(t, na.Unmarshal(b))
+		require.NotNil(t, na.Peer)
+		require.NotNil(t, na.Peer.Parent)
+	})
+
+	t.Run("NodeA exceeds limit", func(t *testing.T) {
+		// Each step adds 2 recursion increments (NodeA→NodeB→NodeA), so 5001
+		// steps = 10002 increments, past the 10000 limit.
+		b := buildNestedNodeABytes(5001)
+		var na rec.NodeA
+		err := na.Unmarshal(b)
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "exceeded max recursion depth")
 	})

@@ -41,7 +41,7 @@ test: ## Run correctness tests
 	go test ./test/... -v
 
 coverage: ## Run tests with coverage report
-	go test ./test/... ./compiler/... -coverprofile=coverage.out
+	go test ./test/... ./compiler/... -coverpkg=./compiler/...,./gen/protohelpers/... -coverprofile=coverage.out
 	go tool cover -func=coverage.out
 	@echo ""
 	@echo "HTML report: go tool cover -html=coverage.out"
