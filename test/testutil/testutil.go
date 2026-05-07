@@ -41,7 +41,6 @@ func AllMessageConstructors() map[string]func() Message {
 func MapBearingMessageConstructors() map[string]func() Message {
 	return map[string]func() Message{
 		"basic.MapBench":            func() Message { return new(mapsv1.MapBench) },
-		"basic.Inner":               func() Message { return new(mapsv1.Inner) },
 		"basic.EnumContainer":       func() Message { return new(enumv1.EnumContainer) },
 		"basic.OneofPlusEverything": func() Message { return new(oneofv1.OneofPlusEverything) },
 		"kitchensink.AllMaps":       func() Message { return new(kitchensinkv1.AllMaps) },
@@ -79,6 +78,9 @@ func basicMapFreeMessageConstructors() map[string]func() Message {
 
 		// basic/enum: nested enum (EnumContainer omitted — has signed_map)
 		"basic.WithNestedEnum": func() Message { return new(enumv1.WithNestedEnum) },
+
+		// basic/maps: map value-type message (no maps of its own)
+		"basic.maps.Inner": func() Message { return new(mapsv1.Inner) },
 
 		// basic/oneof: payload, multi-oneof, oneof with message/enum variants
 		"basic.Payload":        func() Message { return new(oneofv1.Payload) },

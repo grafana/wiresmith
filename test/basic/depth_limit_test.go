@@ -20,7 +20,7 @@ func buildNestedAnyValueBytes(depth int) []byte {
 	inner := protowire.AppendTag(nil, 1, protowire.BytesType)
 	inner = protowire.AppendString(inner, "hello")
 
-	for i := 0; i < depth; i++ {
+	for range depth {
 		// Wrap inner AnyValue bytes in an ArrayValue.
 		// ArrayValue field 1 (repeated AnyValue): tag(1, BytesType) + len + inner
 		arrayValue := protowire.AppendTag(nil, 1, protowire.BytesType)
@@ -47,7 +47,7 @@ func TestUnmarshalDepthLimit(t *testing.T) {
 
 		// Verify the innermost value is accessible.
 		cur := &av
-		for i := 0; i < 5; i++ {
+		for i := range 5 {
 			variant, ok := cur.Value.(*commonv1.AnyValue_ArrayValue)
 			require.True(t, ok, "expected ArrayValue at depth %d", i)
 			require.Len(t, variant.ArrayValue.Values, 1)
@@ -101,9 +101,10 @@ func buildNestedTreeNodeBytes(depth int) []byte {
 }
 
 // buildNestedNodeABytes builds a NodeA payload that nests through the
-// NodeA→NodeB→NodeA mutual-recursion chain. Each "step" alternates field 2
-// in NodeA (peer, optional NodeB) and field 2 in NodeB (parent, optional
-// NodeA), so two steps = 2 recursion increments.
+// NodeA→NodeB→NodeA mutual-recursion chain. Each "step" wraps the current
+// payload first as NodeB.parent (field 2, optional NodeA) and then as
+// NodeA.peer (field 2, optional NodeB), adding 2 recursion increments per
+// step.
 func buildNestedNodeABytes(steps int) []byte {
 	// Innermost: NodeA with name = "leaf" (field 1, string)
 	inner := protowire.AppendTag(nil, 1, protowire.BytesType)
