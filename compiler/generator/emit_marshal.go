@@ -43,7 +43,7 @@ func (fg *FileGenerator) emitMarshal(md protoreflect.MessageDescriptor) {
 		return fields[a].Number() > fields[b].Number()
 	})
 
-	pm := presenceMap(md)
+	pm := fg.presenceMap(md)
 	seenOneofs := map[string]bool{}
 	for _, fd := range fields {
 		if isRealOneof(fd) {
@@ -74,7 +74,7 @@ func (fg *FileGenerator) emitFieldMarshalReverse(fd protoreflect.FieldDescriptor
 	access := "m." + goName
 	num := protowire.Number(fd.Number())
 
-	ft := types.ForField(fd)
+	ft := fg.fieldType(fd)
 	types.AddTypeImports(fg, ft)
 	ft.EmitMarshal(fg, access, num)
 }

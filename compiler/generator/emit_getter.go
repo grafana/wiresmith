@@ -12,7 +12,7 @@ func (fg *FileGenerator) emitAllGetterMethods(fd protoreflect.FileDescriptor) {
 
 func (fg *FileGenerator) emitGetters(md protoreflect.MessageDescriptor) {
 	name := goMessageTypeName(md)
-	pm := presenceMap(md)
+	pm := fg.presenceMap(md)
 
 	seenOneofs := map[string]bool{}
 	for i := 0; i < md.Fields().Len(); i++ {
@@ -40,7 +40,7 @@ func (fg *FileGenerator) emitGetters(md protoreflect.MessageDescriptor) {
 		}
 
 		if fd.IsList() {
-			goType := fg.imports.goType(fd)
+			goType := fg.goFieldType(fd)
 			fmt.Fprintf(fg.body, "func (m *%s) Get%s() %s {\n", name, goName, goType)
 			fmt.Fprintf(fg.body, "\tif m != nil {\n\t\treturn m.%s\n\t}\n", goName)
 			fmt.Fprintf(fg.body, "\treturn nil\n}\n\n")
@@ -49,6 +49,18 @@ func (fg *FileGenerator) emitGetters(md protoreflect.MessageDescriptor) {
 
 		if fd.HasOptionalKeyword() {
 			fg.emitOptionalGetter(name, fd, goName)
+			continue
+		}
+
+		// Singular `(wiresmith.pointer) = true` message: the struct field is
+		// already `*Msg`, so the getter returns it directly with the standard
+		// nil-receiver guard. No bitmap involvement — pointer-message fields
+		// are excluded from fieldsForPresence (presence is the nil check).
+		if fd.Kind() == protoreflect.MessageKind && fg.hasPointerOption(fd) {
+			msgType := fg.imports.goSingularType(fd)
+			fmt.Fprintf(fg.body, "func (m *%s) Get%s() *%s {\n", name, goName, msgType)
+			fmt.Fprintf(fg.body, "\tif m != nil {\n\t\treturn m.%s\n\t}\n", goName)
+			fmt.Fprintf(fg.body, "\treturn nil\n}\n\n")
 			continue
 		}
 

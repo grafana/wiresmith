@@ -28,6 +28,12 @@ type Generator struct {
 	// goPackages maps a proto package name to the raw value of its
 	// `option go_package`. Populated during Generate after compilation.
 	goPackages map[string]string
+
+	// pointerExt is the linked extension descriptor for `(wiresmith.pointer)`,
+	// resolved once after Compile and consulted by hasPointerOption. It is
+	// always non-nil after a successful Compile because the embedded
+	// `wiresmith/options.proto` is always part of the input set.
+	pointerExt protoreflect.FieldDescriptor
 }
 
 type FileGenerator struct {
@@ -35,6 +41,11 @@ type FileGenerator struct {
 	module  string
 	imports *ImportTracker
 	body    *bytes.Buffer
+
+	// pointerExt is the cached pointer-option extension descriptor copied from
+	// the parent Generator. Plumbed through so the per-field option lookup
+	// doesn't have to reach back up to the Generator.
+	pointerExt protoreflect.FieldDescriptor
 }
 
 // Emitter interface implementation for FileGenerator.
@@ -71,7 +82,20 @@ func (g *Generator) Generate(ctx context.Context) error {
 		return fmt.Errorf("building import mapping: %w", err)
 	}
 
-	resolver := &memResolver{files: mapping}
+	// Always inject the embedded `wiresmith/options.proto` into the input set
+	// so its extension descriptor ends up in the linked results — that's how
+	// hasPointerOption finds the extension type later. Users may also
+	// `import "wiresmith/options.proto"` from their own .proto files; the
+	// memResolver serves it from the embed regardless.
+	if _, ok := mapping[embeddedOptionsPath]; !ok {
+		mapping[embeddedOptionsPath] = embeddedOptionsProto
+		importPaths = append(importPaths, embeddedOptionsPath)
+	}
+
+	// WithStandardImports satisfies imports for the well-known protos
+	// (`google/protobuf/descriptor.proto` and friends) that the embedded
+	// options file depends on.
+	resolver := protocompile.WithStandardImports(&memResolver{files: mapping})
 	compiler := protocompile.Compiler{
 		Resolver:       resolver,
 		SourceInfoMode: protocompile.SourceInfoStandard,
@@ -84,6 +108,13 @@ func (g *Generator) Generate(ctx context.Context) error {
 	results, err := compiler.Compile(ctx, importPaths...)
 	if err != nil {
 		return fmt.Errorf("compiling protos: %w", err)
+	}
+
+	if err := g.resolvePointerExtension(results); err != nil {
+		return err
+	}
+	if err := g.validatePointerOptions(results); err != nil {
+		return err
 	}
 
 	if err := g.collectGoPackages(results); err != nil {
@@ -99,6 +130,9 @@ func (g *Generator) Generate(ctx context.Context) error {
 	// makes this collision possible where flat layouts could not produce it.
 	outputs := make(map[string]string, len(results))
 	for _, fd := range results {
+		if isInternalSchemaFile(fd) {
+			continue
+		}
 		outPath := g.outputPathFor(fd)
 		if prev, exists := outputs[outPath]; exists {
 			return fmt.Errorf("output collision at %s: %q and %q produce the same file (same package %q + basename)",
@@ -108,11 +142,21 @@ func (g *Generator) Generate(ctx context.Context) error {
 	}
 
 	for _, fd := range results {
+		if isInternalSchemaFile(fd) {
+			continue
+		}
 		if err := g.generateFile(fd); err != nil {
 			return fmt.Errorf("generating %s: %w", fd.Path(), err)
 		}
 	}
 	return nil
+}
+
+// isInternalSchemaFile reports whether a compiled file is wiresmith-internal
+// metadata — currently just the embedded `wiresmith/options.proto`. Such files
+// carry only extension definitions and produce no user-visible Go output.
+func isInternalSchemaFile(fd protoreflect.FileDescriptor) bool {
+	return string(fd.Package()) == embeddedOptionsPackage
 }
 
 // outputPathFor returns the output path for the .pb.go file produced for fd.
@@ -205,10 +249,11 @@ func (g *Generator) validateDestinations(results linker.Files) error {
 
 func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 	fg := &FileGenerator{
-		fd:      fd,
-		module:  g.Module,
-		imports: newImportTracker(g.Module, string(fd.Package()), g.goPackages),
-		body:    &bytes.Buffer{},
+		fd:         fd,
+		module:     g.Module,
+		imports:    newImportTracker(g.Module, string(fd.Package()), g.goPackages),
+		body:       &bytes.Buffer{},
+		pointerExt: g.pointerExt,
 	}
 
 	fg.emitAllEnums(fd)

@@ -15,7 +15,7 @@ func (fg *FileGenerator) emitSize(md protoreflect.MessageDescriptor) {
 	fmt.Fprintf(fg.body, "func (m *%s) Size() int {\n", name)
 	fmt.Fprintf(fg.body, "\tvar n int\n")
 
-	pm := presenceMap(md)
+	pm := fg.presenceMap(md)
 	seenOneofs := map[string]bool{}
 	for i := 0; i < md.Fields().Len(); i++ {
 		fd := md.Fields().Get(i)
@@ -60,7 +60,7 @@ func (fg *FileGenerator) emitFieldSize(fd protoreflect.FieldDescriptor) {
 	access := "m." + goName
 	tagSize := protowire.SizeTag(protowire.Number(fd.Number()))
 
-	ft := types.ForField(fd)
+	ft := fg.fieldType(fd)
 	types.AddTypeImports(fg, ft)
 	ft.EmitSize(fg, access, tagSize)
 }
