@@ -17,13 +17,16 @@ var version = ""
 
 func main() {
 	flag.Usage = func() {
-		out := flag.CommandLine.Output()
-		fmt.Fprintln(out, "wiresmith — generate high-performance Go marshal/unmarshal code from .proto files.")
-		fmt.Fprintln(out)
-		fmt.Fprintln(out, "Usage:")
-		fmt.Fprintln(out, "  wiresmith [flags]")
-		fmt.Fprintln(out)
-		fmt.Fprintln(out, "Flags:")
+		// Write to os.Stderr (the flag package's default output) rather than
+		// flag.CommandLine.Output(): errcheck's default exclude list covers
+		// fmt.Fprint(os.Stderr, ...) by type, but not the io.Writer return.
+		fmt.Fprint(os.Stderr, `wiresmith — generate high-performance Go marshal/unmarshal code from .proto files.
+
+Usage:
+  wiresmith [flags]
+
+Flags:
+`)
 		flag.PrintDefaults()
 	}
 
