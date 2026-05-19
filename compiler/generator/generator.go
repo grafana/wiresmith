@@ -245,38 +245,66 @@ func oneofVariantName(md protoreflect.MessageDescriptor, fd protoreflect.FieldDe
 	return goMessageTypeName(md) + "_" + snakeToPascal(string(fd.Name()))
 }
 
-// buildImportMapping reads proto files and builds a mapping from import paths to file contents.
+// buildImportMapping reads proto files (recursively) and builds a mapping
+// from import paths to file contents. Top-level files are compiled under the
+// package-derived path so existing flat layouts keep working; nested files
+// use their relative path as the import key. The plain filename of every
+// top-level file is also registered so nested protos can import it.
 func buildImportMapping(protoDir string) (map[string][]byte, []string, error) {
-	entries, err := os.ReadDir(protoDir)
-	if err != nil {
-		return nil, nil, err
-	}
-
 	mapping := make(map[string][]byte)
 	var importPaths []string
 	pkgRE := regexp.MustCompile(`(?m)^package\s+([\w.]+)\s*;`)
 
-	for _, entry := range entries {
-		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".proto") {
-			continue
-		}
-		fullPath := filepath.Join(protoDir, entry.Name())
-		content, err := os.ReadFile(fullPath)
+	err := filepath.WalkDir(protoDir, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
-			return nil, nil, err
+			return err
+		}
+		if d.IsDir() || !strings.HasSuffix(d.Name(), ".proto") {
+			return nil
+		}
+
+		content, err := os.ReadFile(path)
+		if err != nil {
+			return err
 		}
 
 		m := pkgRE.FindSubmatch(content)
 		if m == nil {
-			return nil, nil, fmt.Errorf("no package found in %s", entry.Name())
+			return fmt.Errorf("no package found in %s", path)
+		}
+
+		rel, err := filepath.Rel(protoDir, path)
+		if err != nil {
+			return err
+		}
+		rel = filepath.ToSlash(rel)
+
+		if strings.Contains(rel, "/") {
+			if _, exists := mapping[rel]; exists {
+				return fmt.Errorf("duplicate import key %q (from %s)", rel, path)
+			}
+			mapping[rel] = content
+			importPaths = append(importPaths, rel)
+			return nil
 		}
 
 		pkg := string(m[1])
-		importPath := strings.ReplaceAll(pkg, ".", "/") + "/" + entry.Name()
-		mapping[importPath] = content
-		importPaths = append(importPaths, importPath)
+		pkgKey := strings.ReplaceAll(pkg, ".", "/") + "/" + d.Name()
+		if _, exists := mapping[pkgKey]; exists {
+			return fmt.Errorf("duplicate import key %q (from %s)", pkgKey, path)
+		}
+		mapping[pkgKey] = content
+		importPaths = append(importPaths, pkgKey)
+		if rel != pkgKey {
+			mapping[rel] = content
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, nil, err
 	}
 
+	sort.Strings(importPaths)
 	return mapping, importPaths, nil
 }
 

@@ -5,6 +5,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"testing"
 )
@@ -258,5 +259,124 @@ func TestGenerateMatchesCheckedIn(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func writeProto(t *testing.T, dir, relPath, content string) {
+	t.Helper()
+	full := filepath.Join(dir, relPath)
+	if err := os.MkdirAll(filepath.Dir(full), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(full, []byte(content), 0o644); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestBuildImportMappingFlat(t *testing.T) {
+	dir := t.TempDir()
+	writeProto(t, dir, "foo.proto", "syntax = \"proto3\";\npackage test.foo;\nmessage Foo {}")
+
+	mapping, importPaths, err := buildImportMapping(dir)
+	if err != nil {
+		t.Fatalf("buildImportMapping: %v", err)
+	}
+	if len(importPaths) != 1 {
+		t.Fatalf("expected 1 import path, got %d", len(importPaths))
+	}
+	// Top-level file uses package-derived key for compilation.
+	if _, ok := mapping["test/foo/foo.proto"]; !ok {
+		t.Errorf("expected key test/foo/foo.proto, got keys: %v", importPaths)
+	}
+	// Plain filename also registered in resolver so nested protos can import it.
+	if _, ok := mapping["foo.proto"]; !ok {
+		t.Error("expected plain key foo.proto in mapping for resolver")
+	}
+}
+
+func TestBuildImportMappingRecursive(t *testing.T) {
+	dir := t.TempDir()
+	writeProto(t, dir, "common/v1/common.proto",
+		"syntax = \"proto3\";\npackage tempopb.common.v1;\nmessage Foo {}")
+	writeProto(t, dir, "trace/v1/trace.proto",
+		"syntax = \"proto3\";\npackage tempopb.trace.v1;\nimport \"common/v1/common.proto\";\nmessage Bar { tempopb.common.v1.Foo foo = 1; }")
+
+	mapping, importPaths, err := buildImportMapping(dir)
+	if err != nil {
+		t.Fatalf("buildImportMapping: %v", err)
+	}
+	if len(importPaths) != 2 {
+		t.Fatalf("expected 2 import paths, got %d: %v", len(importPaths), importPaths)
+	}
+	if _, ok := mapping["common/v1/common.proto"]; !ok {
+		t.Error("expected common/v1/common.proto in mapping")
+	}
+	if _, ok := mapping["trace/v1/trace.proto"]; !ok {
+		t.Error("expected trace/v1/trace.proto in mapping")
+	}
+	// Determinism: importPaths must be sorted.
+	sorted := make([]string, len(importPaths))
+	copy(sorted, importPaths)
+	sort.Strings(sorted)
+	for i := range importPaths {
+		if importPaths[i] != sorted[i] {
+			t.Errorf("import paths not sorted: %v", importPaths)
+			break
+		}
+	}
+}
+
+func TestBuildImportMappingMixed(t *testing.T) {
+	dir := t.TempDir()
+	writeProto(t, dir, "root.proto",
+		"syntax = \"proto3\";\npackage mypkg;\nmessage Root {}")
+	writeProto(t, dir, "sub/v1/nested.proto",
+		"syntax = \"proto3\";\npackage mypkg.sub.v1;\nmessage Nested {}")
+
+	mapping, importPaths, err := buildImportMapping(dir)
+	if err != nil {
+		t.Fatalf("buildImportMapping: %v", err)
+	}
+	if len(importPaths) != 2 {
+		t.Fatalf("expected 2 import paths, got %d: %v", len(importPaths), importPaths)
+	}
+	if _, ok := mapping["mypkg/root.proto"]; !ok {
+		t.Error("expected mypkg/root.proto for top-level file")
+	}
+	if _, ok := mapping["sub/v1/nested.proto"]; !ok {
+		t.Error("expected sub/v1/nested.proto for nested file")
+	}
+}
+
+func TestBuildImportMappingNoPackage(t *testing.T) {
+	dir := t.TempDir()
+	writeProto(t, dir, "bare.proto", "syntax = \"proto3\";\nmessage Bare {}")
+
+	_, _, err := buildImportMapping(dir)
+	if err == nil {
+		t.Fatal("expected error for proto without package, got nil")
+	}
+	if !strings.Contains(err.Error(), "no package found") {
+		t.Errorf("expected 'no package found' error, got: %v", err)
+	}
+}
+
+// TestBuildImportMappingDuplicateKey covers the realistic collision: a
+// top-level file's package-derived key collides with a nested file's
+// relative-path key (e.g. top-level foo.proto with `package bar` produces
+// key `bar/foo.proto`, same as a nested file at `bar/foo.proto`).
+func TestBuildImportMappingDuplicateKey(t *testing.T) {
+	dir := t.TempDir()
+	writeProto(t, dir, "foo.proto",
+		"syntax = \"proto3\";\npackage bar;\nmessage Foo {}")
+	writeProto(t, dir, "bar/foo.proto",
+		"syntax = \"proto3\";\npackage bar;\nmessage Foo {}")
+
+	_, _, err := buildImportMapping(dir)
+	if err == nil {
+		t.Fatal("expected duplicate-key error, got nil")
+	}
+	if !strings.Contains(err.Error(), "duplicate import key") {
+		t.Errorf("expected 'duplicate import key' error, got: %v", err)
 	}
 }
