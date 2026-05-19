@@ -915,7 +915,143 @@ message Bar { string s = 1; }`)
 	if err == nil {
 		t.Fatal("expected duplicate-import-path error, got nil")
 	}
-	if !strings.Contains(err.Error(), "two proto packages cannot share") {
-		t.Errorf("expected duplicate-import-path error, got: %v", err)
+	if !strings.Contains(err.Error(), `claimed by both proto packages`) {
+		t.Errorf("expected destination-collision error, got: %v", err)
+	}
+}
+
+// TestGenerateGoPackageShadowsDefaultDestination catches the cross-mode
+// collision: one proto package's go_package points to a Go directory that
+// another proto package would otherwise default to. validateDestinations
+// must reject this — without it, two distinct Go-package files would be
+// written into the same directory.
+func TestGenerateGoPackageShadowsDefaultDestination(t *testing.T) {
+	protoDir := t.TempDir()
+	// proj.a explicitly redirects to gen/proj/b via go_package.
+	writeProto(t, protoDir, "a.proto", `
+syntax = "proto3";
+package proj.a;
+option go_package = "example.com/mod/gen/proj/b";
+message Foo { string s = 1; }`)
+	// proj.b has no go_package, so it would default to gen/proj/b — clash.
+	writeProto(t, protoDir, "b.proto", `
+syntax = "proto3";
+package proj.b;
+message Bar { string s = 1; }`)
+
+	gen := &Generator{
+		Module:   "example.com/mod",
+		OutDir:   t.TempDir(),
+		ProtoDir: protoDir,
+	}
+	err := gen.Generate(context.Background())
+	if err == nil {
+		t.Fatal("expected destination-collision error, got nil")
+	}
+	if !strings.Contains(err.Error(), "claimed by both proto packages") {
+		t.Errorf("expected destination-collision error, got: %v", err)
+	}
+}
+
+// TestGenerateGoPackageFallbackAliasMatchesPathBase verifies the elision-bug
+// fix: when the fallback alias happens to equal the import path's last
+// segment but differs from the file's declared `package` clause, emitHeader
+// must still emit an explicit alias. Otherwise Go would bind the unaliased
+// import to the file's declared name (not the fallback the generated code
+// expects), producing a "undeclared name" compile error.
+func TestGenerateGoPackageFallbackAliasMatchesPathBase(t *testing.T) {
+	protoDir := t.TempDir()
+	// dep is named `pkgone` with go_package `;myalias`. Its Go path ends
+	// in `/pkgone`, so the proto-derived fallback alias (`xpkgone`) does
+	// NOT match path.Base. To force the bug we'd need the fallback alias
+	// to equal path.Base — instead we just demonstrate the cleaner check:
+	// any time alias != naturalName, the alias is emitted explicitly.
+	writeProto(t, protoDir, "dep.proto", `
+syntax = "proto3";
+package x.pkgone;
+option go_package = "example.com/mod/gen/x/pkgone;myalias";
+message Foo { string s = 1; }`)
+	writeProto(t, protoDir, "use.proto", `
+syntax = "proto3";
+package y.use;
+option go_package = "example.com/mod/gen/y/use;myalias";
+import "x/pkgone/dep.proto";
+message Bar { x.pkgone.Foo foo = 1; }`)
+
+	outDir := t.TempDir()
+	gen := &Generator{
+		Module:   "example.com/mod",
+		OutDir:   outDir,
+		ProtoDir: protoDir,
+	}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
+	}
+
+	use, err := os.ReadFile(filepath.Join(outDir, "y", "use", "use.pb.go"))
+	if err != nil {
+		t.Fatalf("expected output: %v", err)
+	}
+	useStr := string(use)
+	// use.pb.go's own package is `myalias`; dep's declared package is
+	// also `myalias`. The alias for dep collides with selfName, so we
+	// fall back to the proto-derived alias `xpkgone`. xpkgone differs
+	// from naturalName "myalias", so emitHeader must emit it explicitly.
+	if !strings.Contains(useStr, `xpkgone "example.com/mod/gen/x/pkgone"`) {
+		t.Errorf("use.pb.go: expected explicit fallback alias 'xpkgone' on dep import; content:\n%s", useStr)
+	}
+	if _, err := format.Source(use); err != nil {
+		t.Errorf("use.pb.go did not round-trip through go/format: %v", err)
+	}
+}
+
+// TestGenerateGoPackageFallbackAliasElision is the worst-case scenario:
+// the proto-derived fallback alias happens to equal the import path's last
+// segment, but the file's declared `package` clause is something else.
+// The OLD heuristic (elide when path.HasSuffix(/alias)) would have emitted
+// no alias, leaving Go to bind the import to the file's declared name —
+// which doesn't match the alias the generator emitted in the body, causing
+// a compile error. With naturalName-based elision, the alias is preserved.
+func TestGenerateGoPackageFallbackAliasElision(t *testing.T) {
+	protoDir := t.TempDir()
+	// Construct a proto package whose proto-derived fallback alias equals
+	// the path.Base of its import path. goPackageName("p.xfoo") = "pxfoo",
+	// so we set the go_package import path to end in `/pxfoo`.
+	writeProto(t, protoDir, "dep.proto", `
+syntax = "proto3";
+package p.xfoo;
+option go_package = "example.com/mod/gen/wrap/pxfoo;myalias";
+message Foo { string s = 1; }`)
+	// Importer also has pkgName "myalias" so dep's pkgName collides with
+	// selfName, forcing the fallback to "pxfoo".
+	writeProto(t, protoDir, "use.proto", `
+syntax = "proto3";
+package q.use;
+option go_package = "example.com/mod/gen/q/use;myalias";
+import "p/xfoo/dep.proto";
+message Bar { p.xfoo.Foo foo = 1; }`)
+
+	outDir := t.TempDir()
+	gen := &Generator{
+		Module:   "example.com/mod",
+		OutDir:   outDir,
+		ProtoDir: protoDir,
+	}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
+	}
+
+	use, err := os.ReadFile(filepath.Join(outDir, "q", "use", "use.pb.go"))
+	if err != nil {
+		t.Fatalf("expected output: %v", err)
+	}
+	useStr := string(use)
+	// Critical: even though "pxfoo" matches path.Base, it differs from the
+	// declared `package myalias`. The explicit alias must be present.
+	if !strings.Contains(useStr, `pxfoo "example.com/mod/gen/wrap/pxfoo"`) {
+		t.Errorf("use.pb.go: explicit alias 'pxfoo' must be emitted because it differs from declared 'myalias'; content:\n%s", useStr)
+	}
+	if _, err := format.Source(use); err != nil {
+		t.Errorf("use.pb.go did not round-trip through go/format: %v", err)
 	}
 }

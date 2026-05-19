@@ -1,16 +1,27 @@
 package generator
 
 import (
+	"path"
 	"strconv"
 
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
+// importEntry holds everything we need to emit an import statement: the
+// alias we chose locally and the package's natural name — the `package`
+// clause declared by the imported file. Storing the natural name (instead
+// of inferring it from path.Base, which lies whenever go_package uses the
+// `;name` form) lets emitHeader decide elision on actual identity.
+type importEntry struct {
+	alias       string
+	naturalName string
+}
+
 type ImportTracker struct {
 	module     string
 	selfPkg    string
 	goPackages map[string]string // proto pkg -> raw go_package option value
-	imports    map[string]string // import path -> alias
+	imports    map[string]importEntry
 }
 
 func newImportTracker(module, selfPkg string, goPackages map[string]string) *ImportTracker {
@@ -18,50 +29,46 @@ func newImportTracker(module, selfPkg string, goPackages map[string]string) *Imp
 		module:     module,
 		selfPkg:    selfPkg,
 		goPackages: goPackages,
-		imports:    make(map[string]string),
+		imports:    make(map[string]importEntry),
 	}
 }
 
-// addImport registers an import path with the given alias. Repeated calls
-// with the same path keep the first alias — callers don't need to coordinate
-// the order of helper-emitter calls.
+// addImport registers a non-proto import path with the given alias. The
+// natural name defaults to path.Base, which is correct for stdlib and for
+// every external package wiresmith currently uses. Repeated calls with the
+// same path keep the first registration — callers don't need to coordinate.
 func (it *ImportTracker) addImport(importPath, alias string) string {
-	if existing, ok := it.imports[importPath]; ok {
-		return existing
+	return it.register(importPath, alias, path.Base(importPath))
+}
+
+func (it *ImportTracker) register(importPath, alias, naturalName string) string {
+	if e, ok := it.imports[importPath]; ok {
+		return e.alias
 	}
-	it.imports[importPath] = alias
+	it.imports[importPath] = importEntry{alias: alias, naturalName: naturalName}
 	return alias
 }
 
-// resolvePkgName returns the Go package name for protoPkg, preferring the
-// go_package option when it falls under our import base and falling back to
-// the default scheme otherwise.
+// resolvePkgName returns the Go package name for protoPkg.
 func (it *ImportTracker) resolvePkgName(protoPkg string) string {
-	if _, _, pkgName, ok := resolveGoPackage(protoPkg, it.goPackages, effectiveBase(it.module)); ok {
-		return pkgName
-	}
-	return goPackageName(protoPkg)
+	return destFor(it.module, protoPkg, it.goPackages).pkgName
 }
 
 func (it *ImportTracker) addProtoImport(protoPkg string) string {
 	selfName := it.resolvePkgName(it.selfPkg)
+	dest := destFor(it.module, protoPkg, it.goPackages)
 
-	if importPath, _, pkgName, ok := resolveGoPackage(protoPkg, it.goPackages, effectiveBase(it.module)); ok {
-		// Prefer the go_package's pkgName so references in the generated
-		// code match the imported file's `package` clause. On collision,
-		// fall back to the proto-package-derived alias. uniqueAlias then
-		// appends a numeric suffix if even that collides, matching
-		// protogen/gogoproto's disambiguation scheme.
-		alias := pkgName
-		if alias == selfName || it.aliasInUse(alias, importPath) {
-			alias = goPackageName(protoPkg)
-		}
-		return it.addImport(importPath, it.uniqueAlias(alias, importPath, selfName))
+	// Prefer the destination's declared pkgName as the local alias so the
+	// generated code reads naturally. On collision (with our own pkg name
+	// or with another import), fall back to the proto-package-derived
+	// alias; uniqueAlias then appends a numeric suffix if even that
+	// collides. Matches the protogen/gogoproto disambiguation scheme.
+	alias := dest.pkgName
+	if alias == selfName || it.aliasInUse(alias, dest.importPath) {
+		alias = goPackageName(protoPkg)
 	}
-
-	alias := goPackageName(protoPkg)
-	importPath := goImportPath(it.module, protoPkg)
-	return it.addImport(importPath, it.uniqueAlias(alias, importPath, selfName))
+	alias = it.uniqueAlias(alias, dest.importPath, selfName)
+	return it.register(dest.importPath, alias, dest.pkgName)
 }
 
 // uniqueAlias returns an alias guaranteed not to collide with selfName or
@@ -78,16 +85,16 @@ func (it *ImportTracker) uniqueAlias(want, forPath, selfName string) string {
 
 // aliasInUse reports whether some other registered import already uses alias.
 // The forPath argument is the import path of the candidate that wants alias —
-// it's excluded so repeated addImport calls for the same path don't self-
+// it's excluded so repeated register calls for the same path don't self-
 // report as a collision.
 func (it *ImportTracker) aliasInUse(alias, forPath string) bool {
-	// An empty alias is the "use the path's natural name" sentinel inside
-	// addImport — treating it as in-use would short-circuit later registrations.
+	// An empty alias is the "use the natural name" sentinel — treating it
+	// as in-use would short-circuit later registrations.
 	if alias == "" {
 		return false
 	}
-	for p, a := range it.imports {
-		if p != forPath && a == alias {
+	for p, e := range it.imports {
+		if p != forPath && e.alias == alias {
 			return true
 		}
 	}

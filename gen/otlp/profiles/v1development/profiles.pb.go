@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"google.golang.org/protobuf/encoding/protowire"
 	"io"
-	commonv1 "wiresmith/gen/otlp/common/v1"
-	resourcev1 "wiresmith/gen/otlp/resource/v1"
+	"wiresmith/gen/otlp/common/v1"
+	"wiresmith/gen/otlp/resource/v1"
 	"wiresmith/gen/protohelpers"
 )
 

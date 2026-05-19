@@ -162,6 +162,78 @@ func TestResolveGoPackage(t *testing.T) {
 	}
 }
 
+func TestDestFor(t *testing.T) {
+	goPackages := map[string]string{
+		"basic.maps.v1":                 "wiresmith/gen/basic/maps/v1",              // matches base
+		"myapp.svc":                     "example.com/app/gen/myapp/svc;service",    // wrong base
+		"external.pkg":                  "some.other/module/pkg",                    // outside base
+		"opentelemetry.proto.common.v1": "go.opentelemetry.io/proto/otlp/common/v1", // outside base, OTel special-case applies
+	}
+
+	tests := []struct {
+		name       string
+		module     string
+		protoPkg   string
+		wantImport string
+		wantRelDir string
+		wantPkg    string
+	}{
+		{
+			name:       "go_package under base",
+			module:     "wiresmith",
+			protoPkg:   "basic.maps.v1",
+			wantImport: "wiresmith/gen/basic/maps/v1",
+			wantRelDir: "basic/maps/v1",
+			wantPkg:    "v1",
+		},
+		{
+			name:       "go_package outside base falls back to default",
+			module:     "wiresmith",
+			protoPkg:   "external.pkg",
+			wantImport: "wiresmith/gen/external/pkg",
+			wantRelDir: "external/pkg",
+			wantPkg:    "externalpkg",
+		},
+		{
+			name:       "OTel special case in default mapping",
+			module:     "wiresmith",
+			protoPkg:   "opentelemetry.proto.common.v1",
+			wantImport: "wiresmith/gen/otlp/common/v1",
+			wantRelDir: "otlp/common/v1",
+			wantPkg:    "commonv1",
+		},
+		{
+			name:       "no go_package, default mapping",
+			module:     "testmod",
+			protoPkg:   "x.y.v1",
+			wantImport: "testmod/gen/x/y/v1",
+			wantRelDir: "x/y/v1",
+			wantPkg:    "yv1",
+		},
+		{
+			name:       "go_package matches different module's base",
+			module:     "example.com/app",
+			protoPkg:   "myapp.svc",
+			wantImport: "example.com/app/gen/myapp/svc",
+			wantRelDir: "myapp/svc",
+			wantPkg:    "service",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := destFor(tt.module, tt.protoPkg, goPackages)
+			if got.importPath != tt.wantImport ||
+				got.relDir != tt.wantRelDir ||
+				got.pkgName != tt.wantPkg {
+				t.Errorf("destFor(%q, %q) = {%q, %q, %q}, want {%q, %q, %q}",
+					tt.module, tt.protoPkg,
+					got.importPath, got.relDir, got.pkgName,
+					tt.wantImport, tt.wantRelDir, tt.wantPkg)
+			}
+		})
+	}
+}
+
 func TestUniqueAlias(t *testing.T) {
 	it := newImportTracker("mod", "self.pkg", nil)
 	it.addImport("example.com/a/v1", "v1")

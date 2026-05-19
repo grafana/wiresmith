@@ -42,15 +42,38 @@ func goPackageDir(protoPkg string) string {
 	return strings.Join(parts, "/")
 }
 
-func goImportPath(module, protoPkg string) string {
-	return module + "/gen/" + goPackageDir(protoPkg)
-}
-
 // effectiveBase returns the Go import path prefix under which wiresmith
 // generates code. A go_package option counts as "ours" only if its import
 // path falls under this base.
 func effectiveBase(module string) string {
 	return module + "/gen"
+}
+
+// goDest is the canonical Go destination for a proto package — every
+// consumer (output paths, package clauses, cross-file import resolution,
+// collision detection) reads from here so they can't disagree.
+type goDest struct {
+	importPath string // full Go import path of the destination
+	relDir     string // path relative to OutDir / effectiveBase
+	pkgName    string // declared `package` clause in the generated file
+}
+
+// destFor returns the canonical destination for protoPkg, preferring the
+// proto's `go_package` option when it falls under our base and falling
+// back to the default `<base>/<dotted-package-as-path>` mapping otherwise.
+// This is the single function callers should ask "where does proto pkg
+// X land in Go?" — every other resolver in the package routes through here.
+func destFor(module, protoPkg string, goPackages map[string]string) goDest {
+	base := effectiveBase(module)
+	if importPath, relDir, pkgName, ok := resolveGoPackage(protoPkg, goPackages, base); ok {
+		return goDest{importPath: importPath, relDir: relDir, pkgName: pkgName}
+	}
+	relDir := goPackageDir(protoPkg)
+	return goDest{
+		importPath: base + "/" + relDir,
+		relDir:     relDir,
+		pkgName:    goPackageName(protoPkg),
+	}
 }
 
 // parseGoPackage parses a go_package option value. The proto3 format is
