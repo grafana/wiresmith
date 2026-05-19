@@ -80,12 +80,35 @@ func (g *Generator) Generate(ctx context.Context) error {
 		return fmt.Errorf("compiling protos: %w", err)
 	}
 
+	// Detect output-path collisions up front, before writing any files. Two
+	// protos in different directories with the same package and same basename
+	// would otherwise silently clobber each other on disk — recursive scanning
+	// makes this collision possible where flat layouts could not produce it.
+	outputs := make(map[string]string, len(results))
+	for _, fd := range results {
+		outPath := g.outputPathFor(fd)
+		if prev, exists := outputs[outPath]; exists {
+			return fmt.Errorf("output collision at %s: %q and %q produce the same file (same package %q + basename)",
+				outPath, prev, fd.Path(), fd.Package())
+		}
+		outputs[outPath] = fd.Path()
+	}
+
 	for _, fd := range results {
 		if err := g.generateFile(fd); err != nil {
 			return fmt.Errorf("generating %s: %w", fd.Path(), err)
 		}
 	}
 	return nil
+}
+
+// outputPathFor returns the absolute output path for the .pb.go file that
+// will be produced for fd. The path is derived from the proto's package
+// (via goPackageDir) and basename, mirroring what generateFile writes.
+func (g *Generator) outputPathFor(fd protoreflect.FileDescriptor) string {
+	dir := filepath.Join(g.OutDir, goPackageDir(string(fd.Package())))
+	base := strings.TrimSuffix(filepath.Base(fd.Path()), ".proto") + ".pb.go"
+	return filepath.Join(dir, base)
 }
 
 func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
@@ -119,16 +142,10 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 		fmt.Fprintf(os.Stderr, "warning: format error for %s: %v\n", fd.Path(), err)
 	}
 
-	pkg := string(fd.Package())
-	dir := filepath.Join(g.OutDir, goPackageDir(pkg))
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	outPath := g.outputPathFor(fd)
+	if err := os.MkdirAll(filepath.Dir(outPath), 0o755); err != nil {
 		return err
 	}
-
-	// Use the proto filename without extension as the Go filename
-	base := filepath.Base(fd.Path())
-	base = strings.TrimSuffix(base, ".proto") + ".pb.go"
-	outPath := filepath.Join(dir, base)
 
 	return os.WriteFile(outPath, formatted, 0o644)
 }
@@ -246,10 +263,15 @@ func oneofVariantName(md protoreflect.MessageDescriptor, fd protoreflect.FieldDe
 }
 
 // buildImportMapping reads proto files (recursively) and builds a mapping
-// from import paths to file contents. Top-level files are compiled under the
-// package-derived path so existing flat layouts keep working; nested files
-// use their relative path as the import key. The plain filename of every
-// top-level file is also registered so nested protos can import it.
+// from import paths to file contents. Top-level files are registered under
+// the package-derived path so existing flat layouts keep working; nested
+// files use their on-disk relative path as the import key.
+//
+// Each file is registered under exactly one canonical path. Imports across
+// files must use that canonical form: package-derived for top-level files,
+// relative-path for nested files. Registering the same content under two
+// keys would cause protocompile to compile it twice and emit duplicate-symbol
+// errors when a consumer imports it via the non-canonical name.
 func buildImportMapping(protoDir string) (map[string][]byte, []string, error) {
 	mapping := make(map[string][]byte)
 	var importPaths []string
@@ -279,25 +301,18 @@ func buildImportMapping(protoDir string) (map[string][]byte, []string, error) {
 		}
 		rel = filepath.ToSlash(rel)
 
+		var key string
 		if strings.Contains(rel, "/") {
-			if _, exists := mapping[rel]; exists {
-				return fmt.Errorf("duplicate import key %q (from %s)", rel, path)
-			}
-			mapping[rel] = content
-			importPaths = append(importPaths, rel)
-			return nil
+			key = rel
+		} else {
+			pkg := string(m[1])
+			key = strings.ReplaceAll(pkg, ".", "/") + "/" + d.Name()
 		}
-
-		pkg := string(m[1])
-		pkgKey := strings.ReplaceAll(pkg, ".", "/") + "/" + d.Name()
-		if _, exists := mapping[pkgKey]; exists {
-			return fmt.Errorf("duplicate import key %q (from %s)", pkgKey, path)
+		if _, exists := mapping[key]; exists {
+			return fmt.Errorf("duplicate import key %q (from %s)", key, path)
 		}
-		mapping[pkgKey] = content
-		importPaths = append(importPaths, pkgKey)
-		if rel != pkgKey {
-			mapping[rel] = content
-		}
+		mapping[key] = content
+		importPaths = append(importPaths, key)
 		return nil
 	})
 	if err != nil {
