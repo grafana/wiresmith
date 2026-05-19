@@ -125,27 +125,43 @@ func (g *Generator) outputPathFor(fd protoreflect.FileDescriptor) string {
 }
 
 // collectGoPackages records every file's `option go_package` value, keyed
-// by proto package. Two files sharing a package must agree on the option,
-// otherwise the generator can't pick a single Go destination for that
-// package and downstream import resolution becomes ambiguous. The path-
-// traversal check sits here because it only makes sense against the raw
-// go_package string; cross-mode destination collisions are caught later
-// in validateDestinations against the resolved goDest.
+// by proto package. Every file belonging to one proto package must declare
+// the same value — including "unset". An asymmetric mix (file A sets it,
+// file B in the same package omits it) is rejected too: silently treating
+// the unset file as if it inherited A's value would contradict the
+// upfront-agreement contract and could move generated files unexpectedly.
+//
+// The path-traversal check sits here because it only makes sense against
+// the raw go_package string; cross-mode destination collisions are caught
+// later in validateDestinations against the resolved goDest.
 func (g *Generator) collectGoPackages(results linker.Files) error {
 	g.goPackages = make(map[string]string)
 	base := effectiveBase(g.Module)
+
+	// sighting captures the first go_package value (possibly empty) we saw
+	// for a proto pkg and the file we saw it in, so a later disagreement
+	// can be reported with both endpoints.
+	type sighting struct{ value, path string }
+	seen := make(map[string]sighting)
+
 	for _, fd := range results {
 		// GetGoPackage is nil-safe — it returns "" if the cast fails or
 		// the option is unset.
 		opts, _ := fd.Options().(*descriptorpb.FileOptions)
 		goPkg := opts.GetGoPackage()
-		if goPkg == "" {
+		pkg := string(fd.Package())
+
+		if prev, ok := seen[pkg]; ok {
+			if prev.value != goPkg {
+				return fmt.Errorf("inconsistent go_package for package %q: %s declares %q but %s declares %q",
+					pkg, prev.path, prev.value, fd.Path(), goPkg)
+			}
 			continue
 		}
-		pkg := string(fd.Package())
-		if existing, ok := g.goPackages[pkg]; ok && existing != goPkg {
-			return fmt.Errorf("conflicting go_package for package %q: %q vs %q (in %s)",
-				pkg, existing, goPkg, fd.Path())
+		seen[pkg] = sighting{value: goPkg, path: fd.Path()}
+
+		if goPkg == "" {
+			continue
 		}
 		g.goPackages[pkg] = goPkg
 
@@ -179,7 +195,7 @@ func (g *Generator) validateDestinations(results linker.Files) error {
 		protoPkg := string(fd.Package())
 		dest := destFor(g.Module, protoPkg, g.goPackages)
 		if owner, ok := dirOwner[dest.relDir]; ok && owner != protoPkg {
-			return fmt.Errorf("Go destination %q is claimed by both proto packages %q and %q (check go_package options)",
+			return fmt.Errorf("destination %q is claimed by both proto packages %q and %q (check go_package options)",
 				dest.relDir, owner, protoPkg)
 		}
 		dirOwner[dest.relDir] = protoPkg
@@ -239,6 +255,12 @@ func (fg *FileGenerator) emitHeader(out *bytes.Buffer) {
 	}
 	var imps []imp
 	for p, e := range fg.imports.imports {
+		// Pre-reserved entries that no emitter actually requested would
+		// produce "imported and not used" if emitted — skip them. They
+		// existed only so aliasInUse could see their natural names.
+		if !e.requested {
+			continue
+		}
 		imps = append(imps, imp{p, e.alias, e.naturalName})
 	}
 	sort.Slice(imps, func(i, j int) bool { return imps[i].path < imps[j].path })

@@ -12,9 +12,32 @@ import (
 // clause declared by the imported file. Storing the natural name (instead
 // of inferring it from path.Base, which lies whenever go_package uses the
 // `;name` form) lets emitHeader decide elision on actual identity.
+//
+// requested distinguishes entries the emit_*.go code actually asked for
+// from entries pre-reserved by newImportTracker. emitHeader only emits
+// requested entries; aliasInUse considers all of them, so addProtoImport
+// can't hand out an alias that a known stdlib import will later claim.
 type importEntry struct {
 	alias       string
 	naturalName string
+	requested   bool
+}
+
+// reservedStdlibImports lists every import path the generated code might
+// pull in via the emit_*.go helpers. Pre-registering them keeps their
+// natural names out of the alias pool, so a proto with go_package like
+// `;fmt` can't pick "fmt" and then collide with the stdlib fmt at emit
+// time. Keep this in sync with the addImport calls in compiler/generator
+// and compiler/types — a name we forget here is a name a malicious or
+// careless go_package can shadow.
+var reservedStdlibImports = []string{
+	"bytes",
+	"encoding/binary",
+	"fmt",
+	"io",
+	"math",
+	"strconv",
+	"google.golang.org/protobuf/encoding/protowire",
 }
 
 type ImportTracker struct {
@@ -25,12 +48,20 @@ type ImportTracker struct {
 }
 
 func newImportTracker(module, selfPkg string, goPackages map[string]string) *ImportTracker {
-	return &ImportTracker{
+	it := &ImportTracker{
 		module:     module,
 		selfPkg:    selfPkg,
 		goPackages: goPackages,
 		imports:    make(map[string]importEntry),
 	}
+	for _, p := range reservedStdlibImports {
+		it.imports[p] = importEntry{naturalName: path.Base(p)}
+	}
+	// protohelpers is generated under the module, so we can't list it as
+	// a static path. Reserve it dynamically.
+	helpers := module + "/gen/protohelpers"
+	it.imports[helpers] = importEntry{naturalName: path.Base(helpers)}
+	return it
 }
 
 // addImport registers a non-proto import path with the given alias. The
@@ -42,10 +73,10 @@ func (it *ImportTracker) addImport(importPath, alias string) string {
 }
 
 func (it *ImportTracker) register(importPath, alias, naturalName string) string {
-	if e, ok := it.imports[importPath]; ok {
+	if e, ok := it.imports[importPath]; ok && e.requested {
 		return e.alias
 	}
-	it.imports[importPath] = importEntry{alias: alias, naturalName: naturalName}
+	it.imports[importPath] = importEntry{alias: alias, naturalName: naturalName, requested: true}
 	return alias
 }
 
@@ -83,22 +114,35 @@ func (it *ImportTracker) uniqueAlias(want, forPath, selfName string) string {
 	return candidate
 }
 
-// aliasInUse reports whether some other registered import already uses alias.
-// The forPath argument is the import path of the candidate that wants alias —
-// it's excluded so repeated register calls for the same path don't self-
-// report as a collision.
+// aliasInUse reports whether some other registered import already occupies
+// the identifier `alias` in the current file's scope. An unaliased import
+// occupies its naturalName — that's the package's declared name, which is
+// what Go binds to the unaliased path. Comparing against effectiveName
+// covers both explicit-alias and unaliased imports, so a proto whose
+// pkgName is "fmt" can't quietly shadow the stdlib fmt import.
 func (it *ImportTracker) aliasInUse(alias, forPath string) bool {
-	// An empty alias is the "use the natural name" sentinel — treating it
-	// as in-use would short-circuit later registrations.
 	if alias == "" {
 		return false
 	}
 	for p, e := range it.imports {
-		if p != forPath && e.alias == alias {
+		if p == forPath {
+			continue
+		}
+		if e.effectiveName() == alias {
 			return true
 		}
 	}
 	return false
+}
+
+// effectiveName returns the identifier this import occupies in the current
+// file's scope: the explicit alias when set, otherwise the imported file's
+// declared package name.
+func (e importEntry) effectiveName() string {
+	if e.alias != "" {
+		return e.alias
+	}
+	return e.naturalName
 }
 
 func (it *ImportTracker) goType(fd protoreflect.FieldDescriptor) string {

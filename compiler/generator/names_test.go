@@ -287,7 +287,15 @@ func TestAddImportIdempotent(t *testing.T) {
 		t.Errorf("second addImport: got %q, want %q (should return cached)", got, "v1")
 	}
 
-	if len(it.imports) != 1 {
-		t.Errorf("expected 1 import, got %d", len(it.imports))
+	// Count requested entries; pre-reserved stdlib entries (created in
+	// newImportTracker so the alias pool knows them) don't count here.
+	requested := 0
+	for _, e := range it.imports {
+		if e.requested {
+			requested++
+		}
+	}
+	if requested != 1 {
+		t.Errorf("expected 1 requested import, got %d", requested)
 	}
 }

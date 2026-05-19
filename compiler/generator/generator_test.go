@@ -646,8 +646,93 @@ message Bar { string id = 1; }`)
 	if err == nil {
 		t.Fatal("expected conflicting go_package error, got nil")
 	}
-	if !strings.Contains(err.Error(), "conflicting go_package") {
-		t.Errorf("expected 'conflicting go_package' error, got: %v", err)
+	if !strings.Contains(err.Error(), "inconsistent go_package") {
+		t.Errorf("expected 'inconsistent go_package' error, got: %v", err)
+	}
+}
+
+// TestGenerateMixedGoPackageState rejects the case where one file in a
+// proto package sets go_package and another in the same package omits it.
+// Silently inheriting would contradict the upfront-agreement contract and
+// could move generated files around when a file is later updated.
+func TestGenerateMixedGoPackageState(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "a.proto", `
+syntax = "proto3";
+package mixed;
+option go_package = "example.com/mod/gen/mixed;mixed";
+message Foo { string s = 1; }`)
+	writeProto(t, protoDir, "b.proto", `
+syntax = "proto3";
+package mixed;
+message Bar { string s = 1; }`)
+
+	gen := &Generator{
+		Module:   "example.com/mod",
+		OutDir:   t.TempDir(),
+		ProtoDir: protoDir,
+	}
+	err := gen.Generate(context.Background())
+	if err == nil {
+		t.Fatal("expected inconsistent go_package error, got nil")
+	}
+	if !strings.Contains(err.Error(), "inconsistent go_package") {
+		t.Errorf("expected 'inconsistent go_package' error, got: %v", err)
+	}
+}
+
+// TestGenerateGoPackageShadowsStdlibAlias forces a proto's go_package pkgName
+// to equal a stdlib name wiresmith always uses ("fmt"). The pre-reserved
+// stdlib entry in newImportTracker keeps the alias pool aware of "fmt", so
+// addProtoImport falls back to a unique proto-derived alias and the generated
+// imports compile.
+func TestGenerateGoPackageShadowsStdlibAlias(t *testing.T) {
+	protoDir := t.TempDir()
+	// fmtish.proto's go_package pkgName is exactly "fmt".
+	writeProto(t, protoDir, "fmtish.proto", `
+syntax = "proto3";
+package x.fmtish;
+option go_package = "example.com/mod/gen/x/fmtish;fmt";
+message Sprintf { string s = 1; }`)
+	// use.proto imports fmtish AND triggers stdlib fmt (every generated
+	// file calls fmt.Sprintf in its String() / Reset() helpers).
+	writeProto(t, protoDir, "use.proto", `
+syntax = "proto3";
+package y.use;
+import "x/fmtish/fmtish.proto";
+message User { x.fmtish.Sprintf s = 1; }`)
+
+	outDir := t.TempDir()
+	gen := &Generator{
+		Module:   "example.com/mod",
+		OutDir:   outDir,
+		ProtoDir: protoDir,
+	}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
+	}
+
+	use, err := os.ReadFile(filepath.Join(outDir, "y", "use", "use.pb.go"))
+	if err != nil {
+		t.Fatalf("expected output: %v", err)
+	}
+	useStr := string(use)
+	// Stdlib fmt is unaliased; the proto import must have a NON-"fmt"
+	// alias. The proto-derived fallback for "x.fmtish" is "xfmtish".
+	if !strings.Contains(useStr, "\t\"fmt\"") {
+		t.Errorf("use.pb.go missing stdlib fmt import; content:\n%s", useStr)
+	}
+	if !strings.Contains(useStr, `xfmtish "example.com/mod/gen/x/fmtish"`) {
+		t.Errorf("use.pb.go: expected proto alias 'xfmtish' (avoiding stdlib 'fmt'); content:\n%s", useStr)
+	}
+	// And nothing in the import block should have alias "fmt" except the
+	// stdlib import itself (which is unaliased — i.e., no explicit `fmt`
+	// keyword before a non-stdlib import).
+	if strings.Contains(useStr, "fmt \"example.com") {
+		t.Errorf("use.pb.go: proto import claimed 'fmt' alias; content:\n%s", useStr)
+	}
+	if _, err := format.Source(use); err != nil {
+		t.Errorf("use.pb.go did not round-trip through go/format: %v", err)
 	}
 }
 
