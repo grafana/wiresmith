@@ -15,10 +15,8 @@ import (
 	resourcev1 "wiresmith/gen/otlp/resource/v1"
 	tracev1 "wiresmith/gen/otlp/trace/v1"
 
-	otlpcommon "go.opentelemetry.io/proto/otlp/common/v1"
 	otlplogs "go.opentelemetry.io/proto/otlp/logs/v1"
 	otlpmetrics "go.opentelemetry.io/proto/otlp/metrics/v1"
-	otlpresource "go.opentelemetry.io/proto/otlp/resource/v1"
 	otlptrace "go.opentelemetry.io/proto/otlp/trace/v1"
 )
 
@@ -101,73 +99,7 @@ func makeFullScope() commonv1.InstrumentationScope {
 // TestFieldSurvival_TracesData verifies that every field in a maximally-populated
 // TracesData survives a marshal->unmarshal round-trip using reflect.DeepEqual.
 func TestFieldSurvival_TracesData(t *testing.T) {
-	original := withPresence(t, tracev1.TracesData{
-		ResourceSpans: []tracev1.ResourceSpans{
-			{
-				Resource: makeFullResource(),
-				ScopeSpans: []tracev1.ScopeSpans{
-					{
-						Scope: makeFullScope(),
-						Spans: []tracev1.Span{
-							{
-								TraceId:           []byte{0xA1, 0xB2, 0xC3, 0xD4, 0xE5, 0xF6, 0x07, 0x18, 0x29, 0x3A, 0x4B, 0x5C, 0x6D, 0x7E, 0x8F, 0x90},
-								SpanId:            []byte{0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88},
-								TraceState:        "vendor1=val1,vendor2=val2",
-								ParentSpanId:      []byte{0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF, 0x01, 0x02},
-								Flags:             0x00000301,
-								Name:              "survival-span",
-								Kind:              tracev1.SPAN_KIND_CLIENT,
-								StartTimeUnixNano: 1700000000000000000,
-								EndTimeUnixNano:   1700000001000000000,
-								Attributes: []commonv1.KeyValue{
-									{Key: "http.method", Value: commonv1.AnyValue{Value: &commonv1.AnyValue_StringValue{StringValue: "POST"}}},
-									{Key: "http.status_code", Value: commonv1.AnyValue{Value: &commonv1.AnyValue_IntValue{IntValue: 201}}},
-									{Key: "nested.val", Value: makeNestedAnyValue()},
-								},
-								DroppedAttributesCount: 3,
-								Events: []tracev1.Span_Event{
-									{
-										TimeUnixNano: 1700000000500000000,
-										Name:         "event-alpha",
-										Attributes: []commonv1.KeyValue{
-											{Key: "event.detail", Value: commonv1.AnyValue{Value: &commonv1.AnyValue_StringValue{StringValue: "detail-val"}}},
-											{Key: "event.count", Value: commonv1.AnyValue{Value: &commonv1.AnyValue_IntValue{IntValue: 17}}},
-										},
-										DroppedAttributesCount: 1,
-									},
-									{
-										TimeUnixNano: 1700000000600000000,
-										Name:         "event-beta",
-									},
-								},
-								DroppedEventsCount: 5,
-								Links: []tracev1.Span_Link{
-									{
-										TraceId:    []byte{0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87, 0x78, 0x69, 0x5A, 0x4B, 0x3C, 0x2D, 0x1E, 0x0F},
-										SpanId:     []byte{0x99, 0x88, 0x77, 0x66, 0x55, 0x44, 0x33, 0x22},
-										TraceState: "link-state=abc",
-										Attributes: []commonv1.KeyValue{
-											{Key: "link.attr", Value: commonv1.AnyValue{Value: &commonv1.AnyValue_DoubleValue{DoubleValue: 1.618}}},
-										},
-										DroppedAttributesCount: 4,
-										Flags:                  0x00000200,
-									},
-								},
-								DroppedLinksCount: 9,
-								Status: tracev1.Status{
-									Code:    tracev1.STATUS_CODE_ERROR,
-									Message: "something went wrong",
-								},
-							},
-						},
-						SchemaUrl: "https://example.com/scope-schema",
-					},
-				},
-				SchemaUrl: "https://example.com/resource-schema",
-			},
-		},
-	},
-	)
+	original := withPresence(t, buildFullTracesData())
 
 	// Step 1: self round-trip
 	oursBytes, err := original.Marshal()
@@ -259,7 +191,7 @@ func TestFieldSurvival_MetricsData(t *testing.T) {
 								Description: "a monotonic cumulative sum",
 								Unit:        "By",
 								Data: &metricsv1.Metric_Sum{Sum: metricsv1.Sum{
-									AggregationTemporality: metricsv1.AGGREGATION_TEMPORALITY_CUMULATIVE,
+									AggregationTemporality: metricsv1.AggregationTemporality_AGGREGATION_TEMPORALITY_CUMULATIVE,
 									IsMonotonic:            true,
 									DataPoints: []metricsv1.NumberDataPoint{
 										{
@@ -290,7 +222,7 @@ func TestFieldSurvival_MetricsData(t *testing.T) {
 								Description: "a histogram with all fields",
 								Unit:        "us",
 								Data: &metricsv1.Metric_Histogram{Histogram: metricsv1.Histogram{
-									AggregationTemporality: metricsv1.AGGREGATION_TEMPORALITY_DELTA,
+									AggregationTemporality: metricsv1.AggregationTemporality_AGGREGATION_TEMPORALITY_DELTA,
 									DataPoints: []metricsv1.HistogramDataPoint{
 										{
 											Attributes: []commonv1.KeyValue{
@@ -329,7 +261,7 @@ func TestFieldSurvival_MetricsData(t *testing.T) {
 								Description: "exponential histogram with all fields",
 								Unit:        "ns",
 								Data: &metricsv1.Metric_ExponentialHistogram{ExponentialHistogram: metricsv1.ExponentialHistogram{
-									AggregationTemporality: metricsv1.AGGREGATION_TEMPORALITY_CUMULATIVE,
+									AggregationTemporality: metricsv1.AggregationTemporality_AGGREGATION_TEMPORALITY_CUMULATIVE,
 									DataPoints: []metricsv1.ExponentialHistogramDataPoint{
 										{
 											Attributes: []commonv1.KeyValue{
@@ -447,7 +379,7 @@ func TestFieldSurvival_LogsData(t *testing.T) {
 							{
 								TimeUnixNano:         1700000000000000000,
 								ObservedTimeUnixNano: 1700000000000100000,
-								SeverityNumber:       logsv1.SEVERITY_NUMBER_ERROR,
+								SeverityNumber:       logsv1.SeverityNumber_SEVERITY_NUMBER_ERROR,
 								SeverityText:         "ERROR",
 								Body:                 makeNestedAnyValue(),
 								Attributes: []commonv1.KeyValue{
@@ -692,7 +624,7 @@ func TestFieldSurvival_CrossLibrary_Metrics(t *testing.T) {
 							{
 								Name: "cross.histogram",
 								Data: &metricsv1.Metric_Histogram{Histogram: metricsv1.Histogram{
-									AggregationTemporality: metricsv1.AGGREGATION_TEMPORALITY_DELTA,
+									AggregationTemporality: metricsv1.AggregationTemporality_AGGREGATION_TEMPORALITY_DELTA,
 									DataPoints: []metricsv1.HistogramDataPoint{
 										{
 											TimeUnixNano:   2000,
@@ -750,7 +682,7 @@ func TestFieldSurvival_CrossLibrary_Logs(t *testing.T) {
 							{
 								TimeUnixNano:         3000000000,
 								ObservedTimeUnixNano: 3000000001,
-								SeverityNumber:       logsv1.SEVERITY_NUMBER_WARN,
+								SeverityNumber:       logsv1.SeverityNumber_SEVERITY_NUMBER_WARN,
 								SeverityText:         "WARN",
 								Body:                 commonv1.AnyValue{Value: &commonv1.AnyValue_StringValue{StringValue: "cross-body"}},
 								Attributes: []commonv1.KeyValue{
@@ -822,6 +754,8 @@ func TestFieldSurvival_OptionalZeroPointers(t *testing.T) {
 }
 
 // buildFullTracesData returns a maximally-populated TracesData for reuse across tests.
+// Every assignable field is set so reflect.DeepEqual after round-trip catches any
+// field accidentally dropped during marshal/unmarshal.
 func buildFullTracesData() tracev1.TracesData {
 	return tracev1.TracesData{
 		ResourceSpans: []tracev1.ResourceSpans{
@@ -837,38 +771,48 @@ func buildFullTracesData() tracev1.TracesData {
 								TraceState:        "vendor1=val1,vendor2=val2",
 								ParentSpanId:      []byte{0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF, 0x01, 0x02},
 								Flags:             0x00000301,
-								Name:              "cross-lib-span",
-								Kind:              tracev1.SPAN_KIND_PRODUCER,
+								Name:              "survival-span",
+								Kind:              tracev1.Span_SPAN_KIND_CLIENT,
 								StartTimeUnixNano: 1700000000000000000,
 								EndTimeUnixNano:   1700000001000000000,
 								Attributes: []commonv1.KeyValue{
-									{Key: "rpc.system", Value: commonv1.AnyValue{Value: &commonv1.AnyValue_StringValue{StringValue: "grpc"}}},
+									{Key: "http.method", Value: commonv1.AnyValue{Value: &commonv1.AnyValue_StringValue{StringValue: "POST"}}},
+									{Key: "http.status_code", Value: commonv1.AnyValue{Value: &commonv1.AnyValue_IntValue{IntValue: 201}}},
+									{Key: "nested.val", Value: makeNestedAnyValue()},
 								},
-								DroppedAttributesCount: 2,
+								DroppedAttributesCount: 3,
 								Events: []tracev1.Span_Event{
 									{
 										TimeUnixNano: 1700000000500000000,
-										Name:         "message",
+										Name:         "event-alpha",
 										Attributes: []commonv1.KeyValue{
-											{Key: "message.type", Value: commonv1.AnyValue{Value: &commonv1.AnyValue_StringValue{StringValue: "SENT"}}},
+											{Key: "event.detail", Value: commonv1.AnyValue{Value: &commonv1.AnyValue_StringValue{StringValue: "detail-val"}}},
+											{Key: "event.count", Value: commonv1.AnyValue{Value: &commonv1.AnyValue_IntValue{IntValue: 17}}},
 										},
 										DroppedAttributesCount: 1,
 									},
-								},
-								DroppedEventsCount: 3,
-								Links: []tracev1.Span_Link{
 									{
-										TraceId:                []byte{0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87, 0x78, 0x69, 0x5A, 0x4B, 0x3C, 0x2D, 0x1E, 0x0F},
-										SpanId:                 []byte{0x99, 0x88, 0x77, 0x66, 0x55, 0x44, 0x33, 0x22},
-										TraceState:             "link-ts=xyz",
-										DroppedAttributesCount: 7,
-										Flags:                  0x00000100,
+										TimeUnixNano: 1700000000600000000,
+										Name:         "event-beta",
 									},
 								},
-								DroppedLinksCount: 4,
+								DroppedEventsCount: 5,
+								Links: []tracev1.Span_Link{
+									{
+										TraceId:    []byte{0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87, 0x78, 0x69, 0x5A, 0x4B, 0x3C, 0x2D, 0x1E, 0x0F},
+										SpanId:     []byte{0x99, 0x88, 0x77, 0x66, 0x55, 0x44, 0x33, 0x22},
+										TraceState: "link-state=abc",
+										Attributes: []commonv1.KeyValue{
+											{Key: "link.attr", Value: commonv1.AnyValue{Value: &commonv1.AnyValue_DoubleValue{DoubleValue: 1.618}}},
+										},
+										DroppedAttributesCount: 4,
+										Flags:                  0x00000200,
+									},
+								},
+								DroppedLinksCount: 9,
 								Status: tracev1.Status{
-									Code:    tracev1.STATUS_CODE_OK,
-									Message: "all good",
+									Code:    tracev1.Status_STATUS_CODE_ERROR,
+									Message: "something went wrong",
 								},
 							},
 						},
@@ -880,7 +824,3 @@ func buildFullTracesData() tracev1.TracesData {
 		},
 	}
 }
-
-// Ensure unused imports are used (cross-library tests reference these)
-var _ = (*otlpcommon.AnyValue)(nil)
-var _ = (*otlpresource.Resource)(nil)
