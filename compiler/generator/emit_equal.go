@@ -107,6 +107,16 @@ func (fg *FileGenerator) emitFieldEqual(fd protoreflect.FieldDescriptor, goName 
 		return
 	}
 
+	// `(wiresmith.options.pointer) = true` singular message: same nil-check + deep
+	// Equal as optional-message. Equal is nil-safe on the generated method, so
+	// the `this.F != nil` guard could be elided — kept for symmetry with the
+	// optional path and to make the "nil vs &Msg{}" distinction explicit.
+	if fg.hasPointerOption(fd) && fd.Kind() == protoreflect.MessageKind {
+		fmt.Fprintf(fg.body, "\tif (this.%s == nil) != (that1.%s == nil) {\n\t\treturn false\n\t}\n", goName, goName)
+		fmt.Fprintf(fg.body, "\tif this.%s != nil && !this.%s.Equal(that1.%s) {\n\t\treturn false\n\t}\n", goName, goName, goName)
+		return
+	}
+
 	switch fd.Kind() {
 	case protoreflect.BytesKind:
 		fmt.Fprintf(fg.body, "\tif !bytes.Equal(this.%s, that1.%s) {\n\t\treturn false\n\t}\n", goName, goName)
@@ -150,7 +160,16 @@ func (fg *FileGenerator) emitRepeatedFieldEqual(fd protoreflect.FieldDescriptor,
 	case protoreflect.BytesKind:
 		fmt.Fprintf(fg.body, "\t\tif !bytes.Equal(this.%s[i], that1.%s[i]) {\n\t\t\treturn false\n\t\t}\n", goName, goName)
 	case protoreflect.MessageKind:
-		fmt.Fprintf(fg.body, "\t\tif !this.%s[i].Equal(that1.%s[i]) {\n\t\t\treturn false\n\t\t}\n", goName, goName)
+		if fg.hasPointerOption(fd) {
+			// []*Msg can hold nil entries. The generated Equal is nil-safe on
+			// the receiver, but a nil element on one side and non-nil on the
+			// other must compare unequal — match the optional-message Equal
+			// shape applied per-element.
+			fmt.Fprintf(fg.body, "\t\tif (this.%s[i] == nil) != (that1.%s[i] == nil) {\n\t\t\treturn false\n\t\t}\n", goName, goName)
+			fmt.Fprintf(fg.body, "\t\tif this.%s[i] != nil && !this.%s[i].Equal(that1.%s[i]) {\n\t\t\treturn false\n\t\t}\n", goName, goName, goName)
+		} else {
+			fmt.Fprintf(fg.body, "\t\tif !this.%s[i].Equal(that1.%s[i]) {\n\t\t\treturn false\n\t\t}\n", goName, goName)
+		}
 	default:
 		fmt.Fprintf(fg.body, "\t\tif this.%s[i] != that1.%s[i] {\n\t\t\treturn false\n\t\t}\n", goName, goName)
 	}

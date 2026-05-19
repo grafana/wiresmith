@@ -47,11 +47,11 @@ func (fg *FileGenerator) emitStruct(md protoreflect.MessageDescriptor) {
 			fg.body.WriteString(indentComment(c))
 		}
 		goName := snakeToPascal(string(fd.Name()))
-		goType := fg.imports.goType(fd)
+		goType := fg.goFieldType(fd)
 		fmt.Fprintf(fg.body, "\t%s %s %s\n", goName, goType, fieldTag(fd))
 	}
 
-	if words := presenceBitmapWords(md); words > 0 {
+	if words := fg.presenceBitmapWords(md); words > 0 {
 		fmt.Fprintf(fg.body, "\n\tfieldsPresent [%d]uint64\n", words)
 	}
 
