@@ -43,9 +43,37 @@ func (it *ImportTracker) resolvePkgName(protoPkg string) string {
 
 func (it *ImportTracker) addProtoImport(protoPkg string) string {
 	if importPath, _, pkgName, ok := resolveGoPackage(protoPkg, it.goPackages, effectiveBase(it.module)); ok {
-		return it.addImport(importPath, pkgName)
+		// Prefer the go_package's pkgName as the alias so references in the
+		// generated code match the imported file's `package` clause. But two
+		// go_packages can produce the same pkgName (e.g. both end in /v1) —
+		// when that would collide with another import or with our own package
+		// name, fall back to the proto-package-derived alias, which is unique
+		// per proto package.
+		alias := pkgName
+		if alias == it.resolvePkgName(it.selfPkg) || it.aliasInUse(alias, importPath) {
+			alias = goPackageName(protoPkg)
+		}
+		return it.addImport(importPath, alias)
 	}
 	return it.addImport(goImportPath(it.module, protoPkg), goPackageName(protoPkg))
+}
+
+// aliasInUse reports whether some other registered import already uses alias.
+// The forPath argument is the import path of the candidate that wants alias —
+// it's excluded so repeated addImport calls for the same path don't self-
+// report as a collision.
+func (it *ImportTracker) aliasInUse(alias, forPath string) bool {
+	// An empty alias is the "use the path's natural name" sentinel inside
+	// addImport — treating it as in-use would short-circuit later registrations.
+	if alias == "" {
+		return false
+	}
+	for p, a := range it.imports {
+		if p != forPath && a == alias {
+			return true
+		}
+	}
+	return false
 }
 
 func (it *ImportTracker) goType(fd protoreflect.FieldDescriptor) string {

@@ -151,6 +151,19 @@ func TestResolveGoPackage(t *testing.T) {
 	}
 }
 
+func TestAliasInUseEmpty(t *testing.T) {
+	it := newImportTracker("mod", "self.pkg", nil)
+	// Several imports registered with the "use natural name" sentinel (empty
+	// alias). aliasInUse must not treat them as a single occupied slot —
+	// otherwise the second empty-alias caller would falsely be told the
+	// alias is taken.
+	it.addImport("std/lib/a", "")
+	it.addImport("std/lib/b", "")
+	if it.aliasInUse("", "std/lib/c") {
+		t.Error("aliasInUse(\"\", ...) must report false; empty alias is a sentinel, not a real name")
+	}
+}
+
 func TestAddImportIdempotent(t *testing.T) {
 	it := newImportTracker("mod", "self.pkg", nil)
 

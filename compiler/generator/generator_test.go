@@ -3,6 +3,7 @@ package generator
 import (
 	"bytes"
 	"context"
+	"go/format"
 	"os"
 	"path/filepath"
 	"sort"
@@ -647,5 +648,182 @@ message Bar { string id = 1; }`)
 	}
 	if !strings.Contains(err.Error(), "conflicting go_package") {
 		t.Errorf("expected 'conflicting go_package' error, got: %v", err)
+	}
+}
+
+// TestGenerateGoPackageAliasCollision verifies that two proto packages whose
+// go_package values both produce alias "v1" don't generate uncompilable
+// imports. The third file imports both and must reference them with distinct
+// aliases.
+func TestGenerateGoPackageAliasCollision(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "common.proto", `
+syntax = "proto3";
+package myproject.common;
+option go_package = "example.com/mod/gen/common/v1;v1";
+message Foo { string name = 1; }`)
+	writeProto(t, protoDir, "trace.proto", `
+syntax = "proto3";
+package myproject.trace;
+option go_package = "example.com/mod/gen/trace/v1;v1";
+message Bar { string id = 1; }`)
+	writeProto(t, protoDir, "api.proto", `
+syntax = "proto3";
+package myproject.api;
+option go_package = "example.com/mod/gen/api/v1;v1";
+import "myproject/common/common.proto";
+import "myproject/trace/trace.proto";
+message Request {
+  myproject.common.Foo foo = 1;
+  myproject.trace.Bar bar = 2;
+}`)
+
+	outDir := t.TempDir()
+	gen := &Generator{
+		Module:   "example.com/mod",
+		OutDir:   outDir,
+		ProtoDir: protoDir,
+	}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
+	}
+
+	api, err := os.ReadFile(filepath.Join(outDir, "api", "v1", "api.pb.go"))
+	if err != nil {
+		t.Fatalf("expected output: %v", err)
+	}
+	apiStr := string(api)
+
+	// Both /common/v1 and /trace/v1 ask for alias "v1". Whichever is
+	// registered first wins; the other must fall back to a unique
+	// proto-package-derived alias so the import block compiles.
+	if !strings.Contains(apiStr, `"example.com/mod/gen/common/v1"`) {
+		t.Errorf("api.pb.go: missing common/v1 import")
+	}
+	if !strings.Contains(apiStr, `"example.com/mod/gen/trace/v1"`) {
+		t.Errorf("api.pb.go: missing trace/v1 import")
+	}
+	// The trace import must carry an explicit fallback alias (the proto-
+	// package-derived name). Without that, both imports would resolve to
+	// natural name "v1" and Go would reject the file.
+	if !strings.Contains(apiStr, `myprojecttrace "example.com/mod/gen/trace/v1"`) {
+		t.Errorf("api.pb.go: expected fallback alias 'myprojecttrace' on trace/v1 import; content:\n%s", apiStr)
+	}
+
+	// The generated file must actually be a valid Go file. format.Source
+	// rejects duplicate-name imports.
+	if _, err := format.Source(api); err != nil {
+		t.Errorf("api.pb.go did not round-trip through go/format: %v", err)
+	}
+}
+
+// TestGenerateGoPackageAliasCollisionBetweenImports forces the alias collision
+// to be resolved by aliasInUse rather than by the selfPkg-name check: the
+// importing file's own package name differs from the colliding "v1" alias,
+// so the fallback only fires when the second import sees the first's alias.
+func TestGenerateGoPackageAliasCollisionBetweenImports(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "common.proto", `
+syntax = "proto3";
+package myproject.common;
+option go_package = "example.com/mod/gen/common/v1;v1";
+message Foo { string name = 1; }`)
+	writeProto(t, protoDir, "trace.proto", `
+syntax = "proto3";
+package myproject.trace;
+option go_package = "example.com/mod/gen/trace/v1;v1";
+message Bar { string id = 1; }`)
+	writeProto(t, protoDir, "api.proto", `
+syntax = "proto3";
+package myproject.api;
+option go_package = "example.com/mod/gen/api/v1;service";
+import "myproject/common/common.proto";
+import "myproject/trace/trace.proto";
+message Request {
+  myproject.common.Foo foo = 1;
+  myproject.trace.Bar bar = 2;
+}`)
+
+	outDir := t.TempDir()
+	gen := &Generator{
+		Module:   "example.com/mod",
+		OutDir:   outDir,
+		ProtoDir: protoDir,
+	}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
+	}
+
+	api, err := os.ReadFile(filepath.Join(outDir, "api", "v1", "api.pb.go"))
+	if err != nil {
+		t.Fatalf("expected output: %v", err)
+	}
+	apiStr := string(api)
+
+	// api's own package is "service", not "v1", so neither common nor trace
+	// hits the self-name fallback. The first one wins "v1" and the second
+	// falls back via aliasInUse to a proto-package-derived alias.
+	if !strings.Contains(apiStr, "package service\n") {
+		t.Errorf("expected 'package service', got:\n%s", apiStr)
+	}
+	if !strings.Contains(apiStr, `myprojecttrace "example.com/mod/gen/trace/v1"`) {
+		t.Errorf("expected fallback alias 'myprojecttrace' on trace/v1; content:\n%s", apiStr)
+	}
+	if _, err := format.Source(api); err != nil {
+		t.Errorf("api.pb.go did not round-trip through go/format: %v", err)
+	}
+}
+
+// TestGenerateGoPackagePathTraversal rejects go_package values that contain
+// `..` segments — they'd let filepath.Join write outside g.OutDir.
+func TestGenerateGoPackagePathTraversal(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "evil.proto", `
+syntax = "proto3";
+package myproject.evil;
+option go_package = "example.com/mod/gen/../outside;evil";
+message Mal { string s = 1; }`)
+
+	gen := &Generator{
+		Module:   "example.com/mod",
+		OutDir:   t.TempDir(),
+		ProtoDir: protoDir,
+	}
+	err := gen.Generate(context.Background())
+	if err == nil {
+		t.Fatal("expected path-traversal error, got nil")
+	}
+	if !strings.Contains(err.Error(), "'..'") {
+		t.Errorf("expected '..'-segment error, got: %v", err)
+	}
+}
+
+// TestGenerateGoPackageDuplicateImportPath rejects two distinct proto
+// packages whose go_package values resolve to the same Go import path —
+// they would share a directory but disagree on the package clause.
+func TestGenerateGoPackageDuplicateImportPath(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "a.proto", `
+syntax = "proto3";
+package proj.a;
+option go_package = "example.com/mod/gen/shared;shared";
+message Foo { string s = 1; }`)
+	writeProto(t, protoDir, "b.proto", `
+syntax = "proto3";
+package proj.b;
+option go_package = "example.com/mod/gen/shared;shared";
+message Bar { string s = 1; }`)
+
+	gen := &Generator{
+		Module:   "example.com/mod",
+		OutDir:   t.TempDir(),
+		ProtoDir: protoDir,
+	}
+	err := gen.Generate(context.Background())
+	if err == nil {
+		t.Fatal("expected duplicate-import-path error, got nil")
+	}
+	if !strings.Contains(err.Error(), "two proto packages cannot share") {
+		t.Errorf("expected duplicate-import-path error, got: %v", err)
 	}
 }

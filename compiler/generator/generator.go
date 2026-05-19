@@ -139,6 +139,12 @@ func (g *Generator) resolveDir(protoPkg string) string {
 // package and downstream import resolution becomes ambiguous.
 func (g *Generator) collectGoPackages(results linker.Files) error {
 	g.goPackages = make(map[string]string)
+	base := effectiveBase(g.Module)
+	// pathToPkg lets us detect two different proto packages whose
+	// go_package values resolve to the same Go import path — they'd land
+	// in the same directory with different `package` clauses (or trigger
+	// a self-import if one referenced the other).
+	pathToPkg := make(map[string]string)
 	for _, fd := range results {
 		// GetGoPackage is nil-safe — it returns "" if the cast fails or
 		// the option is unset.
@@ -153,6 +159,28 @@ func (g *Generator) collectGoPackages(results linker.Files) error {
 				pkg, existing, goPkg, fd.Path())
 		}
 		g.goPackages[pkg] = goPkg
+
+		importPath, _ := parseGoPackage(goPkg)
+		// Skip the cross-package checks for values outside our base —
+		// they fall back to the default scheme and don't compete for
+		// directory or alias space with `<module>/gen/...`.
+		if importPath != base && !strings.HasPrefix(importPath, base+"/") {
+			continue
+		}
+		// Reject `..` segments. Without this, `filepath.Join(g.OutDir,
+		// relDir)` would silently write outside the configured output
+		// directory.
+		for _, seg := range strings.Split(importPath, "/") {
+			if seg == ".." {
+				return fmt.Errorf("invalid go_package %q in %s: path contains '..' segment",
+					goPkg, fd.Path())
+			}
+		}
+		if otherPkg, ok := pathToPkg[importPath]; ok && otherPkg != pkg {
+			return fmt.Errorf("go_package %q in %s collides with package %q: two proto packages cannot share the same Go import path",
+				goPkg, fd.Path(), otherPkg)
+		}
+		pathToPkg[importPath] = pkg
 	}
 	return nil
 }
