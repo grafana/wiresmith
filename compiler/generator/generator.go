@@ -102,9 +102,10 @@ func (g *Generator) Generate(ctx context.Context) error {
 	return nil
 }
 
-// outputPathFor returns the absolute output path for the .pb.go file that
-// will be produced for fd. The path is derived from the proto's package
-// (via goPackageDir) and basename, mirroring what generateFile writes.
+// outputPathFor returns the output path (relative to or under g.OutDir,
+// matching whatever shape OutDir has) for the .pb.go file that will be
+// produced for fd. The path is derived from the proto's package (via
+// goPackageDir) and basename, mirroring what generateFile writes.
 func (g *Generator) outputPathFor(fd protoreflect.FileDescriptor) string {
 	dir := filepath.Join(g.OutDir, goPackageDir(string(fd.Package())))
 	base := strings.TrimSuffix(filepath.Base(fd.Path()), ".proto") + ".pb.go"

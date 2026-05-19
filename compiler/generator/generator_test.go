@@ -286,7 +286,12 @@ func TestBuildImportMappingFlat(t *testing.T) {
 	}
 	// Top-level file uses package-derived key as its canonical path.
 	if _, ok := mapping["test/foo/foo.proto"]; !ok {
-		t.Errorf("expected key test/foo/foo.proto, got keys: %v", importPaths)
+		keys := make([]string, 0, len(mapping))
+		for k := range mapping {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		t.Errorf("expected key test/foo/foo.proto in mapping, got keys: %v", keys)
 	}
 	// The plain filename must not be registered — doing so would cause
 	// protocompile to compile the same content twice if a consumer imported
