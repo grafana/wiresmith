@@ -179,6 +179,38 @@ message UserMessage { int32 x = 1; }
 	}
 }
 
+// A user proto landing at the canonical embedded path must be rejected up
+// front — silently shadowing it (in either direction) would be too easy to
+// trip into and very hard to debug. The directory layout used here causes
+// buildImportMapping to register the file under "wiresmith/options.proto".
+func TestPointerOption_UserFileAtCanonicalEmbedPathErrors(t *testing.T) {
+	protoDir := t.TempDir()
+	outDir := t.TempDir()
+
+	nested := filepath.Join(protoDir, "wiresmith")
+	if err := os.MkdirAll(nested, 0o755); err != nil {
+		t.Fatalf("mkdir: %v", err)
+	}
+	const body = `
+syntax = "proto3";
+package whatever;
+option go_package = "wiresmith/gen/whatever/v1";
+message M {}
+`
+	if err := os.WriteFile(filepath.Join(nested, "options.proto"), []byte(body), 0o644); err != nil {
+		t.Fatalf("writing proto: %v", err)
+	}
+
+	g := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	err := g.Generate(context.Background())
+	if err == nil {
+		t.Fatalf("expected error, got nil")
+	}
+	if !strings.Contains(err.Error(), "embedded wiresmith schema") {
+		t.Errorf("error %q does not mention the embedded schema conflict", err)
+	}
+}
+
 // Internal schema file should not produce Go output. If a future change
 // accidentally generates code for wiresmith.options the on-disk tree would
 // gain a file under gen/wiresmith — this test pins the absence.

@@ -15,8 +15,14 @@ type presenceField struct {
 // fieldsForPresence returns message fields that need presence-bitmap tracking.
 // These are singular fields without their own presence semantics:
 // not repeated, not map, not optional (pointer), not oneof (interface),
-// and not annotated with `(wiresmith.options.pointer) = true` (which makes the
-// field a pointer with nil-check presence, same shape as optional).
+// and not a singular message field annotated with
+// `(wiresmith.options.pointer) = true` (which makes the field a pointer with
+// nil-check presence, same shape as optional).
+//
+// The pointer-option skip is gated on MessageKind to mirror fieldType's actual
+// shape change. If validation is ever bypassed and the option is mistakenly
+// applied to a scalar, fieldType falls back to the value-type emit — losing
+// the bitmap bit here would desynchronize unmarshal/Has tracking.
 func (fg *FileGenerator) fieldsForPresence(md protoreflect.MessageDescriptor) []presenceField {
 	var fields []presenceField
 	for i := 0; i < md.Fields().Len(); i++ {
@@ -24,7 +30,7 @@ func (fg *FileGenerator) fieldsForPresence(md protoreflect.MessageDescriptor) []
 		if fd.IsList() || fd.IsMap() || fd.HasOptionalKeyword() || isRealOneof(fd) {
 			continue
 		}
-		if fg.hasPointerOption(fd) {
+		if fd.Kind() == protoreflect.MessageKind && fg.hasPointerOption(fd) {
 			continue
 		}
 		fields = append(fields, presenceField{fd: fd, bitIndex: len(fields)})

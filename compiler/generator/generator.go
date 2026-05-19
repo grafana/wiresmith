@@ -85,13 +85,19 @@ func (g *Generator) Generate(ctx context.Context) error {
 
 	// Always inject the embedded `wiresmith/options.proto` into the input set
 	// so its extension descriptor ends up in the linked results — that's how
-	// hasPointerOption finds the extension type later. Users may also
-	// `import "wiresmith/options.proto"` from their own .proto files; the
-	// memResolver serves it from the embed regardless.
-	if _, ok := mapping[embeddedOptionsPath]; !ok {
-		mapping[embeddedOptionsPath] = embeddedOptionsProto
-		importPaths = append(importPaths, embeddedOptionsPath)
+	// hasPointerOption finds the extension type later. Users `import
+	// "wiresmith/options.proto"` from their own .proto files; the memResolver
+	// serves it from the embed. A user file at the canonical path would
+	// silently shadow the embedded schema — reject that explicitly rather
+	// than guessing intent.
+	if _, ok := mapping[embeddedOptionsPath]; ok {
+		return fmt.Errorf("user proto at %q conflicts with the embedded wiresmith schema — remove the on-disk file; wiresmith serves it from its own embed", embeddedOptionsPath)
 	}
+	mapping[embeddedOptionsPath] = embeddedOptionsProto
+	importPaths = append(importPaths, embeddedOptionsPath)
+	// buildImportMapping returns importPaths sorted for determinism; restore
+	// that invariant after the in-place append.
+	sort.Strings(importPaths)
 
 	// WithStandardImports satisfies imports for the well-known protos
 	// (`google/protobuf/descriptor.proto` and friends) that the embedded
