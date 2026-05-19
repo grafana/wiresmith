@@ -13,15 +13,21 @@ import (
 	"wiresmith/compiler/types"
 
 	"github.com/bufbuild/protocompile"
+	"github.com/bufbuild/protocompile/linker"
 	"github.com/bufbuild/protocompile/reporter"
 	"google.golang.org/protobuf/encoding/protowire"
 	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/types/descriptorpb"
 )
 
 type Generator struct {
 	Module   string
 	OutDir   string
 	ProtoDir string
+
+	// goPackages maps a proto package name to the raw value of its
+	// `option go_package`. Populated during Generate after compilation.
+	goPackages map[string]string
 }
 
 type FileGenerator struct {
@@ -80,6 +86,13 @@ func (g *Generator) Generate(ctx context.Context) error {
 		return fmt.Errorf("compiling protos: %w", err)
 	}
 
+	if err := g.collectGoPackages(results); err != nil {
+		return err
+	}
+	if err := g.validateDestinations(results); err != nil {
+		return err
+	}
+
 	// Detect output-path collisions up front, before writing any files. Two
 	// protos in different directories with the same package and same basename
 	// would otherwise silently clobber each other on disk — recursive scanning
@@ -102,21 +115,99 @@ func (g *Generator) Generate(ctx context.Context) error {
 	return nil
 }
 
-// outputPathFor returns the output path (relative to or under g.OutDir,
-// matching whatever shape OutDir has) for the .pb.go file that will be
-// produced for fd. The path is derived from the proto's package (via
-// goPackageDir) and basename, mirroring what generateFile writes.
+// outputPathFor returns the output path for the .pb.go file produced for fd.
+// The directory is taken straight from destFor — the single source of truth
+// the import tracker and consumers also use, so they can't disagree.
 func (g *Generator) outputPathFor(fd protoreflect.FileDescriptor) string {
-	dir := filepath.Join(g.OutDir, goPackageDir(string(fd.Package())))
+	dest := destFor(g.Module, string(fd.Package()), g.goPackages)
 	base := strings.TrimSuffix(filepath.Base(fd.Path()), ".proto") + ".pb.go"
-	return filepath.Join(dir, base)
+	return filepath.Join(g.OutDir, dest.relDir, base)
+}
+
+// collectGoPackages records every file's `option go_package` value, keyed
+// by proto package. Every file belonging to one proto package must declare
+// the same value — including "unset". An asymmetric mix (file A sets it,
+// file B in the same package omits it) is rejected too: silently treating
+// the unset file as if it inherited A's value would contradict the
+// upfront-agreement contract and could move generated files unexpectedly.
+//
+// The path-traversal check sits here because it only makes sense against
+// the raw go_package string; cross-mode destination collisions are caught
+// later in validateDestinations against the resolved goDest.
+func (g *Generator) collectGoPackages(results linker.Files) error {
+	g.goPackages = make(map[string]string)
+	base := effectiveBase(g.Module)
+
+	// sighting captures the first go_package value (possibly empty) we saw
+	// for a proto pkg and the file we saw it in, so a later disagreement
+	// can be reported with both endpoints.
+	type sighting struct{ value, path string }
+	seen := make(map[string]sighting)
+
+	for _, fd := range results {
+		// GetGoPackage is nil-safe — it returns "" if the cast fails or
+		// the option is unset.
+		opts, _ := fd.Options().(*descriptorpb.FileOptions)
+		goPkg := opts.GetGoPackage()
+		pkg := string(fd.Package())
+
+		if prev, ok := seen[pkg]; ok {
+			if prev.value != goPkg {
+				return fmt.Errorf("inconsistent go_package for package %q: %s declares %q but %s declares %q",
+					pkg, prev.path, prev.value, fd.Path(), goPkg)
+			}
+			continue
+		}
+		seen[pkg] = sighting{value: goPkg, path: fd.Path()}
+
+		if goPkg == "" {
+			continue
+		}
+		g.goPackages[pkg] = goPkg
+
+		// Reject `..` segments in go_package values that fall under our
+		// base. Without this, filepath.Join(g.OutDir, relDir) would
+		// silently write outside the configured output directory.
+		importPath, _ := parseGoPackage(goPkg)
+		if importPath != base && !strings.HasPrefix(importPath, base+"/") {
+			continue
+		}
+		for _, seg := range strings.Split(importPath, "/") {
+			if seg == ".." {
+				return fmt.Errorf("invalid go_package %q in %s: path contains '..' segment",
+					goPkg, fd.Path())
+			}
+		}
+	}
+	return nil
+}
+
+// validateDestinations runs destFor for every compiled file and rejects the
+// case where two distinct proto packages resolve to the same Go directory.
+// This catches three failure modes at once: two protos with the same in-base
+// go_package, a go_package shadowing the default mapping of another package,
+// and a default mapping shadowing an explicit go_package. Routing every file
+// through destFor (not just those with go_package set) is the part that
+// makes the cross-mode case visible.
+func (g *Generator) validateDestinations(results linker.Files) error {
+	dirOwner := make(map[string]string)
+	for _, fd := range results {
+		protoPkg := string(fd.Package())
+		dest := destFor(g.Module, protoPkg, g.goPackages)
+		if owner, ok := dirOwner[dest.relDir]; ok && owner != protoPkg {
+			return fmt.Errorf("destination %q is claimed by both proto packages %q and %q (check go_package options)",
+				dest.relDir, owner, protoPkg)
+		}
+		dirOwner[dest.relDir] = protoPkg
+	}
+	return nil
 }
 
 func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 	fg := &FileGenerator{
 		fd:      fd,
 		module:  g.Module,
-		imports: newImportTracker(g.Module, string(fd.Package())),
+		imports: newImportTracker(g.Module, string(fd.Package()), g.goPackages),
 		body:    &bytes.Buffer{},
 	}
 
@@ -155,30 +246,42 @@ func (fg *FileGenerator) emitHeader(out *bytes.Buffer) {
 	pkg := string(fg.fd.Package())
 	fmt.Fprintf(out, "// Code generated by wiresmith. DO NOT EDIT.\n")
 	fmt.Fprintf(out, "// source: %s\n\n", fg.fd.Path())
-	fmt.Fprintf(out, "package %s\n\n", goPackageName(pkg))
+	fmt.Fprintf(out, "package %s\n\n", fg.imports.resolvePkgName(pkg))
 
-	// Collect all imports
 	type imp struct {
-		path  string
-		alias string
+		path    string
+		alias   string
+		natural string
 	}
 	var imps []imp
-	for path, alias := range fg.imports.imports {
-		imps = append(imps, imp{path, alias})
+	for p, e := range fg.imports.imports {
+		// Pre-reserved entries that no emitter actually requested would
+		// produce "imported and not used" if emitted — skip them. They
+		// existed only so aliasInUse could see their natural names.
+		if !e.requested {
+			continue
+		}
+		imps = append(imps, imp{p, e.alias, e.naturalName})
 	}
 	sort.Slice(imps, func(i, j int) bool { return imps[i].path < imps[j].path })
 
-	if len(imps) > 0 {
-		fmt.Fprintf(out, "import (\n")
-		for _, i := range imps {
-			if i.alias != "" && !strings.HasSuffix(i.path, "/"+i.alias) {
-				fmt.Fprintf(out, "\t%s %q\n", i.alias, i.path)
-			} else {
-				fmt.Fprintf(out, "\t%q\n", i.path)
-			}
-		}
-		fmt.Fprintf(out, ")\n\n")
+	if len(imps) == 0 {
+		return
 	}
+	fmt.Fprintf(out, "import (\n")
+	for _, i := range imps {
+		// Elide the alias only when Go would arrive at the same identifier
+		// anyway — that is, when the alias matches the imported file's
+		// declared `package` clause. Using path.Base instead would be wrong
+		// for go_package's `;name` form, where the declared name and the
+		// path's last segment can differ.
+		if i.alias == "" || i.alias == i.natural {
+			fmt.Fprintf(out, "\t%q\n", i.path)
+		} else {
+			fmt.Fprintf(out, "\t%s %q\n", i.alias, i.path)
+		}
+	}
+	fmt.Fprintf(out, ")\n\n")
 }
 
 func (fg *FileGenerator) emitAllEnums(fd protoreflect.FileDescriptor) {
