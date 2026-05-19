@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"path"
 	"strings"
 	"unicode"
 
@@ -43,6 +44,74 @@ func goPackageDir(protoPkg string) string {
 
 func goImportPath(module, protoPkg string) string {
 	return module + "/gen/" + goPackageDir(protoPkg)
+}
+
+// effectiveBase returns the Go import path prefix under which wiresmith
+// generates code. A go_package option counts as "ours" only if its import
+// path falls under this base.
+func effectiveBase(module string) string {
+	return module + "/gen"
+}
+
+// parseGoPackage parses a go_package option value. The proto3 format is
+// "import/path" or "import/path;name" — the optional semicolon form lets
+// the .proto author override the Go package name independently of the
+// import path's last component.
+func parseGoPackage(goPackage string) (importPath, pkgName string) {
+	if goPackage == "" {
+		return "", ""
+	}
+	if i := strings.LastIndex(goPackage, ";"); i >= 0 {
+		importPath = goPackage[:i]
+		pkgName = goPackage[i+1:]
+		if pkgName == "" {
+			pkgName = cleanPackageName(path.Base(importPath))
+		}
+		return importPath, pkgName
+	}
+	return goPackage, cleanPackageName(path.Base(goPackage))
+}
+
+// cleanPackageName replaces characters that are not valid in a Go identifier
+// with underscores. A leading digit is also replaced because Go identifiers
+// must not start with a digit. Matches protogen/gogoproto behavior.
+func cleanPackageName(name string) string {
+	if name == "" {
+		return "_"
+	}
+	var b strings.Builder
+	b.Grow(len(name))
+	for i, r := range name {
+		switch {
+		case r >= 'a' && r <= 'z', r >= 'A' && r <= 'Z', r == '_':
+			b.WriteRune(r)
+		case i > 0 && r >= '0' && r <= '9':
+			b.WriteRune(r)
+		default:
+			b.WriteByte('_')
+		}
+	}
+	return b.String()
+}
+
+// resolveGoPackage looks up the go_package option for protoPkg and, if it
+// falls under base, returns the import path, the directory relative to base,
+// and the Go package name. ok is false when no go_package is set or when it
+// points outside base — callers should fall back to the default scheme.
+func resolveGoPackage(protoPkg string, goPackages map[string]string, base string) (importPath, relDir, pkgName string, ok bool) {
+	goPkg, exists := goPackages[protoPkg]
+	if !exists {
+		return "", "", "", false
+	}
+	importPath, pkgName = parseGoPackage(goPkg)
+	switch {
+	case importPath == base:
+		return importPath, "", pkgName, true
+	case strings.HasPrefix(importPath, base+"/"):
+		return importPath, strings.TrimPrefix(importPath, base+"/"), pkgName, true
+	default:
+		return "", "", "", false
+	}
 }
 
 func goMessageTypeName(md protoreflect.MessageDescriptor) string {

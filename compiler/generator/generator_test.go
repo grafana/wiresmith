@@ -503,3 +503,149 @@ func TestGenerateOutputCollision(t *testing.T) {
 		t.Errorf("expected no files written on collision, found %d in %s", len(entries), collisionDir)
 	}
 }
+
+// TestGenerateWithGoPackage verifies that a proto's `option go_package` drives
+// the Go package name, output directory, and the alias used by importing
+// files, as long as the go_package import path falls under the module's
+// effective base (module + "/gen").
+func TestGenerateWithGoPackage(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "a.proto", `
+syntax = "proto3";
+package myproject.a;
+option go_package = "example.com/mod/gen/myproject/a;a";
+message Foo { string name = 1; }`)
+	writeProto(t, protoDir, "b.proto", `
+syntax = "proto3";
+package myproject.b;
+option go_package = "example.com/mod/gen/myproject/b;b";
+import "myproject/a/a.proto";
+message Bar { myproject.a.Foo foo = 1; }`)
+
+	outDir := t.TempDir()
+	gen := &Generator{
+		Module:   "example.com/mod",
+		OutDir:   outDir,
+		ProtoDir: protoDir,
+	}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
+	}
+
+	aContent, err := os.ReadFile(filepath.Join(outDir, "myproject", "a", "a.pb.go"))
+	if err != nil {
+		t.Fatalf("expected output at myproject/a/a.pb.go: %v", err)
+	}
+	bContent, err := os.ReadFile(filepath.Join(outDir, "myproject", "b", "b.pb.go"))
+	if err != nil {
+		t.Fatalf("expected output at myproject/b/b.pb.go: %v", err)
+	}
+
+	// Package name comes from the go_package semicolon form, not from the
+	// proto package's last two components.
+	if !strings.Contains(string(aContent), "package a\n") {
+		t.Errorf("a.pb.go: expected 'package a', not derived 'myprojecta'")
+	}
+	if !strings.Contains(string(bContent), "package b\n") {
+		t.Errorf("b.pb.go: expected 'package b'")
+	}
+
+	// Cross-file import in b.pb.go must use the go_package import path of a.
+	if !strings.Contains(string(bContent), `"example.com/mod/gen/myproject/a"`) {
+		t.Errorf("b.pb.go: expected import of example.com/mod/gen/myproject/a, got:\n%s", string(bContent))
+	}
+}
+
+// TestGenerateGoPackageFallback verifies that a go_package option pointing
+// outside the module's effective base is ignored — the proto falls back to
+// the default package-derived layout. This matches the OTel case where
+// go_package is "go.opentelemetry.io/..." but we generate under "wiresmith/gen".
+func TestGenerateGoPackageFallback(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "x.proto", `
+syntax = "proto3";
+package mytest.x;
+option go_package = "some.other/module/pkg";
+message Msg { int32 val = 1; }`)
+
+	outDir := t.TempDir()
+	gen := &Generator{
+		Module:   "wiresmith",
+		OutDir:   outDir,
+		ProtoDir: protoDir,
+	}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
+	}
+
+	content, err := os.ReadFile(filepath.Join(outDir, "mytest", "x", "x.pb.go"))
+	if err != nil {
+		t.Fatalf("expected fallback output: %v", err)
+	}
+	// Falls back to default goPackageName ("mytestx"), not "pkg" from go_package.
+	if !strings.Contains(string(content), "package mytestx\n") {
+		t.Errorf("expected fallback 'package mytestx', got:\n%s", string(content))
+	}
+}
+
+// TestGenerateGoPackageWithSemicolon verifies the semicolon form
+// "import/path;name" lets the proto author choose a Go package name that
+// differs from the last component of the import path.
+func TestGenerateGoPackageWithSemicolon(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "svc.proto", `
+syntax = "proto3";
+package myapp.svc;
+option go_package = "example.com/app/gen/myapp/svc;service";
+message Request { string id = 1; }`)
+
+	outDir := t.TempDir()
+	gen := &Generator{
+		Module:   "example.com/app",
+		OutDir:   outDir,
+		ProtoDir: protoDir,
+	}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
+	}
+
+	content, err := os.ReadFile(filepath.Join(outDir, "myapp", "svc", "svc.pb.go"))
+	if err != nil {
+		t.Fatalf("expected output: %v", err)
+	}
+	// The semicolon name wins over path.Base.
+	if !strings.Contains(string(content), "package service\n") {
+		t.Errorf("expected 'package service', got:\n%s", string(content))
+	}
+}
+
+// TestGenerateConflictingGoPackage rejects the configuration where two .proto
+// files share a proto package but disagree on go_package. With recursive
+// scanning, this can happen by accident, and a single proto package must map
+// to one Go destination.
+func TestGenerateConflictingGoPackage(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "a.proto", `
+syntax = "proto3";
+package mypkg;
+option go_package = "example.com/mod/gen/mypkg;a";
+message Foo { string name = 1; }`)
+	writeProto(t, protoDir, "b.proto", `
+syntax = "proto3";
+package mypkg;
+option go_package = "example.com/mod/gen/mypkg;b";
+message Bar { string id = 1; }`)
+
+	gen := &Generator{
+		Module:   "example.com/mod",
+		OutDir:   t.TempDir(),
+		ProtoDir: protoDir,
+	}
+	err := gen.Generate(context.Background())
+	if err == nil {
+		t.Fatal("expected conflicting go_package error, got nil")
+	}
+	if !strings.Contains(err.Error(), "conflicting go_package") {
+		t.Errorf("expected 'conflicting go_package' error, got: %v", err)
+	}
+}

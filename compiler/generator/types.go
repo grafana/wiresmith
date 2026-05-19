@@ -5,28 +5,47 @@ import (
 )
 
 type ImportTracker struct {
-	module  string
-	selfPkg string
-	imports map[string]string // import path -> alias
+	module     string
+	selfPkg    string
+	goPackages map[string]string // proto pkg -> raw go_package option value
+	imports    map[string]string // import path -> alias
 }
 
-func newImportTracker(module string, selfPkg string) *ImportTracker {
+func newImportTracker(module, selfPkg string, goPackages map[string]string) *ImportTracker {
 	return &ImportTracker{
-		module:  module,
-		selfPkg: selfPkg,
-		imports: make(map[string]string),
+		module:     module,
+		selfPkg:    selfPkg,
+		goPackages: goPackages,
+		imports:    make(map[string]string),
 	}
 }
 
+// addImport registers an import path with the given alias. Repeated calls
+// with the same path keep the first alias — callers don't need to coordinate
+// the order of helper-emitter calls.
 func (it *ImportTracker) addImport(importPath, alias string) string {
+	if existing, ok := it.imports[importPath]; ok {
+		return existing
+	}
 	it.imports[importPath] = alias
 	return alias
 }
 
+// resolvePkgName returns the Go package name for protoPkg, preferring the
+// go_package option when it falls under our import base and falling back to
+// the default scheme otherwise.
+func (it *ImportTracker) resolvePkgName(protoPkg string) string {
+	if _, _, pkgName, ok := resolveGoPackage(protoPkg, it.goPackages, effectiveBase(it.module)); ok {
+		return pkgName
+	}
+	return goPackageName(protoPkg)
+}
+
 func (it *ImportTracker) addProtoImport(protoPkg string) string {
-	alias := goPackageName(protoPkg)
-	importPath := goImportPath(it.module, protoPkg)
-	return it.addImport(importPath, alias)
+	if importPath, _, pkgName, ok := resolveGoPackage(protoPkg, it.goPackages, effectiveBase(it.module)); ok {
+		return it.addImport(importPath, pkgName)
+	}
+	return it.addImport(goImportPath(it.module, protoPkg), goPackageName(protoPkg))
 }
 
 func (it *ImportTracker) goType(fd protoreflect.FieldDescriptor) string {
