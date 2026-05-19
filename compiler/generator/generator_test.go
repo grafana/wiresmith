@@ -5,6 +5,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"testing"
 )
@@ -258,5 +259,247 @@ func TestGenerateMatchesCheckedIn(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func writeProto(t *testing.T, dir, relPath, content string) {
+	t.Helper()
+	full := filepath.Join(dir, relPath)
+	if err := os.MkdirAll(filepath.Dir(full), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(full, []byte(content), 0o644); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestBuildImportMappingFlat(t *testing.T) {
+	dir := t.TempDir()
+	writeProto(t, dir, "foo.proto", "syntax = \"proto3\";\npackage test.foo;\nmessage Foo {}")
+
+	mapping, importPaths, err := buildImportMapping(dir)
+	if err != nil {
+		t.Fatalf("buildImportMapping: %v", err)
+	}
+	if len(importPaths) != 1 {
+		t.Fatalf("expected 1 import path, got %d", len(importPaths))
+	}
+	// Top-level file uses package-derived key as its canonical path.
+	if _, ok := mapping["test/foo/foo.proto"]; !ok {
+		keys := make([]string, 0, len(mapping))
+		for k := range mapping {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		t.Errorf("expected key test/foo/foo.proto in mapping, got keys: %v", keys)
+	}
+	// The plain filename must not be registered — doing so would cause
+	// protocompile to compile the same content twice if a consumer imported
+	// it via the basename, producing a duplicate-symbol error.
+	if _, ok := mapping["foo.proto"]; ok {
+		t.Error("plain filename foo.proto should not be aliased; only canonical pkg-derived key should exist")
+	}
+}
+
+func TestBuildImportMappingRecursive(t *testing.T) {
+	dir := t.TempDir()
+	writeProto(t, dir, "common/v1/common.proto",
+		"syntax = \"proto3\";\npackage tempopb.common.v1;\nmessage Foo {}")
+	writeProto(t, dir, "trace/v1/trace.proto",
+		"syntax = \"proto3\";\npackage tempopb.trace.v1;\nimport \"common/v1/common.proto\";\nmessage Bar { tempopb.common.v1.Foo foo = 1; }")
+
+	mapping, importPaths, err := buildImportMapping(dir)
+	if err != nil {
+		t.Fatalf("buildImportMapping: %v", err)
+	}
+	if len(importPaths) != 2 {
+		t.Fatalf("expected 2 import paths, got %d: %v", len(importPaths), importPaths)
+	}
+	if _, ok := mapping["common/v1/common.proto"]; !ok {
+		t.Error("expected common/v1/common.proto in mapping")
+	}
+	if _, ok := mapping["trace/v1/trace.proto"]; !ok {
+		t.Error("expected trace/v1/trace.proto in mapping")
+	}
+	// Determinism: importPaths must be sorted.
+	sorted := make([]string, len(importPaths))
+	copy(sorted, importPaths)
+	sort.Strings(sorted)
+	for i := range importPaths {
+		if importPaths[i] != sorted[i] {
+			t.Errorf("import paths not sorted: %v", importPaths)
+			break
+		}
+	}
+}
+
+func TestBuildImportMappingMixed(t *testing.T) {
+	dir := t.TempDir()
+	writeProto(t, dir, "root.proto",
+		"syntax = \"proto3\";\npackage mypkg;\nmessage Root {}")
+	writeProto(t, dir, "sub/v1/nested.proto",
+		"syntax = \"proto3\";\npackage mypkg.sub.v1;\nmessage Nested {}")
+
+	mapping, importPaths, err := buildImportMapping(dir)
+	if err != nil {
+		t.Fatalf("buildImportMapping: %v", err)
+	}
+	if len(importPaths) != 2 {
+		t.Fatalf("expected 2 import paths, got %d: %v", len(importPaths), importPaths)
+	}
+	if _, ok := mapping["mypkg/root.proto"]; !ok {
+		t.Error("expected mypkg/root.proto for top-level file")
+	}
+	if _, ok := mapping["sub/v1/nested.proto"]; !ok {
+		t.Error("expected sub/v1/nested.proto for nested file")
+	}
+}
+
+func TestBuildImportMappingNoPackage(t *testing.T) {
+	dir := t.TempDir()
+	writeProto(t, dir, "bare.proto", "syntax = \"proto3\";\nmessage Bare {}")
+
+	_, _, err := buildImportMapping(dir)
+	if err == nil {
+		t.Fatal("expected error for proto without package, got nil")
+	}
+	if !strings.Contains(err.Error(), "no package found") {
+		t.Errorf("expected 'no package found' error, got: %v", err)
+	}
+}
+
+// TestBuildImportMappingDuplicateKey covers the realistic collision: a
+// top-level file's package-derived key collides with a nested file's
+// relative-path key (e.g. top-level foo.proto with `package bar` produces
+// key `bar/foo.proto`, same as a nested file at `bar/foo.proto`).
+func TestBuildImportMappingDuplicateKey(t *testing.T) {
+	dir := t.TempDir()
+	writeProto(t, dir, "foo.proto",
+		"syntax = \"proto3\";\npackage bar;\nmessage Foo {}")
+	writeProto(t, dir, "bar/foo.proto",
+		"syntax = \"proto3\";\npackage bar;\nmessage Foo {}")
+
+	_, _, err := buildImportMapping(dir)
+	if err == nil {
+		t.Fatal("expected duplicate-key error, got nil")
+	}
+	if !strings.Contains(err.Error(), "duplicate import key") {
+		t.Errorf("expected 'duplicate import key' error, got: %v", err)
+	}
+}
+
+// TestGenerateNestedLayout runs the full generator pipeline against a
+// recursive proto layout where a nested file imports another nested file.
+// This is the integration-level counterpart to TestBuildImportMappingRecursive:
+// it verifies the import keys we register actually resolve through protocompile
+// and that .pb.go files land at the expected goPackageDir locations.
+func TestGenerateNestedLayout(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "common/v1/common.proto",
+		"syntax = \"proto3\";\npackage testpb.common.v1;\nmessage Resource { string name = 1; }")
+	writeProto(t, protoDir, "trace/v1/trace.proto",
+		"syntax = \"proto3\";\npackage testpb.trace.v1;\nimport \"common/v1/common.proto\";\nmessage Span { testpb.common.v1.Resource resource = 1; }")
+
+	outDir := t.TempDir()
+	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate failed: %v", err)
+	}
+
+	for _, rel := range []string{
+		filepath.Join("testpb", "common", "v1", "common.pb.go"),
+		filepath.Join("testpb", "trace", "v1", "trace.pb.go"),
+	} {
+		path := filepath.Join(outDir, rel)
+		info, err := os.Stat(path)
+		if err != nil {
+			t.Errorf("expected generated file %s: %v", rel, err)
+			continue
+		}
+		if info.Size() == 0 {
+			t.Errorf("generated file %s is empty", rel)
+		}
+	}
+
+	// The cross-file import must be reflected in the consumer file: trace.pb.go
+	// should reference the common package's Go import path so it actually
+	// compiles. A missing import would mean protocompile resolved the .proto
+	// import but the generator dropped it.
+	traceContent, err := os.ReadFile(filepath.Join(outDir, "testpb", "trace", "v1", "trace.pb.go"))
+	if err != nil {
+		t.Fatalf("reading trace.pb.go: %v", err)
+	}
+	if !strings.Contains(string(traceContent), "wiresmith/gen/testpb/common/v1") {
+		t.Errorf("trace.pb.go missing cross-package import to common/v1; content:\n%s", traceContent)
+	}
+}
+
+// TestGenerateMixedLayoutImport documents the supported import shape for a
+// mixed flat+nested layout: a nested file importing a top-level file must
+// use the top-level's package-derived path (its canonical key), not the
+// plain basename. The plain-basename form fails because protocompile uses
+// the queried path as file identity and would compile the file twice.
+func TestGenerateMixedLayoutImport(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "common.proto",
+		"syntax = \"proto3\";\npackage testpb;\nmessage Resource { string name = 1; }")
+	writeProto(t, protoDir, "trace/v1/trace.proto",
+		"syntax = \"proto3\";\npackage testpb.trace.v1;\nimport \"testpb/common.proto\";\nmessage Span { testpb.Resource resource = 1; }")
+
+	outDir := t.TempDir()
+	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate failed: %v", err)
+	}
+
+	for _, rel := range []string{
+		filepath.Join("testpb", "common.pb.go"),
+		filepath.Join("testpb", "trace", "v1", "trace.pb.go"),
+	} {
+		if _, err := os.Stat(filepath.Join(outDir, rel)); err != nil {
+			t.Errorf("expected generated file %s: %v", rel, err)
+		}
+	}
+
+	// The plain-basename form must be rejected: registering both keys for the
+	// same content would cause protocompile to compile it twice and emit a
+	// duplicate-symbol error.
+	protoDir2 := t.TempDir()
+	writeProto(t, protoDir2, "common.proto",
+		"syntax = \"proto3\";\npackage testpb;\nmessage Resource { string name = 1; }")
+	writeProto(t, protoDir2, "trace/v1/trace.proto",
+		"syntax = \"proto3\";\npackage testpb.trace.v1;\nimport \"common.proto\";\nmessage Span { testpb.Resource resource = 1; }")
+	gen2 := &Generator{Module: "wiresmith", OutDir: t.TempDir(), ProtoDir: protoDir2}
+	if err := gen2.Generate(context.Background()); err == nil {
+		t.Error("expected plain-basename import to fail; canonical pkg-derived path is required for cross-imports")
+	}
+}
+
+// TestGenerateOutputCollision verifies that two protos in different
+// subdirectories sharing the same package and basename are rejected
+// before any file is written. Without this guard, recursive scanning
+// would silently clobber the first .pb.go with the second.
+func TestGenerateOutputCollision(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "a/v1/shared.proto",
+		"syntax = \"proto3\";\npackage testpb.shared.v1;\nmessage A {}")
+	writeProto(t, protoDir, "b/v1/shared.proto",
+		"syntax = \"proto3\";\npackage testpb.shared.v1;\nmessage B {}")
+
+	outDir := t.TempDir()
+	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	err := gen.Generate(context.Background())
+	if err == nil {
+		t.Fatal("expected output-collision error, got nil")
+	}
+	if !strings.Contains(err.Error(), "output collision") {
+		t.Errorf("expected 'output collision' error, got: %v", err)
+	}
+
+	// Fail-fast guarantee: no .pb.go should have been written before the
+	// collision was detected.
+	collisionDir := filepath.Join(outDir, "testpb", "shared", "v1")
+	if entries, err := os.ReadDir(collisionDir); err == nil && len(entries) > 0 {
+		t.Errorf("expected no files written on collision, found %d in %s", len(entries), collisionDir)
 	}
 }
