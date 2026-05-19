@@ -107,7 +107,7 @@ func (fg *FileGenerator) emitFieldEqual(fd protoreflect.FieldDescriptor, goName 
 		return
 	}
 
-	// `(wiresmith.pointer) = true` singular message: same nil-check + deep
+	// `(wiresmith.options.pointer) = true` singular message: same nil-check + deep
 	// Equal as optional-message. Equal is nil-safe on the generated method, so
 	// the `this.F != nil` guard could be elided — kept for symmetry with the
 	// optional path and to make the "nil vs &Msg{}" distinction explicit.

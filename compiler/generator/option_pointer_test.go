@@ -33,7 +33,7 @@ func runGenerator(t *testing.T, protoBody string) error {
 }
 
 // Helper-of-helper that asserts the error contains both the "invalid
-// (wiresmith.pointer) placement" header and a substring describing the
+// (wiresmith.options.pointer) placement" header and a substring describing the
 // specific reason. Anchoring on both protects against a regression where the
 // error gets rewritten to omit the field-level reason.
 func expectInvalidPointer(t *testing.T, err error, reasonSubstr string) {
@@ -42,7 +42,7 @@ func expectInvalidPointer(t *testing.T, err error, reasonSubstr string) {
 		t.Fatalf("expected error, got nil")
 	}
 	msg := err.Error()
-	if !strings.Contains(msg, "invalid (wiresmith.pointer) placement") {
+	if !strings.Contains(msg, "invalid (wiresmith.options.pointer) placement") {
 		t.Errorf("missing header in error: %s", msg)
 	}
 	if !strings.Contains(msg, reasonSubstr) {
@@ -147,6 +147,35 @@ message Holder {
 	}
 	if !strings.Contains(src, "Repeated []*Inner") {
 		t.Errorf("expected `Repeated []*Inner` in struct, got:\n%s", src)
+	}
+}
+
+// A user proto whose package coincidentally matches the embedded schema's
+// (`wiresmith.options`) must not be skipped as if it were the embedded schema
+// itself. The embedded file is identified by canonical path; matching by
+// package would silently drop this user file's output.
+func TestPointerOption_UserFileSharingEmbeddedPackageStillEmits(t *testing.T) {
+	protoDir := t.TempDir()
+	outDir := t.TempDir()
+
+	const body = `
+syntax = "proto3";
+package wiresmith.options;
+option go_package = "wiresmith/gen/userwo/v1";
+message UserMessage { int32 x = 1; }
+`
+	if err := os.WriteFile(filepath.Join(protoDir, "user.proto"), []byte(body), 0o644); err != nil {
+		t.Fatalf("writing proto: %v", err)
+	}
+
+	g := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	if err := g.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate failed: %v", err)
+	}
+
+	out := filepath.Join(outDir, "userwo", "v1", "user.pb.go")
+	if _, err := os.Stat(out); err != nil {
+		t.Fatalf("expected generated file at %s: %v", out, err)
 	}
 }
 

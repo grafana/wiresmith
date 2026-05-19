@@ -15,8 +15,8 @@ type presenceField struct {
 // fieldsForPresence returns message fields that need presence-bitmap tracking.
 // These are singular fields without their own presence semantics:
 // not repeated, not map, not optional (pointer), not oneof (interface),
-// and not annotated with `(wiresmith.pointer) = true` (which makes the field
-// a pointer with nil-check presence, same shape as optional).
+// and not annotated with `(wiresmith.options.pointer) = true` (which makes the
+// field a pointer with nil-check presence, same shape as optional).
 func (fg *FileGenerator) fieldsForPresence(md protoreflect.MessageDescriptor) []presenceField {
 	var fields []presenceField
 	for i := 0; i < md.Fields().Len(); i++ {

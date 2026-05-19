@@ -52,7 +52,7 @@ func (fg *FileGenerator) emitGetters(md protoreflect.MessageDescriptor) {
 			continue
 		}
 
-		// Singular `(wiresmith.pointer) = true` message: the struct field is
+		// Singular `(wiresmith.options.pointer) = true` message: the struct field is
 		// already `*Msg`, so the getter returns it directly with the standard
 		// nil-receiver guard. No bitmap involvement — pointer-message fields
 		// are excluded from fieldsForPresence (presence is the nil check).

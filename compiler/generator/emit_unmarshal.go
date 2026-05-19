@@ -143,8 +143,8 @@ func (fg *FileGenerator) emitPreScan(md protoreflect.MessageDescriptor) {
 
 	for _, fd := range fields {
 		goName := snakeToPascal(string(fd.Name()))
-		// goFieldType respects (wiresmith.pointer) so a repeated pointer-message
-		// field pre-allocates as `[]*Msg` rather than `[]Msg`.
+		// goFieldType respects (wiresmith.options.pointer) so a repeated
+		// pointer-message field pre-allocates as `[]*Msg` rather than `[]Msg`.
 		goType := fg.goFieldType(fd)
 		fmt.Fprintf(fg.body, "\t\tif field%dcount > 0 {\n", fd.Number())
 		if fd.IsMap() {
@@ -247,8 +247,8 @@ func (fg *FileGenerator) emitFieldUnmarshal(md protoreflect.MessageDescriptor, f
 	if fd.IsList() {
 		ctx := fg.fieldContext(fd)
 		// fieldType dispatches between RepeatedField and RepeatedPointer based
-		// on `(wiresmith.pointer)`; the FieldType interface keeps the call
-		// site uniform.
+		// on `(wiresmith.options.pointer)`; the FieldType interface keeps the
+		// call site uniform.
 		ft := fg.fieldType(fd)
 		types.AddTypeImports(fg, ft)
 		ft.EmitUnmarshal(fg, access, ctx)
@@ -313,11 +313,13 @@ func (fg *FileGenerator) emitFieldUnmarshal(md protoreflect.MessageDescriptor, f
 		return
 	}
 
-	// Singular `(wiresmith.pointer) = true` on a message field. Routed
-	// through PointerField (mirrors the inline optional-message block above
-	// but kept in the composite for symmetry with the marshal/size paths).
+	// Singular `(wiresmith.options.pointer) = true` on a message field is
+	// dispatched through fg.fieldType — the same single entry point used by
+	// emit_marshal, emit_size, and the repeated branch above. Routing it here
+	// instead of inlining a second PointerField construction keeps the option
+	// visible in exactly one place.
 	if fg.hasPointerOption(fd) && fd.Kind() == protoreflect.MessageKind {
-		pf := &types.PointerField{Inner: t}
+		pf := fg.fieldType(fd)
 		types.AddTypeImports(fg, pf)
 		pf.EmitUnmarshal(fg, access, ctx)
 		return

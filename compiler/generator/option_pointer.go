@@ -16,13 +16,15 @@ import (
 // truth — bump alongside the .proto file if the extension is ever renamed.
 const pointerExtensionName = "wiresmith.options.pointer"
 
-// resolvePointerExtension finds the `(wiresmith.pointer)` extension descriptor
-// among the linked files and caches it on the Generator. Always succeeds when
-// the embedded options proto is in the input set; returns an error otherwise
-// so callers see a clear failure instead of silently dropping the option.
+// resolvePointerExtension finds the `(wiresmith.options.pointer)` extension
+// descriptor among the linked files and caches it on the Generator. Always
+// succeeds when the embedded options proto is in the input set; returns an
+// error otherwise so callers see a clear failure instead of silently dropping
+// the option. The lookup matches the embedded file by canonical import path so
+// a user file declaring the same proto package can never shadow it.
 func (g *Generator) resolvePointerExtension(results linker.Files) error {
 	for _, fd := range results {
-		if string(fd.Package()) != embeddedOptionsPackage {
+		if fd.Path() != embeddedOptionsPath {
 			continue
 		}
 		exts := fd.Extensions()
@@ -38,10 +40,10 @@ func (g *Generator) resolvePointerExtension(results linker.Files) error {
 }
 
 // hasPointerOption reports whether the field is annotated with
-// `[(wiresmith.pointer) = true]`. Safe to call on any field descriptor; returns
-// false when the option is absent, when the FieldOptions are nil, or when the
-// extension descriptor has not been resolved (e.g. unit tests that bypass
-// Generate).
+// `[(wiresmith.options.pointer) = true]`. Safe to call on any field descriptor;
+// returns false when the option is absent, when the FieldOptions are nil, or
+// when the extension descriptor has not been resolved (e.g. unit tests that
+// bypass Generate).
 func (fg *FileGenerator) hasPointerOption(fd protoreflect.FieldDescriptor) bool {
 	return hasPointerOption(fg.pointerExt, fd)
 }
@@ -73,9 +75,9 @@ func hasPointerOption(ext protoreflect.FieldDescriptor, fd protoreflect.FieldDes
 }
 
 // validatePointerOptions walks every field in every result file and rejects
-// invalid placements of `(wiresmith.pointer)`. Run after resolvePointerExtension
-// and before any emit pass so problems surface as a single clear error rather
-// than as garbled generated code.
+// invalid placements of `(wiresmith.options.pointer)`. Run after
+// resolvePointerExtension and before any emit pass so problems surface as a
+// single clear error rather than as garbled generated code.
 //
 // Allowed: singular or repeated message fields.
 // Rejected: scalars/enums/bytes/strings, optional fields (redundant), oneof
@@ -104,7 +106,7 @@ func (g *Generator) validatePointerOptions(results linker.Files) error {
 	}
 	// One combined error keeps the message useful when several offending
 	// fields appear in the same input.
-	out := "invalid (wiresmith.pointer) placement:\n"
+	out := "invalid (wiresmith.options.pointer) placement:\n"
 	for _, e := range errs {
 		out += "  - " + e + "\n"
 	}
@@ -115,16 +117,16 @@ func (g *Generator) validatePointerOptions(results linker.Files) error {
 // allowed on this field, or "" if the placement is valid.
 func pointerOptionRejection(fd protoreflect.FieldDescriptor) string {
 	if fd.IsMap() {
-		return "(wiresmith.pointer) is not supported on map fields"
+		return "(wiresmith.options.pointer) is not supported on map fields"
 	}
 	if isRealOneof(fd) {
-		return "(wiresmith.pointer) is not supported on oneof variants — variants are already interface-boxed"
+		return "(wiresmith.options.pointer) is not supported on oneof variants — variants are already interface-boxed"
 	}
 	if fd.HasOptionalKeyword() {
-		return "(wiresmith.pointer) cannot combine with `optional` — `optional` already produces a pointer"
+		return "(wiresmith.options.pointer) cannot combine with `optional` — `optional` already produces a pointer"
 	}
 	if fd.Kind() != protoreflect.MessageKind {
-		return fmt.Sprintf("(wiresmith.pointer) only applies to message fields, got %s", fd.Kind())
+		return fmt.Sprintf("(wiresmith.options.pointer) only applies to message fields, got %s", fd.Kind())
 	}
 	return ""
 }
@@ -139,9 +141,9 @@ func walkFields(fd protoreflect.FileDescriptor, fn func(protoreflect.FieldDescri
 }
 
 // goFieldType returns the Go type string for the struct field declaration,
-// applying the pointer prefix when `(wiresmith.pointer) = true`. Returns
-// `*Msg` for singular pointer-message and `[]*Msg` for repeated; delegates to
-// ImportTracker.goType for all other shapes.
+// applying the pointer prefix when `(wiresmith.options.pointer) = true`.
+// Returns `*Msg` for singular pointer-message and `[]*Msg` for repeated;
+// delegates to ImportTracker.goType for all other shapes.
 //
 // The struct-field type and the FieldType composite are intentionally chosen
 // in two separate helpers: goFieldType yields the surface Go type, fieldType
@@ -159,13 +161,14 @@ func (fg *FileGenerator) goFieldType(fd protoreflect.FieldDescriptor) string {
 }
 
 // fieldType returns the FieldType composite for a field, with one twist over
-// types.ForField: when `(wiresmith.pointer) = true`, singular message fields
-// route through PointerField and repeated message fields through
+// types.ForField: when `(wiresmith.options.pointer) = true`, singular message
+// fields route through PointerField and repeated message fields through
 // RepeatedPointer. All other paths delegate unchanged.
 //
 // This is the single dispatch point used by emit_marshal, emit_size, and the
-// unmarshal pointer branch — keeping the pointer option visible in exactly one
-// place so future option-driven shape changes have a clear home.
+// list/singular branches of emit_unmarshal — keeping the pointer option
+// visible in exactly one place so future option-driven shape changes have a
+// clear home.
 func (fg *FileGenerator) fieldType(fd protoreflect.FieldDescriptor) types.FieldType {
 	if !fg.hasPointerOption(fd) {
 		return types.ForField(fd)

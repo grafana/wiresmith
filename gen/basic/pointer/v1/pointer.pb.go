@@ -18,7 +18,7 @@ type Leaf struct {
 	fieldsPresent [1]uint64
 }
 
-// PointerHolder exercises (wiresmith.pointer) = true in three positions:
+// PointerHolder exercises (wiresmith.options.pointer) = true in three positions:
 // - Singular message field becomes `*Leaf`.
 // - Repeated message field becomes `[]*Leaf`.
 // - A second singular message field without the option keeps the default

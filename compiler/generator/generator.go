@@ -29,10 +29,11 @@ type Generator struct {
 	// `option go_package`. Populated during Generate after compilation.
 	goPackages map[string]string
 
-	// pointerExt is the linked extension descriptor for `(wiresmith.pointer)`,
-	// resolved once after Compile and consulted by hasPointerOption. It is
-	// always non-nil after a successful Compile because the embedded
-	// `wiresmith/options.proto` is always part of the input set.
+	// pointerExt is the linked extension descriptor for
+	// `(wiresmith.options.pointer)`, resolved once after Compile and consulted
+	// by hasPointerOption. It is always non-nil after a successful Compile
+	// because the embedded `wiresmith/options.proto` is always part of the
+	// input set.
 	pointerExt protoreflect.FieldDescriptor
 }
 
@@ -153,10 +154,12 @@ func (g *Generator) Generate(ctx context.Context) error {
 }
 
 // isInternalSchemaFile reports whether a compiled file is wiresmith-internal
-// metadata — currently just the embedded `wiresmith/options.proto`. Such files
-// carry only extension definitions and produce no user-visible Go output.
+// metadata — currently just the embedded `wiresmith/options.proto`. Identified
+// by canonical import path so a user file that happens to declare the same
+// proto package is never mistaken for the embedded schema (and is therefore
+// not skipped by validation, codegen, or output-collision checks).
 func isInternalSchemaFile(fd protoreflect.FileDescriptor) bool {
-	return string(fd.Package()) == embeddedOptionsPackage
+	return fd.Path() == embeddedOptionsPath
 }
 
 // outputPathFor returns the output path for the .pb.go file produced for fd.
@@ -189,6 +192,12 @@ func (g *Generator) collectGoPackages(results linker.Files) error {
 	seen := make(map[string]sighting)
 
 	for _, fd := range results {
+		// The embedded options schema is generator-internal — it has no
+		// go_package and shouldn't seed the seen-map or constrain a
+		// user file that legitimately declares package wiresmith.options.
+		if isInternalSchemaFile(fd) {
+			continue
+		}
 		// GetGoPackage is nil-safe — it returns "" if the cast fails or
 		// the option is unset.
 		opts, _ := fd.Options().(*descriptorpb.FileOptions)
@@ -236,6 +245,12 @@ func (g *Generator) collectGoPackages(results linker.Files) error {
 func (g *Generator) validateDestinations(results linker.Files) error {
 	dirOwner := make(map[string]string)
 	for _, fd := range results {
+		// Skip the embedded options schema for the same reason
+		// collectGoPackages does — it doesn't produce output and shouldn't
+		// claim a destination on behalf of the wiresmith.options package.
+		if isInternalSchemaFile(fd) {
+			continue
+		}
 		protoPkg := string(fd.Package())
 		dest := destFor(g.Module, protoPkg, g.goPackages)
 		if owner, ok := dirOwner[dest.relDir]; ok && owner != protoPkg {

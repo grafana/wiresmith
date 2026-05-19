@@ -10,10 +10,7 @@ import _ "embed"
 var embeddedOptionsProto []byte
 
 // embeddedOptionsPath is the canonical import path under which the resolver
-// makes the embedded options proto available.
+// makes the embedded options proto available. It also doubles as the identity
+// of the embedded schema file in code generation — the Generate loop skips
+// any compiled file whose path matches this constant.
 const embeddedOptionsPath = "wiresmith/options.proto"
-
-// embeddedOptionsPackage is the proto package declared inside
-// embeddedOptionsProto. The Generate loop uses it to skip code generation —
-// the file only carries the extension definition, not user types.
-const embeddedOptionsPackage = "wiresmith.options"
