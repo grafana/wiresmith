@@ -20,6 +20,12 @@ func TestParseGoPackage(t *testing.T) {
 		// Dashes in path are sanitized to underscores.
 		{"example.com/my-pkg", "example.com/my-pkg", "my_pkg"},
 		{"example.com/my-pkg;clean", "example.com/my-pkg", "clean"},
+		// Explicit semicolon pkgName is also sanitized — authors don't
+		// always notice that '-' is invalid in Go identifiers.
+		{"example.com/foo;my-name", "example.com/foo", "my_name"},
+		// Go keywords are escaped wherever the pkgName comes from.
+		{"example.com/foo;type", "example.com/foo", "type_"},
+		{"example.com/foo/type", "example.com/foo/type", "type_"},
 	}
 	for _, tt := range tests {
 		gotPath, gotName := parseGoPackage(tt.input)
@@ -43,6 +49,11 @@ func TestCleanPackageName(t *testing.T) {
 		{"v1", "v1"},
 		{"my_pkg", "my_pkg"},
 		{"pkg-with-many-dashes", "pkg_with_many_dashes"},
+		// Go keywords must be escaped — `package type` is a syntax error.
+		{"type", "type_"},
+		{"func", "func_"},
+		{"package", "package_"},
+		{"range", "range_"},
 	}
 	for _, tt := range tests {
 		got := cleanPackageName(tt.input)
@@ -148,6 +159,30 @@ func TestResolveGoPackage(t *testing.T) {
 					gotImport, gotDir, gotPkg, tt.wantImport, tt.wantDir, tt.wantPkg)
 			}
 		})
+	}
+}
+
+func TestUniqueAlias(t *testing.T) {
+	it := newImportTracker("mod", "self.pkg", nil)
+	it.addImport("example.com/a/v1", "v1")
+	it.addImport("example.com/b/v1", "v1_other")
+
+	// First collision: numeric suffix starts at 1.
+	got := it.uniqueAlias("v1", "example.com/c/v1", "selfName")
+	if got != "v11" {
+		t.Errorf("first collision: got %q, want %q", got, "v11")
+	}
+
+	// Self-name collision also triggers suffixing.
+	got = it.uniqueAlias("selfName", "example.com/d", "selfName")
+	if got != "selfName1" {
+		t.Errorf("self-name collision: got %q, want %q", got, "selfName1")
+	}
+
+	// No collision: pass through unchanged.
+	got = it.uniqueAlias("fresh", "example.com/e", "selfName")
+	if got != "fresh" {
+		t.Errorf("no collision: got %q, want %q", got, "fresh")
 	}
 }
 

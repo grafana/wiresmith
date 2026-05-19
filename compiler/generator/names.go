@@ -56,25 +56,38 @@ func effectiveBase(module string) string {
 // parseGoPackage parses a go_package option value. The proto3 format is
 // "import/path" or "import/path;name" — the optional semicolon form lets
 // the .proto author override the Go package name independently of the
-// import path's last component.
+// import path's last component. The explicit pkgName is sanitized too:
+// an author who writes ";my-pkg" probably means "my_pkg".
 func parseGoPackage(goPackage string) (importPath, pkgName string) {
 	if goPackage == "" {
 		return "", ""
 	}
 	if i := strings.LastIndex(goPackage, ";"); i >= 0 {
 		importPath = goPackage[:i]
-		pkgName = goPackage[i+1:]
-		if pkgName == "" {
-			pkgName = cleanPackageName(path.Base(importPath))
+		raw := goPackage[i+1:]
+		if raw == "" {
+			raw = path.Base(importPath)
 		}
-		return importPath, pkgName
+		return importPath, cleanPackageName(raw)
 	}
 	return goPackage, cleanPackageName(path.Base(goPackage))
 }
 
+// goKeywords lists every reserved word in the Go language spec — none can
+// stand alone as a package clause, so cleanPackageName escapes them.
+var goKeywords = map[string]bool{
+	"break": true, "case": true, "chan": true, "const": true, "continue": true,
+	"default": true, "defer": true, "else": true, "fallthrough": true, "for": true,
+	"func": true, "go": true, "goto": true, "if": true, "import": true,
+	"interface": true, "map": true, "package": true, "range": true, "return": true,
+	"select": true, "struct": true, "switch": true, "type": true, "var": true,
+}
+
 // cleanPackageName replaces characters that are not valid in a Go identifier
 // with underscores. A leading digit is also replaced because Go identifiers
-// must not start with a digit. Matches protogen/gogoproto behavior.
+// must not start with a digit. Reserved Go keywords are escaped with a
+// trailing underscore so they can be used as `package` clauses. Matches
+// protogen/gogoproto behavior.
 func cleanPackageName(name string) string {
 	if name == "" {
 		return "_"
@@ -91,7 +104,11 @@ func cleanPackageName(name string) string {
 			b.WriteByte('_')
 		}
 	}
-	return b.String()
+	out := b.String()
+	if goKeywords[out] {
+		out += "_"
+	}
+	return out
 }
 
 // resolveGoPackage looks up the go_package option for protoPkg and, if it

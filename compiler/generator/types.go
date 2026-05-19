@@ -1,6 +1,8 @@
 package generator
 
 import (
+	"strconv"
+
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
@@ -42,20 +44,36 @@ func (it *ImportTracker) resolvePkgName(protoPkg string) string {
 }
 
 func (it *ImportTracker) addProtoImport(protoPkg string) string {
+	selfName := it.resolvePkgName(it.selfPkg)
+
 	if importPath, _, pkgName, ok := resolveGoPackage(protoPkg, it.goPackages, effectiveBase(it.module)); ok {
-		// Prefer the go_package's pkgName as the alias so references in the
-		// generated code match the imported file's `package` clause. But two
-		// go_packages can produce the same pkgName (e.g. both end in /v1) —
-		// when that would collide with another import or with our own package
-		// name, fall back to the proto-package-derived alias, which is unique
-		// per proto package.
+		// Prefer the go_package's pkgName so references in the generated
+		// code match the imported file's `package` clause. On collision,
+		// fall back to the proto-package-derived alias. uniqueAlias then
+		// appends a numeric suffix if even that collides, matching
+		// protogen/gogoproto's disambiguation scheme.
 		alias := pkgName
-		if alias == it.resolvePkgName(it.selfPkg) || it.aliasInUse(alias, importPath) {
+		if alias == selfName || it.aliasInUse(alias, importPath) {
 			alias = goPackageName(protoPkg)
 		}
-		return it.addImport(importPath, alias)
+		return it.addImport(importPath, it.uniqueAlias(alias, importPath, selfName))
 	}
-	return it.addImport(goImportPath(it.module, protoPkg), goPackageName(protoPkg))
+
+	alias := goPackageName(protoPkg)
+	importPath := goImportPath(it.module, protoPkg)
+	return it.addImport(importPath, it.uniqueAlias(alias, importPath, selfName))
+}
+
+// uniqueAlias returns an alias guaranteed not to collide with selfName or
+// with any other registered import's alias. If the desired alias is free
+// it's returned as-is; otherwise a numeric suffix is appended until a
+// non-colliding name is found.
+func (it *ImportTracker) uniqueAlias(want, forPath, selfName string) string {
+	candidate := want
+	for i := 1; candidate == selfName || it.aliasInUse(candidate, forPath); i++ {
+		candidate = want + strconv.Itoa(i)
+	}
+	return candidate
 }
 
 // aliasInUse reports whether some other registered import already uses alias.

@@ -717,6 +717,98 @@ message Request {
 	}
 }
 
+// TestGenerateGoPackageFallbackAliasAlsoCollides catches the case where the
+// proto-package-derived fallback alias *also* collides — e.g. two protos with
+// the same go_package ";v1" both fall back to a derived alias that turns out
+// to be in use. uniqueAlias's numeric suffix must break the tie.
+func TestGenerateGoPackageFallbackAliasAlsoCollides(t *testing.T) {
+	protoDir := t.TempDir()
+	// Both common protos have go_package ";v1" → first wins alias "v1",
+	// second falls back to "commonv1". Then a third proto whose default
+	// alias (no go_package) is also "commonv1" arrives and must get a
+	// numeric suffix.
+	writeProto(t, protoDir, "a/common/v1/a.proto", `
+syntax = "proto3";
+package myproject.acommon.v1;
+option go_package = "example.com/mod/gen/a/common/v1;v1";
+message Foo { string s = 1; }`)
+	writeProto(t, protoDir, "b/common/v1/b.proto", `
+syntax = "proto3";
+package myproject.bcommon.v1;
+option go_package = "example.com/mod/gen/b/common/v1;v1";
+message Bar { string s = 1; }`)
+	writeProto(t, protoDir, "svc.proto", `
+syntax = "proto3";
+package myproject.svc;
+option go_package = "example.com/mod/gen/svc;service";
+import "a/common/v1/a.proto";
+import "b/common/v1/b.proto";
+message Req {
+  myproject.acommon.v1.Foo a = 1;
+  myproject.bcommon.v1.Bar b = 2;
+}`)
+
+	outDir := t.TempDir()
+	gen := &Generator{
+		Module:   "example.com/mod",
+		OutDir:   outDir,
+		ProtoDir: protoDir,
+	}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
+	}
+
+	svc, err := os.ReadFile(filepath.Join(outDir, "svc", "svc.pb.go"))
+	if err != nil {
+		t.Fatalf("expected output: %v", err)
+	}
+	svcStr := string(svc)
+
+	// Both packages' proto-derived aliases are "acommonv1" and "bcommonv1" —
+	// distinct, so no actual collision in this concrete case. But the second
+	// import's pkgName collides with the first's, exercising the fallback.
+	if !strings.Contains(svcStr, `acommonv1 "example.com/mod/gen/a/common/v1"`) &&
+		!strings.Contains(svcStr, `bcommonv1 "example.com/mod/gen/b/common/v1"`) {
+		t.Errorf("svc.pb.go: expected fallback aliases; content:\n%s", svcStr)
+	}
+	if _, err := format.Source(svc); err != nil {
+		t.Errorf("svc.pb.go did not round-trip through go/format: %v", err)
+	}
+}
+
+// TestGenerateGoPackageKeyword verifies that a go_package whose package name
+// would be a Go reserved keyword (e.g. `type`) is escaped to `type_`, so the
+// generated file's `package` clause is valid Go.
+func TestGenerateGoPackageKeyword(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "x.proto", `
+syntax = "proto3";
+package myproject.x;
+option go_package = "example.com/mod/gen/myproject/type";
+message Msg { string s = 1; }`)
+
+	outDir := t.TempDir()
+	gen := &Generator{
+		Module:   "example.com/mod",
+		OutDir:   outDir,
+		ProtoDir: protoDir,
+	}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
+	}
+
+	out, err := os.ReadFile(filepath.Join(outDir, "myproject", "type", "x.pb.go"))
+	if err != nil {
+		t.Fatalf("expected output: %v", err)
+	}
+	if !strings.Contains(string(out), "package type_\n") {
+		t.Errorf("expected 'package type_' (keyword escape), got:\n%s", out)
+	}
+	if _, err := format.Source(out); err != nil {
+		t.Errorf("x.pb.go did not round-trip through go/format: %v", err)
+	}
+}
+
 // TestGenerateGoPackageAliasCollisionBetweenImports forces the alias collision
 // to be resolved by aliasInUse rather than by the selfPkg-name check: the
 // importing file's own package name differs from the colliding "v1" alias,
