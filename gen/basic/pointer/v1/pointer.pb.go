@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"google.golang.org/protobuf/encoding/protowire"
 	"io"
+	"math"
 	"wiresmith/gen/protohelpers"
 )
 
@@ -35,7 +36,12 @@ type PointerHolder struct {
 	fieldsPresent [1]uint64
 }
 
-func (m *Leaf) Reset()      { *m = Leaf{} }
+func (m *Leaf) Reset() {
+	if m == nil {
+		return
+	}
+	*m = Leaf{}
+}
 func (*Leaf) ProtoMessage() {}
 func (m *Leaf) String() string {
 	if m == nil {
@@ -44,7 +50,12 @@ func (m *Leaf) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *PointerHolder) Reset()      { *m = PointerHolder{} }
+func (m *PointerHolder) Reset() {
+	if m == nil {
+		return
+	}
+	*m = PointerHolder{}
+}
 func (*PointerHolder) ProtoMessage() {}
 func (m *PointerHolder) String() string {
 	if m == nil {
@@ -306,7 +317,7 @@ func skipValue(dAtA []byte, wireType int, fieldNum int32) (int, error) {
 				break
 			}
 		}
-		if int(length) < 0 {
+		if length > uint64(math.MaxInt) {
 			return 0, fmt.Errorf("invalid bytes")
 		}
 		iNdEx += int(length)
@@ -412,10 +423,10 @@ func (m *Leaf) unmarshal(dAtA []byte, depth int) error {
 					break
 				}
 			}
-			intByteLen := int(byteLen)
-			if intByteLen < 0 {
-				return fmt.Errorf("proto: negative length")
+			if byteLen > uint64(math.MaxInt) {
+				return io.ErrUnexpectedEOF
 			}
+			intByteLen := int(byteLen)
 			postIndex := iNdEx + intByteLen
 			if postIndex < 0 {
 				return fmt.Errorf("proto: negative length")
@@ -555,10 +566,10 @@ func (m *PointerHolder) unmarshal(dAtA []byte, depth int) error {
 					break
 				}
 			}
-			intByteLen := int(byteLen)
-			if intByteLen < 0 {
-				return fmt.Errorf("proto: negative length")
+			if byteLen > uint64(math.MaxInt) {
+				return io.ErrUnexpectedEOF
 			}
+			intByteLen := int(byteLen)
 			postIndex := iNdEx + intByteLen
 			if postIndex < 0 {
 				return fmt.Errorf("proto: negative length")
@@ -593,10 +604,10 @@ func (m *PointerHolder) unmarshal(dAtA []byte, depth int) error {
 					break
 				}
 			}
-			intByteLen := int(byteLen)
-			if intByteLen < 0 {
-				return fmt.Errorf("proto: negative length")
+			if byteLen > uint64(math.MaxInt) {
+				return io.ErrUnexpectedEOF
 			}
+			intByteLen := int(byteLen)
 			postIndex := iNdEx + intByteLen
 			if postIndex < 0 {
 				return fmt.Errorf("proto: negative length")
@@ -635,10 +646,10 @@ func (m *PointerHolder) unmarshal(dAtA []byte, depth int) error {
 					break
 				}
 			}
-			intByteLen := int(byteLen)
-			if intByteLen < 0 {
-				return fmt.Errorf("proto: negative length")
+			if byteLen > uint64(math.MaxInt) {
+				return io.ErrUnexpectedEOF
 			}
+			intByteLen := int(byteLen)
 			postIndex := iNdEx + intByteLen
 			if postIndex < 0 {
 				return fmt.Errorf("proto: negative length")
@@ -675,10 +686,10 @@ func (m *PointerHolder) unmarshal(dAtA []byte, depth int) error {
 					break
 				}
 			}
-			intByteLen := int(byteLen)
-			if intByteLen < 0 {
-				return fmt.Errorf("proto: negative length")
+			if byteLen > uint64(math.MaxInt) {
+				return io.ErrUnexpectedEOF
 			}
+			intByteLen := int(byteLen)
 			postIndex := iNdEx + intByteLen
 			if postIndex < 0 {
 				return fmt.Errorf("proto: negative length")

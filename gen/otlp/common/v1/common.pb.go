@@ -175,7 +175,12 @@ type EntityRef struct {
 	fieldsPresent [1]uint64
 }
 
-func (m *AnyValue) Reset()      { *m = AnyValue{} }
+func (m *AnyValue) Reset() {
+	if m == nil {
+		return
+	}
+	*m = AnyValue{}
+}
 func (*AnyValue) ProtoMessage() {}
 func (m *AnyValue) String() string {
 	if m == nil {
@@ -184,7 +189,12 @@ func (m *AnyValue) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *ArrayValue) Reset()      { *m = ArrayValue{} }
+func (m *ArrayValue) Reset() {
+	if m == nil {
+		return
+	}
+	*m = ArrayValue{}
+}
 func (*ArrayValue) ProtoMessage() {}
 func (m *ArrayValue) String() string {
 	if m == nil {
@@ -193,7 +203,12 @@ func (m *ArrayValue) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *KeyValueList) Reset()      { *m = KeyValueList{} }
+func (m *KeyValueList) Reset() {
+	if m == nil {
+		return
+	}
+	*m = KeyValueList{}
+}
 func (*KeyValueList) ProtoMessage() {}
 func (m *KeyValueList) String() string {
 	if m == nil {
@@ -202,7 +217,12 @@ func (m *KeyValueList) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *KeyValue) Reset()      { *m = KeyValue{} }
+func (m *KeyValue) Reset() {
+	if m == nil {
+		return
+	}
+	*m = KeyValue{}
+}
 func (*KeyValue) ProtoMessage() {}
 func (m *KeyValue) String() string {
 	if m == nil {
@@ -211,7 +231,12 @@ func (m *KeyValue) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *InstrumentationScope) Reset()      { *m = InstrumentationScope{} }
+func (m *InstrumentationScope) Reset() {
+	if m == nil {
+		return
+	}
+	*m = InstrumentationScope{}
+}
 func (*InstrumentationScope) ProtoMessage() {}
 func (m *InstrumentationScope) String() string {
 	if m == nil {
@@ -220,7 +245,12 @@ func (m *InstrumentationScope) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *EntityRef) Reset()      { *m = EntityRef{} }
+func (m *EntityRef) Reset() {
+	if m == nil {
+		return
+	}
+	*m = EntityRef{}
+}
 func (*EntityRef) ProtoMessage() {}
 func (m *EntityRef) String() string {
 	if m == nil {
@@ -878,7 +908,7 @@ func skipValue(dAtA []byte, wireType int, fieldNum int32) (int, error) {
 				break
 			}
 		}
-		if int(length) < 0 {
+		if length > uint64(math.MaxInt) {
 			return 0, fmt.Errorf("invalid bytes")
 		}
 		iNdEx += int(length)
@@ -958,10 +988,10 @@ func (m *AnyValue) unmarshal(dAtA []byte, depth int) error {
 					break
 				}
 			}
-			intByteLen := int(byteLen)
-			if intByteLen < 0 {
-				return fmt.Errorf("proto: negative length")
+			if byteLen > uint64(math.MaxInt) {
+				return io.ErrUnexpectedEOF
 			}
+			intByteLen := int(byteLen)
 			postIndex := iNdEx + intByteLen
 			if postIndex < 0 {
 				return fmt.Errorf("proto: negative length")
@@ -1060,10 +1090,10 @@ func (m *AnyValue) unmarshal(dAtA []byte, depth int) error {
 					break
 				}
 			}
-			intByteLen := int(byteLen)
-			if intByteLen < 0 {
-				return fmt.Errorf("proto: negative length")
+			if byteLen > uint64(math.MaxInt) {
+				return io.ErrUnexpectedEOF
 			}
+			intByteLen := int(byteLen)
 			postIndex := iNdEx + intByteLen
 			if postIndex < 0 {
 				return fmt.Errorf("proto: negative length")
@@ -1104,10 +1134,10 @@ func (m *AnyValue) unmarshal(dAtA []byte, depth int) error {
 					break
 				}
 			}
-			intByteLen := int(byteLen)
-			if intByteLen < 0 {
-				return fmt.Errorf("proto: negative length")
+			if byteLen > uint64(math.MaxInt) {
+				return io.ErrUnexpectedEOF
 			}
+			intByteLen := int(byteLen)
 			postIndex := iNdEx + intByteLen
 			if postIndex < 0 {
 				return fmt.Errorf("proto: negative length")
@@ -1148,10 +1178,10 @@ func (m *AnyValue) unmarshal(dAtA []byte, depth int) error {
 					break
 				}
 			}
-			intByteLen := int(byteLen)
-			if intByteLen < 0 {
-				return fmt.Errorf("proto: negative length")
+			if byteLen > uint64(math.MaxInt) {
+				return io.ErrUnexpectedEOF
 			}
+			intByteLen := int(byteLen)
 			postIndex := iNdEx + intByteLen
 			if postIndex < 0 {
 				return fmt.Errorf("proto: negative length")
@@ -1315,10 +1345,10 @@ func (m *ArrayValue) unmarshal(dAtA []byte, depth int) error {
 					break
 				}
 			}
-			intByteLen := int(byteLen)
-			if intByteLen < 0 {
-				return fmt.Errorf("proto: negative length")
+			if byteLen > uint64(math.MaxInt) {
+				return io.ErrUnexpectedEOF
 			}
+			intByteLen := int(byteLen)
 			postIndex := iNdEx + intByteLen
 			if postIndex < 0 {
 				return fmt.Errorf("proto: negative length")
@@ -1460,10 +1490,10 @@ func (m *KeyValueList) unmarshal(dAtA []byte, depth int) error {
 					break
 				}
 			}
-			intByteLen := int(byteLen)
-			if intByteLen < 0 {
-				return fmt.Errorf("proto: negative length")
+			if byteLen > uint64(math.MaxInt) {
+				return io.ErrUnexpectedEOF
 			}
+			intByteLen := int(byteLen)
 			postIndex := iNdEx + intByteLen
 			if postIndex < 0 {
 				return fmt.Errorf("proto: negative length")
@@ -1546,10 +1576,10 @@ func (m *KeyValue) unmarshal(dAtA []byte, depth int) error {
 					break
 				}
 			}
-			intByteLen := int(byteLen)
-			if intByteLen < 0 {
-				return fmt.Errorf("proto: negative length")
+			if byteLen > uint64(math.MaxInt) {
+				return io.ErrUnexpectedEOF
 			}
+			intByteLen := int(byteLen)
 			postIndex := iNdEx + intByteLen
 			if postIndex < 0 {
 				return fmt.Errorf("proto: negative length")
@@ -1584,10 +1614,10 @@ func (m *KeyValue) unmarshal(dAtA []byte, depth int) error {
 					break
 				}
 			}
-			intByteLen := int(byteLen)
-			if intByteLen < 0 {
-				return fmt.Errorf("proto: negative length")
+			if byteLen > uint64(math.MaxInt) {
+				return io.ErrUnexpectedEOF
 			}
+			intByteLen := int(byteLen)
 			postIndex := iNdEx + intByteLen
 			if postIndex < 0 {
 				return fmt.Errorf("proto: negative length")
@@ -1755,10 +1785,10 @@ func (m *InstrumentationScope) unmarshal(dAtA []byte, depth int) error {
 					break
 				}
 			}
-			intByteLen := int(byteLen)
-			if intByteLen < 0 {
-				return fmt.Errorf("proto: negative length")
+			if byteLen > uint64(math.MaxInt) {
+				return io.ErrUnexpectedEOF
 			}
+			intByteLen := int(byteLen)
 			postIndex := iNdEx + intByteLen
 			if postIndex < 0 {
 				return fmt.Errorf("proto: negative length")
@@ -1793,10 +1823,10 @@ func (m *InstrumentationScope) unmarshal(dAtA []byte, depth int) error {
 					break
 				}
 			}
-			intByteLen := int(byteLen)
-			if intByteLen < 0 {
-				return fmt.Errorf("proto: negative length")
+			if byteLen > uint64(math.MaxInt) {
+				return io.ErrUnexpectedEOF
 			}
+			intByteLen := int(byteLen)
 			postIndex := iNdEx + intByteLen
 			if postIndex < 0 {
 				return fmt.Errorf("proto: negative length")
@@ -1831,10 +1861,10 @@ func (m *InstrumentationScope) unmarshal(dAtA []byte, depth int) error {
 					break
 				}
 			}
-			intByteLen := int(byteLen)
-			if intByteLen < 0 {
-				return fmt.Errorf("proto: negative length")
+			if byteLen > uint64(math.MaxInt) {
+				return io.ErrUnexpectedEOF
 			}
+			intByteLen := int(byteLen)
 			postIndex := iNdEx + intByteLen
 			if postIndex < 0 {
 				return fmt.Errorf("proto: negative length")
@@ -2008,10 +2038,10 @@ func (m *EntityRef) unmarshal(dAtA []byte, depth int) error {
 					break
 				}
 			}
-			intByteLen := int(byteLen)
-			if intByteLen < 0 {
-				return fmt.Errorf("proto: negative length")
+			if byteLen > uint64(math.MaxInt) {
+				return io.ErrUnexpectedEOF
 			}
+			intByteLen := int(byteLen)
 			postIndex := iNdEx + intByteLen
 			if postIndex < 0 {
 				return fmt.Errorf("proto: negative length")
@@ -2046,10 +2076,10 @@ func (m *EntityRef) unmarshal(dAtA []byte, depth int) error {
 					break
 				}
 			}
-			intByteLen := int(byteLen)
-			if intByteLen < 0 {
-				return fmt.Errorf("proto: negative length")
+			if byteLen > uint64(math.MaxInt) {
+				return io.ErrUnexpectedEOF
 			}
+			intByteLen := int(byteLen)
 			postIndex := iNdEx + intByteLen
 			if postIndex < 0 {
 				return fmt.Errorf("proto: negative length")
@@ -2084,10 +2114,10 @@ func (m *EntityRef) unmarshal(dAtA []byte, depth int) error {
 					break
 				}
 			}
-			intByteLen := int(byteLen)
-			if intByteLen < 0 {
-				return fmt.Errorf("proto: negative length")
+			if byteLen > uint64(math.MaxInt) {
+				return io.ErrUnexpectedEOF
 			}
+			intByteLen := int(byteLen)
 			postIndex := iNdEx + intByteLen
 			if postIndex < 0 {
 				return fmt.Errorf("proto: negative length")
@@ -2121,10 +2151,10 @@ func (m *EntityRef) unmarshal(dAtA []byte, depth int) error {
 					break
 				}
 			}
-			intByteLen := int(byteLen)
-			if intByteLen < 0 {
-				return fmt.Errorf("proto: negative length")
+			if byteLen > uint64(math.MaxInt) {
+				return io.ErrUnexpectedEOF
 			}
+			intByteLen := int(byteLen)
 			postIndex := iNdEx + intByteLen
 			if postIndex < 0 {
 				return fmt.Errorf("proto: negative length")

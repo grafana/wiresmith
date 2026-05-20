@@ -43,6 +43,39 @@ All commands are available via `make`:
 | `make conformance` | Run Google protobuf conformance tests in Docker |
 | `make clean` | Remove all generated code under `gen/` |
 
+## Benchmarking before/after any change
+
+Any change that touches the marshal, unmarshal, size, or codegen hot paths — even
+correctness fixes — must be validated with a baseline-vs-after benchstat
+comparison before being merged. The Go SSA backend often shifts cost in
+non-obvious ways (CSE, register pressure, inlining cutoffs), so the only safe
+assumption is "measure it."
+
+The required workflow:
+
+1. From a clean tree, capture a baseline (filter to the benchmarks the change is
+   most likely to affect; include at least one unaffected benchmark as a noise
+   control):
+   ```sh
+   GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn \
+     go test ./bench/ -bench='<filter>' -benchmem \
+     -count=20 -benchtime=1s -run='^$' > /tmp/before.txt
+   ```
+2. Apply the change and `make generate-ours` if codegen changed.
+3. Capture the after-numbers with the *same* filter, count, and benchtime:
+   ```sh
+   GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn \
+     go test ./bench/ -bench='<filter>' -benchmem \
+     -count=20 -benchtime=1s -run='^$' > /tmp/after.txt
+   ```
+4. Compare: `benchstat /tmp/before.txt /tmp/after.txt`.
+
+Treat moves on benchmarks the change *cannot* touch (e.g. `SizeTraces_Ours` for
+a float-only fix) as the noise floor; only call out regressions that exceed it
+on the targeted benchmarks. `count=20, benchtime=1s` is the minimum for
+statistically meaningful p-values from `benchstat`; higher is fine for
+borderline cases.
+
 ## Design decisions
 
 - **Value-type struct fields**: Message fields are value types (`Resource Resource`, not `*Resource`). `optional` proto3 fields use pointers (`*float64`, `*MessageType`). This enables recursive message definitions via `optional` self-references.
@@ -128,3 +161,51 @@ For wiresmith specifically:
 - The proposed unmarshal-side helpers (`ConsumeVarint`, `ConsumeBytesLen`, `ConsumeFixed32`, `ConsumeFixed64`, `ConsumeTag`) all have loops and/or `return 0, 0, err` early-return paths → not inlinable. Extracting them would convert today's inlined unmarshal hot path into uninlined function calls, regressing the 25-28% speedup from commit `594501d` ("perf: inline varint/fixed decoding").
 
 **When this could become viable:** if the Go inliner gains the ability to apply non-literalized rewrites for multi-statement bodies at statement-level call sites (i.e. expand the body inline as a labeled block instead of refusing). Tracking issue: <https://github.com/golang/go/issues/32816> (the original `//go:fix inline` proposal). Until then, wiresmith's "emit the loop directly" approach in `compiler/types/type.go:114-196` and `compiler/generator/emit_unmarshal.go` is the only way to keep these paths inlined.
+
+<!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:7510c1e2 -->
+## Beads Issue Tracker
+
+This project uses **bd (beads)** for issue tracking. Run `bd prime` to see full workflow context and commands.
+
+### Quick Reference
+
+```bash
+bd ready              # Find available work
+bd show <id>          # View issue details
+bd update <id> --claim  # Claim work
+bd close <id>         # Complete work
+```
+
+### Rules
+
+- Use `bd` for ALL task tracking — do NOT use TodoWrite, TaskCreate, or markdown TODO lists
+- Run `bd prime` for detailed command reference and session close protocol
+- Use `bd remember` for persistent knowledge — do NOT use MEMORY.md files
+
+**Architecture in one line:** issues live in a local Dolt DB; sync uses `refs/dolt/data` on your git remote; `.beads/issues.jsonl` is a passive export. See https://github.com/gastownhall/beads/blob/main/docs/SYNC_CONCEPTS.md for details and anti-patterns.
+
+## Session Completion
+
+**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
+
+**MANDATORY WORKFLOW:**
+
+1. **File issues for remaining work** - Create issues for anything that needs follow-up
+2. **Run quality gates** (if code changed) - Tests, linters, builds
+3. **Update issue status** - Close finished work, update in-progress items
+4. **PUSH TO REMOTE** - This is MANDATORY:
+   ```bash
+   git pull --rebase
+   git push
+   git status  # MUST show "up to date with origin"
+   ```
+5. **Clean up** - Clear stashes, prune remote branches
+6. **Verify** - All changes committed AND pushed
+7. **Hand off** - Provide context for next session
+
+**CRITICAL RULES:**
+- Work is NOT complete until `git push` succeeds
+- NEVER stop before pushing - that leaves work stranded locally
+- NEVER say "ready to push when you are" - YOU must push
+- If push fails, resolve and retry until it succeeds
+<!-- END BEADS INTEGRATION -->

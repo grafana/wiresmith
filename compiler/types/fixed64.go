@@ -16,7 +16,20 @@ type fixed64Base struct {
 	// getExpr: format to convert decoded uint64 to target Go type.
 	// Fixed64: "%s", Sfixed64: "int64(%s)", Double: "math.Float64frombits(%s)"
 	getExpr string
-	imports []string
+	// nonzeroExpr: format for the "skip-on-default" predicate. One %s for access.
+	// Defaults to "%s != 0". Double overrides to "math.Float64bits(%s) != 0" so
+	// that -0.0 (which compares equal to +0.0 in Go) survives marshal, matching
+	// google.golang.org/protobuf (vtproto and gogoproto silently strip -0.0).
+	nonzeroExpr string
+	imports     []string
+}
+
+func (f fixed64Base) nonzero(access string) string {
+	expr := f.nonzeroExpr
+	if expr == "" {
+		expr = "%s != 0"
+	}
+	return fmt.Sprintf(expr, access)
 }
 
 func (fixed64Base) WireType() string  { return "protowire.Fixed64Type" }
@@ -39,8 +52,8 @@ func (fixed64Base) VarintSizeExpr(access string) string {
 
 // --- Size ---
 
-func (fixed64Base) EmitSize(e Emitter, access string, tagSize int) {
-	e.Writef("\tif %s != 0 {\n\t\tn += %d\n\t}\n", access, tagSize+8)
+func (f fixed64Base) EmitSize(e Emitter, access string, tagSize int) {
+	e.Writef("\tif %s {\n\t\tn += %d\n\t}\n", f.nonzero(access), tagSize+8)
 }
 
 func (fixed64Base) EmitValueSize(e Emitter, indent, access string, tagSize int, target string) {
@@ -50,8 +63,16 @@ func (fixed64Base) EmitValueSize(e Emitter, indent, access string, tagSize int, 
 // --- Marshal ---
 
 func (f fixed64Base) EmitMarshal(e Emitter, access string, num protowire.Number) {
-	e.Writef("\tif %s != 0 {\n", access)
-	e.Writef("\t\ti -= 8\n\t\tbinary.LittleEndian.PutUint64(dAtA[i:], %s)\n", f.put(access))
+	if f.nonzeroExpr != "" {
+		// Cache the bits in a local so we only compute math.Float64bits once
+		// (used by both the predicate and PutUint64). Without this, the Go
+		// compiler does not common-subexpression-eliminate the second call.
+		e.Writef("\tif v := %s; v != 0 {\n", f.put(access))
+		e.Writef("\t\ti -= 8\n\t\tbinary.LittleEndian.PutUint64(dAtA[i:], v)\n")
+	} else {
+		e.Writef("\tif %s != 0 {\n", access)
+		e.Writef("\t\ti -= 8\n\t\tbinary.LittleEndian.PutUint64(dAtA[i:], %s)\n", f.put(access))
+	}
 	e.ReverseTag("\t\t", num, protowire.Fixed64Type)
 	e.Writef("\t}\n")
 }

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"google.golang.org/protobuf/encoding/protowire"
 	"io"
+	"math"
 	"wiresmith/gen/protohelpers"
 )
 
@@ -43,7 +44,12 @@ type NodeB struct {
 	fieldsPresent [1]uint64
 }
 
-func (m *LinkedList) Reset()      { *m = LinkedList{} }
+func (m *LinkedList) Reset() {
+	if m == nil {
+		return
+	}
+	*m = LinkedList{}
+}
 func (*LinkedList) ProtoMessage() {}
 func (m *LinkedList) String() string {
 	if m == nil {
@@ -52,7 +58,12 @@ func (m *LinkedList) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *TreeNode) Reset()      { *m = TreeNode{} }
+func (m *TreeNode) Reset() {
+	if m == nil {
+		return
+	}
+	*m = TreeNode{}
+}
 func (*TreeNode) ProtoMessage() {}
 func (m *TreeNode) String() string {
 	if m == nil {
@@ -61,7 +72,12 @@ func (m *TreeNode) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *NodeA) Reset()      { *m = NodeA{} }
+func (m *NodeA) Reset() {
+	if m == nil {
+		return
+	}
+	*m = NodeA{}
+}
 func (*NodeA) ProtoMessage() {}
 func (m *NodeA) String() string {
 	if m == nil {
@@ -70,7 +86,12 @@ func (m *NodeA) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *NodeB) Reset()      { *m = NodeB{} }
+func (m *NodeB) Reset() {
+	if m == nil {
+		return
+	}
+	*m = NodeB{}
+}
 func (*NodeB) ProtoMessage() {}
 func (m *NodeB) String() string {
 	if m == nil {
@@ -450,7 +471,7 @@ func skipValue(dAtA []byte, wireType int, fieldNum int32) (int, error) {
 				break
 			}
 		}
-		if int(length) < 0 {
+		if length > uint64(math.MaxInt) {
 			return 0, fmt.Errorf("invalid bytes")
 		}
 		iNdEx += int(length)
@@ -556,10 +577,10 @@ func (m *LinkedList) unmarshal(dAtA []byte, depth int) error {
 					break
 				}
 			}
-			intByteLen := int(byteLen)
-			if intByteLen < 0 {
-				return fmt.Errorf("proto: negative length")
+			if byteLen > uint64(math.MaxInt) {
+				return io.ErrUnexpectedEOF
 			}
+			intByteLen := int(byteLen)
 			postIndex := iNdEx + intByteLen
 			if postIndex < 0 {
 				return fmt.Errorf("proto: negative length")
@@ -703,10 +724,10 @@ func (m *TreeNode) unmarshal(dAtA []byte, depth int) error {
 					break
 				}
 			}
-			intByteLen := int(byteLen)
-			if intByteLen < 0 {
-				return fmt.Errorf("proto: negative length")
+			if byteLen > uint64(math.MaxInt) {
+				return io.ErrUnexpectedEOF
 			}
+			intByteLen := int(byteLen)
 			postIndex := iNdEx + intByteLen
 			if postIndex < 0 {
 				return fmt.Errorf("proto: negative length")
@@ -767,10 +788,10 @@ func (m *TreeNode) unmarshal(dAtA []byte, depth int) error {
 					break
 				}
 			}
-			intByteLen := int(byteLen)
-			if intByteLen < 0 {
-				return fmt.Errorf("proto: negative length")
+			if byteLen > uint64(math.MaxInt) {
+				return io.ErrUnexpectedEOF
 			}
+			intByteLen := int(byteLen)
 			postIndex := iNdEx + intByteLen
 			if postIndex < 0 {
 				return fmt.Errorf("proto: negative length")
@@ -912,10 +933,10 @@ func (m *NodeA) unmarshal(dAtA []byte, depth int) error {
 					break
 				}
 			}
-			intByteLen := int(byteLen)
-			if intByteLen < 0 {
-				return fmt.Errorf("proto: negative length")
+			if byteLen > uint64(math.MaxInt) {
+				return io.ErrUnexpectedEOF
 			}
+			intByteLen := int(byteLen)
 			postIndex := iNdEx + intByteLen
 			if postIndex < 0 {
 				return fmt.Errorf("proto: negative length")
@@ -950,10 +971,10 @@ func (m *NodeA) unmarshal(dAtA []byte, depth int) error {
 					break
 				}
 			}
-			intByteLen := int(byteLen)
-			if intByteLen < 0 {
-				return fmt.Errorf("proto: negative length")
+			if byteLen > uint64(math.MaxInt) {
+				return io.ErrUnexpectedEOF
 			}
+			intByteLen := int(byteLen)
 			postIndex := iNdEx + intByteLen
 			if postIndex < 0 {
 				return fmt.Errorf("proto: negative length")
@@ -992,10 +1013,10 @@ func (m *NodeA) unmarshal(dAtA []byte, depth int) error {
 					break
 				}
 			}
-			intByteLen := int(byteLen)
-			if intByteLen < 0 {
-				return fmt.Errorf("proto: negative length")
+			if byteLen > uint64(math.MaxInt) {
+				return io.ErrUnexpectedEOF
 			}
+			intByteLen := int(byteLen)
 			postIndex := iNdEx + intByteLen
 			if postIndex < 0 {
 				return fmt.Errorf("proto: negative length")
@@ -1104,10 +1125,10 @@ func (m *NodeB) unmarshal(dAtA []byte, depth int) error {
 					break
 				}
 			}
-			intByteLen := int(byteLen)
-			if intByteLen < 0 {
-				return fmt.Errorf("proto: negative length")
+			if byteLen > uint64(math.MaxInt) {
+				return io.ErrUnexpectedEOF
 			}
+			intByteLen := int(byteLen)
 			postIndex := iNdEx + intByteLen
 			if postIndex < 0 {
 				return fmt.Errorf("proto: negative length")

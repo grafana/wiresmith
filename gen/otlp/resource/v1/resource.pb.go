@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"google.golang.org/protobuf/encoding/protowire"
 	"io"
+	"math"
 	"wiresmith/gen/otlp/common/v1"
 	"wiresmith/gen/protohelpers"
 )
@@ -31,7 +32,12 @@ type Resource struct {
 	fieldsPresent [1]uint64
 }
 
-func (m *Resource) Reset()      { *m = Resource{} }
+func (m *Resource) Reset() {
+	if m == nil {
+		return
+	}
+	*m = Resource{}
+}
 func (*Resource) ProtoMessage() {}
 func (m *Resource) String() string {
 	if m == nil {
@@ -172,7 +178,7 @@ func skipValue(dAtA []byte, wireType int, fieldNum int32) (int, error) {
 				break
 			}
 		}
-		if int(length) < 0 {
+		if length > uint64(math.MaxInt) {
 			return 0, fmt.Errorf("invalid bytes")
 		}
 		iNdEx += int(length)
@@ -317,10 +323,10 @@ func (m *Resource) unmarshal(dAtA []byte, depth int) error {
 					break
 				}
 			}
-			intByteLen := int(byteLen)
-			if intByteLen < 0 {
-				return fmt.Errorf("proto: negative length")
+			if byteLen > uint64(math.MaxInt) {
+				return io.ErrUnexpectedEOF
 			}
+			intByteLen := int(byteLen)
 			postIndex := iNdEx + intByteLen
 			if postIndex < 0 {
 				return fmt.Errorf("proto: negative length")
@@ -383,10 +389,10 @@ func (m *Resource) unmarshal(dAtA []byte, depth int) error {
 					break
 				}
 			}
-			intByteLen := int(byteLen)
-			if intByteLen < 0 {
-				return fmt.Errorf("proto: negative length")
+			if byteLen > uint64(math.MaxInt) {
+				return io.ErrUnexpectedEOF
 			}
+			intByteLen := int(byteLen)
 			postIndex := iNdEx + intByteLen
 			if postIndex < 0 {
 				return fmt.Errorf("proto: negative length")
