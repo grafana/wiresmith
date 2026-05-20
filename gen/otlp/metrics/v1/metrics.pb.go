@@ -774,7 +774,12 @@ type Exemplar struct {
 	fieldsPresent [1]uint64
 }
 
-func (m *MetricsData) Reset()      { *m = MetricsData{} }
+func (m *MetricsData) Reset() {
+	if m == nil {
+		return
+	}
+	*m = MetricsData{}
+}
 func (*MetricsData) ProtoMessage() {}
 func (m *MetricsData) String() string {
 	if m == nil {
@@ -783,7 +788,12 @@ func (m *MetricsData) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *ResourceMetrics) Reset()      { *m = ResourceMetrics{} }
+func (m *ResourceMetrics) Reset() {
+	if m == nil {
+		return
+	}
+	*m = ResourceMetrics{}
+}
 func (*ResourceMetrics) ProtoMessage() {}
 func (m *ResourceMetrics) String() string {
 	if m == nil {
@@ -792,7 +802,12 @@ func (m *ResourceMetrics) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *ScopeMetrics) Reset()      { *m = ScopeMetrics{} }
+func (m *ScopeMetrics) Reset() {
+	if m == nil {
+		return
+	}
+	*m = ScopeMetrics{}
+}
 func (*ScopeMetrics) ProtoMessage() {}
 func (m *ScopeMetrics) String() string {
 	if m == nil {
@@ -801,7 +816,12 @@ func (m *ScopeMetrics) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *Metric) Reset()      { *m = Metric{} }
+func (m *Metric) Reset() {
+	if m == nil {
+		return
+	}
+	*m = Metric{}
+}
 func (*Metric) ProtoMessage() {}
 func (m *Metric) String() string {
 	if m == nil {
@@ -810,7 +830,12 @@ func (m *Metric) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *Gauge) Reset()      { *m = Gauge{} }
+func (m *Gauge) Reset() {
+	if m == nil {
+		return
+	}
+	*m = Gauge{}
+}
 func (*Gauge) ProtoMessage() {}
 func (m *Gauge) String() string {
 	if m == nil {
@@ -819,7 +844,12 @@ func (m *Gauge) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *Sum) Reset()      { *m = Sum{} }
+func (m *Sum) Reset() {
+	if m == nil {
+		return
+	}
+	*m = Sum{}
+}
 func (*Sum) ProtoMessage() {}
 func (m *Sum) String() string {
 	if m == nil {
@@ -828,7 +858,12 @@ func (m *Sum) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *Histogram) Reset()      { *m = Histogram{} }
+func (m *Histogram) Reset() {
+	if m == nil {
+		return
+	}
+	*m = Histogram{}
+}
 func (*Histogram) ProtoMessage() {}
 func (m *Histogram) String() string {
 	if m == nil {
@@ -837,7 +872,12 @@ func (m *Histogram) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *ExponentialHistogram) Reset()      { *m = ExponentialHistogram{} }
+func (m *ExponentialHistogram) Reset() {
+	if m == nil {
+		return
+	}
+	*m = ExponentialHistogram{}
+}
 func (*ExponentialHistogram) ProtoMessage() {}
 func (m *ExponentialHistogram) String() string {
 	if m == nil {
@@ -846,7 +886,12 @@ func (m *ExponentialHistogram) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *Summary) Reset()      { *m = Summary{} }
+func (m *Summary) Reset() {
+	if m == nil {
+		return
+	}
+	*m = Summary{}
+}
 func (*Summary) ProtoMessage() {}
 func (m *Summary) String() string {
 	if m == nil {
@@ -855,7 +900,12 @@ func (m *Summary) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *NumberDataPoint) Reset()      { *m = NumberDataPoint{} }
+func (m *NumberDataPoint) Reset() {
+	if m == nil {
+		return
+	}
+	*m = NumberDataPoint{}
+}
 func (*NumberDataPoint) ProtoMessage() {}
 func (m *NumberDataPoint) String() string {
 	if m == nil {
@@ -864,7 +914,12 @@ func (m *NumberDataPoint) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *HistogramDataPoint) Reset()      { *m = HistogramDataPoint{} }
+func (m *HistogramDataPoint) Reset() {
+	if m == nil {
+		return
+	}
+	*m = HistogramDataPoint{}
+}
 func (*HistogramDataPoint) ProtoMessage() {}
 func (m *HistogramDataPoint) String() string {
 	if m == nil {
@@ -873,7 +928,12 @@ func (m *HistogramDataPoint) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *ExponentialHistogramDataPoint_Buckets) Reset()      { *m = ExponentialHistogramDataPoint_Buckets{} }
+func (m *ExponentialHistogramDataPoint_Buckets) Reset() {
+	if m == nil {
+		return
+	}
+	*m = ExponentialHistogramDataPoint_Buckets{}
+}
 func (*ExponentialHistogramDataPoint_Buckets) ProtoMessage() {}
 func (m *ExponentialHistogramDataPoint_Buckets) String() string {
 	if m == nil {
@@ -882,7 +942,12 @@ func (m *ExponentialHistogramDataPoint_Buckets) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *ExponentialHistogramDataPoint) Reset()      { *m = ExponentialHistogramDataPoint{} }
+func (m *ExponentialHistogramDataPoint) Reset() {
+	if m == nil {
+		return
+	}
+	*m = ExponentialHistogramDataPoint{}
+}
 func (*ExponentialHistogramDataPoint) ProtoMessage() {}
 func (m *ExponentialHistogramDataPoint) String() string {
 	if m == nil {
@@ -891,7 +956,12 @@ func (m *ExponentialHistogramDataPoint) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *SummaryDataPoint_ValueAtQuantile) Reset()      { *m = SummaryDataPoint_ValueAtQuantile{} }
+func (m *SummaryDataPoint_ValueAtQuantile) Reset() {
+	if m == nil {
+		return
+	}
+	*m = SummaryDataPoint_ValueAtQuantile{}
+}
 func (*SummaryDataPoint_ValueAtQuantile) ProtoMessage() {}
 func (m *SummaryDataPoint_ValueAtQuantile) String() string {
 	if m == nil {
@@ -900,7 +970,12 @@ func (m *SummaryDataPoint_ValueAtQuantile) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *SummaryDataPoint) Reset()      { *m = SummaryDataPoint{} }
+func (m *SummaryDataPoint) Reset() {
+	if m == nil {
+		return
+	}
+	*m = SummaryDataPoint{}
+}
 func (*SummaryDataPoint) ProtoMessage() {}
 func (m *SummaryDataPoint) String() string {
 	if m == nil {
@@ -909,7 +984,12 @@ func (m *SummaryDataPoint) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *Exemplar) Reset()      { *m = Exemplar{} }
+func (m *Exemplar) Reset() {
+	if m == nil {
+		return
+	}
+	*m = Exemplar{}
+}
 func (*Exemplar) ProtoMessage() {}
 func (m *Exemplar) String() string {
 	if m == nil {

@@ -44,7 +44,12 @@ type NodeB struct {
 	fieldsPresent [1]uint64
 }
 
-func (m *LinkedList) Reset()      { *m = LinkedList{} }
+func (m *LinkedList) Reset() {
+	if m == nil {
+		return
+	}
+	*m = LinkedList{}
+}
 func (*LinkedList) ProtoMessage() {}
 func (m *LinkedList) String() string {
 	if m == nil {
@@ -53,7 +58,12 @@ func (m *LinkedList) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *TreeNode) Reset()      { *m = TreeNode{} }
+func (m *TreeNode) Reset() {
+	if m == nil {
+		return
+	}
+	*m = TreeNode{}
+}
 func (*TreeNode) ProtoMessage() {}
 func (m *TreeNode) String() string {
 	if m == nil {
@@ -62,7 +72,12 @@ func (m *TreeNode) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *NodeA) Reset()      { *m = NodeA{} }
+func (m *NodeA) Reset() {
+	if m == nil {
+		return
+	}
+	*m = NodeA{}
+}
 func (*NodeA) ProtoMessage() {}
 func (m *NodeA) String() string {
 	if m == nil {
@@ -71,7 +86,12 @@ func (m *NodeA) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *NodeB) Reset()      { *m = NodeB{} }
+func (m *NodeB) Reset() {
+	if m == nil {
+		return
+	}
+	*m = NodeB{}
+}
 func (*NodeB) ProtoMessage() {}
 func (m *NodeB) String() string {
 	if m == nil {

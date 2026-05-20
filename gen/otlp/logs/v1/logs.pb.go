@@ -285,7 +285,12 @@ type LogRecord struct {
 	fieldsPresent [1]uint64
 }
 
-func (m *LogsData) Reset()      { *m = LogsData{} }
+func (m *LogsData) Reset() {
+	if m == nil {
+		return
+	}
+	*m = LogsData{}
+}
 func (*LogsData) ProtoMessage() {}
 func (m *LogsData) String() string {
 	if m == nil {
@@ -294,7 +299,12 @@ func (m *LogsData) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *ResourceLogs) Reset()      { *m = ResourceLogs{} }
+func (m *ResourceLogs) Reset() {
+	if m == nil {
+		return
+	}
+	*m = ResourceLogs{}
+}
 func (*ResourceLogs) ProtoMessage() {}
 func (m *ResourceLogs) String() string {
 	if m == nil {
@@ -303,7 +313,12 @@ func (m *ResourceLogs) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *ScopeLogs) Reset()      { *m = ScopeLogs{} }
+func (m *ScopeLogs) Reset() {
+	if m == nil {
+		return
+	}
+	*m = ScopeLogs{}
+}
 func (*ScopeLogs) ProtoMessage() {}
 func (m *ScopeLogs) String() string {
 	if m == nil {
@@ -312,7 +327,12 @@ func (m *ScopeLogs) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *LogRecord) Reset()      { *m = LogRecord{} }
+func (m *LogRecord) Reset() {
+	if m == nil {
+		return
+	}
+	*m = LogRecord{}
+}
 func (*LogRecord) ProtoMessage() {}
 func (m *LogRecord) String() string {
 	if m == nil {

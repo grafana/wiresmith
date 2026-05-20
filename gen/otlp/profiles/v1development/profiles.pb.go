@@ -415,7 +415,12 @@ type KeyValueAndUnit struct {
 	fieldsPresent [1]uint64
 }
 
-func (m *ProfilesDictionary) Reset()      { *m = ProfilesDictionary{} }
+func (m *ProfilesDictionary) Reset() {
+	if m == nil {
+		return
+	}
+	*m = ProfilesDictionary{}
+}
 func (*ProfilesDictionary) ProtoMessage() {}
 func (m *ProfilesDictionary) String() string {
 	if m == nil {
@@ -424,7 +429,12 @@ func (m *ProfilesDictionary) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *ProfilesData) Reset()      { *m = ProfilesData{} }
+func (m *ProfilesData) Reset() {
+	if m == nil {
+		return
+	}
+	*m = ProfilesData{}
+}
 func (*ProfilesData) ProtoMessage() {}
 func (m *ProfilesData) String() string {
 	if m == nil {
@@ -433,7 +443,12 @@ func (m *ProfilesData) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *ResourceProfiles) Reset()      { *m = ResourceProfiles{} }
+func (m *ResourceProfiles) Reset() {
+	if m == nil {
+		return
+	}
+	*m = ResourceProfiles{}
+}
 func (*ResourceProfiles) ProtoMessage() {}
 func (m *ResourceProfiles) String() string {
 	if m == nil {
@@ -442,7 +457,12 @@ func (m *ResourceProfiles) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *ScopeProfiles) Reset()      { *m = ScopeProfiles{} }
+func (m *ScopeProfiles) Reset() {
+	if m == nil {
+		return
+	}
+	*m = ScopeProfiles{}
+}
 func (*ScopeProfiles) ProtoMessage() {}
 func (m *ScopeProfiles) String() string {
 	if m == nil {
@@ -451,7 +471,12 @@ func (m *ScopeProfiles) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *Profile) Reset()      { *m = Profile{} }
+func (m *Profile) Reset() {
+	if m == nil {
+		return
+	}
+	*m = Profile{}
+}
 func (*Profile) ProtoMessage() {}
 func (m *Profile) String() string {
 	if m == nil {
@@ -460,7 +485,12 @@ func (m *Profile) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *Link) Reset()      { *m = Link{} }
+func (m *Link) Reset() {
+	if m == nil {
+		return
+	}
+	*m = Link{}
+}
 func (*Link) ProtoMessage() {}
 func (m *Link) String() string {
 	if m == nil {
@@ -469,7 +499,12 @@ func (m *Link) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *ValueType) Reset()      { *m = ValueType{} }
+func (m *ValueType) Reset() {
+	if m == nil {
+		return
+	}
+	*m = ValueType{}
+}
 func (*ValueType) ProtoMessage() {}
 func (m *ValueType) String() string {
 	if m == nil {
@@ -478,7 +513,12 @@ func (m *ValueType) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *Sample) Reset()      { *m = Sample{} }
+func (m *Sample) Reset() {
+	if m == nil {
+		return
+	}
+	*m = Sample{}
+}
 func (*Sample) ProtoMessage() {}
 func (m *Sample) String() string {
 	if m == nil {
@@ -487,7 +527,12 @@ func (m *Sample) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *Mapping) Reset()      { *m = Mapping{} }
+func (m *Mapping) Reset() {
+	if m == nil {
+		return
+	}
+	*m = Mapping{}
+}
 func (*Mapping) ProtoMessage() {}
 func (m *Mapping) String() string {
 	if m == nil {
@@ -496,7 +541,12 @@ func (m *Mapping) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *Stack) Reset()      { *m = Stack{} }
+func (m *Stack) Reset() {
+	if m == nil {
+		return
+	}
+	*m = Stack{}
+}
 func (*Stack) ProtoMessage() {}
 func (m *Stack) String() string {
 	if m == nil {
@@ -505,7 +555,12 @@ func (m *Stack) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *Location) Reset()      { *m = Location{} }
+func (m *Location) Reset() {
+	if m == nil {
+		return
+	}
+	*m = Location{}
+}
 func (*Location) ProtoMessage() {}
 func (m *Location) String() string {
 	if m == nil {
@@ -514,7 +569,12 @@ func (m *Location) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *Line) Reset()      { *m = Line{} }
+func (m *Line) Reset() {
+	if m == nil {
+		return
+	}
+	*m = Line{}
+}
 func (*Line) ProtoMessage() {}
 func (m *Line) String() string {
 	if m == nil {
@@ -523,7 +583,12 @@ func (m *Line) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *Function) Reset()      { *m = Function{} }
+func (m *Function) Reset() {
+	if m == nil {
+		return
+	}
+	*m = Function{}
+}
 func (*Function) ProtoMessage() {}
 func (m *Function) String() string {
 	if m == nil {
@@ -532,7 +597,12 @@ func (m *Function) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *KeyValueAndUnit) Reset()      { *m = KeyValueAndUnit{} }
+func (m *KeyValueAndUnit) Reset() {
+	if m == nil {
+		return
+	}
+	*m = KeyValueAndUnit{}
+}
 func (*KeyValueAndUnit) ProtoMessage() {}
 func (m *KeyValueAndUnit) String() string {
 	if m == nil {
