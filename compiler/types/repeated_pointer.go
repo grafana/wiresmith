@@ -42,6 +42,18 @@ func (r *RepeatedPointer) EmitMarshal(e Emitter, access string, num protowire.Nu
 	e.Writef("\t}\n")
 }
 
+// EmitEqual emits a len-check + index loop with per-element nil-pair and
+// nil-guarded deep Equal. Encapsulates the `hasPointerOption` sub-branch
+// that the generator used to inline for repeated message fields with the
+// pointer-shape compatibility option.
+func (r *RepeatedPointer) EmitEqual(e Emitter, indent, lhs, rhs string) {
+	e.Writef("%sif len(%s) != len(%s) {\n%s\treturn false\n%s}\n", indent, lhs, rhs, indent, indent)
+	e.Writef("%sfor i := range %s {\n", indent, lhs)
+	e.Writef("%s\tif (%s[i] == nil) != (%s[i] == nil) {\n%s\t\treturn false\n%s\t}\n", indent, lhs, rhs, indent, indent)
+	e.Writef("%s\tif %s[i] != nil && !%s[i].Equal(%s[i]) {\n%s\t\treturn false\n%s\t}\n", indent, lhs, lhs, rhs, indent, indent)
+	e.Writef("%s}\n", indent)
+}
+
 func (r *RepeatedPointer) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
 	r.Inner.EmitConsume(e)
 	if ctx.MessageType == "" {

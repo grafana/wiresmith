@@ -79,3 +79,9 @@ func (v varintBase) EmitMapEntryUnmarshal(e Emitter, varName, indent string, ctx
 func (v varintBase) cast(varName string) string {
 	return fmt.Sprintf(v.unmarshalCast, varName)
 }
+
+func (varintBase) ZeroLiteral() string { return "0" }
+
+func (varintBase) EmitEqual(e Emitter, indent, lhs, rhs string) {
+	scalarNotEqualGuard(e, indent, lhs, rhs)
+}

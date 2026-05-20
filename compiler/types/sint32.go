@@ -76,6 +76,12 @@ func (Sint32Type) EmitMapEntryUnmarshal(e Emitter, varName, indent string, ctx F
 	e.Writef("%s%s = int32(uint32(v)>>1) ^ int32(uint32(v))<<31>>31\n", indent, varName)
 }
 
+func (Sint32Type) ZeroLiteral() string { return "0" }
+
+func (Sint32Type) EmitEqual(e Emitter, indent, lhs, rhs string) {
+	scalarNotEqualGuard(e, indent, lhs, rhs)
+}
+
 func init() {
 	register(protoreflect.Sint32Kind, &Sint32Type{})
 }

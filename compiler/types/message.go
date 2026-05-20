@@ -87,6 +87,13 @@ func (MessageType) EmitMapEntryUnmarshal(e Emitter, varName, indent string, ctx 
 	e.Writef("%siNdEx = postIndex\n", indent)
 }
 
+// EmitEqual emits a deep-equality guard. Works for both value and pointer
+// access forms because Go auto-addresses lhs when calling the
+// pointer-receiver Equal method, and Equal accepts interface{}.
+func (MessageType) EmitEqual(e Emitter, indent, lhs, rhs string) {
+	e.Writef("%sif !%s.Equal(%s) {\n%s\treturn false\n%s}\n", indent, lhs, rhs, indent, indent)
+}
+
 func init() {
 	register(protoreflect.MessageKind, &MessageType{})
 }

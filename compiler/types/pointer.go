@@ -43,3 +43,13 @@ func (p *PointerField) EmitUnmarshal(e Emitter, access string, ctx FieldContext)
 	emitUnmarshalCall(e, access, ctx.IsSamePackage)
 	e.Writef("\t\t\tiNdEx = postIndex\n")
 }
+
+// EmitEqual is structurally identical to the optional-message branch — nil
+// mismatch is a difference, otherwise delegate to the receiver's nil-safe
+// Equal. The `lhs != nil` guard is symmetric with the optional path; the
+// generated Equal is nil-safe so the guard could be elided, but keeping it
+// makes the "nil vs &Msg{}" distinction explicit at the call site.
+func (p *PointerField) EmitEqual(e Emitter, indent, lhs, rhs string) {
+	e.Writef("%sif (%s == nil) != (%s == nil) {\n%s\treturn false\n%s}\n", indent, lhs, rhs, indent, indent)
+	e.Writef("%sif %s != nil && !%s.Equal(%s) {\n%s\treturn false\n%s}\n", indent, lhs, lhs, rhs, indent, indent)
+}

@@ -2,6 +2,7 @@ package generator
 
 import (
 	"fmt"
+	"wiresmith/compiler/types"
 
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
@@ -87,7 +88,7 @@ func (fg *FileGenerator) emitGetters(md protoreflect.MessageDescriptor) {
 		goType := fg.imports.goSingularType(fd)
 		fmt.Fprintf(fg.body, "func (m *%s) Get%s() %s {\n", name, goName, goType)
 		fmt.Fprintf(fg.body, "\tif m != nil {\n\t\treturn m.%s\n\t}\n", goName)
-		fmt.Fprintf(fg.body, "\treturn %s\n}\n\n", zeroLiteral(fd))
+		fmt.Fprintf(fg.body, "\treturn %s\n}\n\n", types.ScalarZeroLiteral(fd.Kind()))
 	}
 }
 
@@ -109,25 +110,23 @@ func (fg *FileGenerator) emitOneofVariantGetter(md protoreflect.MessageDescripto
 	fieldGoName := snakeToPascal(string(fd.Name()))
 	variantType := oneofVariantName(md, fd)
 
-	switch fd.Kind() {
-	case protoreflect.MessageKind:
+	// Message variants return a pointer into the variant struct so callers
+	// can mutate the embedded message; every other kind returns the field
+	// by value with a typed zero fallback (bytes' zero literal `nil`
+	// matches the []byte return type, so it falls into the default path).
+	if fd.Kind() == protoreflect.MessageKind {
 		msgType := fg.imports.goSingularType(fd)
 		fmt.Fprintf(fg.body, "func (m *%s) Get%s() *%s {\n", name, fieldGoName, msgType)
 		fmt.Fprintf(fg.body, "\tif x, ok := m.Get%s().(*%s); ok {\n", ooGoName, variantType)
 		fmt.Fprintf(fg.body, "\t\treturn &x.%s\n\t}\n", fieldGoName)
 		fmt.Fprintf(fg.body, "\treturn nil\n}\n\n")
-	case protoreflect.BytesKind:
-		fmt.Fprintf(fg.body, "func (m *%s) Get%s() []byte {\n", name, fieldGoName)
-		fmt.Fprintf(fg.body, "\tif x, ok := m.Get%s().(*%s); ok {\n", ooGoName, variantType)
-		fmt.Fprintf(fg.body, "\t\treturn x.%s\n\t}\n", fieldGoName)
-		fmt.Fprintf(fg.body, "\treturn nil\n}\n\n")
-	default:
-		goType := fg.imports.goSingularType(fd)
-		fmt.Fprintf(fg.body, "func (m *%s) Get%s() %s {\n", name, fieldGoName, goType)
-		fmt.Fprintf(fg.body, "\tif x, ok := m.Get%s().(*%s); ok {\n", ooGoName, variantType)
-		fmt.Fprintf(fg.body, "\t\treturn x.%s\n\t}\n", fieldGoName)
-		fmt.Fprintf(fg.body, "\treturn %s\n}\n\n", zeroLiteral(fd))
+		return
 	}
+	goType := fg.imports.goSingularType(fd)
+	fmt.Fprintf(fg.body, "func (m *%s) Get%s() %s {\n", name, fieldGoName, goType)
+	fmt.Fprintf(fg.body, "\tif x, ok := m.Get%s().(*%s); ok {\n", ooGoName, variantType)
+	fmt.Fprintf(fg.body, "\t\treturn x.%s\n\t}\n", fieldGoName)
+	fmt.Fprintf(fg.body, "\treturn %s\n}\n\n", types.ScalarZeroLiteral(fd.Kind()))
 }
 
 // emitOptionalGetter emits a getter for an optional (pointer) field.
@@ -150,20 +149,5 @@ func (fg *FileGenerator) emitOptionalGetter(typeName string, fd protoreflect.Fie
 	goType := fg.imports.goSingularType(fd)
 	fmt.Fprintf(fg.body, "func (m *%s) Get%s() %s {\n", typeName, goName, goType)
 	fmt.Fprintf(fg.body, "\tif m != nil && m.%s != nil {\n\t\treturn *m.%s\n\t}\n", goName, goName)
-	fmt.Fprintf(fg.body, "\treturn %s\n}\n\n", zeroLiteral(fd))
-}
-
-func zeroLiteral(fd protoreflect.FieldDescriptor) string {
-	switch fd.Kind() {
-	case protoreflect.BoolKind:
-		return "false"
-	case protoreflect.StringKind:
-		return `""`
-	case protoreflect.BytesKind:
-		return "nil"
-	case protoreflect.EnumKind:
-		return "0"
-	default:
-		return "0"
-	}
+	fmt.Fprintf(fg.body, "\treturn %s\n}\n\n", types.ScalarZeroLiteral(fd.Kind()))
 }

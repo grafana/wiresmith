@@ -136,6 +136,18 @@ func (m *MapField) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
 	e.Writef("\t\t\tiNdEx = postIndex\n")
 }
 
+// EmitEqual emits a len-check + range over lhs with per-key lookup in rhs,
+// delegating per-value comparison to Val.EmitEqual. Message values use
+// `.Equal()`, bytes use `bytes.Equal`, scalars use `!=`.
+func (m *MapField) EmitEqual(e Emitter, indent, lhs, rhs string) {
+	e.Writef("%sif len(%s) != len(%s) {\n%s\treturn false\n%s}\n", indent, lhs, rhs, indent, indent)
+	e.Writef("%sfor k, v := range %s {\n", indent, lhs)
+	e.Writef("%s\tv2, ok := %s[k]\n", indent, rhs)
+	e.Writef("%s\tif !ok {\n%s\t\treturn false\n%s\t}\n", indent, indent, indent)
+	m.Val.EmitEqual(e, indent+"\t", "v", "v2")
+	e.Writef("%s}\n", indent)
+}
+
 // emitMapEntryWireTypeCheck emits a wire type guard for a map entry field.
 // Uses entryWire (from inline tag decode) and skipValue (index-based skip).
 func emitMapEntryWireTypeCheck(e Emitter, wt string) {
