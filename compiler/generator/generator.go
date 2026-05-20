@@ -135,9 +135,11 @@ func (g *Generator) Generate(ctx context.Context) error {
 	// protos in different directories with the same package and same basename
 	// would otherwise silently clobber each other on disk — recursive scanning
 	// makes this collision possible where flat layouts could not produce it.
+	// Only consider files we'll actually emit: an empty .proto produces no
+	// output, so a same-path neighbour can't be clobbered by it.
 	outputs := make(map[string]string, len(results))
 	for _, fd := range results {
-		if isInternalSchemaFile(fd) {
+		if !shouldGenerateFile(fd) {
 			continue
 		}
 		outPath := g.outputPathFor(fd)
@@ -149,7 +151,7 @@ func (g *Generator) Generate(ctx context.Context) error {
 	}
 
 	for _, fd := range results {
-		if isInternalSchemaFile(fd) {
+		if !shouldGenerateFile(fd) {
 			continue
 		}
 		if err := g.generateFile(fd); err != nil {
@@ -157,6 +159,17 @@ func (g *Generator) Generate(ctx context.Context) error {
 		}
 	}
 	return nil
+}
+
+// shouldGenerateFile reports whether fd contributes a .pb.go to the output.
+// Internal schema files (wiresmith.options) and proto files with no messages
+// or enums are skipped — the latter would emit only an empty init() plus
+// unused imports, which go build rejects.
+func shouldGenerateFile(fd protoreflect.FileDescriptor) bool {
+	if isInternalSchemaFile(fd) {
+		return false
+	}
+	return fd.Messages().Len() > 0 || fd.Enums().Len() > 0
 }
 
 // isInternalSchemaFile reports whether a compiled file is wiresmith-internal
@@ -269,14 +282,6 @@ func (g *Generator) validateDestinations(results linker.Files) error {
 }
 
 func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
-	// A proto file with no messages and no enums has nothing to generate.
-	// Emitting an empty init() leaves the unconditional `protohelpers`
-	// import unused and the unmarshal skipValue helper dead code — both
-	// reject go build. Skip the file rather than guarding every emitter.
-	if fd.Messages().Len() == 0 && fd.Enums().Len() == 0 {
-		return nil
-	}
-
 	fg := &FileGenerator{
 		fd:         fd,
 		module:     g.Module,
