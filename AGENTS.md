@@ -43,6 +43,39 @@ All commands are available via `make`:
 | `make conformance` | Run Google protobuf conformance tests in Docker |
 | `make clean` | Remove all generated code under `gen/` |
 
+## Benchmarking before/after any change
+
+Any change that touches the marshal, unmarshal, size, or codegen hot paths — even
+correctness fixes — must be validated with a baseline-vs-after benchstat
+comparison before being merged. The Go SSA backend often shifts cost in
+non-obvious ways (CSE, register pressure, inlining cutoffs), so the only safe
+assumption is "measure it."
+
+The required workflow:
+
+1. From a clean tree, capture a baseline (filter to the benchmarks the change is
+   most likely to affect; include at least one unaffected benchmark as a noise
+   control):
+   ```sh
+   GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn \
+     go test ./bench/ -bench='<filter>' -benchmem \
+     -count=20 -benchtime=1s -run='^$' > /tmp/before.txt
+   ```
+2. Apply the change and `make generate-ours` if codegen changed.
+3. Capture the after-numbers with the *same* filter, count, and benchtime:
+   ```sh
+   GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn \
+     go test ./bench/ -bench='<filter>' -benchmem \
+     -count=20 -benchtime=1s -run='^$' > /tmp/after.txt
+   ```
+4. Compare: `benchstat /tmp/before.txt /tmp/after.txt`.
+
+Treat moves on benchmarks the change *cannot* touch (e.g. `SizeTraces_Ours` for
+a float-only fix) as the noise floor; only call out regressions that exceed it
+on the targeted benchmarks. `count=20, benchtime=1s` is the minimum for
+statistically meaningful p-values from `benchstat`; higher is fine for
+borderline cases.
+
 ## Design decisions
 
 - **Value-type struct fields**: Message fields are value types (`Resource Resource`, not `*Resource`). `optional` proto3 fields use pointers (`*float64`, `*MessageType`). This enables recursive message definitions via `optional` self-references.

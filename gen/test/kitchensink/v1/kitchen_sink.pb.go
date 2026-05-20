@@ -1331,10 +1331,10 @@ func (m *AllMaps) GetMapStringEnum() map[string]Color {
 
 func (m *AllScalars) Size() int {
 	var n int
-	if m.FieldDouble != 0 {
+	if math.Float64bits(m.FieldDouble) != 0 {
 		n += 9
 	}
-	if m.FieldFloat != 0 {
+	if math.Float32bits(m.FieldFloat) != 0 {
 		n += 5
 	}
 	if m.FieldInt32 != 0 {
@@ -1903,15 +1903,15 @@ func (m *AllScalars) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x18
 	}
-	if m.FieldFloat != 0 {
+	if v := math.Float32bits(m.FieldFloat); v != 0 {
 		i -= 4
-		binary.LittleEndian.PutUint32(dAtA[i:], math.Float32bits(m.FieldFloat))
+		binary.LittleEndian.PutUint32(dAtA[i:], v)
 		i--
 		dAtA[i] = 0x15
 	}
-	if m.FieldDouble != 0 {
+	if v := math.Float64bits(m.FieldDouble); v != 0 {
 		i -= 8
-		binary.LittleEndian.PutUint64(dAtA[i:], math.Float64bits(m.FieldDouble))
+		binary.LittleEndian.PutUint64(dAtA[i:], v)
 		i--
 		dAtA[i] = 0x09
 	}
