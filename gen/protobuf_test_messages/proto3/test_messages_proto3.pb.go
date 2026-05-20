@@ -11659,7 +11659,9 @@ func file_protobuf_test_messages_proto3_test_messages_proto3_proto_init() {
 	}
 	fd, err := protodesc.NewFile(fdp, protoregistry.GlobalFiles)
 	if err == nil {
-		protoregistry.GlobalFiles.RegisterFile(fd)
+		if err := protoregistry.GlobalFiles.RegisterFile(fd); err != nil {
+			panic(err)
+		}
 	} else {
 		var findErr error
 		fd, findErr = protoregistry.GlobalFiles.FindFileByPath(fdp.GetName())
@@ -11671,29 +11673,45 @@ func file_protobuf_test_messages_proto3_test_messages_proto3_proto_init() {
 
 	file_protobuf_test_messages_proto3_test_messages_proto3_proto_msgTypes[0].GoReflectType = reflect.TypeOf((*TestAllTypesProto3_NestedMessage)(nil))
 	file_protobuf_test_messages_proto3_test_messages_proto3_proto_msgTypes[0].Desc = protohelpers.FindMessageDescriptor(fd, "protobuf_test_messages.proto3.TestAllTypesProto3.NestedMessage")
-	protoregistry.GlobalTypes.RegisterMessage(&file_protobuf_test_messages_proto3_test_messages_proto3_proto_msgTypes[0])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_protobuf_test_messages_proto3_test_messages_proto3_proto_msgTypes[0]); err != nil {
+		panic(err)
+	}
 	file_protobuf_test_messages_proto3_test_messages_proto3_proto_msgTypes[1].GoReflectType = reflect.TypeOf((*TestAllTypesProto3)(nil))
 	file_protobuf_test_messages_proto3_test_messages_proto3_proto_msgTypes[1].Desc = protohelpers.FindMessageDescriptor(fd, "protobuf_test_messages.proto3.TestAllTypesProto3")
 	file_protobuf_test_messages_proto3_test_messages_proto3_proto_msgTypes[1].OneofWrappers = []any{(*TestAllTypesProto3_OneofUint32)(nil), (*TestAllTypesProto3_OneofNestedMessage)(nil), (*TestAllTypesProto3_OneofString)(nil), (*TestAllTypesProto3_OneofBytes)(nil), (*TestAllTypesProto3_OneofBool)(nil), (*TestAllTypesProto3_OneofUint64)(nil), (*TestAllTypesProto3_OneofFloat)(nil), (*TestAllTypesProto3_OneofDouble)(nil), (*TestAllTypesProto3_OneofEnum)(nil)}
-	protoregistry.GlobalTypes.RegisterMessage(&file_protobuf_test_messages_proto3_test_messages_proto3_proto_msgTypes[1])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_protobuf_test_messages_proto3_test_messages_proto3_proto_msgTypes[1]); err != nil {
+		panic(err)
+	}
 	file_protobuf_test_messages_proto3_test_messages_proto3_proto_msgTypes[2].GoReflectType = reflect.TypeOf((*ForeignMessage)(nil))
 	file_protobuf_test_messages_proto3_test_messages_proto3_proto_msgTypes[2].Desc = protohelpers.FindMessageDescriptor(fd, "protobuf_test_messages.proto3.ForeignMessage")
-	protoregistry.GlobalTypes.RegisterMessage(&file_protobuf_test_messages_proto3_test_messages_proto3_proto_msgTypes[2])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_protobuf_test_messages_proto3_test_messages_proto3_proto_msgTypes[2]); err != nil {
+		panic(err)
+	}
 	file_protobuf_test_messages_proto3_test_messages_proto3_proto_msgTypes[3].GoReflectType = reflect.TypeOf((*NullHypothesisProto3)(nil))
 	file_protobuf_test_messages_proto3_test_messages_proto3_proto_msgTypes[3].Desc = protohelpers.FindMessageDescriptor(fd, "protobuf_test_messages.proto3.NullHypothesisProto3")
-	protoregistry.GlobalTypes.RegisterMessage(&file_protobuf_test_messages_proto3_test_messages_proto3_proto_msgTypes[3])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_protobuf_test_messages_proto3_test_messages_proto3_proto_msgTypes[3]); err != nil {
+		panic(err)
+	}
 	file_protobuf_test_messages_proto3_test_messages_proto3_proto_msgTypes[4].GoReflectType = reflect.TypeOf((*EnumOnlyProto3)(nil))
 	file_protobuf_test_messages_proto3_test_messages_proto3_proto_msgTypes[4].Desc = protohelpers.FindMessageDescriptor(fd, "protobuf_test_messages.proto3.EnumOnlyProto3")
-	protoregistry.GlobalTypes.RegisterMessage(&file_protobuf_test_messages_proto3_test_messages_proto3_proto_msgTypes[4])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_protobuf_test_messages_proto3_test_messages_proto3_proto_msgTypes[4]); err != nil {
+		panic(err)
+	}
 	file_protobuf_test_messages_proto3_test_messages_proto3_proto_enumTypes[0].GoReflectType = reflect.TypeOf(ForeignEnum(0))
 	file_protobuf_test_messages_proto3_test_messages_proto3_proto_enumTypes[0].Desc = protohelpers.FindEnumDescriptor(fd, "protobuf_test_messages.proto3.ForeignEnum")
-	protoregistry.GlobalTypes.RegisterEnum(&file_protobuf_test_messages_proto3_test_messages_proto3_proto_enumTypes[0])
+	if err := protoregistry.GlobalTypes.RegisterEnum(&file_protobuf_test_messages_proto3_test_messages_proto3_proto_enumTypes[0]); err != nil {
+		panic(err)
+	}
 	file_protobuf_test_messages_proto3_test_messages_proto3_proto_enumTypes[1].GoReflectType = reflect.TypeOf(TestAllTypesProto3_NestedEnum(0))
 	file_protobuf_test_messages_proto3_test_messages_proto3_proto_enumTypes[1].Desc = protohelpers.FindEnumDescriptor(fd, "protobuf_test_messages.proto3.TestAllTypesProto3.NestedEnum")
-	protoregistry.GlobalTypes.RegisterEnum(&file_protobuf_test_messages_proto3_test_messages_proto3_proto_enumTypes[1])
+	if err := protoregistry.GlobalTypes.RegisterEnum(&file_protobuf_test_messages_proto3_test_messages_proto3_proto_enumTypes[1]); err != nil {
+		panic(err)
+	}
 	file_protobuf_test_messages_proto3_test_messages_proto3_proto_enumTypes[2].GoReflectType = reflect.TypeOf(EnumOnlyProto3_Bool(0))
 	file_protobuf_test_messages_proto3_test_messages_proto3_proto_enumTypes[2].Desc = protohelpers.FindEnumDescriptor(fd, "protobuf_test_messages.proto3.EnumOnlyProto3.Bool")
-	protoregistry.GlobalTypes.RegisterEnum(&file_protobuf_test_messages_proto3_test_messages_proto3_proto_enumTypes[2])
+	if err := protoregistry.GlobalTypes.RegisterEnum(&file_protobuf_test_messages_proto3_test_messages_proto3_proto_enumTypes[2]); err != nil {
+		panic(err)
+	}
 }
 
 func init() { file_protobuf_test_messages_proto3_test_messages_proto3_proto_init() }

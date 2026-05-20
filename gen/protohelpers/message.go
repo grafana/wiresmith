@@ -51,11 +51,28 @@ func NewMessageReflect(mi *protoimpl.MessageInfo, msg Wiremessage) protoreflect.
 
 func (m *MessageReflect) Descriptor() protoreflect.MessageDescriptor { return m.mi.Desc }
 func (m *MessageReflect) Type() protoreflect.MessageType             { return m.mi }
-func (m *MessageReflect) New() protoreflect.Message                  { return m.mi.New() }
 func (m *MessageReflect) Interface() protoreflect.ProtoMessage       { return m.msg }
 func (m *MessageReflect) ProtoMethods() *protoiface.Methods          { return wiresmithMethods }
 func (m *MessageReflect) GetUnknown() protoreflect.RawFields         { return nil }
 func (m *MessageReflect) SetUnknown(protoreflect.RawFields)          { panicReflect() }
+
+// New returns a freshly allocated message of the same type, wrapped in
+// another MessageReflect so the caller gets consistent panic-on-field-reflection
+// semantics. Delegating to protoimpl.MessageInfo.New would hand back a
+// protoimpl-backed reflection whose field converters expect pointer-typed
+// message fields — wiresmith uses value types and would panic deep inside
+// the converter instead of at our own panicReflect with a clear message.
+func (m *MessageReflect) New() protoreflect.Message {
+	if m == nil || m.msg == nil {
+		panic("wiresmith: MessageReflect.New called on uninitialized receiver")
+	}
+	t := reflect.TypeOf(m.msg)
+	if t.Kind() != reflect.Pointer {
+		panic(fmt.Sprintf("wiresmith: MessageReflect wraps non-pointer %T", m.msg))
+	}
+	fresh := reflect.New(t.Elem()).Interface().(Wiremessage)
+	return NewMessageReflect(m.mi, fresh)
+}
 
 // IsValid reports whether the message holds a non-nil pointer. It detects
 // typed-nil interfaces (e.g. (*Resource)(nil) wrapped in Wiremessage) which

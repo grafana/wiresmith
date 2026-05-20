@@ -14,7 +14,7 @@ import (
 	"google.golang.org/protobuf/types/descriptorpb"
 	"io"
 	"reflect"
-	commonv1 "wiresmith/gen/otlp/common/v1"
+	"wiresmith/gen/otlp/common/v1"
 	"wiresmith/gen/protohelpers"
 )
 
@@ -496,7 +496,9 @@ func file_opentelemetry_proto_resource_v1_resource_proto_init() {
 	}
 	fd, err := protodesc.NewFile(fdp, protoregistry.GlobalFiles)
 	if err == nil {
-		protoregistry.GlobalFiles.RegisterFile(fd)
+		if err := protoregistry.GlobalFiles.RegisterFile(fd); err != nil {
+			panic(err)
+		}
 	} else {
 		var findErr error
 		fd, findErr = protoregistry.GlobalFiles.FindFileByPath(fdp.GetName())
@@ -508,7 +510,9 @@ func file_opentelemetry_proto_resource_v1_resource_proto_init() {
 
 	file_opentelemetry_proto_resource_v1_resource_proto_msgTypes[0].GoReflectType = reflect.TypeOf((*Resource)(nil))
 	file_opentelemetry_proto_resource_v1_resource_proto_msgTypes[0].Desc = protohelpers.FindMessageDescriptor(fd, "opentelemetry.proto.resource.v1.Resource")
-	protoregistry.GlobalTypes.RegisterMessage(&file_opentelemetry_proto_resource_v1_resource_proto_msgTypes[0])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_opentelemetry_proto_resource_v1_resource_proto_msgTypes[0]); err != nil {
+		panic(err)
+	}
 }
 
 func init() { file_opentelemetry_proto_resource_v1_resource_proto_init() }

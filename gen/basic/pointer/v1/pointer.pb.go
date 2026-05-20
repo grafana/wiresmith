@@ -6,7 +6,14 @@ package v1
 import (
 	"fmt"
 	"google.golang.org/protobuf/encoding/protowire"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protodesc"
+	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/reflect/protoregistry"
+	"google.golang.org/protobuf/runtime/protoimpl"
+	"google.golang.org/protobuf/types/descriptorpb"
 	"io"
+	"reflect"
 	"wiresmith/gen/protohelpers"
 )
 
@@ -778,7 +785,63 @@ func (this *PointerHolder) Equal(that interface{}) bool {
 	return true
 }
 
-func init() {
-	protohelpers.RegisterType((*Leaf)(nil), "basic.pointer.v1.Leaf")
-	protohelpers.RegisterType((*PointerHolder)(nil), "basic.pointer.v1.PointerHolder")
+func (x *Leaf) ProtoReflect() protoreflect.Message {
+	file_basic_pointer_v1_pointer_proto_init()
+	return protohelpers.NewMessageReflect(&file_basic_pointer_v1_pointer_proto_msgTypes[0], x)
 }
+
+func (x *PointerHolder) ProtoReflect() protoreflect.Message {
+	file_basic_pointer_v1_pointer_proto_init()
+	return protohelpers.NewMessageReflect(&file_basic_pointer_v1_pointer_proto_msgTypes[1], x)
+}
+
+const file_basic_pointer_v1_pointer_proto_rawDesc = "" +
+	"\x0a\x1e\x62\x61\x73\x69\x63\x2f\x70\x6f\x69\x6e\x74\x65\x72\x2f\x76\x31\x2f\x70\x6f\x69\x6e\x74\x65\x72\x2e\x70\x72\x6f\x74\x6f\x12\x10\x62\x61\x73\x69\x63\x2e" +
+	"\x70\x6f\x69\x6e\x74\x65\x72\x2e\x76\x31\x22\x2a\x0a\x04\x4c\x65\x61\x66\x12\x0e\x0a\x02\x69\x64\x18\x01\x20\x01\x28\x03\x52\x02\x69\x64\x12\x12\x0a\x04\x6e\x61" +
+	"\x6d\x65\x18\x02\x20\x01\x28\x09\x52\x04\x6e\x61\x6d\x65\x22\xb5\x01\x0a\x0d\x50\x6f\x69\x6e\x74\x65\x72\x48\x6f\x6c\x64\x65\x72\x12\x12\x0a\x04\x6e\x61\x6d\x65" +
+	"\x18\x01\x20\x01\x28\x09\x52\x04\x6e\x61\x6d\x65\x12\x30\x0a\x04\x68\x65\x61\x64\x18\x02\x20\x01\x28\x0b\x32\x16\x2e\x62\x61\x73\x69\x63\x2e\x70\x6f\x69\x6e\x74" +
+	"\x65\x72\x2e\x76\x31\x2e\x4c\x65\x61\x66\x42\x04\xf0\xb6\x18\x01\x52\x04\x68\x65\x61\x64\x12\x32\x0a\x05\x69\x74\x65\x6d\x73\x18\x03\x20\x03\x28\x0b\x32\x16\x2e" +
+	"\x62\x61\x73\x69\x63\x2e\x70\x6f\x69\x6e\x74\x65\x72\x2e\x76\x31\x2e\x4c\x65\x61\x66\x42\x04\xf0\xb6\x18\x01\x52\x05\x69\x74\x65\x6d\x73\x12\x2a\x0a\x04\x74\x61" +
+	"\x69\x6c\x18\x04\x20\x01\x28\x0b\x32\x16\x2e\x62\x61\x73\x69\x63\x2e\x70\x6f\x69\x6e\x74\x65\x72\x2e\x76\x31\x2e\x4c\x65\x61\x66\x52\x04\x74\x61\x69\x6c\x42\x20" +
+	"\x5a\x1e\x77\x69\x72\x65\x73\x6d\x69\x74\x68\x2f\x67\x65\x6e\x2f\x62\x61\x73\x69\x63\x2f\x70\x6f\x69\x6e\x74\x65\x72\x2f\x76\x31\x62\x06\x70\x72\x6f\x74\x6f\x33"
+
+var (
+	file_basic_pointer_v1_pointer_proto_fd       protoreflect.FileDescriptor
+	file_basic_pointer_v1_pointer_proto_msgTypes [2]protoimpl.MessageInfo
+)
+
+func file_basic_pointer_v1_pointer_proto_init() {
+	if file_basic_pointer_v1_pointer_proto_fd != nil {
+		return
+	}
+	fdp := new(descriptorpb.FileDescriptorProto)
+	if err := proto.Unmarshal([]byte(file_basic_pointer_v1_pointer_proto_rawDesc), fdp); err != nil {
+		panic(err)
+	}
+	fd, err := protodesc.NewFile(fdp, protoregistry.GlobalFiles)
+	if err == nil {
+		if err := protoregistry.GlobalFiles.RegisterFile(fd); err != nil {
+			panic(err)
+		}
+	} else {
+		var findErr error
+		fd, findErr = protoregistry.GlobalFiles.FindFileByPath(fdp.GetName())
+		if findErr != nil {
+			panic(err)
+		}
+	}
+	file_basic_pointer_v1_pointer_proto_fd = fd
+
+	file_basic_pointer_v1_pointer_proto_msgTypes[0].GoReflectType = reflect.TypeOf((*Leaf)(nil))
+	file_basic_pointer_v1_pointer_proto_msgTypes[0].Desc = protohelpers.FindMessageDescriptor(fd, "basic.pointer.v1.Leaf")
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_basic_pointer_v1_pointer_proto_msgTypes[0]); err != nil {
+		panic(err)
+	}
+	file_basic_pointer_v1_pointer_proto_msgTypes[1].GoReflectType = reflect.TypeOf((*PointerHolder)(nil))
+	file_basic_pointer_v1_pointer_proto_msgTypes[1].Desc = protohelpers.FindMessageDescriptor(fd, "basic.pointer.v1.PointerHolder")
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_basic_pointer_v1_pointer_proto_msgTypes[1]); err != nil {
+		panic(err)
+	}
+}
+
+func init() { file_basic_pointer_v1_pointer_proto_init() }

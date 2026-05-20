@@ -2270,7 +2270,9 @@ func file_opentelemetry_proto_logs_v1_logs_proto_init() {
 	}
 	fd, err := protodesc.NewFile(fdp, protoregistry.GlobalFiles)
 	if err == nil {
-		protoregistry.GlobalFiles.RegisterFile(fd)
+		if err := protoregistry.GlobalFiles.RegisterFile(fd); err != nil {
+			panic(err)
+		}
 	} else {
 		var findErr error
 		fd, findErr = protoregistry.GlobalFiles.FindFileByPath(fdp.GetName())
@@ -2282,22 +2284,34 @@ func file_opentelemetry_proto_logs_v1_logs_proto_init() {
 
 	file_opentelemetry_proto_logs_v1_logs_proto_msgTypes[0].GoReflectType = reflect.TypeOf((*LogsData)(nil))
 	file_opentelemetry_proto_logs_v1_logs_proto_msgTypes[0].Desc = protohelpers.FindMessageDescriptor(fd, "opentelemetry.proto.logs.v1.LogsData")
-	protoregistry.GlobalTypes.RegisterMessage(&file_opentelemetry_proto_logs_v1_logs_proto_msgTypes[0])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_opentelemetry_proto_logs_v1_logs_proto_msgTypes[0]); err != nil {
+		panic(err)
+	}
 	file_opentelemetry_proto_logs_v1_logs_proto_msgTypes[1].GoReflectType = reflect.TypeOf((*ResourceLogs)(nil))
 	file_opentelemetry_proto_logs_v1_logs_proto_msgTypes[1].Desc = protohelpers.FindMessageDescriptor(fd, "opentelemetry.proto.logs.v1.ResourceLogs")
-	protoregistry.GlobalTypes.RegisterMessage(&file_opentelemetry_proto_logs_v1_logs_proto_msgTypes[1])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_opentelemetry_proto_logs_v1_logs_proto_msgTypes[1]); err != nil {
+		panic(err)
+	}
 	file_opentelemetry_proto_logs_v1_logs_proto_msgTypes[2].GoReflectType = reflect.TypeOf((*ScopeLogs)(nil))
 	file_opentelemetry_proto_logs_v1_logs_proto_msgTypes[2].Desc = protohelpers.FindMessageDescriptor(fd, "opentelemetry.proto.logs.v1.ScopeLogs")
-	protoregistry.GlobalTypes.RegisterMessage(&file_opentelemetry_proto_logs_v1_logs_proto_msgTypes[2])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_opentelemetry_proto_logs_v1_logs_proto_msgTypes[2]); err != nil {
+		panic(err)
+	}
 	file_opentelemetry_proto_logs_v1_logs_proto_msgTypes[3].GoReflectType = reflect.TypeOf((*LogRecord)(nil))
 	file_opentelemetry_proto_logs_v1_logs_proto_msgTypes[3].Desc = protohelpers.FindMessageDescriptor(fd, "opentelemetry.proto.logs.v1.LogRecord")
-	protoregistry.GlobalTypes.RegisterMessage(&file_opentelemetry_proto_logs_v1_logs_proto_msgTypes[3])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_opentelemetry_proto_logs_v1_logs_proto_msgTypes[3]); err != nil {
+		panic(err)
+	}
 	file_opentelemetry_proto_logs_v1_logs_proto_enumTypes[0].GoReflectType = reflect.TypeOf(SeverityNumber(0))
 	file_opentelemetry_proto_logs_v1_logs_proto_enumTypes[0].Desc = protohelpers.FindEnumDescriptor(fd, "opentelemetry.proto.logs.v1.SeverityNumber")
-	protoregistry.GlobalTypes.RegisterEnum(&file_opentelemetry_proto_logs_v1_logs_proto_enumTypes[0])
+	if err := protoregistry.GlobalTypes.RegisterEnum(&file_opentelemetry_proto_logs_v1_logs_proto_enumTypes[0]); err != nil {
+		panic(err)
+	}
 	file_opentelemetry_proto_logs_v1_logs_proto_enumTypes[1].GoReflectType = reflect.TypeOf(LogRecordFlags(0))
 	file_opentelemetry_proto_logs_v1_logs_proto_enumTypes[1].Desc = protohelpers.FindEnumDescriptor(fd, "opentelemetry.proto.logs.v1.LogRecordFlags")
-	protoregistry.GlobalTypes.RegisterEnum(&file_opentelemetry_proto_logs_v1_logs_proto_enumTypes[1])
+	if err := protoregistry.GlobalTypes.RegisterEnum(&file_opentelemetry_proto_logs_v1_logs_proto_enumTypes[1]); err != nil {
+		panic(err)
+	}
 }
 
 func init() { file_opentelemetry_proto_logs_v1_logs_proto_init() }

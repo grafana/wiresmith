@@ -2198,7 +2198,9 @@ func file_basic_oneof_v1_oneof_proto_init() {
 	}
 	fd, err := protodesc.NewFile(fdp, protoregistry.GlobalFiles)
 	if err == nil {
-		protoregistry.GlobalFiles.RegisterFile(fd)
+		if err := protoregistry.GlobalFiles.RegisterFile(fd); err != nil {
+			panic(err)
+		}
 	} else {
 		var findErr error
 		fd, findErr = protoregistry.GlobalFiles.FindFileByPath(fdp.GetName())
@@ -2210,22 +2212,32 @@ func file_basic_oneof_v1_oneof_proto_init() {
 
 	file_basic_oneof_v1_oneof_proto_msgTypes[0].GoReflectType = reflect.TypeOf((*Payload)(nil))
 	file_basic_oneof_v1_oneof_proto_msgTypes[0].Desc = protohelpers.FindMessageDescriptor(fd, "basic.oneof.v1.Payload")
-	protoregistry.GlobalTypes.RegisterMessage(&file_basic_oneof_v1_oneof_proto_msgTypes[0])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_basic_oneof_v1_oneof_proto_msgTypes[0]); err != nil {
+		panic(err)
+	}
 	file_basic_oneof_v1_oneof_proto_msgTypes[1].GoReflectType = reflect.TypeOf((*MultiOneof)(nil))
 	file_basic_oneof_v1_oneof_proto_msgTypes[1].Desc = protohelpers.FindMessageDescriptor(fd, "basic.oneof.v1.MultiOneof")
 	file_basic_oneof_v1_oneof_proto_msgTypes[1].OneofWrappers = []any{(*MultiOneof_StrVal)(nil), (*MultiOneof_IntVal)(nil), (*MultiOneof_BoolVal)(nil), (*MultiOneof_DblVal)(nil), (*MultiOneof_BytesVal)(nil), (*MultiOneof_MsgVal)(nil)}
-	protoregistry.GlobalTypes.RegisterMessage(&file_basic_oneof_v1_oneof_proto_msgTypes[1])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_basic_oneof_v1_oneof_proto_msgTypes[1]); err != nil {
+		panic(err)
+	}
 	file_basic_oneof_v1_oneof_proto_msgTypes[2].GoReflectType = reflect.TypeOf((*OneofWithTypes)(nil))
 	file_basic_oneof_v1_oneof_proto_msgTypes[2].Desc = protohelpers.FindMessageDescriptor(fd, "basic.oneof.v1.OneofWithTypes")
 	file_basic_oneof_v1_oneof_proto_msgTypes[2].OneofWrappers = []any{(*OneofWithTypes_StrVal)(nil), (*OneofWithTypes_IntVal)(nil), (*OneofWithTypes_MsgVal)(nil), (*OneofWithTypes_EnumVal)(nil)}
-	protoregistry.GlobalTypes.RegisterMessage(&file_basic_oneof_v1_oneof_proto_msgTypes[2])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_basic_oneof_v1_oneof_proto_msgTypes[2]); err != nil {
+		panic(err)
+	}
 	file_basic_oneof_v1_oneof_proto_msgTypes[3].GoReflectType = reflect.TypeOf((*OneofPlusEverything)(nil))
 	file_basic_oneof_v1_oneof_proto_msgTypes[3].Desc = protohelpers.FindMessageDescriptor(fd, "basic.oneof.v1.OneofPlusEverything")
 	file_basic_oneof_v1_oneof_proto_msgTypes[3].OneofWrappers = []any{(*OneofPlusEverything_Text)(nil), (*OneofPlusEverything_Raw)(nil), (*OneofPlusEverything_Structured)(nil)}
-	protoregistry.GlobalTypes.RegisterMessage(&file_basic_oneof_v1_oneof_proto_msgTypes[3])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_basic_oneof_v1_oneof_proto_msgTypes[3]); err != nil {
+		panic(err)
+	}
 	file_basic_oneof_v1_oneof_proto_enumTypes[0].GoReflectType = reflect.TypeOf(Shape(0))
 	file_basic_oneof_v1_oneof_proto_enumTypes[0].Desc = protohelpers.FindEnumDescriptor(fd, "basic.oneof.v1.Shape")
-	protoregistry.GlobalTypes.RegisterEnum(&file_basic_oneof_v1_oneof_proto_enumTypes[0])
+	if err := protoregistry.GlobalTypes.RegisterEnum(&file_basic_oneof_v1_oneof_proto_enumTypes[0]); err != nil {
+		panic(err)
+	}
 }
 
 func init() { file_basic_oneof_v1_oneof_proto_init() }

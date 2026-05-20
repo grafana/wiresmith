@@ -2502,7 +2502,9 @@ func file_opentelemetry_proto_common_v1_common_proto_init() {
 	}
 	fd, err := protodesc.NewFile(fdp, protoregistry.GlobalFiles)
 	if err == nil {
-		protoregistry.GlobalFiles.RegisterFile(fd)
+		if err := protoregistry.GlobalFiles.RegisterFile(fd); err != nil {
+			panic(err)
+		}
 	} else {
 		var findErr error
 		fd, findErr = protoregistry.GlobalFiles.FindFileByPath(fdp.GetName())
@@ -2515,22 +2517,34 @@ func file_opentelemetry_proto_common_v1_common_proto_init() {
 	file_opentelemetry_proto_common_v1_common_proto_msgTypes[0].GoReflectType = reflect.TypeOf((*AnyValue)(nil))
 	file_opentelemetry_proto_common_v1_common_proto_msgTypes[0].Desc = protohelpers.FindMessageDescriptor(fd, "opentelemetry.proto.common.v1.AnyValue")
 	file_opentelemetry_proto_common_v1_common_proto_msgTypes[0].OneofWrappers = []any{(*AnyValue_StringValue)(nil), (*AnyValue_BoolValue)(nil), (*AnyValue_IntValue)(nil), (*AnyValue_DoubleValue)(nil), (*AnyValue_ArrayValue)(nil), (*AnyValue_KvlistValue)(nil), (*AnyValue_BytesValue)(nil), (*AnyValue_StringValueStrindex)(nil)}
-	protoregistry.GlobalTypes.RegisterMessage(&file_opentelemetry_proto_common_v1_common_proto_msgTypes[0])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_opentelemetry_proto_common_v1_common_proto_msgTypes[0]); err != nil {
+		panic(err)
+	}
 	file_opentelemetry_proto_common_v1_common_proto_msgTypes[1].GoReflectType = reflect.TypeOf((*ArrayValue)(nil))
 	file_opentelemetry_proto_common_v1_common_proto_msgTypes[1].Desc = protohelpers.FindMessageDescriptor(fd, "opentelemetry.proto.common.v1.ArrayValue")
-	protoregistry.GlobalTypes.RegisterMessage(&file_opentelemetry_proto_common_v1_common_proto_msgTypes[1])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_opentelemetry_proto_common_v1_common_proto_msgTypes[1]); err != nil {
+		panic(err)
+	}
 	file_opentelemetry_proto_common_v1_common_proto_msgTypes[2].GoReflectType = reflect.TypeOf((*KeyValueList)(nil))
 	file_opentelemetry_proto_common_v1_common_proto_msgTypes[2].Desc = protohelpers.FindMessageDescriptor(fd, "opentelemetry.proto.common.v1.KeyValueList")
-	protoregistry.GlobalTypes.RegisterMessage(&file_opentelemetry_proto_common_v1_common_proto_msgTypes[2])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_opentelemetry_proto_common_v1_common_proto_msgTypes[2]); err != nil {
+		panic(err)
+	}
 	file_opentelemetry_proto_common_v1_common_proto_msgTypes[3].GoReflectType = reflect.TypeOf((*KeyValue)(nil))
 	file_opentelemetry_proto_common_v1_common_proto_msgTypes[3].Desc = protohelpers.FindMessageDescriptor(fd, "opentelemetry.proto.common.v1.KeyValue")
-	protoregistry.GlobalTypes.RegisterMessage(&file_opentelemetry_proto_common_v1_common_proto_msgTypes[3])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_opentelemetry_proto_common_v1_common_proto_msgTypes[3]); err != nil {
+		panic(err)
+	}
 	file_opentelemetry_proto_common_v1_common_proto_msgTypes[4].GoReflectType = reflect.TypeOf((*InstrumentationScope)(nil))
 	file_opentelemetry_proto_common_v1_common_proto_msgTypes[4].Desc = protohelpers.FindMessageDescriptor(fd, "opentelemetry.proto.common.v1.InstrumentationScope")
-	protoregistry.GlobalTypes.RegisterMessage(&file_opentelemetry_proto_common_v1_common_proto_msgTypes[4])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_opentelemetry_proto_common_v1_common_proto_msgTypes[4]); err != nil {
+		panic(err)
+	}
 	file_opentelemetry_proto_common_v1_common_proto_msgTypes[5].GoReflectType = reflect.TypeOf((*EntityRef)(nil))
 	file_opentelemetry_proto_common_v1_common_proto_msgTypes[5].Desc = protohelpers.FindMessageDescriptor(fd, "opentelemetry.proto.common.v1.EntityRef")
-	protoregistry.GlobalTypes.RegisterMessage(&file_opentelemetry_proto_common_v1_common_proto_msgTypes[5])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_opentelemetry_proto_common_v1_common_proto_msgTypes[5]); err != nil {
+		panic(err)
+	}
 }
 
 func init() { file_opentelemetry_proto_common_v1_common_proto_init() }

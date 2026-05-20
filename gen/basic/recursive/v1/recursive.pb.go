@@ -1331,7 +1331,9 @@ func file_basic_recursive_v1_recursive_proto_init() {
 	}
 	fd, err := protodesc.NewFile(fdp, protoregistry.GlobalFiles)
 	if err == nil {
-		protoregistry.GlobalFiles.RegisterFile(fd)
+		if err := protoregistry.GlobalFiles.RegisterFile(fd); err != nil {
+			panic(err)
+		}
 	} else {
 		var findErr error
 		fd, findErr = protoregistry.GlobalFiles.FindFileByPath(fdp.GetName())
@@ -1343,16 +1345,24 @@ func file_basic_recursive_v1_recursive_proto_init() {
 
 	file_basic_recursive_v1_recursive_proto_msgTypes[0].GoReflectType = reflect.TypeOf((*LinkedList)(nil))
 	file_basic_recursive_v1_recursive_proto_msgTypes[0].Desc = protohelpers.FindMessageDescriptor(fd, "basic.recursive.v1.LinkedList")
-	protoregistry.GlobalTypes.RegisterMessage(&file_basic_recursive_v1_recursive_proto_msgTypes[0])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_basic_recursive_v1_recursive_proto_msgTypes[0]); err != nil {
+		panic(err)
+	}
 	file_basic_recursive_v1_recursive_proto_msgTypes[1].GoReflectType = reflect.TypeOf((*TreeNode)(nil))
 	file_basic_recursive_v1_recursive_proto_msgTypes[1].Desc = protohelpers.FindMessageDescriptor(fd, "basic.recursive.v1.TreeNode")
-	protoregistry.GlobalTypes.RegisterMessage(&file_basic_recursive_v1_recursive_proto_msgTypes[1])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_basic_recursive_v1_recursive_proto_msgTypes[1]); err != nil {
+		panic(err)
+	}
 	file_basic_recursive_v1_recursive_proto_msgTypes[2].GoReflectType = reflect.TypeOf((*NodeA)(nil))
 	file_basic_recursive_v1_recursive_proto_msgTypes[2].Desc = protohelpers.FindMessageDescriptor(fd, "basic.recursive.v1.NodeA")
-	protoregistry.GlobalTypes.RegisterMessage(&file_basic_recursive_v1_recursive_proto_msgTypes[2])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_basic_recursive_v1_recursive_proto_msgTypes[2]); err != nil {
+		panic(err)
+	}
 	file_basic_recursive_v1_recursive_proto_msgTypes[3].GoReflectType = reflect.TypeOf((*NodeB)(nil))
 	file_basic_recursive_v1_recursive_proto_msgTypes[3].Desc = protohelpers.FindMessageDescriptor(fd, "basic.recursive.v1.NodeB")
-	protoregistry.GlobalTypes.RegisterMessage(&file_basic_recursive_v1_recursive_proto_msgTypes[3])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_basic_recursive_v1_recursive_proto_msgTypes[3]); err != nil {
+		panic(err)
+	}
 }
 
 func init() { file_basic_recursive_v1_recursive_proto_init() }

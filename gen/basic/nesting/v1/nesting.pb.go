@@ -1618,7 +1618,9 @@ func file_basic_nesting_v1_nesting_proto_init() {
 	}
 	fd, err := protodesc.NewFile(fdp, protoregistry.GlobalFiles)
 	if err == nil {
-		protoregistry.GlobalFiles.RegisterFile(fd)
+		if err := protoregistry.GlobalFiles.RegisterFile(fd); err != nil {
+			panic(err)
+		}
 	} else {
 		var findErr error
 		fd, findErr = protoregistry.GlobalFiles.FindFileByPath(fdp.GetName())
@@ -1630,19 +1632,29 @@ func file_basic_nesting_v1_nesting_proto_init() {
 
 	file_basic_nesting_v1_nesting_proto_msgTypes[0].GoReflectType = reflect.TypeOf((*Level0_Level1_Level2_Level3)(nil))
 	file_basic_nesting_v1_nesting_proto_msgTypes[0].Desc = protohelpers.FindMessageDescriptor(fd, "basic.nesting.v1.Level0.Level1.Level2.Level3")
-	protoregistry.GlobalTypes.RegisterMessage(&file_basic_nesting_v1_nesting_proto_msgTypes[0])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_basic_nesting_v1_nesting_proto_msgTypes[0]); err != nil {
+		panic(err)
+	}
 	file_basic_nesting_v1_nesting_proto_msgTypes[1].GoReflectType = reflect.TypeOf((*Level0_Level1_Level2)(nil))
 	file_basic_nesting_v1_nesting_proto_msgTypes[1].Desc = protohelpers.FindMessageDescriptor(fd, "basic.nesting.v1.Level0.Level1.Level2")
-	protoregistry.GlobalTypes.RegisterMessage(&file_basic_nesting_v1_nesting_proto_msgTypes[1])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_basic_nesting_v1_nesting_proto_msgTypes[1]); err != nil {
+		panic(err)
+	}
 	file_basic_nesting_v1_nesting_proto_msgTypes[2].GoReflectType = reflect.TypeOf((*Level0_Level1)(nil))
 	file_basic_nesting_v1_nesting_proto_msgTypes[2].Desc = protohelpers.FindMessageDescriptor(fd, "basic.nesting.v1.Level0.Level1")
-	protoregistry.GlobalTypes.RegisterMessage(&file_basic_nesting_v1_nesting_proto_msgTypes[2])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_basic_nesting_v1_nesting_proto_msgTypes[2]); err != nil {
+		panic(err)
+	}
 	file_basic_nesting_v1_nesting_proto_msgTypes[3].GoReflectType = reflect.TypeOf((*Level0)(nil))
 	file_basic_nesting_v1_nesting_proto_msgTypes[3].Desc = protohelpers.FindMessageDescriptor(fd, "basic.nesting.v1.Level0")
-	protoregistry.GlobalTypes.RegisterMessage(&file_basic_nesting_v1_nesting_proto_msgTypes[3])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_basic_nesting_v1_nesting_proto_msgTypes[3]); err != nil {
+		panic(err)
+	}
 	file_basic_nesting_v1_nesting_proto_msgTypes[4].GoReflectType = reflect.TypeOf((*CrossRef)(nil))
 	file_basic_nesting_v1_nesting_proto_msgTypes[4].Desc = protohelpers.FindMessageDescriptor(fd, "basic.nesting.v1.CrossRef")
-	protoregistry.GlobalTypes.RegisterMessage(&file_basic_nesting_v1_nesting_proto_msgTypes[4])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_basic_nesting_v1_nesting_proto_msgTypes[4]); err != nil {
+		panic(err)
+	}
 }
 
 func init() { file_basic_nesting_v1_nesting_proto_init() }

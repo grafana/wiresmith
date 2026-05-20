@@ -6452,7 +6452,9 @@ func file_basic_numeric_v1_numeric_proto_init() {
 	}
 	fd, err := protodesc.NewFile(fdp, protoregistry.GlobalFiles)
 	if err == nil {
-		protoregistry.GlobalFiles.RegisterFile(fd)
+		if err := protoregistry.GlobalFiles.RegisterFile(fd); err != nil {
+			panic(err)
+		}
 	} else {
 		var findErr error
 		fd, findErr = protoregistry.GlobalFiles.FindFileByPath(fdp.GetName())
@@ -6464,13 +6466,19 @@ func file_basic_numeric_v1_numeric_proto_init() {
 
 	file_basic_numeric_v1_numeric_proto_msgTypes[0].GoReflectType = reflect.TypeOf((*UnpackedScalars)(nil))
 	file_basic_numeric_v1_numeric_proto_msgTypes[0].Desc = protohelpers.FindMessageDescriptor(fd, "basic.numeric.v1.UnpackedScalars")
-	protoregistry.GlobalTypes.RegisterMessage(&file_basic_numeric_v1_numeric_proto_msgTypes[0])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_basic_numeric_v1_numeric_proto_msgTypes[0]); err != nil {
+		panic(err)
+	}
 	file_basic_numeric_v1_numeric_proto_msgTypes[1].GoReflectType = reflect.TypeOf((*MixedModifiers)(nil))
 	file_basic_numeric_v1_numeric_proto_msgTypes[1].Desc = protohelpers.FindMessageDescriptor(fd, "basic.numeric.v1.MixedModifiers")
-	protoregistry.GlobalTypes.RegisterMessage(&file_basic_numeric_v1_numeric_proto_msgTypes[1])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_basic_numeric_v1_numeric_proto_msgTypes[1]); err != nil {
+		panic(err)
+	}
 	file_basic_numeric_v1_numeric_proto_msgTypes[2].GoReflectType = reflect.TypeOf((*WideFields)(nil))
 	file_basic_numeric_v1_numeric_proto_msgTypes[2].Desc = protohelpers.FindMessageDescriptor(fd, "basic.numeric.v1.WideFields")
-	protoregistry.GlobalTypes.RegisterMessage(&file_basic_numeric_v1_numeric_proto_msgTypes[2])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_basic_numeric_v1_numeric_proto_msgTypes[2]); err != nil {
+		panic(err)
+	}
 }
 
 func init() { file_basic_numeric_v1_numeric_proto_init() }

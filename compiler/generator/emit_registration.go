@@ -40,9 +40,14 @@ func (fg *FileGenerator) emitRegistration(fd protoreflect.FileDescriptor) {
 	fmt.Fprintf(fg.body, "\t\tpanic(err)\n\t}\n")
 	fmt.Fprintf(fg.body, "\tfd, err := protodesc.NewFile(fdp, protoregistry.GlobalFiles)\n")
 	fmt.Fprintf(fg.body, "\tif err == nil {\n")
-	// NewFile succeeded — register our descriptor (the conflict handler will
-	// panic/warn/ignore per GOLANG_PROTOBUF_REGISTRATION_CONFLICT).
-	fmt.Fprintf(fg.body, "\t\tprotoregistry.GlobalFiles.RegisterFile(fd)\n")
+	// NewFile succeeded — register our descriptor. With the default conflict
+	// policy ("panic", or unset env var), GlobalFiles either panics internally
+	// or returns an error; in both warn/ignore modes the returned error is
+	// nil. Panic on the returned error so we never silently drop a registration
+	// conflict.
+	fmt.Fprintf(fg.body, "\t\tif err := protoregistry.GlobalFiles.RegisterFile(fd); err != nil {\n")
+	fmt.Fprintf(fg.body, "\t\t\tpanic(err)\n")
+	fmt.Fprintf(fg.body, "\t\t}\n")
 	fmt.Fprintf(fg.body, "\t} else {\n")
 	// NewFile failed — likely because a dependency conflicts. Reuse the
 	// already-registered file descriptor if there is one. We do not call
@@ -81,8 +86,9 @@ func (fg *FileGenerator) emitRegistration(fd protoreflect.FileDescriptor) {
 				prefix, msgIdx, strings.Join(wrappers, ", "))
 		}
 
-		fmt.Fprintf(fg.body, "\tprotoregistry.GlobalTypes.RegisterMessage(&%s_msgTypes[%d])\n",
+		fmt.Fprintf(fg.body, "\tif err := protoregistry.GlobalTypes.RegisterMessage(&%s_msgTypes[%d]); err != nil {\n",
 			prefix, msgIdx)
+		fmt.Fprintf(fg.body, "\t\tpanic(err)\n\t}\n")
 		msgIdx++
 	})
 
@@ -94,8 +100,9 @@ func (fg *FileGenerator) emitRegistration(fd protoreflect.FileDescriptor) {
 			prefix, enumIdx, typeName)
 		fmt.Fprintf(fg.body, "\t%s_enumTypes[%d].Desc = protohelpers.FindEnumDescriptor(fd, %q)\n",
 			prefix, enumIdx, ed.FullName())
-		fmt.Fprintf(fg.body, "\tprotoregistry.GlobalTypes.RegisterEnum(&%s_enumTypes[%d])\n",
+		fmt.Fprintf(fg.body, "\tif err := protoregistry.GlobalTypes.RegisterEnum(&%s_enumTypes[%d]); err != nil {\n",
 			prefix, enumIdx)
+		fmt.Fprintf(fg.body, "\t\tpanic(err)\n\t}\n")
 		enumIdx++
 	}
 
@@ -122,15 +129,31 @@ func (fg *FileGenerator) emitRegistration(fd protoreflect.FileDescriptor) {
 	fg.imports.addImport(fg.module+"/gen/protohelpers", "")
 }
 
-// serializeFileDescriptor converts a protoreflect.FileDescriptor to raw proto bytes.
+// serializeFileDescriptor converts a protoreflect.FileDescriptor to raw proto
+// bytes for embedding in a generated .pb.go file. The wiresmith options proto
+// is dropped from the dependency list: it is a codegen-only annotation schema
+// with no runtime semantics, so requiring callers to register it would force a
+// wiresmith_options.pb.go into every Go binary just to satisfy
+// protodesc.NewFile's import resolution.
 func serializeFileDescriptor(fd protoreflect.FileDescriptor) []byte {
 	fdp := protodesc.ToFileDescriptorProto(fd)
 	fdp.SourceCodeInfo = nil
+	fdp.Dependency = filterOutDep(fdp.Dependency, embeddedOptionsPath)
 	b, err := proto.MarshalOptions{Deterministic: true}.Marshal(fdp)
 	if err != nil {
 		panic(fmt.Sprintf("marshaling file descriptor for %s: %v", fd.Path(), err))
 	}
 	return b
+}
+
+func filterOutDep(deps []string, drop string) []string {
+	out := deps[:0]
+	for _, d := range deps {
+		if d != drop {
+			out = append(out, d)
+		}
+	}
+	return out
 }
 
 // encodeRawDescriptor writes bytes as a Go string literal with \x hex escapes.

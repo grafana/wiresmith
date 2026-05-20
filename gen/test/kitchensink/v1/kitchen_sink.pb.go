@@ -10244,7 +10244,9 @@ func file_test_kitchensink_v1_kitchen_sink_proto_init() {
 	}
 	fd, err := protodesc.NewFile(fdp, protoregistry.GlobalFiles)
 	if err == nil {
-		protoregistry.GlobalFiles.RegisterFile(fd)
+		if err := protoregistry.GlobalFiles.RegisterFile(fd); err != nil {
+			panic(err)
+		}
 	} else {
 		var findErr error
 		fd, findErr = protoregistry.GlobalFiles.FindFileByPath(fdp.GetName())
@@ -10256,47 +10258,75 @@ func file_test_kitchensink_v1_kitchen_sink_proto_init() {
 
 	file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[0].GoReflectType = reflect.TypeOf((*AllScalars)(nil))
 	file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[0].Desc = protohelpers.FindMessageDescriptor(fd, "test.kitchensink.v1.AllScalars")
-	protoregistry.GlobalTypes.RegisterMessage(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[0])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[0]); err != nil {
+		panic(err)
+	}
 	file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[1].GoReflectType = reflect.TypeOf((*AllOptionalScalars)(nil))
 	file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[1].Desc = protohelpers.FindMessageDescriptor(fd, "test.kitchensink.v1.AllOptionalScalars")
-	protoregistry.GlobalTypes.RegisterMessage(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[1])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[1]); err != nil {
+		panic(err)
+	}
 	file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[2].GoReflectType = reflect.TypeOf((*AllRepeatedScalars)(nil))
 	file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[2].Desc = protohelpers.FindMessageDescriptor(fd, "test.kitchensink.v1.AllRepeatedScalars")
-	protoregistry.GlobalTypes.RegisterMessage(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[2])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[2]); err != nil {
+		panic(err)
+	}
 	file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[3].GoReflectType = reflect.TypeOf((*OneofVariants)(nil))
 	file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[3].Desc = protohelpers.FindMessageDescriptor(fd, "test.kitchensink.v1.OneofVariants")
 	file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[3].OneofWrappers = []any{(*OneofVariants_DoubleValue)(nil), (*OneofVariants_FloatValue)(nil), (*OneofVariants_Int32Value)(nil), (*OneofVariants_Int64Value)(nil), (*OneofVariants_Uint32Value)(nil), (*OneofVariants_Uint64Value)(nil), (*OneofVariants_Sint32Value)(nil), (*OneofVariants_Sint64Value)(nil), (*OneofVariants_Fixed32Value)(nil), (*OneofVariants_Fixed64Value)(nil), (*OneofVariants_Sfixed32Value)(nil), (*OneofVariants_Sfixed64Value)(nil), (*OneofVariants_BoolValue)(nil), (*OneofVariants_StringValue)(nil), (*OneofVariants_BytesValue)(nil)}
-	protoregistry.GlobalTypes.RegisterMessage(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[3])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[3]); err != nil {
+		panic(err)
+	}
 	file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[4].GoReflectType = reflect.TypeOf((*Outer)(nil))
 	file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[4].Desc = protohelpers.FindMessageDescriptor(fd, "test.kitchensink.v1.Outer")
-	protoregistry.GlobalTypes.RegisterMessage(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[4])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[4]); err != nil {
+		panic(err)
+	}
 	file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[5].GoReflectType = reflect.TypeOf((*Middle)(nil))
 	file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[5].Desc = protohelpers.FindMessageDescriptor(fd, "test.kitchensink.v1.Middle")
-	protoregistry.GlobalTypes.RegisterMessage(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[5])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[5]); err != nil {
+		panic(err)
+	}
 	file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[6].GoReflectType = reflect.TypeOf((*Inner)(nil))
 	file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[6].Desc = protohelpers.FindMessageDescriptor(fd, "test.kitchensink.v1.Inner")
-	protoregistry.GlobalTypes.RegisterMessage(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[6])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[6]); err != nil {
+		panic(err)
+	}
 	file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[7].GoReflectType = reflect.TypeOf((*HighFieldNumbers)(nil))
 	file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[7].Desc = protohelpers.FindMessageDescriptor(fd, "test.kitchensink.v1.HighFieldNumbers")
-	protoregistry.GlobalTypes.RegisterMessage(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[7])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[7]); err != nil {
+		panic(err)
+	}
 	file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[8].GoReflectType = reflect.TypeOf((*WithEnum)(nil))
 	file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[8].Desc = protohelpers.FindMessageDescriptor(fd, "test.kitchensink.v1.WithEnum")
-	protoregistry.GlobalTypes.RegisterMessage(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[8])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[8]); err != nil {
+		panic(err)
+	}
 	file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[9].GoReflectType = reflect.TypeOf((*Empty)(nil))
 	file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[9].Desc = protohelpers.FindMessageDescriptor(fd, "test.kitchensink.v1.Empty")
-	protoregistry.GlobalTypes.RegisterMessage(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[9])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[9]); err != nil {
+		panic(err)
+	}
 	file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[10].GoReflectType = reflect.TypeOf((*OnlyRepeated)(nil))
 	file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[10].Desc = protohelpers.FindMessageDescriptor(fd, "test.kitchensink.v1.OnlyRepeated")
-	protoregistry.GlobalTypes.RegisterMessage(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[10])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[10]); err != nil {
+		panic(err)
+	}
 	file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[11].GoReflectType = reflect.TypeOf((*Container)(nil))
 	file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[11].Desc = protohelpers.FindMessageDescriptor(fd, "test.kitchensink.v1.Container")
-	protoregistry.GlobalTypes.RegisterMessage(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[11])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[11]); err != nil {
+		panic(err)
+	}
 	file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[12].GoReflectType = reflect.TypeOf((*AllMaps)(nil))
 	file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[12].Desc = protohelpers.FindMessageDescriptor(fd, "test.kitchensink.v1.AllMaps")
-	protoregistry.GlobalTypes.RegisterMessage(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[12])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_test_kitchensink_v1_kitchen_sink_proto_msgTypes[12]); err != nil {
+		panic(err)
+	}
 	file_test_kitchensink_v1_kitchen_sink_proto_enumTypes[0].GoReflectType = reflect.TypeOf(Color(0))
 	file_test_kitchensink_v1_kitchen_sink_proto_enumTypes[0].Desc = protohelpers.FindEnumDescriptor(fd, "test.kitchensink.v1.Color")
-	protoregistry.GlobalTypes.RegisterEnum(&file_test_kitchensink_v1_kitchen_sink_proto_enumTypes[0])
+	if err := protoregistry.GlobalTypes.RegisterEnum(&file_test_kitchensink_v1_kitchen_sink_proto_enumTypes[0]); err != nil {
+		panic(err)
+	}
 }
 
 func init() { file_test_kitchensink_v1_kitchen_sink_proto_init() }

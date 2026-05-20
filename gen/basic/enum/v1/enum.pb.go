@@ -1206,7 +1206,9 @@ func file_basic_enum_v1_enum_proto_init() {
 	}
 	fd, err := protodesc.NewFile(fdp, protoregistry.GlobalFiles)
 	if err == nil {
-		protoregistry.GlobalFiles.RegisterFile(fd)
+		if err := protoregistry.GlobalFiles.RegisterFile(fd); err != nil {
+			panic(err)
+		}
 	} else {
 		var findErr error
 		fd, findErr = protoregistry.GlobalFiles.FindFileByPath(fdp.GetName())
@@ -1218,19 +1220,29 @@ func file_basic_enum_v1_enum_proto_init() {
 
 	file_basic_enum_v1_enum_proto_msgTypes[0].GoReflectType = reflect.TypeOf((*WithNestedEnum)(nil))
 	file_basic_enum_v1_enum_proto_msgTypes[0].Desc = protohelpers.FindMessageDescriptor(fd, "basic.enum.v1.WithNestedEnum")
-	protoregistry.GlobalTypes.RegisterMessage(&file_basic_enum_v1_enum_proto_msgTypes[0])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_basic_enum_v1_enum_proto_msgTypes[0]); err != nil {
+		panic(err)
+	}
 	file_basic_enum_v1_enum_proto_msgTypes[1].GoReflectType = reflect.TypeOf((*EnumContainer)(nil))
 	file_basic_enum_v1_enum_proto_msgTypes[1].Desc = protohelpers.FindMessageDescriptor(fd, "basic.enum.v1.EnumContainer")
-	protoregistry.GlobalTypes.RegisterMessage(&file_basic_enum_v1_enum_proto_msgTypes[1])
+	if err := protoregistry.GlobalTypes.RegisterMessage(&file_basic_enum_v1_enum_proto_msgTypes[1]); err != nil {
+		panic(err)
+	}
 	file_basic_enum_v1_enum_proto_enumTypes[0].GoReflectType = reflect.TypeOf(AliasedPriority(0))
 	file_basic_enum_v1_enum_proto_enumTypes[0].Desc = protohelpers.FindEnumDescriptor(fd, "basic.enum.v1.AliasedPriority")
-	protoregistry.GlobalTypes.RegisterEnum(&file_basic_enum_v1_enum_proto_enumTypes[0])
+	if err := protoregistry.GlobalTypes.RegisterEnum(&file_basic_enum_v1_enum_proto_enumTypes[0]); err != nil {
+		panic(err)
+	}
 	file_basic_enum_v1_enum_proto_enumTypes[1].GoReflectType = reflect.TypeOf(SignedEnum(0))
 	file_basic_enum_v1_enum_proto_enumTypes[1].Desc = protohelpers.FindEnumDescriptor(fd, "basic.enum.v1.SignedEnum")
-	protoregistry.GlobalTypes.RegisterEnum(&file_basic_enum_v1_enum_proto_enumTypes[1])
+	if err := protoregistry.GlobalTypes.RegisterEnum(&file_basic_enum_v1_enum_proto_enumTypes[1]); err != nil {
+		panic(err)
+	}
 	file_basic_enum_v1_enum_proto_enumTypes[2].GoReflectType = reflect.TypeOf(WithNestedEnum_Priority(0))
 	file_basic_enum_v1_enum_proto_enumTypes[2].Desc = protohelpers.FindEnumDescriptor(fd, "basic.enum.v1.WithNestedEnum.Priority")
-	protoregistry.GlobalTypes.RegisterEnum(&file_basic_enum_v1_enum_proto_enumTypes[2])
+	if err := protoregistry.GlobalTypes.RegisterEnum(&file_basic_enum_v1_enum_proto_enumTypes[2]); err != nil {
+		panic(err)
+	}
 }
 
 func init() { file_basic_enum_v1_enum_proto_init() }
