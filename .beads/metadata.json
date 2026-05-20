@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "wiresmith",
+  "project_id": "bd29ce62-556a-4e22-bd41-538dfd13b7e2"
+}
