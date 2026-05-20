@@ -316,6 +316,32 @@ message Foo { string s = 1; }`)
 	}
 }
 
+// TestGenerateEmptyProtoDoesNotTriggerDestinationCollision verifies that an
+// empty .proto whose package resolves to the same Go directory as a different
+// non-empty proto's go_package does not fail validateDestinations. Only the
+// non-empty file actually writes there, so there is no real collision —
+// routing the empty file through destFor would be a false positive.
+func TestGenerateEmptyProtoDoesNotTriggerDestinationCollision(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "empty.proto", `
+syntax = "proto3";
+package alpha;`)
+	writeProto(t, protoDir, "real.proto", `
+syntax = "proto3";
+package beta;
+option go_package = "wiresmith/gen/alpha";
+message Foo { string s = 1; }`)
+
+	outDir := t.TempDir()
+	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(outDir, "alpha", "real.pb.go")); err != nil {
+		t.Errorf("expected non-empty proto to still produce a .pb.go: %v", err)
+	}
+}
+
 func writeProto(t *testing.T, dir, relPath, content string) {
 	t.Helper()
 	full := filepath.Join(dir, relPath)

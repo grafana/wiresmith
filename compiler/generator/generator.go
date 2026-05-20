@@ -261,13 +261,14 @@ func (g *Generator) collectGoPackages(results linker.Files) error {
 // and a default mapping shadowing an explicit go_package. Routing every file
 // through destFor (not just those with go_package set) is the part that
 // makes the cross-mode case visible.
+//
+// Files that won't emit are skipped: an empty .proto cannot collide on disk
+// with a non-empty proto resolving to the same Go dir, because it writes
+// nothing there. Including it would produce a false-positive collision error.
 func (g *Generator) validateDestinations(results linker.Files) error {
 	dirOwner := make(map[string]string)
 	for _, fd := range results {
-		// Skip the embedded options schema for the same reason
-		// collectGoPackages does — it doesn't produce output and shouldn't
-		// claim a destination on behalf of the wiresmith.options package.
-		if isInternalSchemaFile(fd) {
+		if !shouldGenerateFile(fd) {
 			continue
 		}
 		protoPkg := string(fd.Package())
