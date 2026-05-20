@@ -269,6 +269,14 @@ func (g *Generator) validateDestinations(results linker.Files) error {
 }
 
 func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
+	// A proto file with no messages and no enums has nothing to generate.
+	// Emitting an empty init() leaves the unconditional `protohelpers`
+	// import unused and the unmarshal skipValue helper dead code — both
+	// reject go build. Skip the file rather than guarding every emitter.
+	if fd.Messages().Len() == 0 && fd.Enums().Len() == 0 {
+		return nil
+	}
+
 	fg := &FileGenerator{
 		fd:         fd,
 		module:     g.Module,

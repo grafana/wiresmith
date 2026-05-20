@@ -263,6 +263,34 @@ func TestGenerateMatchesCheckedIn(t *testing.T) {
 	}
 }
 
+// TestGenerateEmptyProto verifies that a proto file with no messages or enums
+// does not produce a .pb.go that fails to compile. The historical bug was
+// emitting an empty init() plus an unused `protohelpers` import — `go build`
+// rejects the result. Skipping the file entirely avoids the failure mode.
+func TestGenerateEmptyProto(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "empty.proto", `
+syntax = "proto3";
+package empty;`)
+	writeProto(t, protoDir, "real.proto", `
+syntax = "proto3";
+package real_pkg;
+message Foo { string name = 1; }`)
+
+	outDir := t.TempDir()
+	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
+	}
+
+	if _, err := os.Stat(filepath.Join(outDir, "empty", "empty.pb.go")); !os.IsNotExist(err) {
+		t.Errorf("expected no .pb.go for empty proto, got err=%v", err)
+	}
+	if _, err := os.Stat(filepath.Join(outDir, "real_pkg", "real.pb.go")); err != nil {
+		t.Errorf("expected non-empty proto to still produce a .pb.go: %v", err)
+	}
+}
+
 func writeProto(t *testing.T, dir, relPath, content string) {
 	t.Helper()
 	full := filepath.Join(dir, relPath)
