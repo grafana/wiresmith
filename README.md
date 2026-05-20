@@ -79,9 +79,11 @@ For fixed-size packed fields (`uint64`, `float64`), we compute `len(data)/8` and
 
 ## Supported proto3 features
 
-Messages, nested messages, enums (top-level and nested), oneof, optional, repeated (packed + non-packed), reserved fields, cross-file imports, fully-qualified type references.
+Messages, nested messages, enums (top-level and nested), oneof, optional, repeated (packed + non-packed), maps, reserved fields, cross-file imports, fully-qualified type references.
 
-Scalar types: `string`, `bool`, `int32`, `int64`, `uint32`, `uint64`, `sint32`, `double`, `bytes`, `fixed32`, `fixed64`, `sfixed64`.
+Scalar types: `string`, `bool`, `int32`, `int64`, `uint32`, `uint64`, `sint32`, `sint64`, `float`, `double`, `bytes`, `fixed32`, `fixed64`, `sfixed32`, `sfixed64`.
+
+Map keys: all scalar types except `float`, `double`, and `bytes`. Map values: all scalars, enums, and messages.
 
 Not supported (not needed for OTel protos): services/RPCs, extensions, well-known types, proto2.
 
