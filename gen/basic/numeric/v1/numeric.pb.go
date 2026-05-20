@@ -125,7 +125,12 @@ type WideFields struct {
 	fieldsPresent [2]uint64
 }
 
-func (m *UnpackedScalars) Reset()      { *m = UnpackedScalars{} }
+func (m *UnpackedScalars) Reset() {
+	if m == nil {
+		return
+	}
+	*m = UnpackedScalars{}
+}
 func (*UnpackedScalars) ProtoMessage() {}
 func (m *UnpackedScalars) String() string {
 	if m == nil {
@@ -134,7 +139,12 @@ func (m *UnpackedScalars) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *MixedModifiers) Reset()      { *m = MixedModifiers{} }
+func (m *MixedModifiers) Reset() {
+	if m == nil {
+		return
+	}
+	*m = MixedModifiers{}
+}
 func (*MixedModifiers) ProtoMessage() {}
 func (m *MixedModifiers) String() string {
 	if m == nil {
@@ -143,7 +153,12 @@ func (m *MixedModifiers) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *WideFields) Reset()      { *m = WideFields{} }
+func (m *WideFields) Reset() {
+	if m == nil {
+		return
+	}
+	*m = WideFields{}
+}
 func (*WideFields) ProtoMessage() {}
 func (m *WideFields) String() string {
 	if m == nil {

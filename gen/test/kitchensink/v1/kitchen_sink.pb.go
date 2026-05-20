@@ -288,7 +288,12 @@ type AllMaps struct {
 	MapStringEnum       map[string]Color  `protobuf:"bytes,17,rep,name=map_string_enum,json=mapStringEnum,proto3" json:"map_string_enum,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value,enum=test.kitchensink.v1.Color"`
 }
 
-func (m *AllScalars) Reset()      { *m = AllScalars{} }
+func (m *AllScalars) Reset() {
+	if m == nil {
+		return
+	}
+	*m = AllScalars{}
+}
 func (*AllScalars) ProtoMessage() {}
 func (m *AllScalars) String() string {
 	if m == nil {
@@ -297,7 +302,12 @@ func (m *AllScalars) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *AllOptionalScalars) Reset()      { *m = AllOptionalScalars{} }
+func (m *AllOptionalScalars) Reset() {
+	if m == nil {
+		return
+	}
+	*m = AllOptionalScalars{}
+}
 func (*AllOptionalScalars) ProtoMessage() {}
 func (m *AllOptionalScalars) String() string {
 	if m == nil {
@@ -306,7 +316,12 @@ func (m *AllOptionalScalars) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *AllRepeatedScalars) Reset()      { *m = AllRepeatedScalars{} }
+func (m *AllRepeatedScalars) Reset() {
+	if m == nil {
+		return
+	}
+	*m = AllRepeatedScalars{}
+}
 func (*AllRepeatedScalars) ProtoMessage() {}
 func (m *AllRepeatedScalars) String() string {
 	if m == nil {
@@ -315,7 +330,12 @@ func (m *AllRepeatedScalars) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *OneofVariants) Reset()      { *m = OneofVariants{} }
+func (m *OneofVariants) Reset() {
+	if m == nil {
+		return
+	}
+	*m = OneofVariants{}
+}
 func (*OneofVariants) ProtoMessage() {}
 func (m *OneofVariants) String() string {
 	if m == nil {
@@ -324,7 +344,12 @@ func (m *OneofVariants) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *Outer) Reset()      { *m = Outer{} }
+func (m *Outer) Reset() {
+	if m == nil {
+		return
+	}
+	*m = Outer{}
+}
 func (*Outer) ProtoMessage() {}
 func (m *Outer) String() string {
 	if m == nil {
@@ -333,7 +358,12 @@ func (m *Outer) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *Middle) Reset()      { *m = Middle{} }
+func (m *Middle) Reset() {
+	if m == nil {
+		return
+	}
+	*m = Middle{}
+}
 func (*Middle) ProtoMessage() {}
 func (m *Middle) String() string {
 	if m == nil {
@@ -342,7 +372,12 @@ func (m *Middle) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *Inner) Reset()      { *m = Inner{} }
+func (m *Inner) Reset() {
+	if m == nil {
+		return
+	}
+	*m = Inner{}
+}
 func (*Inner) ProtoMessage() {}
 func (m *Inner) String() string {
 	if m == nil {
@@ -351,7 +386,12 @@ func (m *Inner) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *HighFieldNumbers) Reset()      { *m = HighFieldNumbers{} }
+func (m *HighFieldNumbers) Reset() {
+	if m == nil {
+		return
+	}
+	*m = HighFieldNumbers{}
+}
 func (*HighFieldNumbers) ProtoMessage() {}
 func (m *HighFieldNumbers) String() string {
 	if m == nil {
@@ -360,7 +400,12 @@ func (m *HighFieldNumbers) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *WithEnum) Reset()      { *m = WithEnum{} }
+func (m *WithEnum) Reset() {
+	if m == nil {
+		return
+	}
+	*m = WithEnum{}
+}
 func (*WithEnum) ProtoMessage() {}
 func (m *WithEnum) String() string {
 	if m == nil {
@@ -369,7 +414,12 @@ func (m *WithEnum) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *Empty) Reset()      { *m = Empty{} }
+func (m *Empty) Reset() {
+	if m == nil {
+		return
+	}
+	*m = Empty{}
+}
 func (*Empty) ProtoMessage() {}
 func (m *Empty) String() string {
 	if m == nil {
@@ -378,7 +428,12 @@ func (m *Empty) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *OnlyRepeated) Reset()      { *m = OnlyRepeated{} }
+func (m *OnlyRepeated) Reset() {
+	if m == nil {
+		return
+	}
+	*m = OnlyRepeated{}
+}
 func (*OnlyRepeated) ProtoMessage() {}
 func (m *OnlyRepeated) String() string {
 	if m == nil {
@@ -387,7 +442,12 @@ func (m *OnlyRepeated) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *Container) Reset()      { *m = Container{} }
+func (m *Container) Reset() {
+	if m == nil {
+		return
+	}
+	*m = Container{}
+}
 func (*Container) ProtoMessage() {}
 func (m *Container) String() string {
 	if m == nil {
@@ -396,7 +456,12 @@ func (m *Container) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *AllMaps) Reset()      { *m = AllMaps{} }
+func (m *AllMaps) Reset() {
+	if m == nil {
+		return
+	}
+	*m = AllMaps{}
+}
 func (*AllMaps) ProtoMessage() {}
 func (m *AllMaps) String() string {
 	if m == nil {

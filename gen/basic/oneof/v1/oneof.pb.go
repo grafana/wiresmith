@@ -170,7 +170,12 @@ type OneofPlusEverything struct {
 	fieldsPresent [1]uint64
 }
 
-func (m *Payload) Reset()      { *m = Payload{} }
+func (m *Payload) Reset() {
+	if m == nil {
+		return
+	}
+	*m = Payload{}
+}
 func (*Payload) ProtoMessage() {}
 func (m *Payload) String() string {
 	if m == nil {
@@ -179,7 +184,12 @@ func (m *Payload) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *MultiOneof) Reset()      { *m = MultiOneof{} }
+func (m *MultiOneof) Reset() {
+	if m == nil {
+		return
+	}
+	*m = MultiOneof{}
+}
 func (*MultiOneof) ProtoMessage() {}
 func (m *MultiOneof) String() string {
 	if m == nil {
@@ -188,7 +198,12 @@ func (m *MultiOneof) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *OneofWithTypes) Reset()      { *m = OneofWithTypes{} }
+func (m *OneofWithTypes) Reset() {
+	if m == nil {
+		return
+	}
+	*m = OneofWithTypes{}
+}
 func (*OneofWithTypes) ProtoMessage() {}
 func (m *OneofWithTypes) String() string {
 	if m == nil {
@@ -197,7 +212,12 @@ func (m *OneofWithTypes) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *OneofPlusEverything) Reset()      { *m = OneofPlusEverything{} }
+func (m *OneofPlusEverything) Reset() {
+	if m == nil {
+		return
+	}
+	*m = OneofPlusEverything{}
+}
 func (*OneofPlusEverything) ProtoMessage() {}
 func (m *OneofPlusEverything) String() string {
 	if m == nil {

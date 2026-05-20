@@ -36,7 +36,12 @@ type PointerHolder struct {
 	fieldsPresent [1]uint64
 }
 
-func (m *Leaf) Reset()      { *m = Leaf{} }
+func (m *Leaf) Reset() {
+	if m == nil {
+		return
+	}
+	*m = Leaf{}
+}
 func (*Leaf) ProtoMessage() {}
 func (m *Leaf) String() string {
 	if m == nil {
@@ -45,7 +50,12 @@ func (m *Leaf) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *PointerHolder) Reset()      { *m = PointerHolder{} }
+func (m *PointerHolder) Reset() {
+	if m == nil {
+		return
+	}
+	*m = PointerHolder{}
+}
 func (*PointerHolder) ProtoMessage() {}
 func (m *PointerHolder) String() string {
 	if m == nil {

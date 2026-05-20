@@ -38,6 +38,14 @@ func TestReset_ClearsFieldsAndPresence(t *testing.T) {
 	assert.False(t, decoded.HasFieldBool(), "presence must be cleared by Reset")
 }
 
+func TestReset_NilReceiver(t *testing.T) {
+	var m *ks.AllScalars
+	assert.NotPanics(t, func() { m.Reset() })
+
+	var o *ks.Outer
+	assert.NotPanics(t, func() { o.Reset() })
+}
+
 func TestReset_NestedMessage(t *testing.T) {
 	msg := &ks.Outer{
 		Middle: ks.Middle{Value: 99, Inner: ks.Inner{Data: "deep"}},

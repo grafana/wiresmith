@@ -125,7 +125,12 @@ type EnumContainer struct {
 	fieldsPresent [1]uint64
 }
 
-func (m *WithNestedEnum) Reset()      { *m = WithNestedEnum{} }
+func (m *WithNestedEnum) Reset() {
+	if m == nil {
+		return
+	}
+	*m = WithNestedEnum{}
+}
 func (*WithNestedEnum) ProtoMessage() {}
 func (m *WithNestedEnum) String() string {
 	if m == nil {
@@ -134,7 +139,12 @@ func (m *WithNestedEnum) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
-func (m *EnumContainer) Reset()      { *m = EnumContainer{} }
+func (m *EnumContainer) Reset() {
+	if m == nil {
+		return
+	}
+	*m = EnumContainer{}
+}
 func (*EnumContainer) ProtoMessage() {}
 func (m *EnumContainer) String() string {
 	if m == nil {
