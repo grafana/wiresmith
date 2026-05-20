@@ -109,7 +109,9 @@ func TestEmitEqual_OptionalScalar(t *testing.T) {
 
 func TestEmitEqual_OptionalBytes(t *testing.T) {
 	e := &captureEmitter{}
-	(&OptionalField{Inner: BytesType{}}).EmitEqual(e, "\t", "this.X", "that1.X")
+	// Use the same pointer registration the type registry uses so the
+	// *BytesType assertion inside OptionalField.EmitEqual catches it.
+	(&OptionalField{Inner: &BytesType{}}).EmitEqual(e, "\t", "this.X", "that1.X")
 
 	want := strings.Join([]string{
 		"\tif (this.X == nil) != (that1.X == nil) {",

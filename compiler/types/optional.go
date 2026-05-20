@@ -53,10 +53,12 @@ func (o *OptionalField) EmitUnmarshal(e Emitter, access string, ctx FieldContext
 //   - Message (*Msg field): nil-pair check + nil-guarded deep Equal.
 //   - Scalar (*T field): equal-pointers shortcut, then nil-pair + *deref compare.
 //
-// The discriminator OptionalAccess("x") == "x" identifies the bytes case
-// without a type assertion — same predicate EmitUnmarshal uses above.
+// Bytes and message are explicit type assertions so the dispatch reads
+// the same as the message branch below it; the EmitUnmarshal predicate
+// above uses a different (broader) "OptionalAccess unchanged" form
+// because it covers any future already-nullable type, not just bytes.
 func (o *OptionalField) EmitEqual(e Emitter, indent, lhs, rhs string) {
-	if o.Inner.OptionalAccess("x") == "x" {
+	if _, isBytes := o.Inner.(*BytesType); isBytes {
 		// Bytes: nil/non-nil mismatch is a difference even when contents match.
 		e.Writef("%sif (%s == nil) != (%s == nil) {\n%s\treturn false\n%s}\n", indent, lhs, rhs, indent, indent)
 		o.Inner.EmitEqual(e, indent, lhs, rhs)
