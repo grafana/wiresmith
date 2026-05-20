@@ -56,6 +56,13 @@ func (m *MessageReflect) ProtoMethods() *protoiface.Methods          { return wi
 func (m *MessageReflect) GetUnknown() protoreflect.RawFields         { return nil }
 func (m *MessageReflect) SetUnknown(protoreflect.RawFields)          { panicReflect() }
 
+func (m *MessageReflect) fullName() protoreflect.FullName {
+	if m == nil || m.mi == nil || m.mi.Desc == nil {
+		return "<unknown>"
+	}
+	return m.mi.Desc.FullName()
+}
+
 // New returns a freshly allocated message of the same type, wrapped in
 // another MessageReflect so the caller gets consistent panic-on-field-reflection
 // semantics. Delegating to protoimpl.MessageInfo.New would hand back a
@@ -120,7 +127,7 @@ var wiresmithMethods = &protoiface.Methods{
 
 	Size: func(in protoiface.SizeInput) protoiface.SizeOutput {
 		mr, ok := in.Message.(*MessageReflect)
-		if !ok {
+		if !ok || !mr.IsValid() {
 			return protoiface.SizeOutput{}
 		}
 		return protoiface.SizeOutput{Size: mr.msg.Size()}
@@ -130,6 +137,9 @@ var wiresmithMethods = &protoiface.Methods{
 		mr, ok := in.Message.(*MessageReflect)
 		if !ok {
 			return protoiface.MarshalOutput{}, fmt.Errorf("wiresmith: Marshal called with non-wiresmith message %T", in.Message)
+		}
+		if !mr.IsValid() {
+			return protoiface.MarshalOutput{Buf: in.Buf}, nil
 		}
 		size := mr.msg.Size()
 		oldLen := len(in.Buf)
@@ -147,6 +157,9 @@ var wiresmithMethods = &protoiface.Methods{
 		if !ok {
 			return protoiface.UnmarshalOutput{}, fmt.Errorf("wiresmith: Unmarshal called with non-wiresmith message %T", in.Message)
 		}
+		if !mr.IsValid() {
+			return protoiface.UnmarshalOutput{}, fmt.Errorf("wiresmith: Unmarshal called with invalid %s message", mr.fullName())
+		}
 		if err := mr.msg.Unmarshal(in.Buf); err != nil {
 			return protoiface.UnmarshalOutput{}, err
 		}
@@ -158,6 +171,10 @@ var wiresmithMethods = &protoiface.Methods{
 		b, okB := in.MessageB.(*MessageReflect)
 		if !okA || !okB {
 			return protoiface.EqualOutput{Equal: false}
+		}
+		validA, validB := a.IsValid(), b.IsValid()
+		if !validA || !validB {
+			return protoiface.EqualOutput{Equal: !validA && !validB && a.fullName() == b.fullName()}
 		}
 		return protoiface.EqualOutput{Equal: a.msg.Equal(b.msg)}
 	},

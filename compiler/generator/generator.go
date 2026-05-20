@@ -334,13 +334,11 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 
 	// Companion file: reflection/registration glue. These emitters write to
 	// fg.reflectBody / fg.reflectImports. The two passes below MUST iterate
-	// in the same order as their counterparts on the main side
-	// (emitAllEnums for enums, forEachMessage for messages) — they assign
-	// monotonically-increasing indices that emitRegistration then expects
-	// to find in the same positions in the per-file _msgTypes / _enumTypes
-	// arrays. Changing one without the other will silently produce a binary
-	// where message N's ProtoReflect() returns the descriptor for message
-	// N+k.
+	// in TypeBuilder's flattened ordering (via flattenedEnums and
+	// flattenedMessages), because they assign the same indices that
+	// emitRegistration uses for the per-file _enumTypes / _msgTypes arrays.
+	// Changing one without the other will silently produce a binary where
+	// message N's ProtoReflect() returns the descriptor for message N+k.
 	fg.emitAllEnumReflectMethods(fd)
 	fg.emitAllProtoReflectMethods(fd)
 	fg.emitRegistration(fd)
@@ -360,8 +358,8 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 		return nil
 	}
 	var reflOut bytes.Buffer
-	fg.emitReflectFileBanner(&reflOut)
 	fg.emitHeader(&reflOut, fg.reflectImports)
+	fg.emitReflectFileBanner(&reflOut)
 	reflOut.Write(fg.reflectBody.Bytes())
 	return g.writeFormatted(g.outputReflectPathFor(fd), reflOut.Bytes(), fd.Path())
 }
@@ -440,12 +438,12 @@ func (fg *FileGenerator) emitHeader(out *bytes.Buffer, tracker *ImportTracker) {
 	fmt.Fprintf(out, ")\n\n")
 }
 
-// emitReflectFileBanner writes a comment block at the very top of every
-// `_reflect.pb.go` file explaining (a) what's in this file, (b) why it isn't
-// just appended to the main `.pb.go`, and (c) what to grep for if you want
-// to undo the split. Documentation lives in the generated artifact (not just
-// in the generator) because future maintainers will encounter the file
-// before they encounter the generator.
+// emitReflectFileBanner writes a comment block below the standard generated
+// header in every `_reflect.pb.go` file explaining (a) what's in this file,
+// (b) why it isn't just appended to the main `.pb.go`, and (c) what to grep for
+// if you want to undo the split. Documentation lives in the generated artifact
+// (not just in the generator) because future maintainers will encounter the
+// file before they encounter the generator.
 func (fg *FileGenerator) emitReflectFileBanner(out *bytes.Buffer) {
 	fmt.Fprintf(out, "// Reflection / registration glue for %s.\n", fg.fd.Path())
 	fmt.Fprintf(out, "//\n")

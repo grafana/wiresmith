@@ -64,12 +64,11 @@ func (fg *FileGenerator) emitEnum(ed protoreflect.EnumDescriptor) {
 // emitEnumReflect emits the protoreflect-shaped Descriptor() / Type() /
 // Number() methods for one enum into the COMPANION _reflect.pb.go file.
 //
-// MUST be called in the same iteration order as emitEnum, because both this
+// MUST be called in TypeBuilder's flattened enum ordering, because both this
 // method and emitRegistration index into the shared `file_*_enumTypes` array
-// by `fg.nextEnumIndex` — they need to see the same enums in the same order
-// or the registered descriptors won't match the bodies that read from the
-// array. (emitAllEnumReflectMethods enforces this by mirroring emitAllEnums'
-// traversal.)
+// by `fg.nextEnumIndex` — they need to see the same enums in the same order or
+// the registered descriptors won't match the bodies that read from the array.
+// emitAllEnumReflectMethods enforces this by iterating flattenedEnums.
 func (fg *FileGenerator) emitEnumReflect(ed protoreflect.EnumDescriptor) {
 	typeName := goEnumTypeName(ed)
 

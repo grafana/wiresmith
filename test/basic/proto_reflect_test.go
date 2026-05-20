@@ -59,6 +59,36 @@ func TestProtoReflectIsValidDetectsTypedNil(t *testing.T) {
 	}
 }
 
+// TestProtoMethodsHandleTypedNilFastPaths verifies that the ProtoMethods hooks
+// respect protoreflect's invalid-message semantics for typed-nil receivers.
+func TestProtoMethodsHandleTypedNilFastPaths(t *testing.T) {
+	var nilResource *resourcev1.Resource
+
+	if got := proto.Size(nilResource); got != 0 {
+		t.Fatalf("proto.Size(typed nil) = %d, want 0", got)
+	}
+
+	data, err := proto.Marshal(nilResource)
+	if err != nil {
+		t.Fatalf("proto.Marshal(typed nil): %v", err)
+	}
+	if data != nil {
+		t.Fatalf("proto.Marshal(typed nil) = %v, want nil", data)
+	}
+
+	appended, err := proto.MarshalOptions{}.MarshalAppend([]byte("prefix"), nilResource)
+	if err != nil {
+		t.Fatalf("MarshalAppend(typed nil): %v", err)
+	}
+	if string(appended) != "prefix" {
+		t.Fatalf("MarshalAppend(typed nil) = %q, want prefix unchanged", appended)
+	}
+
+	if err := proto.Unmarshal(nil, nilResource); err == nil {
+		t.Fatal("proto.Unmarshal into typed nil succeeded, want error")
+	}
+}
+
 // TestProtoMarshalUnmarshalRoundTripsViaReflect verifies that proto.Marshal
 // and proto.Unmarshal work on wiresmith-generated messages by going through
 // the ProtoMethods fast-path (avoiding field-level reflection, which would
