@@ -47,3 +47,30 @@ func (o *OptionalField) EmitUnmarshal(e Emitter, access string, ctx FieldContext
 		}
 	}
 }
+
+// EmitEqual handles three optional-field shapes:
+//   - Bytes ([]byte is already nullable): nil-pair check + bytes.Equal.
+//   - Message (*Msg field): nil-pair check + nil-guarded deep Equal.
+//   - Scalar (*T field): equal-pointers shortcut, then nil-pair + *deref compare.
+//
+// The discriminator OptionalAccess("x") == "x" identifies the bytes case
+// without a type assertion — same predicate EmitUnmarshal uses above.
+func (o *OptionalField) EmitEqual(e Emitter, indent, lhs, rhs string) {
+	if o.Inner.OptionalAccess("x") == "x" {
+		// Bytes: nil/non-nil mismatch is a difference even when contents match.
+		e.Writef("%sif (%s == nil) != (%s == nil) {\n%s\treturn false\n%s}\n", indent, lhs, rhs, indent, indent)
+		o.Inner.EmitEqual(e, indent, lhs, rhs)
+		return
+	}
+	if _, isMsg := o.Inner.(*MessageType); isMsg {
+		e.Writef("%sif (%s == nil) != (%s == nil) {\n%s\treturn false\n%s}\n", indent, lhs, rhs, indent, indent)
+		e.Writef("%sif %s != nil && !%s.Equal(%s) {\n%s\treturn false\n%s}\n", indent, lhs, lhs, rhs, indent, indent)
+		return
+	}
+	// Scalar optional: identical pointers compare equal cheaply; otherwise
+	// require both non-nil and dereferenced equality.
+	e.Writef("%sif %s != %s {\n", indent, lhs, rhs)
+	e.Writef("%s\tif %s == nil || %s == nil {\n%s\t\treturn false\n%s\t}\n", indent, lhs, rhs, indent, indent)
+	e.Writef("%s\tif *%s != *%s {\n%s\t\treturn false\n%s\t}\n", indent, lhs, rhs, indent, indent)
+	e.Writef("%s}\n", indent)
+}

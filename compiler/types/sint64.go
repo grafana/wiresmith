@@ -76,6 +76,12 @@ func (Sint64Type) EmitMapEntryUnmarshal(e Emitter, varName, indent string, ctx F
 	e.Writef("%s%s = int64(v>>1) ^ int64(v)<<63>>63\n", indent, varName)
 }
 
+func (Sint64Type) ZeroLiteral() string { return "0" }
+
+func (Sint64Type) EmitEqual(e Emitter, indent, lhs, rhs string) {
+	scalarNotEqualGuard(e, indent, lhs, rhs)
+}
+
 func init() {
 	register(protoreflect.Sint64Kind, &Sint64Type{})
 }

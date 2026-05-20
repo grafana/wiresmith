@@ -67,6 +67,12 @@ func (BoolType) EmitMapEntryUnmarshal(e Emitter, varName, indent string, ctx Fie
 	e.Writef("%s%s = v != 0\n", indent, varName)
 }
 
+func (BoolType) ZeroLiteral() string { return "false" }
+
+func (BoolType) EmitEqual(e Emitter, indent, lhs, rhs string) {
+	scalarNotEqualGuard(e, indent, lhs, rhs)
+}
+
 func init() {
 	register(protoreflect.BoolKind, &BoolType{})
 }

@@ -8,11 +8,17 @@ import (
 )
 
 // FieldType is the unified interface for all field code generation.
-// Callers use this to emit size, marshal, and unmarshal code.
+// Callers use this to emit size, marshal, unmarshal, and equality code.
 type FieldType interface {
 	EmitSize(e Emitter, access string, tagSize int)
 	EmitMarshal(e Emitter, access string, num protowire.Number)
 	EmitUnmarshal(e Emitter, access string, ctx FieldContext)
+	// EmitEqual emits an inequality guard that returns false from the
+	// enclosing Equal method when lhs and rhs differ. For non-comparable
+	// types (bytes, message) this emits the appropriate deep-equality
+	// form; for scalars it emits `lhs != rhs`. `indent` is the prefix
+	// applied to every emitted line, matching the EmitValueSize style.
+	EmitEqual(e Emitter, indent, lhs, rhs string)
 	RequiredImports() []string
 }
 
@@ -42,6 +48,16 @@ type Type interface {
 	EmitConsume(e Emitter)                            // emit consume + error check (sets v, n)
 	CastExpr(varName string, ctx FieldContext) string // expression to convert decoded value
 	EmitMapEntryUnmarshal(e Emitter, varName, indent string, ctx FieldContext)
+
+	// ZeroLiteral returns the Go zero-value literal for this type, used
+	// by nil-safe getters ("false", `""`, "nil", "0").
+	ZeroLiteral() string
+}
+
+// scalarNotEqualGuard emits `if lhs != rhs { return false }` at the
+// given indent. Shared by every Type whose Go form is `==`-comparable.
+func scalarNotEqualGuard(e Emitter, indent, lhs, rhs string) {
+	e.Writef("%sif %s != %s {\n%s\treturn false\n%s}\n", indent, lhs, rhs, indent, indent)
 }
 
 // Emitter provides code-emission primitives. Implemented by FileGenerator.

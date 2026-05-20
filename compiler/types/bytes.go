@@ -78,6 +78,16 @@ func (BytesType) EmitMapEntryUnmarshal(e Emitter, varName, indent string, ctx Fi
 	e.Writef("%siNdEx = postIndex\n", indent)
 }
 
+func (BytesType) ZeroLiteral() string { return "nil" }
+
+// EmitEqual registers the bytes import lazily so callers don't need a
+// separate pre-scan to decide whether the generated Equal body uses
+// bytes.Equal.
+func (BytesType) EmitEqual(e Emitter, indent, lhs, rhs string) {
+	e.AddImport("bytes", "")
+	e.Writef("%sif !bytes.Equal(%s, %s) {\n%s\treturn false\n%s}\n", indent, lhs, rhs, indent, indent)
+}
+
 func init() {
 	register(protoreflect.BytesKind, &BytesType{})
 }

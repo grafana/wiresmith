@@ -91,6 +91,12 @@ func (f fixed64Base) get(varName string) string {
 	return fmt.Sprintf(f.getExpr, varName)
 }
 
+func (fixed64Base) ZeroLiteral() string { return "0" }
+
+func (fixed64Base) EmitEqual(e Emitter, indent, lhs, rhs string) {
+	scalarNotEqualGuard(e, indent, lhs, rhs)
+}
+
 // Fixed64Type is the Type for protoreflect.Fixed64Kind.
 var Fixed64Type = &fixed64Base{
 	putExpr: "%s",
