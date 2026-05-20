@@ -47,7 +47,8 @@ coverage: ## Run tests with coverage report
 	@echo "HTML report: go tool cover -html=coverage.out"
 
 fuzz: ## Fuzz all targets (30s each) — auto-discovers Fuzz* functions in ./test/fuzz/
-	@targets=$$(go test ./test/fuzz/ -list '^Fuzz' | grep '^Fuzz'); \
+	@targets=$$(GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn \
+		go test ./test/fuzz/ -list '^Fuzz' | grep '^Fuzz'); \
 	if [ -z "$$targets" ]; then \
 		echo "No fuzz targets found in ./test/fuzz/"; exit 1; \
 	fi; \
