@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"google.golang.org/protobuf/encoding/protowire"
+	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
 // captureEmitter records Writef output and AddImport calls so tests can
@@ -231,15 +232,16 @@ func TestEmitEqual_MapMessageValue(t *testing.T) {
 }
 
 func TestZeroLiteral(t *testing.T) {
+	// MessageType is intentionally absent: it is not a ScalarType because
+	// its getter returns *Msg with nil for absent, not a value-typed zero.
 	cases := []struct {
 		name string
-		t    Type
+		t    ScalarType
 		want string
 	}{
 		{"bool", BoolType{}, "false"},
 		{"string", StringType{}, `""`},
-		{"bytes", BytesType{}, "nil"},
-		{"message", &MessageType{}, "nil"},
+		{"bytes", &BytesType{}, "nil"},
 		{"varint", varintBase{}, "0"},
 		{"sint32", Sint32Type{}, "0"},
 		{"sint64", Sint64Type{}, "0"},
@@ -253,4 +255,15 @@ func TestZeroLiteral(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestScalarZeroLiteral_PanicsOnMessage(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Fatal("expected panic for MessageKind, got none")
+		}
+	}()
+	// MessageKind is the one registered Type that is not a ScalarType;
+	// the helper must reject it loudly rather than return a bogus value.
+	ScalarZeroLiteral(protoreflect.MessageKind)
 }

@@ -88,7 +88,7 @@ func (fg *FileGenerator) emitGetters(md protoreflect.MessageDescriptor) {
 		goType := fg.imports.goSingularType(fd)
 		fmt.Fprintf(fg.body, "func (m *%s) Get%s() %s {\n", name, goName, goType)
 		fmt.Fprintf(fg.body, "\tif m != nil {\n\t\treturn m.%s\n\t}\n", goName)
-		fmt.Fprintf(fg.body, "\treturn %s\n}\n\n", types.Get(fd.Kind()).ZeroLiteral())
+		fmt.Fprintf(fg.body, "\treturn %s\n}\n\n", types.ScalarZeroLiteral(fd.Kind()))
 	}
 }
 
@@ -126,7 +126,7 @@ func (fg *FileGenerator) emitOneofVariantGetter(md protoreflect.MessageDescripto
 	fmt.Fprintf(fg.body, "func (m *%s) Get%s() %s {\n", name, fieldGoName, goType)
 	fmt.Fprintf(fg.body, "\tif x, ok := m.Get%s().(*%s); ok {\n", ooGoName, variantType)
 	fmt.Fprintf(fg.body, "\t\treturn x.%s\n\t}\n", fieldGoName)
-	fmt.Fprintf(fg.body, "\treturn %s\n}\n\n", types.Get(fd.Kind()).ZeroLiteral())
+	fmt.Fprintf(fg.body, "\treturn %s\n}\n\n", types.ScalarZeroLiteral(fd.Kind()))
 }
 
 // emitOptionalGetter emits a getter for an optional (pointer) field.
@@ -149,5 +149,5 @@ func (fg *FileGenerator) emitOptionalGetter(typeName string, fd protoreflect.Fie
 	goType := fg.imports.goSingularType(fd)
 	fmt.Fprintf(fg.body, "func (m *%s) Get%s() %s {\n", typeName, goName, goType)
 	fmt.Fprintf(fg.body, "\tif m != nil && m.%s != nil {\n\t\treturn *m.%s\n\t}\n", goName, goName)
-	fmt.Fprintf(fg.body, "\treturn %s\n}\n\n", types.Get(fd.Kind()).ZeroLiteral())
+	fmt.Fprintf(fg.body, "\treturn %s\n}\n\n", types.ScalarZeroLiteral(fd.Kind()))
 }

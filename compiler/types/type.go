@@ -48,10 +48,32 @@ type Type interface {
 	EmitConsume(e Emitter)                            // emit consume + error check (sets v, n)
 	CastExpr(varName string, ctx FieldContext) string // expression to convert decoded value
 	EmitMapEntryUnmarshal(e Emitter, varName, indent string, ctx FieldContext)
+}
 
+// ScalarType is implemented by every leaf Type whose getter returns its
+// value by value (bool, all integers, floats, string, bytes, enum). The
+// only Type that is NOT a ScalarType is MessageType, whose getter
+// returns *Msg with nil for absent — a "zero literal" makes no sense
+// there. Callers that need ZeroLiteral must filter out MessageKind first
+// (or use ScalarZeroLiteral, which handles the type-assertion).
+type ScalarType interface {
+	Type
 	// ZeroLiteral returns the Go zero-value literal for this type, used
 	// by nil-safe getters ("false", `""`, "nil", "0").
 	ZeroLiteral() string
+}
+
+// ScalarZeroLiteral returns the Go zero-value literal for a non-message
+// kind. Panics if the kind's Type isn't a ScalarType — i.e. callers must
+// rule out MessageKind before calling. The panic doubles as a defensive
+// guard against a future Type that forgets to implement ScalarType.
+func ScalarZeroLiteral(kind protoreflect.Kind) string {
+	t := Get(kind)
+	s, ok := t.(ScalarType)
+	if !ok {
+		panic(fmt.Sprintf("ScalarZeroLiteral called on non-scalar kind: %v", kind))
+	}
+	return s.ZeroLiteral()
 }
 
 // scalarNotEqualGuard emits `if lhs != rhs { return false }` at the

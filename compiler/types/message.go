@@ -87,12 +87,6 @@ func (MessageType) EmitMapEntryUnmarshal(e Emitter, varName, indent string, ctx 
 	e.Writef("%siNdEx = postIndex\n", indent)
 }
 
-// ZeroLiteral is "nil" — the conventional Go zero for a *Msg. The current
-// getter emit paths never funnel a MessageKind through ZeroLiteral (they
-// hardcode `return nil` for the message-pointer return shape), but the
-// method is defined for completeness so Type stays uniformly answerable.
-func (MessageType) ZeroLiteral() string { return "nil" }
-
 // EmitEqual emits a deep-equality guard. Works for both value and pointer
 // access forms because Go auto-addresses lhs when calling the
 // pointer-receiver Equal method, and Equal accepts interface{}.
