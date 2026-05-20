@@ -2004,7 +2004,7 @@ func (m *ExponentialHistogramDataPoint) Size() int {
 	if m.Max != nil {
 		n += 9
 	}
-	if m.ZeroThreshold != 0 {
+	if math.Float64bits(m.ZeroThreshold) != 0 {
 		n += 9
 	}
 	return n
@@ -2012,10 +2012,10 @@ func (m *ExponentialHistogramDataPoint) Size() int {
 
 func (m *SummaryDataPoint_ValueAtQuantile) Size() int {
 	var n int
-	if m.Quantile != 0 {
+	if math.Float64bits(m.Quantile) != 0 {
 		n += 9
 	}
-	if m.Value != 0 {
+	if math.Float64bits(m.Value) != 0 {
 		n += 9
 	}
 	return n
@@ -2036,7 +2036,7 @@ func (m *SummaryDataPoint) Size() int {
 	if m.Count != 0 {
 		n += 9
 	}
-	if m.Sum != 0 {
+	if math.Float64bits(m.Sum) != 0 {
 		n += 9
 	}
 	for i := range m.QuantileValues {
@@ -2745,9 +2745,9 @@ func (m *ExponentialHistogramDataPoint) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *ExponentialHistogramDataPoint) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
-	if m.ZeroThreshold != 0 {
+	if v := math.Float64bits(m.ZeroThreshold); v != 0 {
 		i -= 8
-		binary.LittleEndian.PutUint64(dAtA[i:], math.Float64bits(m.ZeroThreshold))
+		binary.LittleEndian.PutUint64(dAtA[i:], v)
 		i--
 		dAtA[i] = 0x71
 	}
@@ -2880,15 +2880,15 @@ func (m *SummaryDataPoint_ValueAtQuantile) MarshalTo(dAtA []byte) (int, error) {
 
 func (m *SummaryDataPoint_ValueAtQuantile) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
-	if m.Value != 0 {
+	if v := math.Float64bits(m.Value); v != 0 {
 		i -= 8
-		binary.LittleEndian.PutUint64(dAtA[i:], math.Float64bits(m.Value))
+		binary.LittleEndian.PutUint64(dAtA[i:], v)
 		i--
 		dAtA[i] = 0x11
 	}
-	if m.Quantile != 0 {
+	if v := math.Float64bits(m.Quantile); v != 0 {
 		i -= 8
-		binary.LittleEndian.PutUint64(dAtA[i:], math.Float64bits(m.Quantile))
+		binary.LittleEndian.PutUint64(dAtA[i:], v)
 		i--
 		dAtA[i] = 0x09
 	}
@@ -2940,9 +2940,9 @@ func (m *SummaryDataPoint) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x32
 	}
-	if m.Sum != 0 {
+	if v := math.Float64bits(m.Sum); v != 0 {
 		i -= 8
-		binary.LittleEndian.PutUint64(dAtA[i:], math.Float64bits(m.Sum))
+		binary.LittleEndian.PutUint64(dAtA[i:], v)
 		i--
 		dAtA[i] = 0x29
 	}

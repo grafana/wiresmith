@@ -1380,7 +1380,7 @@ func (m *MixedModifiers) Size() int {
 		}
 		n += 1 + protowire.SizeVarint(uint64(dataLen)) + dataLen
 	}
-	if m.RegularDouble != 0 {
+	if math.Float64bits(m.RegularDouble) != 0 {
 		n += 9
 	}
 	if m.OptionalDouble != nil {
@@ -1563,34 +1563,34 @@ func (m *WideFields) Size() int {
 	if m.F50 != 0 {
 		n += 2 + protowire.SizeVarint(uint64(m.F50))
 	}
-	if m.F51 != 0 {
+	if math.Float64bits(m.F51) != 0 {
 		n += 10
 	}
-	if m.F52 != 0 {
+	if math.Float64bits(m.F52) != 0 {
 		n += 10
 	}
-	if m.F53 != 0 {
+	if math.Float64bits(m.F53) != 0 {
 		n += 10
 	}
-	if m.F54 != 0 {
+	if math.Float64bits(m.F54) != 0 {
 		n += 10
 	}
-	if m.F55 != 0 {
+	if math.Float64bits(m.F55) != 0 {
 		n += 10
 	}
-	if m.F56 != 0 {
+	if math.Float64bits(m.F56) != 0 {
 		n += 10
 	}
-	if m.F57 != 0 {
+	if math.Float64bits(m.F57) != 0 {
 		n += 10
 	}
-	if m.F58 != 0 {
+	if math.Float64bits(m.F58) != 0 {
 		n += 10
 	}
-	if m.F59 != 0 {
+	if math.Float64bits(m.F59) != 0 {
 		n += 10
 	}
-	if m.F60 != 0 {
+	if math.Float64bits(m.F60) != 0 {
 		n += 10
 	}
 	if m.F61 {
@@ -1802,9 +1802,9 @@ func (m *MixedModifiers) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x29
 	}
-	if m.RegularDouble != 0 {
+	if v := math.Float64bits(m.RegularDouble); v != 0 {
 		i -= 8
-		binary.LittleEndian.PutUint64(dAtA[i:], math.Float64bits(m.RegularDouble))
+		binary.LittleEndian.PutUint64(dAtA[i:], v)
 		i--
 		dAtA[i] = 0x21
 	}
@@ -1971,81 +1971,81 @@ func (m *WideFields) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0xe8
 	}
-	if m.F60 != 0 {
+	if v := math.Float64bits(m.F60); v != 0 {
 		i -= 8
-		binary.LittleEndian.PutUint64(dAtA[i:], math.Float64bits(m.F60))
+		binary.LittleEndian.PutUint64(dAtA[i:], v)
 		i--
 		dAtA[i] = 0x03
 		i--
 		dAtA[i] = 0xe1
 	}
-	if m.F59 != 0 {
+	if v := math.Float64bits(m.F59); v != 0 {
 		i -= 8
-		binary.LittleEndian.PutUint64(dAtA[i:], math.Float64bits(m.F59))
+		binary.LittleEndian.PutUint64(dAtA[i:], v)
 		i--
 		dAtA[i] = 0x03
 		i--
 		dAtA[i] = 0xd9
 	}
-	if m.F58 != 0 {
+	if v := math.Float64bits(m.F58); v != 0 {
 		i -= 8
-		binary.LittleEndian.PutUint64(dAtA[i:], math.Float64bits(m.F58))
+		binary.LittleEndian.PutUint64(dAtA[i:], v)
 		i--
 		dAtA[i] = 0x03
 		i--
 		dAtA[i] = 0xd1
 	}
-	if m.F57 != 0 {
+	if v := math.Float64bits(m.F57); v != 0 {
 		i -= 8
-		binary.LittleEndian.PutUint64(dAtA[i:], math.Float64bits(m.F57))
+		binary.LittleEndian.PutUint64(dAtA[i:], v)
 		i--
 		dAtA[i] = 0x03
 		i--
 		dAtA[i] = 0xc9
 	}
-	if m.F56 != 0 {
+	if v := math.Float64bits(m.F56); v != 0 {
 		i -= 8
-		binary.LittleEndian.PutUint64(dAtA[i:], math.Float64bits(m.F56))
+		binary.LittleEndian.PutUint64(dAtA[i:], v)
 		i--
 		dAtA[i] = 0x03
 		i--
 		dAtA[i] = 0xc1
 	}
-	if m.F55 != 0 {
+	if v := math.Float64bits(m.F55); v != 0 {
 		i -= 8
-		binary.LittleEndian.PutUint64(dAtA[i:], math.Float64bits(m.F55))
+		binary.LittleEndian.PutUint64(dAtA[i:], v)
 		i--
 		dAtA[i] = 0x03
 		i--
 		dAtA[i] = 0xb9
 	}
-	if m.F54 != 0 {
+	if v := math.Float64bits(m.F54); v != 0 {
 		i -= 8
-		binary.LittleEndian.PutUint64(dAtA[i:], math.Float64bits(m.F54))
+		binary.LittleEndian.PutUint64(dAtA[i:], v)
 		i--
 		dAtA[i] = 0x03
 		i--
 		dAtA[i] = 0xb1
 	}
-	if m.F53 != 0 {
+	if v := math.Float64bits(m.F53); v != 0 {
 		i -= 8
-		binary.LittleEndian.PutUint64(dAtA[i:], math.Float64bits(m.F53))
+		binary.LittleEndian.PutUint64(dAtA[i:], v)
 		i--
 		dAtA[i] = 0x03
 		i--
 		dAtA[i] = 0xa9
 	}
-	if m.F52 != 0 {
+	if v := math.Float64bits(m.F52); v != 0 {
 		i -= 8
-		binary.LittleEndian.PutUint64(dAtA[i:], math.Float64bits(m.F52))
+		binary.LittleEndian.PutUint64(dAtA[i:], v)
 		i--
 		dAtA[i] = 0x03
 		i--
 		dAtA[i] = 0xa1
 	}
-	if m.F51 != 0 {
+	if v := math.Float64bits(m.F51); v != 0 {
 		i -= 8
-		binary.LittleEndian.PutUint64(dAtA[i:], math.Float64bits(m.F51))
+		binary.LittleEndian.PutUint64(dAtA[i:], v)
 		i--
 		dAtA[i] = 0x03
 		i--

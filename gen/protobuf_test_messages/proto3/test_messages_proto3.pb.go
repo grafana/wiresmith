@@ -1500,10 +1500,10 @@ func (m *TestAllTypesProto3) Size() int {
 	if m.OptionalSfixed64 != 0 {
 		n += 9
 	}
-	if m.OptionalFloat != 0 {
+	if math.Float32bits(m.OptionalFloat) != 0 {
 		n += 5
 	}
-	if m.OptionalDouble != 0 {
+	if math.Float64bits(m.OptionalDouble) != 0 {
 		n += 9
 	}
 	if m.OptionalBool {
@@ -3140,15 +3140,15 @@ func (m *TestAllTypesProto3) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x68
 	}
-	if m.OptionalDouble != 0 {
+	if v := math.Float64bits(m.OptionalDouble); v != 0 {
 		i -= 8
-		binary.LittleEndian.PutUint64(dAtA[i:], math.Float64bits(m.OptionalDouble))
+		binary.LittleEndian.PutUint64(dAtA[i:], v)
 		i--
 		dAtA[i] = 0x61
 	}
-	if m.OptionalFloat != 0 {
+	if v := math.Float32bits(m.OptionalFloat); v != 0 {
 		i -= 4
-		binary.LittleEndian.PutUint32(dAtA[i:], math.Float32bits(m.OptionalFloat))
+		binary.LittleEndian.PutUint32(dAtA[i:], v)
 		i--
 		dAtA[i] = 0x5d
 	}
