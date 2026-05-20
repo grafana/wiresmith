@@ -215,6 +215,7 @@ func emitConsumeFixed64(e Emitter) { emitConsumeFixed64At(e, "\t\t\t") }
 // for the payload, then advances with iNdEx = postIndex.
 func emitConsumeBytesLenAt(e Emitter, indent string) {
 	e.AddImport("io", "")
+	e.AddImport("math", "")
 	e.Writef("%svar byteLen uint64\n", indent)
 	e.Writef("%sfor shift := uint(0); ; shift += 7 {\n", indent)
 	e.Writef("%s\tif shift >= 64 {\n%s\t\treturn fmt.Errorf(\"proto: integer overflow\")\n%s\t}\n", indent, indent, indent)
@@ -224,8 +225,13 @@ func emitConsumeBytesLenAt(e Emitter, indent string) {
 	e.Writef("%s\tbyteLen |= uint64(b&0x7F) << shift\n", indent)
 	e.Writef("%s\tif b < 0x80 {\n%s\t\tbreak\n%s\t}\n", indent, indent, indent)
 	e.Writef("%s}\n", indent)
+	// Guard against int truncation on 32-bit platforms (GOARCH=386/arm/wasm).
+	// Without this, a uint64 length above MaxInt32 would silently wrap to a
+	// small positive int and bypass the postIndex>l bound check. The guard
+	// subsumes the historical `int(byteLen) < 0` check: byteLen <= MaxInt
+	// implies int(byteLen) >= 0 on every supported GOARCH.
+	e.Writef("%sif byteLen > uint64(math.MaxInt) {\n%s\treturn io.ErrUnexpectedEOF\n%s}\n", indent, indent, indent)
 	e.Writef("%sintByteLen := int(byteLen)\n", indent)
-	e.Writef("%sif intByteLen < 0 {\n%s\treturn fmt.Errorf(\"proto: negative length\")\n%s}\n", indent, indent, indent)
 	e.Writef("%spostIndex := iNdEx + intByteLen\n", indent)
 	e.Writef("%sif postIndex < 0 {\n%s\treturn fmt.Errorf(\"proto: negative length\")\n%s}\n", indent, indent, indent)
 	e.Writef("%sif postIndex > l {\n%s\treturn io.ErrUnexpectedEOF\n%s}\n", indent, indent, indent)

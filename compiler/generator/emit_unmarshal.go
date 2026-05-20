@@ -12,6 +12,7 @@ import (
 // wire type mismatches where the tag has already been decoded.
 func (fg *FileGenerator) emitSkipValueHelper() {
 	fg.imports.addImport("fmt", "")
+	fg.imports.addImport("math", "")
 	fg.imports.addImport("google.golang.org/protobuf/encoding/protowire", "")
 
 	fmt.Fprintf(fg.body, "func skipValue(dAtA []byte, wireType int, fieldNum int32) (int, error) {\n")
@@ -38,7 +39,11 @@ func (fg *FileGenerator) emitSkipValueHelper() {
 	fmt.Fprintf(fg.body, "\t\t\tlength |= uint64(b&0x7F) << shift\n")
 	fmt.Fprintf(fg.body, "\t\t\tif b < 0x80 {\n\t\t\t\tbreak\n\t\t\t}\n")
 	fmt.Fprintf(fg.body, "\t\t}\n")
-	fmt.Fprintf(fg.body, "\t\tif int(length) < 0 {\n\t\t\treturn 0, fmt.Errorf(\"invalid bytes\")\n\t\t}\n")
+	// Guard against int truncation on 32-bit platforms: a uint64 length
+	// above MaxInt would silently wrap to a small positive int and bypass
+	// the iNdEx>l bound check below. Subsumes the historical
+	// `int(length) < 0` check (length <= MaxInt implies int >= 0).
+	fmt.Fprintf(fg.body, "\t\tif length > uint64(math.MaxInt) {\n\t\t\treturn 0, fmt.Errorf(\"invalid bytes\")\n\t\t}\n")
 	fmt.Fprintf(fg.body, "\t\tiNdEx += int(length)\n")
 	fmt.Fprintf(fg.body, "\t\tif iNdEx < 0 || iNdEx > l {\n\t\t\treturn 0, fmt.Errorf(\"invalid bytes\")\n\t\t}\n")
 	fmt.Fprintf(fg.body, "\tcase 3:\n") // start group
