@@ -41,7 +41,7 @@ test: ## Run correctness tests
 	GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn go test ./test/... -v
 
 coverage: ## Run tests with coverage report
-	GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn go test ./test/... ./compiler/... -coverprofile=coverage.out
+	GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn go test ./test/... ./compiler/... -coverpkg=./compiler/...,./gen/protohelpers/... -coverprofile=coverage.out
 	go tool cover -func=coverage.out
 	@echo ""
 	@echo "HTML report: go tool cover -html=coverage.out"

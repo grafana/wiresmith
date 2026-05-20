@@ -143,7 +143,9 @@ func (fg *FileGenerator) emitPreScan(md protoreflect.MessageDescriptor) {
 
 	for _, fd := range fields {
 		goName := snakeToPascal(string(fd.Name()))
-		goType := fg.imports.goType(fd)
+		// goFieldType respects (wiresmith.options.pointer) so a repeated
+		// pointer-message field pre-allocates as `[]*Msg` rather than `[]Msg`.
+		goType := fg.goFieldType(fd)
 		fmt.Fprintf(fg.body, "\t\tif field%dcount > 0 {\n", fd.Number())
 		if fd.IsMap() {
 			fmt.Fprintf(fg.body, "\t\t\tm.%s = make(%s, field%dcount)\n", goName, goType, fd.Number())
@@ -185,7 +187,7 @@ func (fg *FileGenerator) emitUnmarshal(md protoreflect.MessageDescriptor) {
 
 	fmt.Fprintf(fg.body, "\t\tswitch fieldNum {\n")
 
-	pm := presenceMap(md)
+	pm := fg.presenceMap(md)
 	for i := 0; i < md.Fields().Len(); i++ {
 		fd := md.Fields().Get(i)
 		fg.emitFieldUnmarshal(md, fd)
@@ -244,9 +246,12 @@ func (fg *FileGenerator) emitFieldUnmarshal(md protoreflect.MessageDescriptor, f
 
 	if fd.IsList() {
 		ctx := fg.fieldContext(fd)
-		rf := &types.RepeatedField{Inner: t, IsPacked: fd.IsPacked()}
-		types.AddTypeImports(fg, rf)
-		rf.EmitUnmarshal(fg, access, ctx)
+		// fieldType dispatches between RepeatedField and RepeatedPointer based
+		// on `(wiresmith.options.pointer)`; the FieldType interface keeps the
+		// call site uniform.
+		ft := fg.fieldType(fd)
+		types.AddTypeImports(fg, ft)
+		ft.EmitUnmarshal(fg, access, ctx)
 		return
 	}
 
@@ -305,6 +310,18 @@ func (fg *FileGenerator) emitFieldUnmarshal(md protoreflect.MessageDescriptor, f
 		of := &types.OptionalField{Inner: t}
 		types.AddTypeImports(fg, of)
 		of.EmitUnmarshal(fg, access, ctx)
+		return
+	}
+
+	// Singular `(wiresmith.options.pointer) = true` on a message field is
+	// dispatched through fg.fieldType — the same single entry point used by
+	// emit_marshal, emit_size, and the repeated branch above. Routing it here
+	// instead of inlining a second PointerField construction keeps the option
+	// visible in exactly one place.
+	if fg.hasPointerOption(fd) && fd.Kind() == protoreflect.MessageKind {
+		pf := fg.fieldType(fd)
+		types.AddTypeImports(fg, pf)
+		pf.EmitUnmarshal(fg, access, ctx)
 		return
 	}
 

@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package basic.pointer.v1;
+
+option go_package = "wiresmith/gen/basic/pointer/v1";
+
+import "wiresmith/options.proto";
+
+// Leaf is the inner message referenced by the pointer-shaped fields below.
+message Leaf {
+  int64  id   = 1;
+  string name = 2;
+}
+
+// PointerHolder exercises (wiresmith.options.pointer) = true in three positions:
+//   - Singular message field becomes `*Leaf`.
+//   - Repeated message field becomes `[]*Leaf`.
+//   - A second singular message field without the option keeps the default
+//     value-type shape so the two side by side prove the option is local.
+message PointerHolder {
+  string name = 1;
+
+  // Becomes `*Leaf`. nil means absent (no tag emitted on the wire).
+  Leaf head = 2 [(wiresmith.options.pointer) = true];
+
+  // Becomes `[]*Leaf`. nil elements are silently skipped on marshal.
+  repeated Leaf items = 3 [(wiresmith.options.pointer) = true];
+
+  // Control: default value-type singular message — `Leaf` (no pointer).
+  Leaf tail = 4;
+}

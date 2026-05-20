@@ -74,6 +74,12 @@ func (StringType) EmitMapEntryUnmarshal(e Emitter, varName, indent string, ctx F
 	e.Writef("%siNdEx = postIndex\n", indent)
 }
 
+func (StringType) ZeroLiteral() string { return `""` }
+
+func (StringType) EmitEqual(e Emitter, indent, lhs, rhs string) {
+	scalarNotEqualGuard(e, indent, lhs, rhs)
+}
+
 func init() {
 	register(protoreflect.StringKind, &StringType{})
 }

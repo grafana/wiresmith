@@ -115,6 +115,17 @@ func (r *RepeatedField) emitPackedMarshal(e Emitter, access string, num protowir
 	e.Writef("\t}\n")
 }
 
+// EmitEqual emits a len-check + index loop and defers per-element comparison
+// to Inner.EmitEqual at one extra indent level. Bytes elements pick up
+// bytes.Equal via BytesType, message-by-value elements pick up `.Equal()`
+// via MessageType, scalars use `!=` via scalarNotEqualGuard.
+func (r *RepeatedField) EmitEqual(e Emitter, indent, lhs, rhs string) {
+	e.Writef("%sif len(%s) != len(%s) {\n%s\treturn false\n%s}\n", indent, lhs, rhs, indent, indent)
+	e.Writef("%sfor i := range %s {\n", indent, lhs)
+	r.Inner.EmitEqual(e, indent+"\t", lhs+"[i]", rhs+"[i]")
+	e.Writef("%s}\n", indent)
+}
+
 func (r *RepeatedField) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
 	if r.Inner.IsPackable() {
 		r.emitPackedUnmarshal(e, access, ctx)

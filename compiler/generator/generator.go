@@ -13,15 +13,28 @@ import (
 	"wiresmith/compiler/types"
 
 	"github.com/bufbuild/protocompile"
+	"github.com/bufbuild/protocompile/linker"
 	"github.com/bufbuild/protocompile/reporter"
 	"google.golang.org/protobuf/encoding/protowire"
 	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/types/descriptorpb"
 )
 
 type Generator struct {
 	Module   string
 	OutDir   string
 	ProtoDir string
+
+	// goPackages maps a proto package name to the raw value of its
+	// `option go_package`. Populated during Generate after compilation.
+	goPackages map[string]string
+
+	// pointerExt is the linked extension descriptor for
+	// `(wiresmith.options.pointer)`, resolved once after Compile and consulted
+	// by hasPointerOption. It is always non-nil after a successful Compile
+	// because the embedded `wiresmith/options.proto` is always part of the
+	// input set.
+	pointerExt protoreflect.FieldDescriptor
 }
 
 type FileGenerator struct {
@@ -35,6 +48,11 @@ type FileGenerator struct {
 	fileVarName   string
 	nextMsgIndex  int
 	nextEnumIndex int
+
+	// pointerExt is the cached pointer-option extension descriptor copied from
+	// the parent Generator. Plumbed through so the per-field option lookup
+	// doesn't have to reach back up to the Generator.
+	pointerExt protoreflect.FieldDescriptor
 }
 
 // Emitter interface implementation for FileGenerator.
@@ -71,7 +89,26 @@ func (g *Generator) Generate(ctx context.Context) error {
 		return fmt.Errorf("building import mapping: %w", err)
 	}
 
-	resolver := &memResolver{files: mapping}
+	// Always inject the embedded `wiresmith/options.proto` into the input set
+	// so its extension descriptor ends up in the linked results — that's how
+	// hasPointerOption finds the extension type later. Users `import
+	// "wiresmith/options.proto"` from their own .proto files; the memResolver
+	// serves it from the embed. A user file at the canonical path would
+	// silently shadow the embedded schema — reject that explicitly rather
+	// than guessing intent.
+	if _, ok := mapping[embeddedOptionsPath]; ok {
+		return fmt.Errorf("user proto at %q conflicts with the embedded wiresmith schema — remove the on-disk file; wiresmith serves it from its own embed", embeddedOptionsPath)
+	}
+	mapping[embeddedOptionsPath] = embeddedOptionsProto
+	importPaths = append(importPaths, embeddedOptionsPath)
+	// buildImportMapping returns importPaths sorted for determinism; restore
+	// that invariant after the in-place append.
+	sort.Strings(importPaths)
+
+	// WithStandardImports satisfies imports for the well-known protos
+	// (`google/protobuf/descriptor.proto` and friends) that the embedded
+	// options file depends on.
+	resolver := protocompile.WithStandardImports(&memResolver{files: mapping})
 	compiler := protocompile.Compiler{
 		Resolver:       resolver,
 		SourceInfoMode: protocompile.SourceInfoStandard,
@@ -86,10 +123,153 @@ func (g *Generator) Generate(ctx context.Context) error {
 		return fmt.Errorf("compiling protos: %w", err)
 	}
 
+	if err := g.resolvePointerExtension(results); err != nil {
+		return err
+	}
+	if err := g.validatePointerOptions(results); err != nil {
+		return err
+	}
+
+	if err := g.collectGoPackages(results); err != nil {
+		return err
+	}
+	if err := g.validateDestinations(results); err != nil {
+		return err
+	}
+
+	// Detect output-path collisions up front, before writing any files. Two
+	// protos in different directories with the same package and same basename
+	// would otherwise silently clobber each other on disk — recursive scanning
+	// makes this collision possible where flat layouts could not produce it.
+	outputs := make(map[string]string, len(results))
 	for _, fd := range results {
+		if isInternalSchemaFile(fd) {
+			continue
+		}
+		outPath := g.outputPathFor(fd)
+		if prev, exists := outputs[outPath]; exists {
+			return fmt.Errorf("output collision at %s: %q and %q produce the same file (same package %q + basename)",
+				outPath, prev, fd.Path(), fd.Package())
+		}
+		outputs[outPath] = fd.Path()
+	}
+
+	for _, fd := range results {
+		if isInternalSchemaFile(fd) {
+			continue
+		}
 		if err := g.generateFile(fd); err != nil {
 			return fmt.Errorf("generating %s: %w", fd.Path(), err)
 		}
+	}
+	return nil
+}
+
+// isInternalSchemaFile reports whether a compiled file is wiresmith-internal
+// metadata — currently just the embedded `wiresmith/options.proto`. Identified
+// by canonical import path so a user file that happens to declare the same
+// proto package is never mistaken for the embedded schema (and is therefore
+// not skipped by validation, codegen, or output-collision checks).
+func isInternalSchemaFile(fd protoreflect.FileDescriptor) bool {
+	return fd.Path() == embeddedOptionsPath
+}
+
+// outputPathFor returns the output path for the .pb.go file produced for fd.
+// The directory is taken straight from destFor — the single source of truth
+// the import tracker and consumers also use, so they can't disagree.
+func (g *Generator) outputPathFor(fd protoreflect.FileDescriptor) string {
+	dest := destFor(g.Module, string(fd.Package()), g.goPackages)
+	base := strings.TrimSuffix(filepath.Base(fd.Path()), ".proto") + ".pb.go"
+	return filepath.Join(g.OutDir, dest.relDir, base)
+}
+
+// collectGoPackages records every file's `option go_package` value, keyed
+// by proto package. Every file belonging to one proto package must declare
+// the same value — including "unset". An asymmetric mix (file A sets it,
+// file B in the same package omits it) is rejected too: silently treating
+// the unset file as if it inherited A's value would contradict the
+// upfront-agreement contract and could move generated files unexpectedly.
+//
+// The path-traversal check sits here because it only makes sense against
+// the raw go_package string; cross-mode destination collisions are caught
+// later in validateDestinations against the resolved goDest.
+func (g *Generator) collectGoPackages(results linker.Files) error {
+	g.goPackages = make(map[string]string)
+	base := effectiveBase(g.Module)
+
+	// sighting captures the first go_package value (possibly empty) we saw
+	// for a proto pkg and the file we saw it in, so a later disagreement
+	// can be reported with both endpoints.
+	type sighting struct{ value, path string }
+	seen := make(map[string]sighting)
+
+	for _, fd := range results {
+		// The embedded options schema is generator-internal — it has no
+		// go_package and shouldn't seed the seen-map or constrain a
+		// user file that legitimately declares package wiresmith.options.
+		if isInternalSchemaFile(fd) {
+			continue
+		}
+		// GetGoPackage is nil-safe — it returns "" if the cast fails or
+		// the option is unset.
+		opts, _ := fd.Options().(*descriptorpb.FileOptions)
+		goPkg := opts.GetGoPackage()
+		pkg := string(fd.Package())
+
+		if prev, ok := seen[pkg]; ok {
+			if prev.value != goPkg {
+				return fmt.Errorf("inconsistent go_package for package %q: %s declares %q but %s declares %q",
+					pkg, prev.path, prev.value, fd.Path(), goPkg)
+			}
+			continue
+		}
+		seen[pkg] = sighting{value: goPkg, path: fd.Path()}
+
+		if goPkg == "" {
+			continue
+		}
+		g.goPackages[pkg] = goPkg
+
+		// Reject `..` segments in go_package values that fall under our
+		// base. Without this, filepath.Join(g.OutDir, relDir) would
+		// silently write outside the configured output directory.
+		importPath, _ := parseGoPackage(goPkg)
+		if importPath != base && !strings.HasPrefix(importPath, base+"/") {
+			continue
+		}
+		for _, seg := range strings.Split(importPath, "/") {
+			if seg == ".." {
+				return fmt.Errorf("invalid go_package %q in %s: path contains '..' segment",
+					goPkg, fd.Path())
+			}
+		}
+	}
+	return nil
+}
+
+// validateDestinations runs destFor for every compiled file and rejects the
+// case where two distinct proto packages resolve to the same Go directory.
+// This catches three failure modes at once: two protos with the same in-base
+// go_package, a go_package shadowing the default mapping of another package,
+// and a default mapping shadowing an explicit go_package. Routing every file
+// through destFor (not just those with go_package set) is the part that
+// makes the cross-mode case visible.
+func (g *Generator) validateDestinations(results linker.Files) error {
+	dirOwner := make(map[string]string)
+	for _, fd := range results {
+		// Skip the embedded options schema for the same reason
+		// collectGoPackages does — it doesn't produce output and shouldn't
+		// claim a destination on behalf of the wiresmith.options package.
+		if isInternalSchemaFile(fd) {
+			continue
+		}
+		protoPkg := string(fd.Package())
+		dest := destFor(g.Module, protoPkg, g.goPackages)
+		if owner, ok := dirOwner[dest.relDir]; ok && owner != protoPkg {
+			return fmt.Errorf("destination %q is claimed by both proto packages %q and %q (check go_package options)",
+				dest.relDir, owner, protoPkg)
+		}
+		dirOwner[dest.relDir] = protoPkg
 	}
 	return nil
 }
@@ -98,9 +278,10 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 	fg := &FileGenerator{
 		fd:          fd,
 		module:      g.Module,
-		imports:     newImportTracker(g.Module, string(fd.Package())),
+		imports:     newImportTracker(g.Module, string(fd.Package()), g.goPackages),
 		body:        &bytes.Buffer{},
 		fileVarName: sanitizeFileVarName(fd.Path()),
+		pointerExt:  g.pointerExt,
 	}
 
 	fg.emitAllEnums(fd)
@@ -127,16 +308,10 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 		fmt.Fprintf(os.Stderr, "warning: format error for %s: %v\n", fd.Path(), err)
 	}
 
-	pkg := string(fd.Package())
-	dir := filepath.Join(g.OutDir, goPackageDir(pkg))
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	outPath := g.outputPathFor(fd)
+	if err := os.MkdirAll(filepath.Dir(outPath), 0o755); err != nil {
 		return err
 	}
-
-	// Use the proto filename without extension as the Go filename
-	base := filepath.Base(fd.Path())
-	base = strings.TrimSuffix(base, ".proto") + ".pb.go"
-	outPath := filepath.Join(dir, base)
 
 	return os.WriteFile(outPath, formatted, 0o644)
 }
@@ -145,30 +320,42 @@ func (fg *FileGenerator) emitHeader(out *bytes.Buffer) {
 	pkg := string(fg.fd.Package())
 	fmt.Fprintf(out, "// Code generated by wiresmith. DO NOT EDIT.\n")
 	fmt.Fprintf(out, "// source: %s\n\n", fg.fd.Path())
-	fmt.Fprintf(out, "package %s\n\n", goPackageName(pkg))
+	fmt.Fprintf(out, "package %s\n\n", fg.imports.resolvePkgName(pkg))
 
-	// Collect all imports
 	type imp struct {
-		path  string
-		alias string
+		path    string
+		alias   string
+		natural string
 	}
 	var imps []imp
-	for path, alias := range fg.imports.imports {
-		imps = append(imps, imp{path, alias})
+	for p, e := range fg.imports.imports {
+		// Pre-reserved entries that no emitter actually requested would
+		// produce "imported and not used" if emitted — skip them. They
+		// existed only so aliasInUse could see their natural names.
+		if !e.requested {
+			continue
+		}
+		imps = append(imps, imp{p, e.alias, e.naturalName})
 	}
 	sort.Slice(imps, func(i, j int) bool { return imps[i].path < imps[j].path })
 
-	if len(imps) > 0 {
-		fmt.Fprintf(out, "import (\n")
-		for _, i := range imps {
-			if i.alias != "" && !strings.HasSuffix(i.path, "/"+i.alias) {
-				fmt.Fprintf(out, "\t%s %q\n", i.alias, i.path)
-			} else {
-				fmt.Fprintf(out, "\t%q\n", i.path)
-			}
-		}
-		fmt.Fprintf(out, ")\n\n")
+	if len(imps) == 0 {
+		return
 	}
+	fmt.Fprintf(out, "import (\n")
+	for _, i := range imps {
+		// Elide the alias only when Go would arrive at the same identifier
+		// anyway — that is, when the alias matches the imported file's
+		// declared `package` clause. Using path.Base instead would be wrong
+		// for go_package's `;name` form, where the declared name and the
+		// path's last segment can differ.
+		if i.alias == "" || i.alias == i.natural {
+			fmt.Fprintf(out, "\t%q\n", i.path)
+		} else {
+			fmt.Fprintf(out, "\t%s %q\n", i.alias, i.path)
+		}
+	}
+	fmt.Fprintf(out, ")\n\n")
 }
 
 func (fg *FileGenerator) emitAllEnums(fd protoreflect.FileDescriptor) {
@@ -253,38 +440,64 @@ func oneofVariantName(md protoreflect.MessageDescriptor, fd protoreflect.FieldDe
 	return goMessageTypeName(md) + "_" + snakeToPascal(string(fd.Name()))
 }
 
-// buildImportMapping reads proto files and builds a mapping from import paths to file contents.
+// buildImportMapping reads proto files (recursively) and builds a mapping
+// from import paths to file contents. Top-level files are registered under
+// the package-derived path so existing flat layouts keep working; nested
+// files use their on-disk relative path as the import key.
+//
+// Each file is registered under exactly one canonical path. Imports across
+// files must use that canonical form: package-derived for top-level files,
+// relative-path for nested files. Registering the same content under two
+// keys would cause protocompile to compile it twice and emit duplicate-symbol
+// errors when a consumer imports it via the non-canonical name.
 func buildImportMapping(protoDir string) (map[string][]byte, []string, error) {
-	entries, err := os.ReadDir(protoDir)
-	if err != nil {
-		return nil, nil, err
-	}
-
 	mapping := make(map[string][]byte)
 	var importPaths []string
 	pkgRE := regexp.MustCompile(`(?m)^package\s+([\w.]+)\s*;`)
 
-	for _, entry := range entries {
-		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".proto") {
-			continue
-		}
-		fullPath := filepath.Join(protoDir, entry.Name())
-		content, err := os.ReadFile(fullPath)
+	err := filepath.WalkDir(protoDir, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
-			return nil, nil, err
+			return err
+		}
+		if d.IsDir() || !strings.HasSuffix(d.Name(), ".proto") {
+			return nil
+		}
+
+		content, err := os.ReadFile(path)
+		if err != nil {
+			return err
 		}
 
 		m := pkgRE.FindSubmatch(content)
 		if m == nil {
-			return nil, nil, fmt.Errorf("no package found in %s", entry.Name())
+			return fmt.Errorf("no package found in %s", path)
 		}
 
-		pkg := string(m[1])
-		importPath := strings.ReplaceAll(pkg, ".", "/") + "/" + entry.Name()
-		mapping[importPath] = content
-		importPaths = append(importPaths, importPath)
+		rel, err := filepath.Rel(protoDir, path)
+		if err != nil {
+			return err
+		}
+		rel = filepath.ToSlash(rel)
+
+		var key string
+		if strings.Contains(rel, "/") {
+			key = rel
+		} else {
+			pkg := string(m[1])
+			key = strings.ReplaceAll(pkg, ".", "/") + "/" + d.Name()
+		}
+		if _, exists := mapping[key]; exists {
+			return fmt.Errorf("duplicate import key %q (from %s)", key, path)
+		}
+		mapping[key] = content
+		importPaths = append(importPaths, key)
+		return nil
+	})
+	if err != nil {
+		return nil, nil, err
 	}
 
+	sort.Strings(importPaths)
 	return mapping, importPaths, nil
 }
 

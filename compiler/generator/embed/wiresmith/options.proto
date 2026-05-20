@@ -1,0 +1,26 @@
+// wiresmith custom field options.
+//
+// Import this file from any user .proto to opt into wiresmith-specific code
+// shape attributes. The wiresmith CLI embeds this file and serves it from the
+// canonical import path "wiresmith/options.proto", so users do not need to
+// vendor it into their proto tree.
+syntax = "proto2";
+
+package wiresmith.options;
+
+import "google/protobuf/descriptor.proto";
+
+extend google.protobuf.FieldOptions {
+  // pointer = true emits the field as a Go pointer type:
+  //   - singular `message Foo` field -> *Foo
+  //   - repeated `message Foo` field -> []*Foo
+  //
+  // The on-wire format is unchanged. This is a compatibility shim for
+  // codebases that expect protoc-gen-go / gogoproto(nullable=true) shape.
+  //
+  // Only valid on singular or repeated message fields. Combining with the
+  // proto3 `optional` keyword is an error (optional already produces a
+  // pointer). See compiler/generator/option_pointer.go for the full
+  // validation list.
+  optional bool pointer = 50030;
+}

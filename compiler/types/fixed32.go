@@ -91,6 +91,12 @@ func (f fixed32Base) get(varName string) string {
 	return fmt.Sprintf(f.getExpr, varName)
 }
 
+func (fixed32Base) ZeroLiteral() string { return "0" }
+
+func (fixed32Base) EmitEqual(e Emitter, indent, lhs, rhs string) {
+	scalarNotEqualGuard(e, indent, lhs, rhs)
+}
+
 // Fixed32Type is the Type for protoreflect.Fixed32Kind.
 var Fixed32Type = &fixed32Base{
 	putExpr: "%s",
