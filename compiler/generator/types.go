@@ -36,7 +36,9 @@ var reservedStdlibImports = []string{
 	"fmt",
 	"io",
 	"math",
+	"reflect",
 	"strconv",
+	"unsafe",
 	"google.golang.org/protobuf/encoding/protowire",
 }
 

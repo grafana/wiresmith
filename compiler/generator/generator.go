@@ -37,11 +37,44 @@ type Generator struct {
 	pointerExt protoreflect.FieldDescriptor
 }
 
+// FileGenerator collects emitted code for one proto source file. It owns
+// TWO output buffers, not one — see the long comment on `reflectBody` for the
+// performance reason. Emitters route their output to one or the other based
+// on whether the code they emit is part of the marshal/unmarshal hot path or
+// part of the (cold) protoreflect-registration scaffolding.
 type FileGenerator struct {
-	fd      protoreflect.FileDescriptor
-	module  string
+	fd     protoreflect.FileDescriptor
+	module string
+
+	// body / imports hold the "main" .pb.go file: struct definitions, oneof
+	// variants, Reset/Has/Get/Size/Marshal/Unmarshal/Equal methods, enum
+	// constants + name/value maps + String(), and the ProtoMessage() marker.
+	// Everything called on every Marshal/Unmarshal/Size lives here.
 	imports *ImportTracker
 	body    *bytes.Buffer
+
+	// reflectBody / reflectImports hold the companion `_reflect.pb.go` file:
+	// per-message ProtoReflect() methods, per-enum Descriptor()/Type()/Number()
+	// methods, the embedded `file_*_rawDesc` byte blob, MessageInfo/EnumInfo
+	// arrays, and the init() that wires everything into
+	// google.golang.org/protobuf's global registries.
+	//
+	// Why split? google.golang.org/protobuf/types/descriptorpb,
+	// google.golang.org/protobuf/reflect/protoreflect, and the descriptor
+	// blobs together add ~377KB to __TEXT and ~144KB of new symbols (with
+	// descriptorpb alone contributing ~64KB of code never touched by a hot
+	// Marshal/Unmarshal call). Co-mingling that code with the hot paths in a
+	// single .pb.go file pushed the hot functions onto different cache sets
+	// / pages in the linked binary and produced a measured +7-14% slowdown on
+	// otlp Marshal/Unmarshal benchmarks (UnmarshalProfiles regressed by
+	// +12.6%; benchmark numbers in compiler/generator/emit_registration.go).
+	//
+	// By emitting the reflection glue into a SEPARATE compilation unit, we
+	// give the linker freedom to place the rarely-called scaffolding away from
+	// the hot Marshal/Unmarshal code. Same code, same binary size, same
+	// exported API — but the hot inner loops keep their icache/iTLB locality.
+	reflectImports *ImportTracker
+	reflectBody    *bytes.Buffer
 
 	// fileVarName is a sanitized proto file path used as prefix for
 	// file-level variables (descriptor, MessageInfo/EnumInfo arrays).
@@ -276,14 +309,18 @@ func (g *Generator) validateDestinations(results linker.Files) error {
 
 func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 	fg := &FileGenerator{
-		fd:          fd,
-		module:      g.Module,
-		imports:     newImportTracker(g.Module, string(fd.Package()), g.goPackages),
-		body:        &bytes.Buffer{},
-		fileVarName: sanitizeFileVarName(fd.Path()),
-		pointerExt:  g.pointerExt,
+		fd:             fd,
+		module:         g.Module,
+		imports:        newImportTracker(g.Module, string(fd.Package()), g.goPackages),
+		body:           &bytes.Buffer{},
+		reflectImports: newImportTracker(g.Module, string(fd.Package()), g.goPackages),
+		reflectBody:    &bytes.Buffer{},
+		fileVarName:    sanitizeFileVarName(fd.Path()),
+		pointerExt:     g.pointerExt,
 	}
 
+	// Main file: hot paths and the user-facing API. These emitters write to
+	// fg.body / fg.imports.
 	fg.emitAllEnums(fd)
 	fg.emitAllOneofs(fd)
 	fg.emitAllStructs(fd)
@@ -294,33 +331,78 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 	fg.emitAllMarshalMethods(fd)
 	fg.emitAllUnmarshalMethods(fd)
 	fg.emitAllEqualMethods(fd)
+
+	// Companion file: reflection/registration glue. These emitters write to
+	// fg.reflectBody / fg.reflectImports. The two passes below MUST iterate
+	// in the same order as their counterparts on the main side
+	// (emitAllEnums for enums, forEachMessage for messages) — they assign
+	// monotonically-increasing indices that emitRegistration then expects
+	// to find in the same positions in the per-file _msgTypes / _enumTypes
+	// arrays. Changing one without the other will silently produce a binary
+	// where message N's ProtoReflect() returns the descriptor for message
+	// N+k.
+	fg.emitAllEnumReflectMethods(fd)
 	fg.emitAllProtoReflectMethods(fd)
 	fg.emitRegistration(fd)
 
-	var out bytes.Buffer
-	fg.emitHeader(&out)
-	out.Write(fg.body.Bytes())
-
-	formatted, err := format.Source(out.Bytes())
-	if err != nil {
-		// Write unformatted for debugging
-		formatted = out.Bytes()
-		fmt.Fprintf(os.Stderr, "warning: format error for %s: %v\n", fd.Path(), err)
-	}
-
-	outPath := g.outputPathFor(fd)
-	if err := os.MkdirAll(filepath.Dir(outPath), 0o755); err != nil {
+	// Write the main .pb.go file.
+	var mainOut bytes.Buffer
+	fg.emitHeader(&mainOut, fg.imports)
+	mainOut.Write(fg.body.Bytes())
+	if err := g.writeFormatted(g.outputPathFor(fd), mainOut.Bytes(), fd.Path()); err != nil {
 		return err
 	}
 
+	// Write the companion _reflect.pb.go file. Skip if the proto declared no
+	// messages and no enums — there's nothing to register and emitting a file
+	// with just a package clause would be misleading.
+	if fg.reflectBody.Len() == 0 {
+		return nil
+	}
+	var reflOut bytes.Buffer
+	fg.emitReflectFileBanner(&reflOut)
+	fg.emitHeader(&reflOut, fg.reflectImports)
+	reflOut.Write(fg.reflectBody.Bytes())
+	return g.writeFormatted(g.outputReflectPathFor(fd), reflOut.Bytes(), fd.Path())
+}
+
+// writeFormatted gofmt-formats src and writes it to outPath. If gofmt fails
+// (typically a generator bug producing invalid Go), the unformatted bytes
+// are written instead so the broken output is visible for debugging.
+func (g *Generator) writeFormatted(outPath string, src []byte, sourceProto string) error {
+	formatted, err := format.Source(src)
+	if err != nil {
+		formatted = src
+		fmt.Fprintf(os.Stderr, "warning: format error for %s -> %s: %v\n", sourceProto, outPath, err)
+	}
+	if err := os.MkdirAll(filepath.Dir(outPath), 0o755); err != nil {
+		return err
+	}
 	return os.WriteFile(outPath, formatted, 0o644)
 }
 
-func (fg *FileGenerator) emitHeader(out *bytes.Buffer) {
+// outputReflectPathFor returns the path for the companion `_reflect.pb.go`
+// file. It sits next to the main `.pb.go` so callers find both files in the
+// same package directory; the `_reflect` suffix is conventional and matches
+// the protoc-gen-go-impl convention where extra generated material lives in
+// `<name>_<flavor>.pb.go`.
+func (g *Generator) outputReflectPathFor(fd protoreflect.FileDescriptor) string {
+	dest := destFor(g.Module, string(fd.Package()), g.goPackages)
+	base := strings.TrimSuffix(filepath.Base(fd.Path()), ".proto") + "_reflect.pb.go"
+	return filepath.Join(g.OutDir, dest.relDir, base)
+}
+
+// emitHeader writes the "Code generated by ..." banner, the package clause,
+// and the import block for one output file. The tracker argument selects
+// which set of imports gets emitted (main file vs. companion reflect file).
+// Each output file in the package needs its own import block — the Go
+// compiler can't deduce that a `protoreflect` symbol used in foo_reflect.pb.go
+// satisfies the import in foo.pb.go.
+func (fg *FileGenerator) emitHeader(out *bytes.Buffer, tracker *ImportTracker) {
 	pkg := string(fg.fd.Package())
 	fmt.Fprintf(out, "// Code generated by wiresmith. DO NOT EDIT.\n")
 	fmt.Fprintf(out, "// source: %s\n\n", fg.fd.Path())
-	fmt.Fprintf(out, "package %s\n\n", fg.imports.resolvePkgName(pkg))
+	fmt.Fprintf(out, "package %s\n\n", tracker.resolvePkgName(pkg))
 
 	type imp struct {
 		path    string
@@ -328,7 +410,7 @@ func (fg *FileGenerator) emitHeader(out *bytes.Buffer) {
 		natural string
 	}
 	var imps []imp
-	for p, e := range fg.imports.imports {
+	for p, e := range tracker.imports {
 		// Pre-reserved entries that no emitter actually requested would
 		// produce "imported and not used" if emitted — skip them. They
 		// existed only so aliasInUse could see their natural names.
@@ -358,6 +440,38 @@ func (fg *FileGenerator) emitHeader(out *bytes.Buffer) {
 	fmt.Fprintf(out, ")\n\n")
 }
 
+// emitReflectFileBanner writes a comment block at the very top of every
+// `_reflect.pb.go` file explaining (a) what's in this file, (b) why it isn't
+// just appended to the main `.pb.go`, and (c) what to grep for if you want
+// to undo the split. Documentation lives in the generated artifact (not just
+// in the generator) because future maintainers will encounter the file
+// before they encounter the generator.
+func (fg *FileGenerator) emitReflectFileBanner(out *bytes.Buffer) {
+	fmt.Fprintf(out, "// Reflection / registration glue for %s.\n", fg.fd.Path())
+	fmt.Fprintf(out, "//\n")
+	fmt.Fprintf(out, "// This file holds the per-message ProtoReflect() methods, the per-enum\n")
+	fmt.Fprintf(out, "// Descriptor()/Type()/Number() methods, the embedded FileDescriptorProto\n")
+	fmt.Fprintf(out, "// blob, the file_*_msgTypes / file_*_enumTypes arrays, and the init()\n")
+	fmt.Fprintf(out, "// that registers everything with protoregistry.GlobalFiles and\n")
+	fmt.Fprintf(out, "// protoregistry.GlobalTypes. None of these are called on the marshal /\n")
+	fmt.Fprintf(out, "// unmarshal / size hot path.\n")
+	fmt.Fprintf(out, "//\n")
+	fmt.Fprintf(out, "// Why a separate file? Putting this code (plus its descriptorpb /\n")
+	fmt.Fprintf(out, "// protoreflect / protoimpl imports — ~64KB of descriptorpb alone, ~377KB\n")
+	fmt.Fprintf(out, "// added to __TEXT overall) next to the hot Marshal/Unmarshal functions\n")
+	fmt.Fprintf(out, "// caused a measured +7–14%% regression on otlp benchmarks (UnmarshalProfiles\n")
+	fmt.Fprintf(out, "// regressed by +12.6%%) due to icache / iTLB / BTB pressure: the hot\n")
+	fmt.Fprintf(out, "// loops themselves were unchanged, but cold reflection code interleaved\n")
+	fmt.Fprintf(out, "// in the same compilation unit shifted hot functions onto different\n")
+	fmt.Fprintf(out, "// cache sets and pushed them ~131KB further into the binary. Emitting\n")
+	fmt.Fprintf(out, "// the cold half here, in its own .o, lets the linker place it away\n")
+	fmt.Fprintf(out, "// from the hot half and recovers that throughput.\n")
+	fmt.Fprintf(out, "//\n")
+	fmt.Fprintf(out, "// See compiler/generator/emit_registration.go for the full rationale\n")
+	fmt.Fprintf(out, "// and the benchmark methodology. DO NOT inline this file's contents\n")
+	fmt.Fprintf(out, "// back into the main .pb.go without re-measuring.\n\n")
+}
+
 func (fg *FileGenerator) emitAllEnums(fd protoreflect.FileDescriptor) {
 	for i := 0; i < fd.Enums().Len(); i++ {
 		fg.emitEnum(fd.Enums().Get(i))
@@ -367,6 +481,22 @@ func (fg *FileGenerator) emitAllEnums(fd protoreflect.FileDescriptor) {
 			fg.emitEnum(md.Enums().Get(i))
 		}
 	})
+}
+
+// emitAllEnumReflectMethods emits the Descriptor()/Type()/Number() methods
+// for every enum into the companion reflect file in TypeBuilder's flattened
+// order (file-level enums first, then for each message in flattenedMessages
+// order its direct nested enums). The `nextEnumIndex` values assigned here
+// match the positions Build() will populate in `file_*_enumTypes`.
+//
+// `emitAllEnums` (which emits enum type + constants + name maps + String
+// into the main .pb.go) uses a different order — that's fine because the
+// main file's enum emissions don't index into the EnumInfo array. Only the
+// reflection methods need this strict ordering.
+func (fg *FileGenerator) emitAllEnumReflectMethods(fd protoreflect.FileDescriptor) {
+	for _, ed := range flattenedEnums(fd) {
+		fg.emitEnumReflect(ed)
+	}
 }
 
 func (fg *FileGenerator) emitAllOneofs(fd protoreflect.FileDescriptor) {
@@ -422,6 +552,58 @@ func walkMessages(md protoreflect.MessageDescriptor, fn func(protoreflect.Messag
 		walkMessages(nested, fn)
 	}
 	fn(md)
+}
+
+// flattenedMessages returns every message in fd in the order that
+// protoimpl.TypeBuilder / filedesc.Builder consumes them — layered per parent,
+// NOT depth-first pre-order. At each parent we emit all direct children before
+// recursing into any of them, matching protoc-gen-go's `walkMessages` in
+// google.golang.org/protobuf/cmd/protoc-gen-go/internal_gengo/init.go.
+//
+// Map-entry messages are INCLUDED. Their `goTypes` slot is `nil`, but Build()
+// still requires the MessageInfos slice to have one slot per message including
+// map entries (filedesc.Builder.unmarshalCounts walks the raw FileDescriptorProto
+// and counts every nested message regardless of map-entry status).
+//
+// Callers that emit per-message *Go code* (ProtoReflect methods, OneofWrappers
+// assignments) must skip map-entry positions but still advance their index
+// counter so the index stays aligned with the slot in `file_*_msgTypes` that
+// Build() will populate.
+func flattenedMessages(fd protoreflect.FileDescriptor) []protoreflect.MessageDescriptor {
+	var out []protoreflect.MessageDescriptor
+	var visit func(md protoreflect.MessageDescriptor)
+	visit = func(md protoreflect.MessageDescriptor) {
+		for i := 0; i < md.Messages().Len(); i++ {
+			out = append(out, md.Messages().Get(i))
+		}
+		for i := 0; i < md.Messages().Len(); i++ {
+			visit(md.Messages().Get(i))
+		}
+	}
+	for i := 0; i < fd.Messages().Len(); i++ {
+		out = append(out, fd.Messages().Get(i))
+	}
+	for i := 0; i < fd.Messages().Len(); i++ {
+		visit(fd.Messages().Get(i))
+	}
+	return out
+}
+
+// flattenedEnums returns every enum in TypeBuilder ordering: file-level enums
+// first (in declaration order), then for each message visited in
+// `flattenedMessages` order, the message's direct nested enums (declaration
+// order) before recursing into the message's nested messages.
+func flattenedEnums(fd protoreflect.FileDescriptor) []protoreflect.EnumDescriptor {
+	out := make([]protoreflect.EnumDescriptor, 0, fd.Enums().Len())
+	for i := 0; i < fd.Enums().Len(); i++ {
+		out = append(out, fd.Enums().Get(i))
+	}
+	for _, md := range flattenedMessages(fd) {
+		for i := 0; i < md.Enums().Len(); i++ {
+			out = append(out, md.Enums().Get(i))
+		}
+	}
+	return out
 }
 
 // isRealOneof returns true if the field belongs to a non-synthetic oneof.

@@ -6,14 +6,7 @@ package v1
 import (
 	"fmt"
 	"google.golang.org/protobuf/encoding/protowire"
-	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/reflect/protodesc"
-	"google.golang.org/protobuf/reflect/protoreflect"
-	"google.golang.org/protobuf/reflect/protoregistry"
-	"google.golang.org/protobuf/runtime/protoimpl"
-	"google.golang.org/protobuf/types/descriptorpb"
 	"io"
-	"reflect"
 	"wiresmith/gen/protohelpers"
 )
 
@@ -1558,103 +1551,3 @@ func (this *CrossRef) Equal(that interface{}) bool {
 	}
 	return true
 }
-
-func (x *Level0_Level1_Level2_Level3) ProtoReflect() protoreflect.Message {
-	file_basic_nesting_v1_nesting_proto_init()
-	return protohelpers.NewMessageReflect(&file_basic_nesting_v1_nesting_proto_msgTypes[0], x)
-}
-
-func (x *Level0_Level1_Level2) ProtoReflect() protoreflect.Message {
-	file_basic_nesting_v1_nesting_proto_init()
-	return protohelpers.NewMessageReflect(&file_basic_nesting_v1_nesting_proto_msgTypes[1], x)
-}
-
-func (x *Level0_Level1) ProtoReflect() protoreflect.Message {
-	file_basic_nesting_v1_nesting_proto_init()
-	return protohelpers.NewMessageReflect(&file_basic_nesting_v1_nesting_proto_msgTypes[2], x)
-}
-
-func (x *Level0) ProtoReflect() protoreflect.Message {
-	file_basic_nesting_v1_nesting_proto_init()
-	return protohelpers.NewMessageReflect(&file_basic_nesting_v1_nesting_proto_msgTypes[3], x)
-}
-
-func (x *CrossRef) ProtoReflect() protoreflect.Message {
-	file_basic_nesting_v1_nesting_proto_init()
-	return protohelpers.NewMessageReflect(&file_basic_nesting_v1_nesting_proto_msgTypes[4], x)
-}
-
-const file_basic_nesting_v1_nesting_proto_rawDesc = "" +
-	"\x0a\x1e\x62\x61\x73\x69\x63\x2f\x6e\x65\x73\x74\x69\x6e\x67\x2f\x76\x31\x2f\x6e\x65\x73\x74\x69\x6e\x67\x2e\x70\x72\x6f\x74\x6f\x12\x10\x62\x61\x73\x69\x63\x2e" +
-	"\x6e\x65\x73\x74\x69\x6e\x67\x2e\x76\x31\x22\x99\x03\x0a\x06\x4c\x65\x76\x65\x6c\x30\x12\x35\x0a\x05\x63\x68\x69\x6c\x64\x18\x01\x20\x01\x28\x0b\x32\x1f\x2e\x62" +
-	"\x61\x73\x69\x63\x2e\x6e\x65\x73\x74\x69\x6e\x67\x2e\x76\x31\x2e\x4c\x65\x76\x65\x6c\x30\x2e\x4c\x65\x76\x65\x6c\x31\x52\x05\x63\x68\x69\x6c\x64\x12\x14\x0a\x05" +
-	"\x6c\x61\x62\x65\x6c\x18\x02\x20\x01\x28\x09\x52\x05\x6c\x61\x62\x65\x6c\x1a\xc1\x02\x0a\x06\x4c\x65\x76\x65\x6c\x31\x12\x3c\x0a\x05\x63\x68\x69\x6c\x64\x18\x01" +
-	"\x20\x01\x28\x0b\x32\x26\x2e\x62\x61\x73\x69\x63\x2e\x6e\x65\x73\x74\x69\x6e\x67\x2e\x76\x31\x2e\x4c\x65\x76\x65\x6c\x30\x2e\x4c\x65\x76\x65\x6c\x31\x2e\x4c\x65" +
-	"\x76\x65\x6c\x32\x52\x05\x63\x68\x69\x6c\x64\x12\x3e\x0a\x06\x65\x78\x74\x72\x61\x73\x18\x02\x20\x03\x28\x0b\x32\x26\x2e\x62\x61\x73\x69\x63\x2e\x6e\x65\x73\x74" +
-	"\x69\x6e\x67\x2e\x76\x31\x2e\x4c\x65\x76\x65\x6c\x30\x2e\x4c\x65\x76\x65\x6c\x31\x2e\x4c\x65\x76\x65\x6c\x32\x52\x06\x65\x78\x74\x72\x61\x73\x12\x14\x0a\x05\x76" +
-	"\x61\x6c\x75\x65\x18\x03\x20\x01\x28\x09\x52\x05\x76\x61\x6c\x75\x65\x1a\xa2\x01\x0a\x06\x4c\x65\x76\x65\x6c\x32\x12\x43\x0a\x05\x63\x68\x69\x6c\x64\x18\x01\x20" +
-	"\x01\x28\x0b\x32\x2d\x2e\x62\x61\x73\x69\x63\x2e\x6e\x65\x73\x74\x69\x6e\x67\x2e\x76\x31\x2e\x4c\x65\x76\x65\x6c\x30\x2e\x4c\x65\x76\x65\x6c\x31\x2e\x4c\x65\x76" +
-	"\x65\x6c\x32\x2e\x4c\x65\x76\x65\x6c\x33\x52\x05\x63\x68\x69\x6c\x64\x12\x14\x0a\x05\x76\x61\x6c\x75\x65\x18\x02\x20\x01\x28\x09\x52\x05\x76\x61\x6c\x75\x65\x1a" +
-	"\x3d\x0a\x06\x4c\x65\x76\x65\x6c\x33\x12\x1d\x0a\x0a\x64\x65\x65\x70\x5f\x76\x61\x6c\x75\x65\x18\x01\x20\x01\x28\x09\x52\x09\x64\x65\x65\x70\x56\x61\x6c\x75\x65" +
-	"\x12\x14\x0a\x05\x64\x65\x70\x74\x68\x18\x02\x20\x01\x28\x03\x52\x05\x64\x65\x70\x74\x68\x22\xad\x01\x0a\x08\x43\x72\x6f\x73\x73\x52\x65\x66\x12\x45\x0a\x0a\x6e" +
-	"\x65\x73\x74\x65\x64\x5f\x72\x65\x66\x18\x01\x20\x01\x28\x0b\x32\x26\x2e\x62\x61\x73\x69\x63\x2e\x6e\x65\x73\x74\x69\x6e\x67\x2e\x76\x31\x2e\x4c\x65\x76\x65\x6c" +
-	"\x30\x2e\x4c\x65\x76\x65\x6c\x31\x2e\x4c\x65\x76\x65\x6c\x32\x52\x09\x6e\x65\x73\x74\x65\x64\x52\x65\x66\x12\x48\x0a\x08\x64\x65\x65\x70\x5f\x72\x65\x66\x18\x02" +
-	"\x20\x01\x28\x0b\x32\x2d\x2e\x62\x61\x73\x69\x63\x2e\x6e\x65\x73\x74\x69\x6e\x67\x2e\x76\x31\x2e\x4c\x65\x76\x65\x6c\x30\x2e\x4c\x65\x76\x65\x6c\x31\x2e\x4c\x65" +
-	"\x76\x65\x6c\x32\x2e\x4c\x65\x76\x65\x6c\x33\x52\x07\x64\x65\x65\x70\x52\x65\x66\x12\x10\x0a\x03\x74\x61\x67\x18\x03\x20\x01\x28\x09\x52\x03\x74\x61\x67\x42\x20" +
-	"\x5a\x1e\x77\x69\x72\x65\x73\x6d\x69\x74\x68\x2f\x67\x65\x6e\x2f\x62\x61\x73\x69\x63\x2f\x6e\x65\x73\x74\x69\x6e\x67\x2f\x76\x31\x62\x06\x70\x72\x6f\x74\x6f\x33"
-
-var (
-	file_basic_nesting_v1_nesting_proto_fd       protoreflect.FileDescriptor
-	file_basic_nesting_v1_nesting_proto_msgTypes [5]protoimpl.MessageInfo
-)
-
-func file_basic_nesting_v1_nesting_proto_init() {
-	if file_basic_nesting_v1_nesting_proto_fd != nil {
-		return
-	}
-	fdp := new(descriptorpb.FileDescriptorProto)
-	if err := proto.Unmarshal([]byte(file_basic_nesting_v1_nesting_proto_rawDesc), fdp); err != nil {
-		panic(err)
-	}
-	fd, err := protodesc.NewFile(fdp, protoregistry.GlobalFiles)
-	if err == nil {
-		if err := protoregistry.GlobalFiles.RegisterFile(fd); err != nil {
-			panic(err)
-		}
-	} else {
-		var findErr error
-		fd, findErr = protoregistry.GlobalFiles.FindFileByPath(fdp.GetName())
-		if findErr != nil {
-			panic(err)
-		}
-	}
-	file_basic_nesting_v1_nesting_proto_fd = fd
-
-	file_basic_nesting_v1_nesting_proto_msgTypes[0].GoReflectType = reflect.TypeOf((*Level0_Level1_Level2_Level3)(nil))
-	file_basic_nesting_v1_nesting_proto_msgTypes[0].Desc = protohelpers.FindMessageDescriptor(fd, "basic.nesting.v1.Level0.Level1.Level2.Level3")
-	if err := protoregistry.GlobalTypes.RegisterMessage(&file_basic_nesting_v1_nesting_proto_msgTypes[0]); err != nil {
-		panic(err)
-	}
-	file_basic_nesting_v1_nesting_proto_msgTypes[1].GoReflectType = reflect.TypeOf((*Level0_Level1_Level2)(nil))
-	file_basic_nesting_v1_nesting_proto_msgTypes[1].Desc = protohelpers.FindMessageDescriptor(fd, "basic.nesting.v1.Level0.Level1.Level2")
-	if err := protoregistry.GlobalTypes.RegisterMessage(&file_basic_nesting_v1_nesting_proto_msgTypes[1]); err != nil {
-		panic(err)
-	}
-	file_basic_nesting_v1_nesting_proto_msgTypes[2].GoReflectType = reflect.TypeOf((*Level0_Level1)(nil))
-	file_basic_nesting_v1_nesting_proto_msgTypes[2].Desc = protohelpers.FindMessageDescriptor(fd, "basic.nesting.v1.Level0.Level1")
-	if err := protoregistry.GlobalTypes.RegisterMessage(&file_basic_nesting_v1_nesting_proto_msgTypes[2]); err != nil {
-		panic(err)
-	}
-	file_basic_nesting_v1_nesting_proto_msgTypes[3].GoReflectType = reflect.TypeOf((*Level0)(nil))
-	file_basic_nesting_v1_nesting_proto_msgTypes[3].Desc = protohelpers.FindMessageDescriptor(fd, "basic.nesting.v1.Level0")
-	if err := protoregistry.GlobalTypes.RegisterMessage(&file_basic_nesting_v1_nesting_proto_msgTypes[3]); err != nil {
-		panic(err)
-	}
-	file_basic_nesting_v1_nesting_proto_msgTypes[4].GoReflectType = reflect.TypeOf((*CrossRef)(nil))
-	file_basic_nesting_v1_nesting_proto_msgTypes[4].Desc = protohelpers.FindMessageDescriptor(fd, "basic.nesting.v1.CrossRef")
-	if err := protoregistry.GlobalTypes.RegisterMessage(&file_basic_nesting_v1_nesting_proto_msgTypes[4]); err != nil {
-		panic(err)
-	}
-}
-
-func init() { file_basic_nesting_v1_nesting_proto_init() }

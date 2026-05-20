@@ -6,14 +6,7 @@ package v1
 import (
 	"fmt"
 	"google.golang.org/protobuf/encoding/protowire"
-	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/reflect/protodesc"
-	"google.golang.org/protobuf/reflect/protoreflect"
-	"google.golang.org/protobuf/reflect/protoregistry"
-	"google.golang.org/protobuf/runtime/protoimpl"
-	"google.golang.org/protobuf/types/descriptorpb"
 	"io"
-	"reflect"
 	"wiresmith/gen/protohelpers"
 )
 
@@ -1279,90 +1272,3 @@ func (this *NodeB) Equal(that interface{}) bool {
 	}
 	return true
 }
-
-func (x *LinkedList) ProtoReflect() protoreflect.Message {
-	file_basic_recursive_v1_recursive_proto_init()
-	return protohelpers.NewMessageReflect(&file_basic_recursive_v1_recursive_proto_msgTypes[0], x)
-}
-
-func (x *TreeNode) ProtoReflect() protoreflect.Message {
-	file_basic_recursive_v1_recursive_proto_init()
-	return protohelpers.NewMessageReflect(&file_basic_recursive_v1_recursive_proto_msgTypes[1], x)
-}
-
-func (x *NodeA) ProtoReflect() protoreflect.Message {
-	file_basic_recursive_v1_recursive_proto_init()
-	return protohelpers.NewMessageReflect(&file_basic_recursive_v1_recursive_proto_msgTypes[2], x)
-}
-
-func (x *NodeB) ProtoReflect() protoreflect.Message {
-	file_basic_recursive_v1_recursive_proto_init()
-	return protohelpers.NewMessageReflect(&file_basic_recursive_v1_recursive_proto_msgTypes[3], x)
-}
-
-const file_basic_recursive_v1_recursive_proto_rawDesc = "" +
-	"\x0a\x22\x62\x61\x73\x69\x63\x2f\x72\x65\x63\x75\x72\x73\x69\x76\x65\x2f\x76\x31\x2f\x72\x65\x63\x75\x72\x73\x69\x76\x65\x2e\x70\x72\x6f\x74\x6f\x12\x12\x62\x61" +
-	"\x73\x69\x63\x2e\x72\x65\x63\x75\x72\x73\x69\x76\x65\x2e\x76\x31\x22\x64\x0a\x0a\x4c\x69\x6e\x6b\x65\x64\x4c\x69\x73\x74\x12\x14\x0a\x05\x76\x61\x6c\x75\x65\x18" +
-	"\x01\x20\x01\x28\x03\x52\x05\x76\x61\x6c\x75\x65\x12\x37\x0a\x04\x6e\x65\x78\x74\x18\x02\x20\x01\x28\x0b\x32\x1e\x2e\x62\x61\x73\x69\x63\x2e\x72\x65\x63\x75\x72" +
-	"\x73\x69\x76\x65\x2e\x76\x31\x2e\x4c\x69\x6e\x6b\x65\x64\x4c\x69\x73\x74\x48\x00\x52\x04\x6e\x65\x78\x74\x88\x01\x01\x42\x07\x0a\x05\x5f\x6e\x65\x78\x74\x22\x70" +
-	"\x0a\x08\x54\x72\x65\x65\x4e\x6f\x64\x65\x12\x14\x0a\x05\x6c\x61\x62\x65\x6c\x18\x01\x20\x01\x28\x09\x52\x05\x6c\x61\x62\x65\x6c\x12\x14\x0a\x05\x76\x61\x6c\x75" +
-	"\x65\x18\x02\x20\x01\x28\x03\x52\x05\x76\x61\x6c\x75\x65\x12\x38\x0a\x08\x63\x68\x69\x6c\x64\x72\x65\x6e\x18\x03\x20\x03\x28\x0b\x32\x1c\x2e\x62\x61\x73\x69\x63" +
-	"\x2e\x72\x65\x63\x75\x72\x73\x69\x76\x65\x2e\x76\x31\x2e\x54\x72\x65\x65\x4e\x6f\x64\x65\x52\x08\x63\x68\x69\x6c\x64\x72\x65\x6e\x22\x89\x01\x0a\x05\x4e\x6f\x64" +
-	"\x65\x41\x12\x12\x0a\x04\x6e\x61\x6d\x65\x18\x01\x20\x01\x28\x09\x52\x04\x6e\x61\x6d\x65\x12\x32\x0a\x04\x70\x65\x65\x72\x18\x02\x20\x01\x28\x0b\x32\x19\x2e\x62" +
-	"\x61\x73\x69\x63\x2e\x72\x65\x63\x75\x72\x73\x69\x76\x65\x2e\x76\x31\x2e\x4e\x6f\x64\x65\x42\x48\x00\x52\x04\x70\x65\x65\x72\x88\x01\x01\x12\x2f\x0a\x05\x70\x65" +
-	"\x65\x72\x73\x18\x03\x20\x03\x28\x0b\x32\x19\x2e\x62\x61\x73\x69\x63\x2e\x72\x65\x63\x75\x72\x73\x69\x76\x65\x2e\x76\x31\x2e\x4e\x6f\x64\x65\x42\x52\x05\x70\x65" +
-	"\x65\x72\x73\x42\x07\x0a\x05\x5f\x70\x65\x65\x72\x22\x5a\x0a\x05\x4e\x6f\x64\x65\x42\x12\x0e\x0a\x02\x69\x64\x18\x01\x20\x01\x28\x03\x52\x02\x69\x64\x12\x36\x0a" +
-	"\x06\x70\x61\x72\x65\x6e\x74\x18\x02\x20\x01\x28\x0b\x32\x19\x2e\x62\x61\x73\x69\x63\x2e\x72\x65\x63\x75\x72\x73\x69\x76\x65\x2e\x76\x31\x2e\x4e\x6f\x64\x65\x41" +
-	"\x48\x00\x52\x06\x70\x61\x72\x65\x6e\x74\x88\x01\x01\x42\x09\x0a\x07\x5f\x70\x61\x72\x65\x6e\x74\x42\x22\x5a\x20\x77\x69\x72\x65\x73\x6d\x69\x74\x68\x2f\x67\x65" +
-	"\x6e\x2f\x62\x61\x73\x69\x63\x2f\x72\x65\x63\x75\x72\x73\x69\x76\x65\x2f\x76\x31\x62\x06\x70\x72\x6f\x74\x6f\x33"
-
-var (
-	file_basic_recursive_v1_recursive_proto_fd       protoreflect.FileDescriptor
-	file_basic_recursive_v1_recursive_proto_msgTypes [4]protoimpl.MessageInfo
-)
-
-func file_basic_recursive_v1_recursive_proto_init() {
-	if file_basic_recursive_v1_recursive_proto_fd != nil {
-		return
-	}
-	fdp := new(descriptorpb.FileDescriptorProto)
-	if err := proto.Unmarshal([]byte(file_basic_recursive_v1_recursive_proto_rawDesc), fdp); err != nil {
-		panic(err)
-	}
-	fd, err := protodesc.NewFile(fdp, protoregistry.GlobalFiles)
-	if err == nil {
-		if err := protoregistry.GlobalFiles.RegisterFile(fd); err != nil {
-			panic(err)
-		}
-	} else {
-		var findErr error
-		fd, findErr = protoregistry.GlobalFiles.FindFileByPath(fdp.GetName())
-		if findErr != nil {
-			panic(err)
-		}
-	}
-	file_basic_recursive_v1_recursive_proto_fd = fd
-
-	file_basic_recursive_v1_recursive_proto_msgTypes[0].GoReflectType = reflect.TypeOf((*LinkedList)(nil))
-	file_basic_recursive_v1_recursive_proto_msgTypes[0].Desc = protohelpers.FindMessageDescriptor(fd, "basic.recursive.v1.LinkedList")
-	if err := protoregistry.GlobalTypes.RegisterMessage(&file_basic_recursive_v1_recursive_proto_msgTypes[0]); err != nil {
-		panic(err)
-	}
-	file_basic_recursive_v1_recursive_proto_msgTypes[1].GoReflectType = reflect.TypeOf((*TreeNode)(nil))
-	file_basic_recursive_v1_recursive_proto_msgTypes[1].Desc = protohelpers.FindMessageDescriptor(fd, "basic.recursive.v1.TreeNode")
-	if err := protoregistry.GlobalTypes.RegisterMessage(&file_basic_recursive_v1_recursive_proto_msgTypes[1]); err != nil {
-		panic(err)
-	}
-	file_basic_recursive_v1_recursive_proto_msgTypes[2].GoReflectType = reflect.TypeOf((*NodeA)(nil))
-	file_basic_recursive_v1_recursive_proto_msgTypes[2].Desc = protohelpers.FindMessageDescriptor(fd, "basic.recursive.v1.NodeA")
-	if err := protoregistry.GlobalTypes.RegisterMessage(&file_basic_recursive_v1_recursive_proto_msgTypes[2]); err != nil {
-		panic(err)
-	}
-	file_basic_recursive_v1_recursive_proto_msgTypes[3].GoReflectType = reflect.TypeOf((*NodeB)(nil))
-	file_basic_recursive_v1_recursive_proto_msgTypes[3].Desc = protohelpers.FindMessageDescriptor(fd, "basic.recursive.v1.NodeB")
-	if err := protoregistry.GlobalTypes.RegisterMessage(&file_basic_recursive_v1_recursive_proto_msgTypes[3]); err != nil {
-		panic(err)
-	}
-}
-
-func init() { file_basic_recursive_v1_recursive_proto_init() }
