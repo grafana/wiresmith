@@ -59,11 +59,11 @@ func TestPreScanAbortsOnUnknownWireType(t *testing.T) {
 	// inspect its capacity to detect SEC-2 amplification.
 	require.Error(t, err, "main loop must reject wire type 7")
 
-	// With the fix: cap(m.RepeatedString) is at most 1 (the first 0x4F
+	// With the fix: cap(m.RepeatedString) is exactly 1 (the first 0x4F
 	// increments field9count once before the abort fires).
 	// Without the fix: cap == attackBytes (100), which would fail this
 	// assertion.
-	assert.LessOrEqual(t, cap(m.RepeatedString), 4,
+	assert.LessOrEqual(t, cap(m.RepeatedString), 1,
 		"pre-scan must abort on unknown wire type; cap inflated by SEC-2 amplification")
 }
 
@@ -93,7 +93,9 @@ func TestPreScanAmplificationThroughGroupTag(t *testing.T) {
 			// Regardless of whether Unmarshal returned an error, the
 			// pre-scan must have stopped at the first unknown-wire-type
 			// tag rather than iterating across all 100 attack bytes.
-			assert.LessOrEqual(t, cap(m.RepeatedString), 4,
+			// With the fix: count is incremented exactly once before the
+			// default branch fires, so cap is at most 1.
+			assert.LessOrEqual(t, cap(m.RepeatedString), 1,
 				"pre-scan must abort at first wire type %d; observed inflated cap", wireType)
 		})
 	}
