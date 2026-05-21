@@ -46,6 +46,46 @@ func TestReset_NilReceiver(t *testing.T) {
 	assert.NotPanics(t, func() { o.Reset() })
 }
 
+// Size and the Marshal family must be nil-safe to match the contract pinned by
+// Get*/Has*/Equal/Reset/String. CLAUDE.md "nil-safety on all generated receiver
+// methods" treats the surface as uniform; a nil panic from Size() while Get()
+// returns zero would surprise callers.
+func TestSize_NilReceiver(t *testing.T) {
+	var m *ks.AllScalars
+	assert.Equal(t, 0, m.Size())
+
+	var o *ks.Outer
+	assert.Equal(t, 0, o.Size())
+}
+
+func TestMarshal_NilReceiver(t *testing.T) {
+	var m *ks.AllScalars
+	b, err := m.Marshal()
+	assert.NoError(t, err)
+	assert.Nil(t, b)
+
+	var o *ks.Outer
+	b, err = o.Marshal()
+	assert.NoError(t, err)
+	assert.Nil(t, b)
+}
+
+func TestMarshalTo_NilReceiver(t *testing.T) {
+	var m *ks.AllScalars
+	buf := make([]byte, 16)
+	n, err := m.MarshalTo(buf)
+	assert.NoError(t, err)
+	assert.Equal(t, 0, n)
+}
+
+func TestMarshalToSizedBuffer_NilReceiver(t *testing.T) {
+	var m *ks.AllScalars
+	buf := make([]byte, 16)
+	n, err := m.MarshalToSizedBuffer(buf)
+	assert.NoError(t, err)
+	assert.Equal(t, 0, n)
+}
+
 func TestReset_NestedMessage(t *testing.T) {
 	msg := &ks.Outer{
 		Middle: ks.Middle{Value: 99, Inner: ks.Inner{Data: "deep"}},

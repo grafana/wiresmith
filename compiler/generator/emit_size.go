@@ -13,6 +13,7 @@ func (fg *FileGenerator) emitSize(md protoreflect.MessageDescriptor) {
 	fg.imports.addImport("google.golang.org/protobuf/encoding/protowire", "")
 
 	fmt.Fprintf(fg.body, "func (m *%s) Size() int {\n", name)
+	fmt.Fprintf(fg.body, "\tif m == nil {\n\t\treturn 0\n\t}\n")
 	fmt.Fprintf(fg.body, "\tvar n int\n")
 
 	pm := fg.presenceMap(md)

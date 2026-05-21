@@ -566,6 +566,9 @@ func (m *LogRecord) GetEventName() string {
 }
 
 func (m *LogsData) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	for i := range m.ResourceLogs {
 		s := m.ResourceLogs[i].Size()
@@ -575,6 +578,9 @@ func (m *LogsData) Size() int {
 }
 
 func (m *ResourceLogs) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	{
 		s := m.Resource.Size()
@@ -595,6 +601,9 @@ func (m *ResourceLogs) Size() int {
 }
 
 func (m *ScopeLogs) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	{
 		s := m.Scope.Size()
@@ -615,6 +624,9 @@ func (m *ScopeLogs) Size() int {
 }
 
 func (m *LogRecord) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	if m.TimeUnixNano != 0 {
 		n += 9
@@ -659,6 +671,9 @@ func (m *LogRecord) Size() int {
 }
 
 func (m *LogsData) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -672,11 +687,17 @@ func (m *LogsData) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *LogsData) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *LogsData) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	for iNdEx := len(m.ResourceLogs) - 1; iNdEx >= 0; iNdEx-- {
 		size, err := m.ResourceLogs[iNdEx].MarshalToSizedBuffer(dAtA[:i])
@@ -692,6 +713,9 @@ func (m *LogsData) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *ResourceLogs) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -705,11 +729,17 @@ func (m *ResourceLogs) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *ResourceLogs) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *ResourceLogs) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if len(m.SchemaUrl) > 0 {
 		i -= len(m.SchemaUrl)
@@ -749,6 +779,9 @@ func (m *ResourceLogs) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *ScopeLogs) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -762,11 +795,17 @@ func (m *ScopeLogs) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *ScopeLogs) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *ScopeLogs) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if len(m.SchemaUrl) > 0 {
 		i -= len(m.SchemaUrl)
@@ -806,6 +845,9 @@ func (m *ScopeLogs) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *LogRecord) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -819,11 +861,17 @@ func (m *LogRecord) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *LogRecord) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *LogRecord) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if len(m.EventName) > 0 {
 		i -= len(m.EventName)

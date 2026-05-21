@@ -423,6 +423,9 @@ func (m *OneofPlusEverything) GetStructured() *Payload {
 }
 
 func (m *Payload) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	if len(m.Data) > 0 {
 		n += 1 + protowire.SizeVarint(uint64(len(m.Data))) + len(m.Data)
@@ -434,6 +437,9 @@ func (m *Payload) Size() int {
 }
 
 func (m *MultiOneof) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	switch v := m.Primary.(type) {
 	case *MultiOneof_StrVal:
@@ -463,6 +469,9 @@ func (m *MultiOneof) Size() int {
 }
 
 func (m *OneofWithTypes) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	switch v := m.Value.(type) {
 	case *OneofWithTypes_StrVal:
@@ -480,6 +489,9 @@ func (m *OneofWithTypes) Size() int {
 }
 
 func (m *OneofPlusEverything) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	if len(m.Name) > 0 {
 		n += 1 + protowire.SizeVarint(uint64(len(m.Name))) + len(m.Name)
@@ -515,6 +527,9 @@ func (m *OneofPlusEverything) Size() int {
 }
 
 func (m *Payload) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -528,11 +543,17 @@ func (m *Payload) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Payload) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *Payload) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if m.Number != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.Number))
@@ -550,6 +571,9 @@ func (m *Payload) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *MultiOneof) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -563,11 +587,17 @@ func (m *MultiOneof) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *MultiOneof) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *MultiOneof) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if len(m.RegularField) > 0 {
 		i -= len(m.RegularField)
@@ -623,6 +653,9 @@ func (m *MultiOneof) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *OneofWithTypes) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -636,11 +669,17 @@ func (m *OneofWithTypes) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *OneofWithTypes) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *OneofWithTypes) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	switch v := m.Value.(type) {
 	case *OneofWithTypes_EnumVal:
@@ -671,6 +710,9 @@ func (m *OneofWithTypes) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *OneofPlusEverything) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -684,11 +726,17 @@ func (m *OneofPlusEverything) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *OneofPlusEverything) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *OneofPlusEverything) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	switch v := m.Payload.(type) {
 	case *OneofPlusEverything_Structured:

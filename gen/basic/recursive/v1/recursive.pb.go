@@ -206,6 +206,9 @@ func (m *NodeB) GetParent() *NodeA {
 }
 
 func (m *LinkedList) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	if m.Value != 0 {
 		n += 1 + protowire.SizeVarint(uint64(m.Value))
@@ -218,6 +221,9 @@ func (m *LinkedList) Size() int {
 }
 
 func (m *TreeNode) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	if len(m.Label) > 0 {
 		n += 1 + protowire.SizeVarint(uint64(len(m.Label))) + len(m.Label)
@@ -233,6 +239,9 @@ func (m *TreeNode) Size() int {
 }
 
 func (m *NodeA) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	if len(m.Name) > 0 {
 		n += 1 + protowire.SizeVarint(uint64(len(m.Name))) + len(m.Name)
@@ -249,6 +258,9 @@ func (m *NodeA) Size() int {
 }
 
 func (m *NodeB) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	if m.Id != 0 {
 		n += 1 + protowire.SizeVarint(uint64(m.Id))
@@ -261,6 +273,9 @@ func (m *NodeB) Size() int {
 }
 
 func (m *LinkedList) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -274,11 +289,17 @@ func (m *LinkedList) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *LinkedList) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *LinkedList) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if m.Next != nil {
 		size, err := (*m.Next).MarshalToSizedBuffer(dAtA[:i])
@@ -299,6 +320,9 @@ func (m *LinkedList) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *TreeNode) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -312,11 +336,17 @@ func (m *TreeNode) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *TreeNode) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *TreeNode) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	for iNdEx := len(m.Children) - 1; iNdEx >= 0; iNdEx-- {
 		size, err := m.Children[iNdEx].MarshalToSizedBuffer(dAtA[:i])
@@ -344,6 +374,9 @@ func (m *TreeNode) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *NodeA) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -357,11 +390,17 @@ func (m *NodeA) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *NodeA) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *NodeA) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	for iNdEx := len(m.Peers) - 1; iNdEx >= 0; iNdEx-- {
 		size, err := m.Peers[iNdEx].MarshalToSizedBuffer(dAtA[:i])
@@ -394,6 +433,9 @@ func (m *NodeA) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *NodeB) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -407,11 +449,17 @@ func (m *NodeB) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *NodeB) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *NodeB) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if m.Parent != nil {
 		size, err := (*m.Parent).MarshalToSizedBuffer(dAtA[:i])

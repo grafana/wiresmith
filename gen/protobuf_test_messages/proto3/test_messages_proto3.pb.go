@@ -1486,6 +1486,9 @@ func (m *ForeignMessage) GetC() int32 {
 }
 
 func (m *TestAllTypesProto3_NestedMessage) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	if m.A != 0 {
 		n += 1 + protowire.SizeVarint(uint64(m.A))
@@ -1494,6 +1497,9 @@ func (m *TestAllTypesProto3_NestedMessage) Size() int {
 }
 
 func (m *TestAllTypesProto3) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	if m.OptionalInt32 != 0 {
 		n += 1 + protowire.SizeVarint(uint64(m.OptionalInt32))
@@ -1977,6 +1983,9 @@ func (m *TestAllTypesProto3) Size() int {
 }
 
 func (m *ForeignMessage) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	if m.C != 0 {
 		n += 1 + protowire.SizeVarint(uint64(m.C))
@@ -1985,16 +1994,25 @@ func (m *ForeignMessage) Size() int {
 }
 
 func (m *NullHypothesisProto3) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	return n
 }
 
 func (m *EnumOnlyProto3) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	return n
 }
 
 func (m *TestAllTypesProto3_NestedMessage) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -2008,11 +2026,17 @@ func (m *TestAllTypesProto3_NestedMessage) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *TestAllTypesProto3_NestedMessage) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *TestAllTypesProto3_NestedMessage) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if m.A != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.A))
@@ -2023,6 +2047,9 @@ func (m *TestAllTypesProto3_NestedMessage) MarshalToSizedBuffer(dAtA []byte) (in
 }
 
 func (m *TestAllTypesProto3) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -2036,11 +2063,17 @@ func (m *TestAllTypesProto3) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *TestAllTypesProto3) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *TestAllTypesProto3) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if m.FieldName18 != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.FieldName18))
@@ -3235,6 +3268,9 @@ func (m *TestAllTypesProto3) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *ForeignMessage) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -3248,11 +3284,17 @@ func (m *ForeignMessage) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *ForeignMessage) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *ForeignMessage) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if m.C != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.C))
@@ -3263,6 +3305,9 @@ func (m *ForeignMessage) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *NullHypothesisProto3) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -3276,16 +3321,25 @@ func (m *NullHypothesisProto3) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *NullHypothesisProto3) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *NullHypothesisProto3) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	return len(dAtA) - i, nil
 }
 
 func (m *EnumOnlyProto3) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -3299,11 +3353,17 @@ func (m *EnumOnlyProto3) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *EnumOnlyProto3) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *EnumOnlyProto3) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	return len(dAtA) - i, nil
 }

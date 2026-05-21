@@ -1804,6 +1804,9 @@ func (m *Exemplar) GetTraceId() []byte {
 }
 
 func (m *MetricsData) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	for i := range m.ResourceMetrics {
 		s := m.ResourceMetrics[i].Size()
@@ -1813,6 +1816,9 @@ func (m *MetricsData) Size() int {
 }
 
 func (m *ResourceMetrics) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	{
 		s := m.Resource.Size()
@@ -1833,6 +1839,9 @@ func (m *ResourceMetrics) Size() int {
 }
 
 func (m *ScopeMetrics) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	{
 		s := m.Scope.Size()
@@ -1853,6 +1862,9 @@ func (m *ScopeMetrics) Size() int {
 }
 
 func (m *Metric) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	if len(m.Name) > 0 {
 		n += 1 + protowire.SizeVarint(uint64(len(m.Name))) + len(m.Name)
@@ -1888,6 +1900,9 @@ func (m *Metric) Size() int {
 }
 
 func (m *Gauge) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	for i := range m.DataPoints {
 		s := m.DataPoints[i].Size()
@@ -1897,6 +1912,9 @@ func (m *Gauge) Size() int {
 }
 
 func (m *Sum) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	for i := range m.DataPoints {
 		s := m.DataPoints[i].Size()
@@ -1912,6 +1930,9 @@ func (m *Sum) Size() int {
 }
 
 func (m *Histogram) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	for i := range m.DataPoints {
 		s := m.DataPoints[i].Size()
@@ -1924,6 +1945,9 @@ func (m *Histogram) Size() int {
 }
 
 func (m *ExponentialHistogram) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	for i := range m.DataPoints {
 		s := m.DataPoints[i].Size()
@@ -1936,6 +1960,9 @@ func (m *ExponentialHistogram) Size() int {
 }
 
 func (m *Summary) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	for i := range m.DataPoints {
 		s := m.DataPoints[i].Size()
@@ -1945,6 +1972,9 @@ func (m *Summary) Size() int {
 }
 
 func (m *NumberDataPoint) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	for i := range m.Attributes {
 		s := m.Attributes[i].Size()
@@ -1975,6 +2005,9 @@ func (m *NumberDataPoint) Size() int {
 }
 
 func (m *HistogramDataPoint) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	for i := range m.Attributes {
 		s := m.Attributes[i].Size()
@@ -2017,6 +2050,9 @@ func (m *HistogramDataPoint) Size() int {
 }
 
 func (m *ExponentialHistogramDataPoint_Buckets) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	if m.Offset != 0 {
 		n += 1 + protowire.SizeVarint(protowire.EncodeZigZag(int64(m.Offset)))
@@ -2032,6 +2068,9 @@ func (m *ExponentialHistogramDataPoint_Buckets) Size() int {
 }
 
 func (m *ExponentialHistogramDataPoint) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	for i := range m.Attributes {
 		s := m.Attributes[i].Size()
@@ -2091,6 +2130,9 @@ func (m *ExponentialHistogramDataPoint) Size() int {
 }
 
 func (m *SummaryDataPoint_ValueAtQuantile) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	if math.Float64bits(m.Quantile) != 0 {
 		n += 9
@@ -2102,6 +2144,9 @@ func (m *SummaryDataPoint_ValueAtQuantile) Size() int {
 }
 
 func (m *SummaryDataPoint) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	for i := range m.Attributes {
 		s := m.Attributes[i].Size()
@@ -2130,6 +2175,9 @@ func (m *SummaryDataPoint) Size() int {
 }
 
 func (m *Exemplar) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	for i := range m.FilteredAttributes {
 		s := m.FilteredAttributes[i].Size()
@@ -2156,6 +2204,9 @@ func (m *Exemplar) Size() int {
 }
 
 func (m *MetricsData) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -2169,11 +2220,17 @@ func (m *MetricsData) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *MetricsData) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *MetricsData) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	for iNdEx := len(m.ResourceMetrics) - 1; iNdEx >= 0; iNdEx-- {
 		size, err := m.ResourceMetrics[iNdEx].MarshalToSizedBuffer(dAtA[:i])
@@ -2189,6 +2246,9 @@ func (m *MetricsData) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *ResourceMetrics) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -2202,11 +2262,17 @@ func (m *ResourceMetrics) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *ResourceMetrics) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *ResourceMetrics) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if len(m.SchemaUrl) > 0 {
 		i -= len(m.SchemaUrl)
@@ -2246,6 +2312,9 @@ func (m *ResourceMetrics) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *ScopeMetrics) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -2259,11 +2328,17 @@ func (m *ScopeMetrics) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *ScopeMetrics) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *ScopeMetrics) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if len(m.SchemaUrl) > 0 {
 		i -= len(m.SchemaUrl)
@@ -2303,6 +2378,9 @@ func (m *ScopeMetrics) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *Metric) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -2316,11 +2394,17 @@ func (m *Metric) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Metric) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *Metric) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	for iNdEx := len(m.Metadata) - 1; iNdEx >= 0; iNdEx-- {
 		size, err := m.Metadata[iNdEx].MarshalToSizedBuffer(dAtA[:i])
@@ -2404,6 +2488,9 @@ func (m *Metric) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *Gauge) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -2417,11 +2504,17 @@ func (m *Gauge) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Gauge) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *Gauge) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	for iNdEx := len(m.DataPoints) - 1; iNdEx >= 0; iNdEx-- {
 		size, err := m.DataPoints[iNdEx].MarshalToSizedBuffer(dAtA[:i])
@@ -2437,6 +2530,9 @@ func (m *Gauge) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *Sum) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -2450,11 +2546,17 @@ func (m *Sum) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Sum) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *Sum) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if m.IsMonotonic {
 		i--
@@ -2485,6 +2587,9 @@ func (m *Sum) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *Histogram) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -2498,11 +2603,17 @@ func (m *Histogram) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Histogram) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *Histogram) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if m.AggregationTemporality != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.AggregationTemporality))
@@ -2523,6 +2634,9 @@ func (m *Histogram) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *ExponentialHistogram) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -2536,11 +2650,17 @@ func (m *ExponentialHistogram) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *ExponentialHistogram) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *ExponentialHistogram) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if m.AggregationTemporality != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.AggregationTemporality))
@@ -2561,6 +2681,9 @@ func (m *ExponentialHistogram) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *Summary) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -2574,11 +2697,17 @@ func (m *Summary) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Summary) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *Summary) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	for iNdEx := len(m.DataPoints) - 1; iNdEx >= 0; iNdEx-- {
 		size, err := m.DataPoints[iNdEx].MarshalToSizedBuffer(dAtA[:i])
@@ -2594,6 +2723,9 @@ func (m *Summary) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *NumberDataPoint) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -2607,11 +2739,17 @@ func (m *NumberDataPoint) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *NumberDataPoint) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *NumberDataPoint) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if m.Flags != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.Flags))
@@ -2666,6 +2804,9 @@ func (m *NumberDataPoint) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *HistogramDataPoint) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -2679,11 +2820,17 @@ func (m *HistogramDataPoint) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *HistogramDataPoint) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *HistogramDataPoint) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if m.Max != nil {
 		i -= 8
@@ -2768,6 +2915,9 @@ func (m *HistogramDataPoint) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *ExponentialHistogramDataPoint_Buckets) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -2781,11 +2931,17 @@ func (m *ExponentialHistogramDataPoint_Buckets) Marshal() (dAtA []byte, err erro
 }
 
 func (m *ExponentialHistogramDataPoint_Buckets) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *ExponentialHistogramDataPoint_Buckets) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if len(m.BucketCounts) > 0 {
 		var j int
@@ -2806,6 +2962,9 @@ func (m *ExponentialHistogramDataPoint_Buckets) MarshalToSizedBuffer(dAtA []byte
 }
 
 func (m *ExponentialHistogramDataPoint) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -2819,11 +2978,17 @@ func (m *ExponentialHistogramDataPoint) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *ExponentialHistogramDataPoint) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *ExponentialHistogramDataPoint) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if v := math.Float64bits(m.ZeroThreshold); v != 0 {
 		i -= 8
@@ -2941,6 +3106,9 @@ func (m *ExponentialHistogramDataPoint) MarshalToSizedBuffer(dAtA []byte) (int, 
 }
 
 func (m *SummaryDataPoint_ValueAtQuantile) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -2954,11 +3122,17 @@ func (m *SummaryDataPoint_ValueAtQuantile) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *SummaryDataPoint_ValueAtQuantile) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *SummaryDataPoint_ValueAtQuantile) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if v := math.Float64bits(m.Value); v != 0 {
 		i -= 8
@@ -2976,6 +3150,9 @@ func (m *SummaryDataPoint_ValueAtQuantile) MarshalToSizedBuffer(dAtA []byte) (in
 }
 
 func (m *SummaryDataPoint) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -2989,11 +3166,17 @@ func (m *SummaryDataPoint) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *SummaryDataPoint) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *SummaryDataPoint) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if m.Flags != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.Flags))
@@ -3048,6 +3231,9 @@ func (m *SummaryDataPoint) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *Exemplar) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -3061,11 +3247,17 @@ func (m *Exemplar) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Exemplar) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *Exemplar) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	for iNdEx := len(m.FilteredAttributes) - 1; iNdEx >= 0; iNdEx-- {
 		size, err := m.FilteredAttributes[iNdEx].MarshalToSizedBuffer(dAtA[:i])

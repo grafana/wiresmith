@@ -924,6 +924,9 @@ func (m *Status) GetCode() Status_StatusCode {
 }
 
 func (m *TracesData) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	for i := range m.ResourceSpans {
 		s := m.ResourceSpans[i].Size()
@@ -933,6 +936,9 @@ func (m *TracesData) Size() int {
 }
 
 func (m *ResourceSpans) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	{
 		s := m.Resource.Size()
@@ -953,6 +959,9 @@ func (m *ResourceSpans) Size() int {
 }
 
 func (m *ScopeSpans) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	{
 		s := m.Scope.Size()
@@ -973,6 +982,9 @@ func (m *ScopeSpans) Size() int {
 }
 
 func (m *Span_Event) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	if m.TimeUnixNano != 0 {
 		n += 9
@@ -991,6 +1003,9 @@ func (m *Span_Event) Size() int {
 }
 
 func (m *Span_Link) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	if len(m.TraceId) > 0 {
 		n += 1 + protowire.SizeVarint(uint64(len(m.TraceId))) + len(m.TraceId)
@@ -1015,6 +1030,9 @@ func (m *Span_Link) Size() int {
 }
 
 func (m *Span) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	if len(m.TraceId) > 0 {
 		n += 1 + protowire.SizeVarint(uint64(len(m.TraceId))) + len(m.TraceId)
@@ -1076,6 +1094,9 @@ func (m *Span) Size() int {
 }
 
 func (m *Status) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	if len(m.Message) > 0 {
 		n += 1 + protowire.SizeVarint(uint64(len(m.Message))) + len(m.Message)
@@ -1087,6 +1108,9 @@ func (m *Status) Size() int {
 }
 
 func (m *TracesData) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -1100,11 +1124,17 @@ func (m *TracesData) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *TracesData) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *TracesData) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	for iNdEx := len(m.ResourceSpans) - 1; iNdEx >= 0; iNdEx-- {
 		size, err := m.ResourceSpans[iNdEx].MarshalToSizedBuffer(dAtA[:i])
@@ -1120,6 +1150,9 @@ func (m *TracesData) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *ResourceSpans) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -1133,11 +1166,17 @@ func (m *ResourceSpans) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *ResourceSpans) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *ResourceSpans) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if len(m.SchemaUrl) > 0 {
 		i -= len(m.SchemaUrl)
@@ -1177,6 +1216,9 @@ func (m *ResourceSpans) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *ScopeSpans) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -1190,11 +1232,17 @@ func (m *ScopeSpans) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *ScopeSpans) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *ScopeSpans) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if len(m.SchemaUrl) > 0 {
 		i -= len(m.SchemaUrl)
@@ -1234,6 +1282,9 @@ func (m *ScopeSpans) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *Span_Event) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -1247,11 +1298,17 @@ func (m *Span_Event) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Span_Event) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *Span_Event) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if m.DroppedAttributesCount != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.DroppedAttributesCount))
@@ -1285,6 +1342,9 @@ func (m *Span_Event) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *Span_Link) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -1298,11 +1358,17 @@ func (m *Span_Link) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Span_Link) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *Span_Link) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if m.Flags != 0 {
 		i -= 4
@@ -1350,6 +1416,9 @@ func (m *Span_Link) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *Span) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -1363,11 +1432,17 @@ func (m *Span) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Span) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *Span) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if m.Flags != 0 {
 		i -= 4
@@ -1495,6 +1570,9 @@ func (m *Span) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *Status) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -1508,11 +1586,17 @@ func (m *Status) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Status) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *Status) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if m.Code != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.Code))

@@ -75,6 +75,9 @@ func (m *Resource) GetEntityRefs() []commonv1.EntityRef {
 }
 
 func (m *Resource) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	for i := range m.Attributes {
 		s := m.Attributes[i].Size()
@@ -91,6 +94,9 @@ func (m *Resource) Size() int {
 }
 
 func (m *Resource) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -104,11 +110,17 @@ func (m *Resource) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Resource) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *Resource) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	for iNdEx := len(m.EntityRefs) - 1; iNdEx >= 0; iNdEx-- {
 		size, err := m.EntityRefs[iNdEx].MarshalToSizedBuffer(dAtA[:i])
