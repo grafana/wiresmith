@@ -175,13 +175,17 @@ func (g *Generator) Generate(ctx context.Context) error {
 	// would otherwise silently clobber each other on disk — recursive scanning
 	// makes this collision possible where flat layouts could not produce it.
 	//
+	// Only consider files we'll actually emit (shouldGenerateFile filters out
+	// internal schemas and empty protos that emit no output, so they can't
+	// clobber a neighbour).
+	//
 	// Each proto emits two outputs (the main .pb.go and the companion
 	// _reflect.pb.go), so an input like foo_reflect.proto would generate
 	// foo_reflect.pb.go that collides with foo.proto's reflect companion.
 	// Check both paths against the same map.
 	outputs := make(map[string]string, 2*len(results))
 	for _, fd := range results {
-		if isInternalSchemaFile(fd) {
+		if !shouldGenerateFile(fd) {
 			continue
 		}
 		for _, outPath := range []string{g.outputPathFor(fd), g.outputReflectPathFor(fd)} {
@@ -194,7 +198,7 @@ func (g *Generator) Generate(ctx context.Context) error {
 	}
 
 	for _, fd := range results {
-		if isInternalSchemaFile(fd) {
+		if !shouldGenerateFile(fd) {
 			continue
 		}
 		if err := g.generateFile(fd); err != nil {
@@ -202,6 +206,17 @@ func (g *Generator) Generate(ctx context.Context) error {
 		}
 	}
 	return nil
+}
+
+// shouldGenerateFile reports whether fd contributes a .pb.go to the output.
+// Internal schema files (wiresmith.options) and proto files with no messages
+// or enums are skipped — the latter would emit only an empty init() plus
+// unused imports, which go build rejects.
+func shouldGenerateFile(fd protoreflect.FileDescriptor) bool {
+	if isInternalSchemaFile(fd) {
+		return false
+	}
+	return fd.Messages().Len() > 0 || fd.Enums().Len() > 0
 }
 
 // isInternalSchemaFile reports whether a compiled file is wiresmith-internal
@@ -293,13 +308,14 @@ func (g *Generator) collectGoPackages(results linker.Files) error {
 // and a default mapping shadowing an explicit go_package. Routing every file
 // through destFor (not just those with go_package set) is the part that
 // makes the cross-mode case visible.
+//
+// Files that won't emit are skipped: an empty .proto cannot collide on disk
+// with a non-empty proto resolving to the same Go dir, because it writes
+// nothing there. Including it would produce a false-positive collision error.
 func (g *Generator) validateDestinations(results linker.Files) error {
 	dirOwner := make(map[string]string)
 	for _, fd := range results {
-		// Skip the embedded options schema for the same reason
-		// collectGoPackages does — it doesn't produce output and shouldn't
-		// claim a destination on behalf of the wiresmith.options package.
-		if isInternalSchemaFile(fd) {
+		if !shouldGenerateFile(fd) {
 			continue
 		}
 		protoPkg := string(fd.Package())
