@@ -162,6 +162,9 @@ func (g *Generator) Generate(ctx context.Context) error {
 	if err := g.validatePointerOptions(results); err != nil {
 		return err
 	}
+	if err := g.validateNoValueCycles(results); err != nil {
+		return err
+	}
 
 	if err := g.collectGoPackages(results); err != nil {
 		return err
