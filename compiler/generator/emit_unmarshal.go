@@ -140,14 +140,17 @@ func (fg *FileGenerator) emitPreScan(md protoreflect.MessageDescriptor) {
 	fmt.Fprintf(fg.body, "\t\t\t\tpreIdx += int(preLen)\n")
 	fmt.Fprintf(fg.body, "\t\t\tcase 5:\n") // fixed32
 	fmt.Fprintf(fg.body, "\t\t\t\tpreIdx += 4\n")
-	// Wire types 3, 4, 6, 7 cannot appear in well-formed proto3 messages of
-	// known schema. The pre-scan is only an allocation hint (the main loop
-	// is the source of truth), so on an unknown wire type we abort by
-	// forcing preIdx out of bounds — the post-switch bounds check below
-	// then breaks the outer loop in the same iteration. This prevents
-	// SEC-2-style amplification where a single unknown-wire-type tag would
-	// otherwise leave preIdx un-advanced and let payload bytes be
-	// re-interpreted as more tags.
+	// Wire types 3/4 (proto2 groups) and 6/7 (reserved) are not produced
+	// by compliant proto3 encoders for this schema, and crucially the
+	// pre-scan does not know how to skip them: wire type 3 requires
+	// matching a corresponding end-group tag and 4/6/7 have no defined
+	// payload framing. The pre-scan is only an allocation hint (the main
+	// loop is the source of truth), so on an unknown wire type we abort
+	// by forcing preIdx out of bounds — the post-switch bounds check
+	// below then breaks the outer loop in the same iteration. This
+	// prevents SEC-2-style amplification where a single unknown-wire-type
+	// tag would otherwise leave preIdx un-advanced and let payload bytes
+	// be re-interpreted as more tags.
 	fmt.Fprintf(fg.body, "\t\t\tdefault:\n")
 	fmt.Fprintf(fg.body, "\t\t\t\tpreIdx = -1\n")
 	fmt.Fprintf(fg.body, "\t\t\t}\n")
