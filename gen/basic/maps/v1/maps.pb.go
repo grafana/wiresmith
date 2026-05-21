@@ -118,6 +118,9 @@ func (m *Inner) GetData() []byte {
 }
 
 func (m *MapBench) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	for k, v := range m.StringMap {
 		entrySize := 0
@@ -142,6 +145,9 @@ func (m *MapBench) Size() int {
 }
 
 func (m *Inner) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	if len(m.Name) > 0 {
 		n += 1 + protowire.SizeVarint(uint64(len(m.Name))) + len(m.Name)
@@ -156,6 +162,9 @@ func (m *Inner) Size() int {
 }
 
 func (m *MapBench) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -169,11 +178,17 @@ func (m *MapBench) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *MapBench) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *MapBench) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	for k, v := range m.MessageMap {
 		baseI := i
@@ -226,6 +241,9 @@ func (m *MapBench) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *Inner) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -239,11 +257,17 @@ func (m *Inner) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Inner) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *Inner) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if len(m.Data) > 0 {
 		i -= len(m.Data)

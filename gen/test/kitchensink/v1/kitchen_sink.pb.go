@@ -1395,6 +1395,9 @@ func (m *AllMaps) GetMapStringEnum() map[string]Color {
 }
 
 func (m *AllScalars) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	if math.Float64bits(m.FieldDouble) != 0 {
 		n += 9
@@ -1445,6 +1448,9 @@ func (m *AllScalars) Size() int {
 }
 
 func (m *AllOptionalScalars) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	if m.FieldDouble != nil {
 		n += 9
@@ -1495,6 +1501,9 @@ func (m *AllOptionalScalars) Size() int {
 }
 
 func (m *AllRepeatedScalars) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	if len(m.FieldDouble) > 0 {
 		dataLen := len(m.FieldDouble) * 8
@@ -1576,6 +1585,9 @@ func (m *AllRepeatedScalars) Size() int {
 }
 
 func (m *OneofVariants) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	switch v := m.Value.(type) {
 	case *OneofVariants_DoubleValue:
@@ -1622,6 +1634,9 @@ func (m *OneofVariants) Size() int {
 }
 
 func (m *Outer) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	{
 		s := m.Middle.Size()
@@ -1642,6 +1657,9 @@ func (m *Outer) Size() int {
 }
 
 func (m *Middle) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	{
 		s := m.Inner.Size()
@@ -1662,6 +1680,9 @@ func (m *Middle) Size() int {
 }
 
 func (m *Inner) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	if len(m.Data) > 0 {
 		n += 1 + protowire.SizeVarint(uint64(len(m.Data))) + len(m.Data)
@@ -1679,6 +1700,9 @@ func (m *Inner) Size() int {
 }
 
 func (m *HighFieldNumbers) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	if len(m.Field1) > 0 {
 		n += 1 + protowire.SizeVarint(uint64(len(m.Field1))) + len(m.Field1)
@@ -1699,6 +1723,9 @@ func (m *HighFieldNumbers) Size() int {
 }
 
 func (m *WithEnum) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	if m.Color != 0 {
 		n += 1 + protowire.SizeVarint(uint64(m.Color))
@@ -1714,11 +1741,17 @@ func (m *WithEnum) Size() int {
 }
 
 func (m *Empty) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	return n
 }
 
 func (m *OnlyRepeated) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	for _, v := range m.Names {
 		n += 1 + protowire.SizeVarint(uint64(len(v))) + len(v)
@@ -1738,6 +1771,9 @@ func (m *OnlyRepeated) Size() int {
 }
 
 func (m *Container) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	{
 		s := m.Variant.Size()
@@ -1763,6 +1799,9 @@ func (m *Container) Size() int {
 }
 
 func (m *AllMaps) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	for k, v := range m.MapInt32Int32 {
 		entrySize := 0
@@ -1871,6 +1910,9 @@ func (m *AllMaps) Size() int {
 }
 
 func (m *AllScalars) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -1884,11 +1926,17 @@ func (m *AllScalars) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *AllScalars) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *AllScalars) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if len(m.FieldBytes) > 0 {
 		i -= len(m.FieldBytes)
@@ -1984,6 +2032,9 @@ func (m *AllScalars) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *AllOptionalScalars) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -1997,11 +2048,17 @@ func (m *AllOptionalScalars) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *AllOptionalScalars) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *AllOptionalScalars) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if m.FieldBytes != nil {
 		i -= len(m.FieldBytes)
@@ -2099,6 +2156,9 @@ func (m *AllOptionalScalars) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *AllRepeatedScalars) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -2112,11 +2172,17 @@ func (m *AllRepeatedScalars) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *AllRepeatedScalars) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *AllRepeatedScalars) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	for iNdEx := len(m.FieldBytes) - 1; iNdEx >= 0; iNdEx-- {
 		i -= len(m.FieldBytes[iNdEx])
@@ -2265,6 +2331,9 @@ func (m *AllRepeatedScalars) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *OneofVariants) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -2278,11 +2347,17 @@ func (m *OneofVariants) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *OneofVariants) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *OneofVariants) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	switch v := m.Value.(type) {
 	case *OneofVariants_BytesValue:
@@ -2365,6 +2440,9 @@ func (m *OneofVariants) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *Outer) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -2378,11 +2456,17 @@ func (m *Outer) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Outer) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *Outer) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if len(m.Name) > 0 {
 		i -= len(m.Name)
@@ -2422,6 +2506,9 @@ func (m *Outer) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *Middle) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -2435,11 +2522,17 @@ func (m *Middle) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Middle) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *Middle) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if m.Value != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.Value))
@@ -2477,6 +2570,9 @@ func (m *Middle) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *Inner) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -2490,11 +2586,17 @@ func (m *Inner) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Inner) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *Inner) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if m.FixedVal != 0 {
 		i -= 4
@@ -2525,6 +2627,9 @@ func (m *Inner) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *HighFieldNumbers) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -2538,11 +2643,17 @@ func (m *HighFieldNumbers) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *HighFieldNumbers) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *HighFieldNumbers) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if len(m.Field16384) > 0 {
 		i -= len(m.Field16384)
@@ -2595,6 +2706,9 @@ func (m *HighFieldNumbers) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *WithEnum) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -2608,11 +2722,17 @@ func (m *WithEnum) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *WithEnum) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *WithEnum) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if len(m.Colors) > 0 {
 		var j int
@@ -2633,6 +2753,9 @@ func (m *WithEnum) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *Empty) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -2646,16 +2769,25 @@ func (m *Empty) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Empty) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *Empty) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	return len(dAtA) - i, nil
 }
 
 func (m *OnlyRepeated) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -2669,11 +2801,17 @@ func (m *OnlyRepeated) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *OnlyRepeated) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *OnlyRepeated) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	for iNdEx := len(m.Items) - 1; iNdEx >= 0; iNdEx-- {
 		size, err := m.Items[iNdEx].MarshalToSizedBuffer(dAtA[:i])
@@ -2706,6 +2844,9 @@ func (m *OnlyRepeated) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *Container) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -2719,11 +2860,17 @@ func (m *Container) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Container) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *Container) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	for iNdEx := len(m.Variants) - 1; iNdEx >= 0; iNdEx-- {
 		size, err := m.Variants[iNdEx].MarshalToSizedBuffer(dAtA[:i])
@@ -2773,6 +2920,9 @@ func (m *Container) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *AllMaps) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -2786,11 +2936,17 @@ func (m *AllMaps) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *AllMaps) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *AllMaps) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	for k, v := range m.MapStringEnum {
 		baseI := i

@@ -238,6 +238,9 @@ func (m *EnumContainer) GetSignedMap() map[string]SignedEnum {
 }
 
 func (m *WithNestedEnum) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	if m.Priority != 0 {
 		n += 1 + protowire.SizeVarint(uint64(m.Priority))
@@ -256,6 +259,9 @@ func (m *WithNestedEnum) Size() int {
 }
 
 func (m *EnumContainer) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	if m.Aliased != 0 {
 		n += 1 + protowire.SizeVarint(uint64(m.Aliased))
@@ -283,6 +289,9 @@ func (m *EnumContainer) Size() int {
 }
 
 func (m *WithNestedEnum) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -296,11 +305,17 @@ func (m *WithNestedEnum) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *WithNestedEnum) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *WithNestedEnum) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if len(m.Name) > 0 {
 		i -= len(m.Name)
@@ -328,6 +343,9 @@ func (m *WithNestedEnum) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *EnumContainer) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -341,11 +359,17 @@ func (m *EnumContainer) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *EnumContainer) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *EnumContainer) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	for k, v := range m.SignedMap {
 		baseI := i

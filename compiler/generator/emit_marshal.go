@@ -15,6 +15,7 @@ func (fg *FileGenerator) emitMarshal(md protoreflect.MessageDescriptor) {
 
 	// Marshal allocates and returns the encoded bytes.
 	fmt.Fprintf(fg.body, "func (m *%s) Marshal() (dAtA []byte, err error) {\n", name)
+	fmt.Fprintf(fg.body, "\tif m == nil {\n\t\treturn nil, nil\n\t}\n")
 	fmt.Fprintf(fg.body, "\tsize := m.Size()\n")
 	fmt.Fprintf(fg.body, "\tdAtA = make([]byte, size)\n")
 	fmt.Fprintf(fg.body, "\tif size == 0 {\n\t\treturn dAtA, nil\n\t}\n")
@@ -25,6 +26,7 @@ func (fg *FileGenerator) emitMarshal(md protoreflect.MessageDescriptor) {
 
 	// MarshalTo writes the message into dAtA.
 	fmt.Fprintf(fg.body, "func (m *%s) MarshalTo(dAtA []byte) (int, error) {\n", name)
+	fmt.Fprintf(fg.body, "\tif m == nil {\n\t\treturn 0, nil\n\t}\n")
 	fmt.Fprintf(fg.body, "\tsize := m.Size()\n")
 	fmt.Fprintf(fg.body, "\treturn m.MarshalToSizedBuffer(dAtA[:size])\n")
 	fmt.Fprintf(fg.body, "}\n\n")
@@ -32,6 +34,7 @@ func (fg *FileGenerator) emitMarshal(md protoreflect.MessageDescriptor) {
 	// MarshalToSizedBuffer writes the message backwards into dAtA.
 	// Returns the number of bytes written.
 	fmt.Fprintf(fg.body, "func (m *%s) MarshalToSizedBuffer(dAtA []byte) (int, error) {\n", name)
+	fmt.Fprintf(fg.body, "\tif m == nil {\n\t\treturn 0, nil\n\t}\n")
 	fmt.Fprintf(fg.body, "\ti := len(dAtA)\n")
 
 	// Collect fields sorted by number descending for reverse-write.

@@ -282,6 +282,9 @@ func (m *CrossRef) GetTag() string {
 }
 
 func (m *Level0_Level1_Level2_Level3) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	if len(m.DeepValue) > 0 {
 		n += 1 + protowire.SizeVarint(uint64(len(m.DeepValue))) + len(m.DeepValue)
@@ -293,6 +296,9 @@ func (m *Level0_Level1_Level2_Level3) Size() int {
 }
 
 func (m *Level0_Level1_Level2) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	{
 		s := m.Child.Size()
@@ -309,6 +315,9 @@ func (m *Level0_Level1_Level2) Size() int {
 }
 
 func (m *Level0_Level1) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	{
 		s := m.Child.Size()
@@ -329,6 +338,9 @@ func (m *Level0_Level1) Size() int {
 }
 
 func (m *Level0) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	{
 		s := m.Child.Size()
@@ -345,6 +357,9 @@ func (m *Level0) Size() int {
 }
 
 func (m *CrossRef) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	{
 		s := m.NestedRef.Size()
@@ -369,6 +384,9 @@ func (m *CrossRef) Size() int {
 }
 
 func (m *Level0_Level1_Level2_Level3) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -382,11 +400,17 @@ func (m *Level0_Level1_Level2_Level3) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Level0_Level1_Level2_Level3) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *Level0_Level1_Level2_Level3) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if m.Depth != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.Depth))
@@ -404,6 +428,9 @@ func (m *Level0_Level1_Level2_Level3) MarshalToSizedBuffer(dAtA []byte) (int, er
 }
 
 func (m *Level0_Level1_Level2) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -417,11 +444,17 @@ func (m *Level0_Level1_Level2) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Level0_Level1_Level2) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *Level0_Level1_Level2) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if len(m.Value) > 0 {
 		i -= len(m.Value)
@@ -451,6 +484,9 @@ func (m *Level0_Level1_Level2) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *Level0_Level1) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -464,11 +500,17 @@ func (m *Level0_Level1) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Level0_Level1) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *Level0_Level1) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if len(m.Value) > 0 {
 		i -= len(m.Value)
@@ -508,6 +550,9 @@ func (m *Level0_Level1) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *Level0) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -521,11 +566,17 @@ func (m *Level0) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Level0) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *Level0) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if len(m.Label) > 0 {
 		i -= len(m.Label)
@@ -555,6 +606,9 @@ func (m *Level0) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *CrossRef) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -568,11 +622,17 @@ func (m *CrossRef) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *CrossRef) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *CrossRef) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if len(m.Tag) > 0 {
 		i -= len(m.Tag)

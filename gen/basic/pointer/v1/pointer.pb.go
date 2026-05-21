@@ -135,6 +135,9 @@ func (m *PointerHolder) GetTail() *Leaf {
 }
 
 func (m *Leaf) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	if m.Id != 0 {
 		n += 1 + protowire.SizeVarint(uint64(m.Id))
@@ -146,6 +149,9 @@ func (m *Leaf) Size() int {
 }
 
 func (m *PointerHolder) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	if len(m.Name) > 0 {
 		n += 1 + protowire.SizeVarint(uint64(len(m.Name))) + len(m.Name)
@@ -173,6 +179,9 @@ func (m *PointerHolder) Size() int {
 }
 
 func (m *Leaf) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -186,11 +195,17 @@ func (m *Leaf) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Leaf) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *Leaf) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if len(m.Name) > 0 {
 		i -= len(m.Name)
@@ -208,6 +223,9 @@ func (m *Leaf) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *PointerHolder) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -221,11 +239,17 @@ func (m *PointerHolder) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *PointerHolder) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *PointerHolder) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	{
 		size, err := m.Tail.MarshalToSizedBuffer(dAtA[:i])

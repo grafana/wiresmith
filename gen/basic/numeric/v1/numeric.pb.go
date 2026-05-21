@@ -1351,6 +1351,9 @@ func (m *WideFields) GetF70() bool {
 }
 
 func (m *UnpackedScalars) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	n += len(m.FieldDouble) * 9
 	n += len(m.FieldFloat) * 5
@@ -1381,6 +1384,9 @@ func (m *UnpackedScalars) Size() int {
 }
 
 func (m *MixedModifiers) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	if m.RegularInt != 0 {
 		n += 1 + protowire.SizeVarint(uint64(m.RegularInt))
@@ -1427,6 +1433,9 @@ func (m *MixedModifiers) Size() int {
 }
 
 func (m *WideFields) Size() int {
+	if m == nil {
+		return 0
+	}
 	var n int
 	if len(m.F1) > 0 {
 		n += 1 + protowire.SizeVarint(uint64(len(m.F1))) + len(m.F1)
@@ -1642,6 +1651,9 @@ func (m *WideFields) Size() int {
 }
 
 func (m *UnpackedScalars) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -1655,11 +1667,17 @@ func (m *UnpackedScalars) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *UnpackedScalars) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *UnpackedScalars) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	for iNdEx := len(m.FieldBool) - 1; iNdEx >= 0; iNdEx-- {
 		i--
@@ -1741,6 +1759,9 @@ func (m *UnpackedScalars) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *MixedModifiers) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -1754,11 +1775,17 @@ func (m *MixedModifiers) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *MixedModifiers) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *MixedModifiers) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	for iNdEx := len(m.RepeatedBytes) - 1; iNdEx >= 0; iNdEx-- {
 		i -= len(m.RepeatedBytes[iNdEx])
@@ -1847,6 +1874,9 @@ func (m *MixedModifiers) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *WideFields) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
 	size := m.Size()
 	dAtA = make([]byte, size)
 	if size == 0 {
@@ -1860,11 +1890,17 @@ func (m *WideFields) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *WideFields) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *WideFields) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
 	i := len(dAtA)
 	if m.F70 {
 		i--
