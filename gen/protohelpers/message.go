@@ -122,9 +122,14 @@ func panicReflect() {
 // wiresmithMethods is the fast-path Methods table returned by ProtoMethods.
 // Operations delegate to the wiresmith-generated methods on the underlying
 // struct, avoiding field-level reflection entirely.
+//
+// SupportMarshalDeterministic is intentionally NOT advertised: wiresmith's
+// generated MarshalToSizedBuffer ranges over Go maps in insertion-iteration
+// order, so the output is not byte-stable across runs when map fields are
+// present. A caller requesting MarshalOptions.Deterministic=true will fall
+// off the fast path and hit our field-reflection panic — a loud failure
+// instead of a silent lie.
 var wiresmithMethods = &protoiface.Methods{
-	Flags: protoiface.SupportMarshalDeterministic,
-
 	Size: func(in protoiface.SizeInput) protoiface.SizeOutput {
 		mr, ok := in.Message.(*MessageReflect)
 		if !ok || !mr.IsValid() {

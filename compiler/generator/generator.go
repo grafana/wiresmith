@@ -174,17 +174,23 @@ func (g *Generator) Generate(ctx context.Context) error {
 	// protos in different directories with the same package and same basename
 	// would otherwise silently clobber each other on disk — recursive scanning
 	// makes this collision possible where flat layouts could not produce it.
-	outputs := make(map[string]string, len(results))
+	//
+	// Each proto emits two outputs (the main .pb.go and the companion
+	// _reflect.pb.go), so an input like foo_reflect.proto would generate
+	// foo_reflect.pb.go that collides with foo.proto's reflect companion.
+	// Check both paths against the same map.
+	outputs := make(map[string]string, 2*len(results))
 	for _, fd := range results {
 		if isInternalSchemaFile(fd) {
 			continue
 		}
-		outPath := g.outputPathFor(fd)
-		if prev, exists := outputs[outPath]; exists {
-			return fmt.Errorf("output collision at %s: %q and %q produce the same file (same package %q + basename)",
-				outPath, prev, fd.Path(), fd.Package())
+		for _, outPath := range []string{g.outputPathFor(fd), g.outputReflectPathFor(fd)} {
+			if prev, exists := outputs[outPath]; exists {
+				return fmt.Errorf("output collision at %s: %q and %q both write to this path (proto package %q)",
+					outPath, prev, fd.Path(), fd.Package())
+			}
+			outputs[outPath] = fd.Path()
 		}
-		outputs[outPath] = fd.Path()
 	}
 
 	for _, fd := range results {
