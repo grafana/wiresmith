@@ -3965,7 +3965,7 @@ func (m *AllRepeatedScalars) unmarshal(dAtA []byte, depth int) error {
 			case 5:
 				preIdx += 4
 			default:
-				break
+				preIdx = -1
 			}
 			if preIdx < 0 || preIdx > l {
 				break
@@ -5353,7 +5353,7 @@ func (m *Outer) unmarshal(dAtA []byte, depth int) error {
 			case 5:
 				preIdx += 4
 			default:
-				break
+				preIdx = -1
 			}
 			if preIdx < 0 || preIdx > l {
 				break
@@ -5576,7 +5576,7 @@ func (m *Middle) unmarshal(dAtA []byte, depth int) error {
 			case 5:
 				preIdx += 4
 			default:
-				break
+				preIdx = -1
 			}
 			if preIdx < 0 || preIdx > l {
 				break
@@ -6379,7 +6379,7 @@ func (m *OnlyRepeated) unmarshal(dAtA []byte, depth int) error {
 			case 5:
 				preIdx += 4
 			default:
-				break
+				preIdx = -1
 			}
 			if preIdx < 0 || preIdx > l {
 				break
@@ -6635,7 +6635,7 @@ func (m *Container) unmarshal(dAtA []byte, depth int) error {
 			case 5:
 				preIdx += 4
 			default:
-				break
+				preIdx = -1
 			}
 			if preIdx < 0 || preIdx > l {
 				break
@@ -6908,7 +6908,7 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			case 5:
 				preIdx += 4
 			default:
-				break
+				preIdx = -1
 			}
 			if preIdx < 0 || preIdx > l {
 				break

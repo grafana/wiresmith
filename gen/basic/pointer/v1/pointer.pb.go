@@ -510,7 +510,7 @@ func (m *PointerHolder) unmarshal(dAtA []byte, depth int) error {
 			case 5:
 				preIdx += 4
 			default:
-				break
+				preIdx = -1
 			}
 			if preIdx < 0 || preIdx > l {
 				break

@@ -1652,7 +1652,7 @@ func (m *TracesData) unmarshal(dAtA []byte, depth int) error {
 			case 5:
 				preIdx += 4
 			default:
-				break
+				preIdx = -1
 			}
 			if preIdx < 0 || preIdx > l {
 				break
@@ -1797,7 +1797,7 @@ func (m *ResourceSpans) unmarshal(dAtA []byte, depth int) error {
 			case 5:
 				preIdx += 4
 			default:
-				break
+				preIdx = -1
 			}
 			if preIdx < 0 || preIdx > l {
 				break
@@ -2020,7 +2020,7 @@ func (m *ScopeSpans) unmarshal(dAtA []byte, depth int) error {
 			case 5:
 				preIdx += 4
 			default:
-				break
+				preIdx = -1
 			}
 			if preIdx < 0 || preIdx > l {
 				break
@@ -2243,7 +2243,7 @@ func (m *Span_Event) unmarshal(dAtA []byte, depth int) error {
 			case 5:
 				preIdx += 4
 			default:
-				break
+				preIdx = -1
 			}
 			if preIdx < 0 || preIdx > l {
 				break
@@ -2468,7 +2468,7 @@ func (m *Span_Link) unmarshal(dAtA []byte, depth int) error {
 			case 5:
 				preIdx += 4
 			default:
-				break
+				preIdx = -1
 			}
 			if preIdx < 0 || preIdx > l {
 				break
@@ -2775,7 +2775,7 @@ func (m *Span) unmarshal(dAtA []byte, depth int) error {
 			case 5:
 				preIdx += 4
 			default:
-				break
+				preIdx = -1
 			}
 			if preIdx < 0 || preIdx > l {
 				break
