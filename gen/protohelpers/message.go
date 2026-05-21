@@ -10,10 +10,10 @@ import (
 	"google.golang.org/protobuf/runtime/protoimpl"
 )
 
-// Wiremessage is the interface implemented by every wiresmith-generated
+// WireMessage is the interface implemented by every wiresmith-generated
 // message type. It exposes the fast-path serialization methods that
 // MessageReflect.ProtoMethods delegates to.
-type Wiremessage interface {
+type WireMessage interface {
 	protoreflect.ProtoMessage
 	Marshal() ([]byte, error)
 	MarshalTo(buf []byte) (int, error)
@@ -40,12 +40,12 @@ type Wiremessage interface {
 // they go through ProtoMethods rather than field-level reflection.
 type MessageReflect struct {
 	mi  *protoimpl.MessageInfo
-	msg Wiremessage
+	msg WireMessage
 }
 
 // NewMessageReflect returns a protoreflect.Message wrapping a wiresmith-generated
 // message. Called from generated ProtoReflect() methods.
-func NewMessageReflect(mi *protoimpl.MessageInfo, msg Wiremessage) protoreflect.Message {
+func NewMessageReflect(mi *protoimpl.MessageInfo, msg WireMessage) protoreflect.Message {
 	return &MessageReflect{mi: mi, msg: msg}
 }
 
@@ -77,12 +77,12 @@ func (m *MessageReflect) New() protoreflect.Message {
 	if t.Kind() != reflect.Pointer {
 		panic(fmt.Sprintf("wiresmith: MessageReflect wraps non-pointer %T", m.msg))
 	}
-	fresh := reflect.New(t.Elem()).Interface().(Wiremessage)
+	fresh := reflect.New(t.Elem()).Interface().(WireMessage)
 	return NewMessageReflect(m.mi, fresh)
 }
 
 // IsValid reports whether the message holds a non-nil pointer. It detects
-// typed-nil interfaces (e.g. (*Resource)(nil) wrapped in Wiremessage) which
+// typed-nil interfaces (e.g. (*Resource)(nil) wrapped in WireMessage) which
 // would otherwise compare as non-nil through the interface.
 func (m *MessageReflect) IsValid() bool {
 	if m == nil || m.msg == nil {
