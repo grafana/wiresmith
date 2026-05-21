@@ -3886,6 +3886,9 @@ func (m *AllOptionalScalars) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.FieldBytes = append(m.FieldBytes[:0], dAtA[iNdEx:postIndex]...)
 			iNdEx = postIndex
+			if m.FieldBytes == nil {
+				m.FieldBytes = []byte{}
+			}
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {

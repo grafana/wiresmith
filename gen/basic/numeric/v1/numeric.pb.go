@@ -3855,6 +3855,9 @@ func (m *MixedModifiers) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.OptionalBytes = append(m.OptionalBytes[:0], dAtA[iNdEx:postIndex]...)
 			iNdEx = postIndex
+			if m.OptionalBytes == nil {
+				m.OptionalBytes = []byte{}
+			}
 		case 12: // repeated_bytes
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
