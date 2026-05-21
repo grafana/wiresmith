@@ -1034,7 +1034,7 @@ func (m *LogsData) unmarshal(dAtA []byte, depth int) error {
 			case 5:
 				preIdx += 4
 			default:
-				break
+				preIdx = -1
 			}
 			if preIdx < 0 || preIdx > l {
 				break
@@ -1179,7 +1179,7 @@ func (m *ResourceLogs) unmarshal(dAtA []byte, depth int) error {
 			case 5:
 				preIdx += 4
 			default:
-				break
+				preIdx = -1
 			}
 			if preIdx < 0 || preIdx > l {
 				break
@@ -1402,7 +1402,7 @@ func (m *ScopeLogs) unmarshal(dAtA []byte, depth int) error {
 			case 5:
 				preIdx += 4
 			default:
-				break
+				preIdx = -1
 			}
 			if preIdx < 0 || preIdx > l {
 				break
@@ -1625,7 +1625,7 @@ func (m *LogRecord) unmarshal(dAtA []byte, depth int) error {
 			case 5:
 				preIdx += 4
 			default:
-				break
+				preIdx = -1
 			}
 			if preIdx < 0 || preIdx > l {
 				break

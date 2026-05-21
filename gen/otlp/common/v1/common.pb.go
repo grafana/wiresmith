@@ -1289,7 +1289,7 @@ func (m *ArrayValue) unmarshal(dAtA []byte, depth int) error {
 			case 5:
 				preIdx += 4
 			default:
-				break
+				preIdx = -1
 			}
 			if preIdx < 0 || preIdx > l {
 				break
@@ -1434,7 +1434,7 @@ func (m *KeyValueList) unmarshal(dAtA []byte, depth int) error {
 			case 5:
 				preIdx += 4
 			default:
-				break
+				preIdx = -1
 			}
 			if preIdx < 0 || preIdx > l {
 				break
@@ -1729,7 +1729,7 @@ func (m *InstrumentationScope) unmarshal(dAtA []byte, depth int) error {
 			case 5:
 				preIdx += 4
 			default:
-				break
+				preIdx = -1
 			}
 			if preIdx < 0 || preIdx > l {
 				break
@@ -1979,7 +1979,7 @@ func (m *EntityRef) unmarshal(dAtA []byte, depth int) error {
 			case 5:
 				preIdx += 4
 			default:
-				break
+				preIdx = -1
 			}
 			if preIdx < 0 || preIdx > l {
 				break
