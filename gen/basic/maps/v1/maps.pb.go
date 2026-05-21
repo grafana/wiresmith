@@ -1104,8 +1104,3 @@ func (this *Inner) Equal(that interface{}) bool {
 	}
 	return true
 }
-
-func init() {
-	protohelpers.RegisterType((*MapBench)(nil), "basic.maps.v1.MapBench")
-	protohelpers.RegisterType((*Inner)(nil), "basic.maps.v1.Inner")
-}

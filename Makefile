@@ -38,16 +38,17 @@ build: ## Build all packages
 	go build ./...
 
 test: ## Run correctness tests
-	go test ./test/... -v
+	GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn go test ./test/... -v
 
 coverage: ## Run tests with coverage report
-	go test ./test/... ./compiler/... -coverpkg=./compiler/...,./gen/protohelpers/... -coverprofile=coverage.out
+	GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn go test ./test/... ./compiler/... -coverpkg=./compiler/...,./gen/protohelpers/... -coverprofile=coverage.out
 	go tool cover -func=coverage.out
 	@echo ""
 	@echo "HTML report: go tool cover -html=coverage.out"
 
 fuzz: ## Fuzz all targets (30s each) — auto-discovers Fuzz* functions in ./test/fuzz/
-	@targets=$$(go test ./test/fuzz/ -list '^Fuzz' | grep '^Fuzz'); \
+	@targets=$$(GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn \
+		go test ./test/fuzz/ -list '^Fuzz' | grep '^Fuzz'); \
 	if [ -z "$$targets" ]; then \
 		echo "No fuzz targets found in ./test/fuzz/"; exit 1; \
 	fi; \

@@ -28,7 +28,7 @@ wiresmith \
 - `Reset()`, `ProtoMessage()`, `String()` on all messages — #34, #35
 - Enum name maps (`_name`/`_value`) and `String()` method — #35
 - `.pb.go` output file suffix — #35
-- Type registration via `protohelpers.RegisterType`/`RegisterEnum` in `init()` — #35
+- File descriptor + type registration with `protoregistry.GlobalFiles`/`GlobalTypes` in `init()`, `ProtoReflect()` on messages, `protoreflect.Enum` on enums — #35
 
 ## Compiler Changes (remaining)
 

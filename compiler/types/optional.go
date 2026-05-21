@@ -27,6 +27,13 @@ func (o *OptionalField) EmitUnmarshal(e Emitter, access string, ctx FieldContext
 	// Types where optional is same as singular (bytes: []byte is nullable).
 	if o.Inner.OptionalAccess("x") == "x" {
 		o.Inner.EmitUnmarshal(e, access, ctx)
+		// For optional bytes, `append([]byte(nil)[:0], ...empty)` evaluates
+		// to nil — indistinguishable from "field absent" at re-marshal time.
+		// Normalize to a non-nil empty slice so presence survives a round
+		// trip when the wire payload is zero-length.
+		if _, isBytes := o.Inner.(*BytesType); isBytes {
+			e.Writef("\t\t\tif %s == nil {\n\t\t\t\t%s = []byte{}\n\t\t\t}\n", access, access)
+		}
 		return
 	}
 	o.Inner.EmitConsume(e)

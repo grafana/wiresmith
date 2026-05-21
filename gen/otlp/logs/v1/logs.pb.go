@@ -2164,12 +2164,3 @@ func (this *LogRecord) Equal(that interface{}) bool {
 	}
 	return true
 }
-
-func init() {
-	protohelpers.RegisterEnum("opentelemetry.proto.logs.v1.SeverityNumber", SeverityNumber_name, SeverityNumber_value)
-	protohelpers.RegisterEnum("opentelemetry.proto.logs.v1.LogRecordFlags", LogRecordFlags_name, LogRecordFlags_value)
-	protohelpers.RegisterType((*LogsData)(nil), "opentelemetry.proto.logs.v1.LogsData")
-	protohelpers.RegisterType((*ResourceLogs)(nil), "opentelemetry.proto.logs.v1.ResourceLogs")
-	protohelpers.RegisterType((*ScopeLogs)(nil), "opentelemetry.proto.logs.v1.ScopeLogs")
-	protohelpers.RegisterType((*LogRecord)(nil), "opentelemetry.proto.logs.v1.LogRecord")
-}

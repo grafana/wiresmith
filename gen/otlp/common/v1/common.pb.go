@@ -2446,12 +2446,3 @@ func (this *EntityRef) Equal(that interface{}) bool {
 	}
 	return true
 }
-
-func init() {
-	protohelpers.RegisterType((*AnyValue)(nil), "opentelemetry.proto.common.v1.AnyValue")
-	protohelpers.RegisterType((*ArrayValue)(nil), "opentelemetry.proto.common.v1.ArrayValue")
-	protohelpers.RegisterType((*KeyValueList)(nil), "opentelemetry.proto.common.v1.KeyValueList")
-	protohelpers.RegisterType((*KeyValue)(nil), "opentelemetry.proto.common.v1.KeyValue")
-	protohelpers.RegisterType((*InstrumentationScope)(nil), "opentelemetry.proto.common.v1.InstrumentationScope")
-	protohelpers.RegisterType((*EntityRef)(nil), "opentelemetry.proto.common.v1.EntityRef")
-}

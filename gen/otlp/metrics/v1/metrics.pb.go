@@ -7777,24 +7777,3 @@ func (this *Exemplar) Equal(that interface{}) bool {
 	}
 	return true
 }
-
-func init() {
-	protohelpers.RegisterEnum("opentelemetry.proto.metrics.v1.AggregationTemporality", AggregationTemporality_name, AggregationTemporality_value)
-	protohelpers.RegisterEnum("opentelemetry.proto.metrics.v1.DataPointFlags", DataPointFlags_name, DataPointFlags_value)
-	protohelpers.RegisterType((*MetricsData)(nil), "opentelemetry.proto.metrics.v1.MetricsData")
-	protohelpers.RegisterType((*ResourceMetrics)(nil), "opentelemetry.proto.metrics.v1.ResourceMetrics")
-	protohelpers.RegisterType((*ScopeMetrics)(nil), "opentelemetry.proto.metrics.v1.ScopeMetrics")
-	protohelpers.RegisterType((*Metric)(nil), "opentelemetry.proto.metrics.v1.Metric")
-	protohelpers.RegisterType((*Gauge)(nil), "opentelemetry.proto.metrics.v1.Gauge")
-	protohelpers.RegisterType((*Sum)(nil), "opentelemetry.proto.metrics.v1.Sum")
-	protohelpers.RegisterType((*Histogram)(nil), "opentelemetry.proto.metrics.v1.Histogram")
-	protohelpers.RegisterType((*ExponentialHistogram)(nil), "opentelemetry.proto.metrics.v1.ExponentialHistogram")
-	protohelpers.RegisterType((*Summary)(nil), "opentelemetry.proto.metrics.v1.Summary")
-	protohelpers.RegisterType((*NumberDataPoint)(nil), "opentelemetry.proto.metrics.v1.NumberDataPoint")
-	protohelpers.RegisterType((*HistogramDataPoint)(nil), "opentelemetry.proto.metrics.v1.HistogramDataPoint")
-	protohelpers.RegisterType((*ExponentialHistogramDataPoint_Buckets)(nil), "opentelemetry.proto.metrics.v1.ExponentialHistogramDataPoint.Buckets")
-	protohelpers.RegisterType((*ExponentialHistogramDataPoint)(nil), "opentelemetry.proto.metrics.v1.ExponentialHistogramDataPoint")
-	protohelpers.RegisterType((*SummaryDataPoint_ValueAtQuantile)(nil), "opentelemetry.proto.metrics.v1.SummaryDataPoint.ValueAtQuantile")
-	protohelpers.RegisterType((*SummaryDataPoint)(nil), "opentelemetry.proto.metrics.v1.SummaryDataPoint")
-	protohelpers.RegisterType((*Exemplar)(nil), "opentelemetry.proto.metrics.v1.Exemplar")
-}

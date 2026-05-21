@@ -69,6 +69,33 @@ func TestMixedModifiers_ZeroValueOptionals(t *testing.T) {
 	roundTrip(t, msg)
 }
 
+// TestMixedModifiers_OptionalBytes_EmptyPresence covers a wire shape that
+// fuzzing surfaced: an optional_bytes field that appears twice — first with
+// a payload, then with length zero. The second pass left OptionalBytes as
+// `[]byte{}` (non-nil empty), which encodes to 2 bytes (tag + len 0) but
+// the naive `append(nil[:0], emptySrc...)` from a fresh message yields nil,
+// so a re-unmarshal of the re-marshaled bytes dropped presence and emitted
+// 0 bytes the second time.
+func TestMixedModifiers_OptionalBytes_EmptyPresence(t *testing.T) {
+	// Wire: optional_bytes=[0xff], then optional_bytes=[].
+	wire := []byte{0x5a, 0x01, 0xff, 0x5a, 0x00}
+	m1 := &num.MixedModifiers{}
+	require.NoError(t, m1.Unmarshal(wire))
+	require.NotNil(t, m1.OptionalBytes, "after second-pass empty append, OptionalBytes must remain present")
+	assert.Equal(t, 0, len(m1.OptionalBytes))
+
+	b1, err := m1.Marshal()
+	require.NoError(t, err)
+
+	m2 := &num.MixedModifiers{}
+	require.NoError(t, m2.Unmarshal(b1))
+	require.NotNil(t, m2.OptionalBytes, "second unmarshal must preserve presence")
+
+	b2, err := m2.Marshal()
+	require.NoError(t, err)
+	assert.Equal(t, b1, b2, "round-trip must be byte-stable")
+}
+
 func TestWideFields_BitmapBoundary(t *testing.T) {
 	msg := &num.WideFields{
 		F1:  "first",

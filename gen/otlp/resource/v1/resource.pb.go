@@ -459,7 +459,3 @@ func (this *Resource) Equal(that interface{}) bool {
 	}
 	return true
 }
-
-func init() {
-	protohelpers.RegisterType((*Resource)(nil), "opentelemetry.proto.resource.v1.Resource")
-}

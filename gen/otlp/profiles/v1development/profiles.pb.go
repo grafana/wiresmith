@@ -6041,20 +6041,3 @@ func (this *KeyValueAndUnit) Equal(that interface{}) bool {
 	}
 	return true
 }
-
-func init() {
-	protohelpers.RegisterType((*ProfilesDictionary)(nil), "opentelemetry.proto.profiles.v1development.ProfilesDictionary")
-	protohelpers.RegisterType((*ProfilesData)(nil), "opentelemetry.proto.profiles.v1development.ProfilesData")
-	protohelpers.RegisterType((*ResourceProfiles)(nil), "opentelemetry.proto.profiles.v1development.ResourceProfiles")
-	protohelpers.RegisterType((*ScopeProfiles)(nil), "opentelemetry.proto.profiles.v1development.ScopeProfiles")
-	protohelpers.RegisterType((*Profile)(nil), "opentelemetry.proto.profiles.v1development.Profile")
-	protohelpers.RegisterType((*Link)(nil), "opentelemetry.proto.profiles.v1development.Link")
-	protohelpers.RegisterType((*ValueType)(nil), "opentelemetry.proto.profiles.v1development.ValueType")
-	protohelpers.RegisterType((*Sample)(nil), "opentelemetry.proto.profiles.v1development.Sample")
-	protohelpers.RegisterType((*Mapping)(nil), "opentelemetry.proto.profiles.v1development.Mapping")
-	protohelpers.RegisterType((*Stack)(nil), "opentelemetry.proto.profiles.v1development.Stack")
-	protohelpers.RegisterType((*Location)(nil), "opentelemetry.proto.profiles.v1development.Location")
-	protohelpers.RegisterType((*Line)(nil), "opentelemetry.proto.profiles.v1development.Line")
-	protohelpers.RegisterType((*Function)(nil), "opentelemetry.proto.profiles.v1development.Function")
-	protohelpers.RegisterType((*KeyValueAndUnit)(nil), "opentelemetry.proto.profiles.v1development.KeyValueAndUnit")
-}

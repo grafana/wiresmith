@@ -3886,6 +3886,9 @@ func (m *AllOptionalScalars) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.FieldBytes = append(m.FieldBytes[:0], dAtA[iNdEx:postIndex]...)
 			iNdEx = postIndex
+			if m.FieldBytes == nil {
+				m.FieldBytes = []byte{}
+			}
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
@@ -10039,21 +10042,4 @@ func (this *AllMaps) Equal(that interface{}) bool {
 		}
 	}
 	return true
-}
-
-func init() {
-	protohelpers.RegisterEnum("test.kitchensink.v1.Color", Color_name, Color_value)
-	protohelpers.RegisterType((*AllScalars)(nil), "test.kitchensink.v1.AllScalars")
-	protohelpers.RegisterType((*AllOptionalScalars)(nil), "test.kitchensink.v1.AllOptionalScalars")
-	protohelpers.RegisterType((*AllRepeatedScalars)(nil), "test.kitchensink.v1.AllRepeatedScalars")
-	protohelpers.RegisterType((*OneofVariants)(nil), "test.kitchensink.v1.OneofVariants")
-	protohelpers.RegisterType((*Outer)(nil), "test.kitchensink.v1.Outer")
-	protohelpers.RegisterType((*Middle)(nil), "test.kitchensink.v1.Middle")
-	protohelpers.RegisterType((*Inner)(nil), "test.kitchensink.v1.Inner")
-	protohelpers.RegisterType((*HighFieldNumbers)(nil), "test.kitchensink.v1.HighFieldNumbers")
-	protohelpers.RegisterType((*WithEnum)(nil), "test.kitchensink.v1.WithEnum")
-	protohelpers.RegisterType((*Empty)(nil), "test.kitchensink.v1.Empty")
-	protohelpers.RegisterType((*OnlyRepeated)(nil), "test.kitchensink.v1.OnlyRepeated")
-	protohelpers.RegisterType((*Container)(nil), "test.kitchensink.v1.Container")
-	protohelpers.RegisterType((*AllMaps)(nil), "test.kitchensink.v1.AllMaps")
 }

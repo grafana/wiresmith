@@ -3737,16 +3737,3 @@ func (this *Status) Equal(that interface{}) bool {
 	}
 	return true
 }
-
-func init() {
-	protohelpers.RegisterEnum("opentelemetry.proto.trace.v1.SpanFlags", SpanFlags_name, SpanFlags_value)
-	protohelpers.RegisterType((*TracesData)(nil), "opentelemetry.proto.trace.v1.TracesData")
-	protohelpers.RegisterType((*ResourceSpans)(nil), "opentelemetry.proto.trace.v1.ResourceSpans")
-	protohelpers.RegisterType((*ScopeSpans)(nil), "opentelemetry.proto.trace.v1.ScopeSpans")
-	protohelpers.RegisterType((*Span_Event)(nil), "opentelemetry.proto.trace.v1.Span.Event")
-	protohelpers.RegisterType((*Span_Link)(nil), "opentelemetry.proto.trace.v1.Span.Link")
-	protohelpers.RegisterEnum("opentelemetry.proto.trace.v1.Span.SpanKind", Span_SpanKind_name, Span_SpanKind_value)
-	protohelpers.RegisterType((*Span)(nil), "opentelemetry.proto.trace.v1.Span")
-	protohelpers.RegisterEnum("opentelemetry.proto.trace.v1.Status.StatusCode", Status_StatusCode_name, Status_StatusCode_value)
-	protohelpers.RegisterType((*Status)(nil), "opentelemetry.proto.trace.v1.Status")
-}

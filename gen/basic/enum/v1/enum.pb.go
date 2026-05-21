@@ -1111,11 +1111,3 @@ func (this *EnumContainer) Equal(that interface{}) bool {
 	}
 	return true
 }
-
-func init() {
-	protohelpers.RegisterEnum("basic.enum.v1.AliasedPriority", AliasedPriority_name, AliasedPriority_value)
-	protohelpers.RegisterEnum("basic.enum.v1.SignedEnum", SignedEnum_name, SignedEnum_value)
-	protohelpers.RegisterEnum("basic.enum.v1.WithNestedEnum.Priority", WithNestedEnum_Priority_name, WithNestedEnum_Priority_value)
-	protohelpers.RegisterType((*WithNestedEnum)(nil), "basic.enum.v1.WithNestedEnum")
-	protohelpers.RegisterType((*EnumContainer)(nil), "basic.enum.v1.EnumContainer")
-}

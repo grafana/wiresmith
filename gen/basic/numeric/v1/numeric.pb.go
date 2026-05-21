@@ -3855,6 +3855,9 @@ func (m *MixedModifiers) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.OptionalBytes = append(m.OptionalBytes[:0], dAtA[iNdEx:postIndex]...)
 			iNdEx = postIndex
+			if m.OptionalBytes == nil {
+				m.OptionalBytes = []byte{}
+			}
 		case 12: // repeated_bytes
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -6364,10 +6367,4 @@ func (this *WideFields) Equal(that interface{}) bool {
 		return false
 	}
 	return true
-}
-
-func init() {
-	protohelpers.RegisterType((*UnpackedScalars)(nil), "basic.numeric.v1.UnpackedScalars")
-	protohelpers.RegisterType((*MixedModifiers)(nil), "basic.numeric.v1.MixedModifiers")
-	protohelpers.RegisterType((*WideFields)(nil), "basic.numeric.v1.WideFields")
 }

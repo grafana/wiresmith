@@ -1577,11 +1577,3 @@ func (this *CrossRef) Equal(that interface{}) bool {
 	}
 	return true
 }
-
-func init() {
-	protohelpers.RegisterType((*Level0_Level1_Level2_Level3)(nil), "basic.nesting.v1.Level0.Level1.Level2.Level3")
-	protohelpers.RegisterType((*Level0_Level1_Level2)(nil), "basic.nesting.v1.Level0.Level1.Level2")
-	protohelpers.RegisterType((*Level0_Level1)(nil), "basic.nesting.v1.Level0.Level1")
-	protohelpers.RegisterType((*Level0)(nil), "basic.nesting.v1.Level0")
-	protohelpers.RegisterType((*CrossRef)(nil), "basic.nesting.v1.CrossRef")
-}

@@ -2132,11 +2132,3 @@ func (this *OneofPlusEverything) Equal(that interface{}) bool {
 	}
 	return true
 }
-
-func init() {
-	protohelpers.RegisterEnum("basic.oneof.v1.Shape", Shape_name, Shape_value)
-	protohelpers.RegisterType((*Payload)(nil), "basic.oneof.v1.Payload")
-	protohelpers.RegisterType((*MultiOneof)(nil), "basic.oneof.v1.MultiOneof")
-	protohelpers.RegisterType((*OneofWithTypes)(nil), "basic.oneof.v1.OneofWithTypes")
-	protohelpers.RegisterType((*OneofPlusEverything)(nil), "basic.oneof.v1.OneofPlusEverything")
-}

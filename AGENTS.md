@@ -88,7 +88,7 @@ borderline cases.
 - **Getter methods**: `Get<Field>()` methods are generated for all fields (nil-safe like gogoproto). For value-type message fields, the getter returns `*MessageType` and uses the presence bitmap to return `nil` when the field was absent from the wire. Optional fields dereference the pointer, oneof fields type-assert, repeated/map fields return the slice/map.
 - **Reset/ProtoMessage/String**: `Reset()` zeroes the struct (`*m = Type{}`). `ProtoMessage()` is a no-op marker method, matching the standard `proto.Message` interface shape. `String()` uses `fmt.Sprintf("%v", *m)`.
 - **Enum name maps**: Each enum gets `TypeName_name` (int32→string) and `TypeName_value` (string→int32) maps, plus a `String()` method. Enum constants are prefixed matching `protoc-gen-go`: enum name for top-level enums (`Color_COLOR_RED`), parent message chain for nested enums (`Span_SPAN_KIND_SERVER`). Map string values use bare proto names.
-- **Type registration**: Generated `init()` registers all messages and enums via `protohelpers.RegisterType`/`RegisterEnum`. No gogo/protobuf dependency — uses a lightweight self-hosted registry in `gen/protohelpers/`.
+- **Type registration**: Generated `init()` embeds raw file descriptor bytes and registers them with `protoregistry.GlobalFiles`, then registers message types via `protoimpl.MessageInfo` and enum types via `protoimpl.EnumInfo` with `protoregistry.GlobalTypes`. Messages implement `proto.Message` via `ProtoReflect()`, enums implement `protoreflect.Enum`. Same registration pattern as protoc-gen-go. **Reflection support is partial**: `proto.Marshal`, `proto.Unmarshal`, `proto.Size`, `proto.Equal`, `proto.MessageName`, and descriptor lookups work via the `ProtoMethods` fast-path. Field-level reflection (`Range`/`Get`/`Set`/`Mutable` on the returned `protoreflect.Message`) panics — wiresmith uses value-type message fields incompatible with `protoimpl`'s field converters. Helpers built on top of field reflection (`protojson`, `prototext`, `proto.Clone`, `proto.Merge`) are unsupported. **Deterministic marshaling** (`proto.MarshalOptions{Deterministic: true}`) is also unsupported because generated `MarshalToSizedBuffer` ranges over Go maps in iteration order; the fast-path Methods table does not advertise `SupportMarshalDeterministic`, so a deterministic request falls through to the reflection slow-path and panics rather than silently returning unstable output.
 - **Unknown fields discarded**: Unknown fields are intentionally skipped during unmarshal and not preserved. This is a deliberate performance trade-off: wiresmith is designed for working with messages of known schema, so unknown field preservation would add per-struct overhead with no benefit for the primary use case.
 
 ## Supported proto3 features
@@ -99,7 +99,7 @@ Not supported (not needed for OTel protos): services/RPCs, extensions, well-know
 
 ## Conformance test status
 
-695 passing, 5 expected failures (3 message merge with recursive messages, 2 unknown field preservation). Unknown fields are intentionally discarded for performance. Run with `make conformance`.
+696 passing, 5 expected failures (3 message merge with recursive messages, 2 unknown field preservation). Unknown fields are intentionally discarded for performance. Run with `make conformance`.
 
 **Updating the failure list:** The conformance runner errors when a failure list entry matches a now-passing test ("is in the failure list, but test succeeded"). After fixing conformance-related bugs, run conformance and remove entries that the runner flags:
 
@@ -142,7 +142,7 @@ The generator smoke test (`TestGenerateMatchesCheckedIn`) only checks files that
 
 ## Known issues
 
-- `go test ./...` panics in `bench/` with `proto: file "maps.proto" is already registered` due to conflicting proto registrations between `gen/bench/official`, `gen/bench/vtpb`, and `gen/bench/gogopb`. Use `go test ./test/... ./compiler/...` to run tests without the bench package, or `GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn go test ./bench/` to run benchmarks.
+- `go test ./...` panics with `proto: file ... is already registered` due to conflicting proto registrations between wiresmith types and official protobuf types (in `test/...`) and between `gen/bench/official`, `gen/bench/vtpb`, and `gen/bench/gogopb` (in `bench/`). Use `GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn go test ./...` to run all tests, or `go test ./compiler/...` for the conflict-free subset.
 
 ## Rejected approaches
 

@@ -584,6 +584,35 @@ func TestGenerateOutputCollision(t *testing.T) {
 	}
 }
 
+// TestGenerateReflectOutputCollision verifies that a user proto whose basename
+// would generate a `_reflect.pb.go` file colliding with another proto's
+// companion reflect output is rejected. Without this guard, `foo_reflect.proto`
+// and `foo.proto` in the same package would silently overwrite each other's
+// reflect output.
+func TestGenerateReflectOutputCollision(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "foo.proto",
+		"syntax = \"proto3\";\npackage testpb.v1;\nmessage Foo {}")
+	writeProto(t, protoDir, "foo_reflect.proto",
+		"syntax = \"proto3\";\npackage testpb.v1;\nmessage FooReflect {}")
+
+	outDir := t.TempDir()
+	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	err := gen.Generate(context.Background())
+	if err == nil {
+		t.Fatal("expected reflect-output collision error, got nil")
+	}
+	if !strings.Contains(err.Error(), "output collision") {
+		t.Errorf("expected 'output collision' error, got: %v", err)
+	}
+
+	// Fail-fast: no files should have been written.
+	collisionDir := filepath.Join(outDir, "testpb", "v1")
+	if entries, err := os.ReadDir(collisionDir); err == nil && len(entries) > 0 {
+		t.Errorf("expected no files written on collision, found %d in %s", len(entries), collisionDir)
+	}
+}
+
 // TestGenerateWithGoPackage verifies that a proto's `option go_package` drives
 // the Go package name, output directory, and the alias used by importing
 // files, as long as the go_package import path falls under the module's

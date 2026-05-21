@@ -1293,10 +1293,3 @@ func (this *NodeB) Equal(that interface{}) bool {
 	}
 	return true
 }
-
-func init() {
-	protohelpers.RegisterType((*LinkedList)(nil), "basic.recursive.v1.LinkedList")
-	protohelpers.RegisterType((*TreeNode)(nil), "basic.recursive.v1.TreeNode")
-	protohelpers.RegisterType((*NodeA)(nil), "basic.recursive.v1.NodeA")
-	protohelpers.RegisterType((*NodeB)(nil), "basic.recursive.v1.NodeB")
-}

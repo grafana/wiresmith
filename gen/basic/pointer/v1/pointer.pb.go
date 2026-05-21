@@ -788,8 +788,3 @@ func (this *PointerHolder) Equal(that interface{}) bool {
 	}
 	return true
 }
-
-func init() {
-	protohelpers.RegisterType((*Leaf)(nil), "basic.pointer.v1.Leaf")
-	protohelpers.RegisterType((*PointerHolder)(nil), "basic.pointer.v1.PointerHolder")
-}
