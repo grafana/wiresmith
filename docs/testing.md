@@ -43,7 +43,7 @@ A top-level test that survives parsing through several proto versions and checks
 
 ## Benchmarks
 
-The benchmark suite lives in [`bench/`](../bench/) — comparative against the official runtime, vtproto, and gogoproto. See [`bench/AGENTS.md`](../bench/AGENTS.md) for the methodology (shared canonical inputs, per-library files, full benchmark variant list) and `docs/comparison.md` for the headline numbers.
+The benchmark suite lives in [`bench/`](../bench/) — comparative against the official runtime, vtproto, and gogoproto. See [`bench/AGENTS.md`](../bench/AGENTS.md) for the methodology (shared canonical inputs, per-library files, full benchmark variant list) and [`comparison.md`](comparison.md) for the headline numbers.
 
 For changes that touch marshal/unmarshal/size hot paths, the project requires a baseline-vs-after `benchstat` comparison before merge. The detailed workflow (filter, `-count=20 -benchtime=1s`, noise-control benchmark) lives in [`AGENTS.md`](../AGENTS.md) under "Benchmarking before/after any change" — that section is the source of truth and changes there propagate to reviewers.
 
