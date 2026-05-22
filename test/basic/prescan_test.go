@@ -68,14 +68,23 @@ func TestPreScanAbortsOnUnknownWireType(t *testing.T) {
 }
 
 // TestPreScanCapBoundedByPayload is a regression test for SEC-1
-// (wiresmith-bmp). The pre-scan counts field-number occurrences and uses the
-// count directly as slice capacity (`make([]T, 0, count)`). For a
-// repeated-message field whose element type is a large value-type struct
-// (e.g. OTel `Span` ≈ 250 bytes), a payload packed with 2-byte zero-length
+// (wiresmith-bmp). The pre-scan counts wire-format occurrences of any
+// repeated length-delimited field (string, bytes, message, map entry)
+// and uses the count directly as slice capacity (`make([]T, 0, count)`).
+// The amplification potential scales with the size of the Go element
+// type: for a repeated-message field over a large value-type struct
+// (e.g. OTel `Span` ≈ 250 B), a payload packed with 2-byte zero-length
 // entries achieves ~payload/2 occurrences, so capacity allocation is
-// ~payload × elementSize/2. A 1MB payload requesting 125MB of memory is a
-// classic amplification primitive — and combined with SEC-2 the count
-// itself can run unbounded.
+// ~payload × elementSize/2 — a 1MB payload requesting 125MB of memory.
+// Combined with SEC-2 the count itself can run unbounded.
+//
+// This test uses a repeated *string* field (`MixedModifiers.repeated_string`,
+// field 9) as the test vehicle because the bound applies uniformly to
+// every pre-scan-tracked element type; the string element happens to be
+// the smallest Go type the pre-scan handles and is convenient to drive
+// with a synthetic payload. The asserted invariant — `cap(slice) ≤
+// len(payload)/2` — is the same one that bounds the worst-case allocation
+// for the large-struct message case.
 //
 // The fix caps the pre-allocated capacity at len(payload)/2: every
 // length-delimited element consumes at least 2 bytes on the wire (tag
