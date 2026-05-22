@@ -179,13 +179,19 @@ func emitConsumeVarintAt(e Emitter, indent string) {
 	e.Writef("%s\tif iNdEx >= l {\n%s\t\treturn io.ErrUnexpectedEOF\n%s\t}\n", indent, indent, indent)
 	e.Writef("%s\tb := dAtA[iNdEx]\n", indent)
 	e.Writef("%s\tiNdEx++\n", indent)
-	// Wire format: on the 10th byte (shift==63), only bit 0 of the payload may
-	// be set. A high continuation bit means an 11th byte was indicated, and any
-	// other data bit overflows past uint64. Without this check the shift below
-	// silently drops bits 1-6, producing a wrong but accepted value.
-	e.Writef("%s\tif shift == 63 && b > 1 {\n%s\t\treturn fmt.Errorf(\"proto: varint overflow\")\n%s\t}\n", indent, indent, indent)
 	e.Writef("%s\tv |= uint64(b&0x7F) << shift\n", indent)
-	e.Writef("%s\tif b < 0x80 {\n%s\t\tbreak\n%s\t}\n", indent, indent, indent)
+	// 10th-byte overflow guard runs only on the terminator (b<0x80). At
+	// shift==63 only bit 0 of the payload is legal; any larger value would
+	// silently shift past uint64. A continuation byte (b>=0x80) keeps the
+	// loop alive and is caught by the shift>=64 guard one iteration later,
+	// so it doesn't need to be checked here. Putting the check in the break
+	// path makes it once-per-varint instead of once-per-byte; on error the
+	// corrupted shift above is harmless because we return immediately.
+	// Follow-up wiresmith-kgq tracks the unrolled-decoder variant that
+	// removes the cost entirely.
+	e.Writef("%s\tif b < 0x80 {\n", indent)
+	e.Writef("%s\t\tif shift == 63 && b > 1 {\n%s\t\t\treturn fmt.Errorf(\"proto: varint overflow\")\n%s\t\t}\n", indent, indent, indent)
+	e.Writef("%s\t\tbreak\n%s\t}\n", indent, indent)
 	e.Writef("%s}\n", indent)
 }
 
@@ -227,10 +233,11 @@ func emitConsumeBytesLenAt(e Emitter, indent string) {
 	e.Writef("%s\tif iNdEx >= l {\n%s\t\treturn io.ErrUnexpectedEOF\n%s\t}\n", indent, indent, indent)
 	e.Writef("%s\tb := dAtA[iNdEx]\n", indent)
 	e.Writef("%s\tiNdEx++\n", indent)
-	// See emitConsumeVarintAt for the 10th-byte overflow rationale.
-	e.Writef("%s\tif shift == 63 && b > 1 {\n%s\t\treturn fmt.Errorf(\"proto: varint overflow\")\n%s\t}\n", indent, indent, indent)
 	e.Writef("%s\tbyteLen |= uint64(b&0x7F) << shift\n", indent)
-	e.Writef("%s\tif b < 0x80 {\n%s\t\tbreak\n%s\t}\n", indent, indent, indent)
+	// See emitConsumeVarintAt for the 10th-byte overflow rationale.
+	e.Writef("%s\tif b < 0x80 {\n", indent)
+	e.Writef("%s\t\tif shift == 63 && b > 1 {\n%s\t\t\treturn fmt.Errorf(\"proto: varint overflow\")\n%s\t\t}\n", indent, indent, indent)
+	e.Writef("%s\t\tbreak\n%s\t}\n", indent, indent)
 	e.Writef("%s}\n", indent)
 	// Guard against int truncation on 32-bit platforms (GOARCH=386/arm/wasm).
 	// Without this, a uint64 length above MaxInt32 would silently wrap to a

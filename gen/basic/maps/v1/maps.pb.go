@@ -326,11 +326,11 @@ func skipValue(dAtA []byte, wireType int, fieldNum int32) (int, error) {
 			}
 			b := dAtA[iNdEx]
 			iNdEx++
-			if shift == 63 && b > 1 {
-				return 0, fmt.Errorf("invalid bytes")
-			}
 			length |= uint64(b&0x7F) << shift
 			if b < 0x80 {
+				if shift == 63 && b > 1 {
+					return 0, fmt.Errorf("invalid bytes")
+				}
 				break
 			}
 		}
@@ -480,11 +480,11 @@ func (m *MapBench) unmarshal(dAtA []byte, depth int) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				if shift == 63 && b > 1 {
-					return fmt.Errorf("proto: varint overflow")
-				}
 				byteLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
+					if shift == 63 && b > 1 {
+						return fmt.Errorf("proto: varint overflow")
+					}
 					break
 				}
 			}
@@ -543,11 +543,11 @@ func (m *MapBench) unmarshal(dAtA []byte, depth int) error {
 						}
 						b := dAtA[iNdEx]
 						iNdEx++
-						if shift == 63 && b > 1 {
-							return fmt.Errorf("proto: varint overflow")
-						}
 						byteLen |= uint64(b&0x7F) << shift
 						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
 							break
 						}
 					}
@@ -583,11 +583,11 @@ func (m *MapBench) unmarshal(dAtA []byte, depth int) error {
 						}
 						b := dAtA[iNdEx]
 						iNdEx++
-						if shift == 63 && b > 1 {
-							return fmt.Errorf("proto: varint overflow")
-						}
 						byteLen |= uint64(b&0x7F) << shift
 						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
 							break
 						}
 					}
@@ -633,11 +633,11 @@ func (m *MapBench) unmarshal(dAtA []byte, depth int) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				if shift == 63 && b > 1 {
-					return fmt.Errorf("proto: varint overflow")
-				}
 				byteLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
+					if shift == 63 && b > 1 {
+						return fmt.Errorf("proto: varint overflow")
+					}
 					break
 				}
 			}
@@ -696,11 +696,11 @@ func (m *MapBench) unmarshal(dAtA []byte, depth int) error {
 						}
 						b := dAtA[iNdEx]
 						iNdEx++
-						if shift == 63 && b > 1 {
-							return fmt.Errorf("proto: varint overflow")
-						}
 						v |= uint64(b&0x7F) << shift
 						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
 							break
 						}
 					}
@@ -724,11 +724,11 @@ func (m *MapBench) unmarshal(dAtA []byte, depth int) error {
 						}
 						b := dAtA[iNdEx]
 						iNdEx++
-						if shift == 63 && b > 1 {
-							return fmt.Errorf("proto: varint overflow")
-						}
 						v |= uint64(b&0x7F) << shift
 						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
 							break
 						}
 					}
@@ -762,11 +762,11 @@ func (m *MapBench) unmarshal(dAtA []byte, depth int) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				if shift == 63 && b > 1 {
-					return fmt.Errorf("proto: varint overflow")
-				}
 				byteLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
+					if shift == 63 && b > 1 {
+						return fmt.Errorf("proto: varint overflow")
+					}
 					break
 				}
 			}
@@ -826,11 +826,11 @@ func (m *MapBench) unmarshal(dAtA []byte, depth int) error {
 						}
 						b := dAtA[iNdEx]
 						iNdEx++
-						if shift == 63 && b > 1 {
-							return fmt.Errorf("proto: varint overflow")
-						}
 						byteLen |= uint64(b&0x7F) << shift
 						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
 							break
 						}
 					}
@@ -866,11 +866,11 @@ func (m *MapBench) unmarshal(dAtA []byte, depth int) error {
 						}
 						b := dAtA[iNdEx]
 						iNdEx++
-						if shift == 63 && b > 1 {
-							return fmt.Errorf("proto: varint overflow")
-						}
 						byteLen |= uint64(b&0x7F) << shift
 						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
 							break
 						}
 					}
@@ -973,11 +973,11 @@ func (m *Inner) unmarshal(dAtA []byte, depth int) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				if shift == 63 && b > 1 {
-					return fmt.Errorf("proto: varint overflow")
-				}
 				byteLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
+					if shift == 63 && b > 1 {
+						return fmt.Errorf("proto: varint overflow")
+					}
 					break
 				}
 			}
@@ -1014,11 +1014,11 @@ func (m *Inner) unmarshal(dAtA []byte, depth int) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				if shift == 63 && b > 1 {
-					return fmt.Errorf("proto: varint overflow")
-				}
 				v |= uint64(b&0x7F) << shift
 				if b < 0x80 {
+					if shift == 63 && b > 1 {
+						return fmt.Errorf("proto: varint overflow")
+					}
 					break
 				}
 			}
@@ -1043,11 +1043,11 @@ func (m *Inner) unmarshal(dAtA []byte, depth int) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				if shift == 63 && b > 1 {
-					return fmt.Errorf("proto: varint overflow")
-				}
 				byteLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
+					if shift == 63 && b > 1 {
+						return fmt.Errorf("proto: varint overflow")
+					}
 					break
 				}
 			}
