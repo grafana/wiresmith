@@ -14,30 +14,9 @@ wiresmith takes a different approach: **value-type structs with generated marsha
 
 ## Benchmarks
 
-Measured on Apple M4 Pro, 10 iterations per library. Full trace payload (100 spans with attributes, events, links).
+On a full trace payload (100 spans, Apple M4 Pro, 10 iterations), wiresmith marshals in **6.4 us/op** (vs 7.7 us for vtproto/gogoproto and 46.2 us for the official runtime) and unmarshals in **33.4 us/op** (vs ~36–39 us for vtproto/gogoproto and 70.1 us for the official runtime). Unmarshal also uses 30–40% less memory than the alternatives.
 
-### Throughput (sec/op, lower is better)
-
-| Benchmark | Ours | Official | VTProto | GogoProto |
-|-----------|------|----------|---------|-----------|
-| MarshalTraces | **6.4 us** | 46.2 us (+618%) | 7.7 us (+20%) | 7.7 us (+19%) |
-| UnmarshalTraces | **33.4 us** | 70.1 us (+110%) | 38.9 us (+16%) | 36.4 us (+9%) |
-| SizeTraces | **1.4 us** | 17.0 us (+1076%) | 2.2 us (+52%) | 2.0 us (+40%) |
-| **Geometric mean** | **1.96 us** | 8.11 us (+314%) | 2.33 us (+19%) | 2.26 us (+15%) |
-
-### Memory (B/op, lower is better)
-
-| Benchmark | Ours | Official | VTProto | GogoProto |
-|-----------|------|----------|---------|-----------|
-| UnmarshalTraces | **78.5 KiB** | 112.2 KiB (+43%) | 112.1 KiB (+43%) | 102.7 KiB (+31%) |
-| UnmarshalSingleSpan | **528 B** | 1120 B (+112%) | 832 B (+58%) | 736 B (+39%) |
-
-### Allocations (allocs/op, lower is better)
-
-| Benchmark | Ours | Official | VTProto | GogoProto |
-|-----------|------|----------|---------|-----------|
-| UnmarshalTraces | **1,609** | 2,523 (+57%) | 2,522 (+57%) | 2,522 (+57%) |
-| UnmarshalSingleSpan | **16** | 25 (+56%) | 24 (+50%) | 24 (+50%) |
+See [docs/comparison.md](docs/comparison.md) for the full per-benchmark tables, the feature matrix, and the methodology.
 
 ## Advantages
 
@@ -77,6 +56,8 @@ Net result: value-type cache locality benefits without the memory penalty -- 30-
 
 For fixed-size packed fields (`uint64`, `float64`), we compute `len(data)/8` and allocate once.
 
+See [docs/design.md](docs/design.md) for the full list of design decisions and the deliberate limitations they imply.
+
 ## Supported proto3 features
 
 Messages, nested messages, enums (top-level and nested), oneof, optional, repeated (packed + non-packed), maps, reserved fields, cross-file imports, fully-qualified type references.
@@ -96,4 +77,13 @@ make test        # run round-trip correctness tests
 make bench       # run comparative benchmarks
 ```
 
-See `Makefile` for all targets.
+See `Makefile` for all targets, and [docs/cli.md](docs/cli.md) for the `wiresmith` CLI flags and an end-to-end example.
+
+## Documentation
+
+- [CLI reference](docs/cli.md)
+- [Design and tradeoffs](docs/design.md)
+- [Comparison with vtproto, gogoproto, and official protobuf](docs/comparison.md)
+- [Custom proto extensions](docs/extensions.md)
+- [Generated Go API](docs/generated-api.md)
+- [Testing strategy](docs/testing.md)
