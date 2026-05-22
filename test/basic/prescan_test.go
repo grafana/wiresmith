@@ -67,6 +67,64 @@ func TestPreScanAbortsOnUnknownWireType(t *testing.T) {
 		"pre-scan must abort on unknown wire type; cap inflated by SEC-2 amplification")
 }
 
+// TestPreScanCapBoundedByPayload is an end-to-end check for SEC-1
+// (wiresmith-bmp). The bound it asserts — `cap(slice) ≤ len(payload)/2`
+// — is also satisfied by a *well-formed* payload of length-delimited
+// entries regardless of whether the generator emits the cap, so this
+// test alone cannot catch a regression that drops the cap. The actual
+// regression guard lives in `compiler/generator/prescan_cap_test.go`
+// (TestPreScanEmitsCapClamp), which inspects the generated source for
+// the cap pattern; this test exercises the runtime behaviour so a
+// non-functional regression (e.g. emitted code that doesn't compile or
+// produces wrong counts) is caught too.
+//
+// The pre-scan counts wire-format occurrences of any repeated
+// length-delimited field (string, bytes, message, map entry) and uses
+// the count directly as slice capacity (`make([]T, 0, count)`).
+// The amplification potential scales with the size of the Go element
+// type: for a repeated-message field over a large value-type struct
+// (e.g. OTel `Span` ≈ 250 B), a payload packed with 2-byte zero-length
+// entries achieves ~payload/2 occurrences, so capacity allocation is
+// ~payload × elementSize/2 — a 1MB payload requesting 125MB of memory.
+// Combined with SEC-2 the count itself can run unbounded.
+//
+// This test uses a repeated *string* field (`MixedModifiers.repeated_string`,
+// field 9) as the test vehicle because the bound applies uniformly to
+// every pre-scan-tracked element type; the string element happens to be
+// the smallest Go type the pre-scan handles and is convenient to drive
+// with a synthetic payload. The asserted invariant — `cap(slice) ≤
+// len(payload)/2` — is the same one that bounds the worst-case allocation
+// for the large-struct message case.
+//
+// The fix caps the pre-allocated capacity at len(payload)/2: every
+// length-delimited element consumes at least 2 bytes on the wire (tag
+// varint ≥1 byte plus length varint ≥1 byte for length 0), so no
+// compliant payload can produce more than len/2 elements. The cap is
+// defense-in-depth — it makes the bound explicit in the generated code
+// even if upstream amplification regressed.
+func TestPreScanCapBoundedByPayload(t *testing.T) {
+	// 1KB of `0x4A 0x00` repeats: tag for field 9 (repeated_string) wire
+	// type 2, length 0. 512 entries, all empty strings.
+	const entries = 512
+	payload := make([]byte, 0, entries*2)
+	for range entries {
+		payload = append(payload, 0x4A, 0x00)
+	}
+	require.GreaterOrEqual(t, len(payload), 256, "payload must exceed preScanMinBytes")
+
+	var m numericv1.MixedModifiers
+	require.NoError(t, m.Unmarshal(payload))
+
+	// Sanity: the message did decode into entries.
+	require.Equal(t, entries, len(m.RepeatedString))
+
+	// SEC-1 invariant: pre-allocated capacity is bounded by len/2.
+	// A 1MB payload of large-struct elements would otherwise allocate
+	// hundreds of MB of capacity.
+	assert.LessOrEqual(t, cap(m.RepeatedString), len(payload)/2,
+		"SEC-1: pre-scan capacity must be bounded by payload/2")
+}
+
 // TestPreScanAmplificationThroughGroupTag confirms the abort fires for every
 // wire type in the default branch of the pre-scan switch (3, 4, 6, 7). Wire
 // type 3 is particularly insidious because the main loop *does* handle it

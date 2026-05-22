@@ -4184,11 +4184,18 @@ func (m *AllRepeatedScalars) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		if field14count > 0 {
-			m.FieldString = make([]string, 0, field14count)
+		preCapMax := l / 2
+		if c := field14count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.FieldString = make([]string, 0, c)
 		}
-		if field15count > 0 {
-			m.FieldBytes = make([][]byte, 0, field15count)
+		if c := field15count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.FieldBytes = make([][]byte, 0, c)
 		}
 	}
 	for iNdEx < l {
@@ -5665,8 +5672,12 @@ func (m *Outer) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		if field2count > 0 {
-			m.Middles = make([]Middle, 0, field2count)
+		preCapMax := l / 2
+		if c := field2count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.Middles = make([]Middle, 0, c)
 		}
 	}
 	for iNdEx < l {
@@ -5897,8 +5908,12 @@ func (m *Middle) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		if field2count > 0 {
-			m.Inners = make([]Inner, 0, field2count)
+		preCapMax := l / 2
+		if c := field2count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.Inners = make([]Inner, 0, c)
 		}
 	}
 	for iNdEx < l {
@@ -6742,11 +6757,18 @@ func (m *OnlyRepeated) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		if field1count > 0 {
-			m.Names = make([]string, 0, field1count)
+		preCapMax := l / 2
+		if c := field1count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.Names = make([]string, 0, c)
 		}
-		if field3count > 0 {
-			m.Items = make([]Inner, 0, field3count)
+		if c := field3count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.Items = make([]Inner, 0, c)
 		}
 	}
 	for iNdEx < l {
@@ -7010,8 +7032,12 @@ func (m *Container) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		if field3count > 0 {
-			m.Variants = make([]OneofVariants, 0, field3count)
+		preCapMax := l / 2
+		if c := field3count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.Variants = make([]OneofVariants, 0, c)
 		}
 	}
 	for iNdEx < l {
@@ -7292,56 +7318,108 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		if field1count > 0 {
-			m.MapInt32Int32 = make(map[int32]int32, field1count)
+		preCapMax := l / 2
+		if c := field1count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.MapInt32Int32 = make(map[int32]int32, c)
 		}
-		if field2count > 0 {
-			m.MapInt64Int64 = make(map[int64]int64, field2count)
+		if c := field2count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.MapInt64Int64 = make(map[int64]int64, c)
 		}
-		if field3count > 0 {
-			m.MapUint32Uint32 = make(map[uint32]uint32, field3count)
+		if c := field3count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.MapUint32Uint32 = make(map[uint32]uint32, c)
 		}
-		if field4count > 0 {
-			m.MapUint64Uint64 = make(map[uint64]uint64, field4count)
+		if c := field4count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.MapUint64Uint64 = make(map[uint64]uint64, c)
 		}
-		if field5count > 0 {
-			m.MapSint32Sint32 = make(map[int32]int32, field5count)
+		if c := field5count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.MapSint32Sint32 = make(map[int32]int32, c)
 		}
-		if field6count > 0 {
-			m.MapSint64Sint64 = make(map[int64]int64, field6count)
+		if c := field6count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.MapSint64Sint64 = make(map[int64]int64, c)
 		}
-		if field7count > 0 {
-			m.MapFixed32Fixed32 = make(map[uint32]uint32, field7count)
+		if c := field7count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.MapFixed32Fixed32 = make(map[uint32]uint32, c)
 		}
-		if field8count > 0 {
-			m.MapFixed64Fixed64 = make(map[uint64]uint64, field8count)
+		if c := field8count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.MapFixed64Fixed64 = make(map[uint64]uint64, c)
 		}
-		if field9count > 0 {
-			m.MapSfixed32Sfixed32 = make(map[int32]int32, field9count)
+		if c := field9count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.MapSfixed32Sfixed32 = make(map[int32]int32, c)
 		}
-		if field10count > 0 {
-			m.MapSfixed64Sfixed64 = make(map[int64]int64, field10count)
+		if c := field10count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.MapSfixed64Sfixed64 = make(map[int64]int64, c)
 		}
-		if field11count > 0 {
-			m.MapBoolBool = make(map[bool]bool, field11count)
+		if c := field11count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.MapBoolBool = make(map[bool]bool, c)
 		}
-		if field12count > 0 {
-			m.MapStringString = make(map[string]string, field12count)
+		if c := field12count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.MapStringString = make(map[string]string, c)
 		}
-		if field13count > 0 {
-			m.MapStringBytes = make(map[string][]byte, field13count)
+		if c := field13count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.MapStringBytes = make(map[string][]byte, c)
 		}
-		if field14count > 0 {
-			m.MapInt32Float = make(map[int32]float32, field14count)
+		if c := field14count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.MapInt32Float = make(map[int32]float32, c)
 		}
-		if field15count > 0 {
-			m.MapInt32Double = make(map[int32]float64, field15count)
+		if c := field15count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.MapInt32Double = make(map[int32]float64, c)
 		}
-		if field16count > 0 {
-			m.MapStringMessage = make(map[string]Inner, field16count)
+		if c := field16count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.MapStringMessage = make(map[string]Inner, c)
 		}
-		if field17count > 0 {
-			m.MapStringEnum = make(map[string]Color, field17count)
+		if c := field17count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.MapStringEnum = make(map[string]Color, c)
 		}
 	}
 	for iNdEx < l {

@@ -1525,8 +1525,12 @@ func (m *OneofPlusEverything) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		if field4count > 0 {
-			m.Labels = make(map[string]string, field4count)
+		preCapMax := l / 2
+		if c := field4count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.Labels = make(map[string]string, c)
 		}
 	}
 	for iNdEx < l {
