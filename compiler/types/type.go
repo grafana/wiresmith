@@ -179,6 +179,11 @@ func emitConsumeVarintAt(e Emitter, indent string) {
 	e.Writef("%s\tif iNdEx >= l {\n%s\t\treturn io.ErrUnexpectedEOF\n%s\t}\n", indent, indent, indent)
 	e.Writef("%s\tb := dAtA[iNdEx]\n", indent)
 	e.Writef("%s\tiNdEx++\n", indent)
+	// Wire format: on the 10th byte (shift==63), only bit 0 of the payload may
+	// be set. A high continuation bit means an 11th byte was indicated, and any
+	// other data bit overflows past uint64. Without this check the shift below
+	// silently drops bits 1-6, producing a wrong but accepted value.
+	e.Writef("%s\tif shift == 63 && b > 1 {\n%s\t\treturn fmt.Errorf(\"proto: varint overflow\")\n%s\t}\n", indent, indent, indent)
 	e.Writef("%s\tv |= uint64(b&0x7F) << shift\n", indent)
 	e.Writef("%s\tif b < 0x80 {\n%s\t\tbreak\n%s\t}\n", indent, indent, indent)
 	e.Writef("%s}\n", indent)
@@ -222,6 +227,8 @@ func emitConsumeBytesLenAt(e Emitter, indent string) {
 	e.Writef("%s\tif iNdEx >= l {\n%s\t\treturn io.ErrUnexpectedEOF\n%s\t}\n", indent, indent, indent)
 	e.Writef("%s\tb := dAtA[iNdEx]\n", indent)
 	e.Writef("%s\tiNdEx++\n", indent)
+	// See emitConsumeVarintAt for the 10th-byte overflow rationale.
+	e.Writef("%s\tif shift == 63 && b > 1 {\n%s\t\treturn fmt.Errorf(\"proto: varint overflow\")\n%s\t}\n", indent, indent, indent)
 	e.Writef("%s\tbyteLen |= uint64(b&0x7F) << shift\n", indent)
 	e.Writef("%s\tif b < 0x80 {\n%s\t\tbreak\n%s\t}\n", indent, indent, indent)
 	e.Writef("%s}\n", indent)

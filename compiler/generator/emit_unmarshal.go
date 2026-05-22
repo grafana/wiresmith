@@ -36,6 +36,9 @@ func (fg *FileGenerator) emitSkipValueHelper() {
 	fmt.Fprintf(fg.body, "\t\t\tif iNdEx >= l {\n\t\t\t\treturn 0, fmt.Errorf(\"invalid bytes\")\n\t\t\t}\n")
 	fmt.Fprintf(fg.body, "\t\t\tb := dAtA[iNdEx]\n")
 	fmt.Fprintf(fg.body, "\t\t\tiNdEx++\n")
+	// 10th-byte overflow: only bit 0 of the payload is legal at shift==63;
+	// anything else either flags an 11th byte or overflows uint64.
+	fmt.Fprintf(fg.body, "\t\t\tif shift == 63 && b > 1 {\n\t\t\t\treturn 0, fmt.Errorf(\"invalid bytes\")\n\t\t\t}\n")
 	fmt.Fprintf(fg.body, "\t\t\tlength |= uint64(b&0x7F) << shift\n")
 	fmt.Fprintf(fg.body, "\t\t\tif b < 0x80 {\n\t\t\t\tbreak\n\t\t\t}\n")
 	fmt.Fprintf(fg.body, "\t\t}\n")
