@@ -723,8 +723,12 @@ func (m *EnumContainer) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		if field5count > 0 {
-			m.SignedMap = make(map[string]SignedEnum, field5count)
+		preCapMax := l / 2
+		if c := field5count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.SignedMap = make(map[string]SignedEnum, c)
 		}
 	}
 	for iNdEx < l {

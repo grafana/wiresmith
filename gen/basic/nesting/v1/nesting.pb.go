@@ -1041,8 +1041,12 @@ func (m *Level0_Level1) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		if field2count > 0 {
-			m.Extras = make([]Level0_Level1_Level2, 0, field2count)
+		preCapMax := l / 2
+		if c := field2count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.Extras = make([]Level0_Level1_Level2, 0, c)
 		}
 	}
 	for iNdEx < l {

@@ -1367,8 +1367,12 @@ func (m *ArrayValue) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		if field1count > 0 {
-			m.Values = make([]AnyValue, 0, field1count)
+		preCapMax := l / 2
+		if c := field1count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.Values = make([]AnyValue, 0, c)
 		}
 	}
 	for iNdEx < l {
@@ -1512,8 +1516,12 @@ func (m *KeyValueList) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		if field1count > 0 {
-			m.Values = make([]KeyValue, 0, field1count)
+		preCapMax := l / 2
+		if c := field1count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.Values = make([]KeyValue, 0, c)
 		}
 	}
 	for iNdEx < l {
@@ -1807,8 +1815,12 @@ func (m *InstrumentationScope) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		if field3count > 0 {
-			m.Attributes = make([]KeyValue, 0, field3count)
+		preCapMax := l / 2
+		if c := field3count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.Attributes = make([]KeyValue, 0, c)
 		}
 	}
 	for iNdEx < l {
@@ -2057,11 +2069,18 @@ func (m *EntityRef) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		if field3count > 0 {
-			m.IdKeys = make([]string, 0, field3count)
+		preCapMax := l / 2
+		if c := field3count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.IdKeys = make([]string, 0, c)
 		}
-		if field4count > 0 {
-			m.DescriptionKeys = make([]string, 0, field4count)
+		if c := field4count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.DescriptionKeys = make([]string, 0, c)
 		}
 	}
 	for iNdEx < l {

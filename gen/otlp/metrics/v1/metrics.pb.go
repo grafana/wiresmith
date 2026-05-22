@@ -3433,8 +3433,12 @@ func (m *MetricsData) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		if field1count > 0 {
-			m.ResourceMetrics = make([]ResourceMetrics, 0, field1count)
+		preCapMax := l / 2
+		if c := field1count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.ResourceMetrics = make([]ResourceMetrics, 0, c)
 		}
 	}
 	for iNdEx < l {
@@ -3578,8 +3582,12 @@ func (m *ResourceMetrics) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		if field2count > 0 {
-			m.ScopeMetrics = make([]ScopeMetrics, 0, field2count)
+		preCapMax := l / 2
+		if c := field2count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.ScopeMetrics = make([]ScopeMetrics, 0, c)
 		}
 	}
 	for iNdEx < l {
@@ -3801,8 +3809,12 @@ func (m *ScopeMetrics) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		if field2count > 0 {
-			m.Metrics = make([]Metric, 0, field2count)
+		preCapMax := l / 2
+		if c := field2count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.Metrics = make([]Metric, 0, c)
 		}
 	}
 	for iNdEx < l {
@@ -4024,8 +4036,12 @@ func (m *Metric) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		if field12count > 0 {
-			m.Metadata = make([]commonv1.KeyValue, 0, field12count)
+		preCapMax := l / 2
+		if c := field12count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.Metadata = make([]commonv1.KeyValue, 0, c)
 		}
 	}
 	for iNdEx < l {
@@ -4503,8 +4519,12 @@ func (m *Gauge) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		if field1count > 0 {
-			m.DataPoints = make([]NumberDataPoint, 0, field1count)
+		preCapMax := l / 2
+		if c := field1count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.DataPoints = make([]NumberDataPoint, 0, c)
 		}
 	}
 	for iNdEx < l {
@@ -4648,8 +4668,12 @@ func (m *Sum) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		if field1count > 0 {
-			m.DataPoints = make([]NumberDataPoint, 0, field1count)
+		preCapMax := l / 2
+		if c := field1count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.DataPoints = make([]NumberDataPoint, 0, c)
 		}
 	}
 	for iNdEx < l {
@@ -4845,8 +4869,12 @@ func (m *Histogram) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		if field1count > 0 {
-			m.DataPoints = make([]HistogramDataPoint, 0, field1count)
+		preCapMax := l / 2
+		if c := field1count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.DataPoints = make([]HistogramDataPoint, 0, c)
 		}
 	}
 	for iNdEx < l {
@@ -5016,8 +5044,12 @@ func (m *ExponentialHistogram) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		if field1count > 0 {
-			m.DataPoints = make([]ExponentialHistogramDataPoint, 0, field1count)
+		preCapMax := l / 2
+		if c := field1count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.DataPoints = make([]ExponentialHistogramDataPoint, 0, c)
 		}
 	}
 	for iNdEx < l {
@@ -5187,8 +5219,12 @@ func (m *Summary) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		if field1count > 0 {
-			m.DataPoints = make([]SummaryDataPoint, 0, field1count)
+		preCapMax := l / 2
+		if c := field1count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.DataPoints = make([]SummaryDataPoint, 0, c)
 		}
 	}
 	for iNdEx < l {
@@ -5335,11 +5371,18 @@ func (m *NumberDataPoint) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		if field7count > 0 {
-			m.Attributes = make([]commonv1.KeyValue, 0, field7count)
+		preCapMax := l / 2
+		if c := field7count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.Attributes = make([]commonv1.KeyValue, 0, c)
 		}
-		if field5count > 0 {
-			m.Exemplars = make([]Exemplar, 0, field5count)
+		if c := field5count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.Exemplars = make([]Exemplar, 0, c)
 		}
 	}
 	for iNdEx < l {
@@ -5614,11 +5657,18 @@ func (m *HistogramDataPoint) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		if field9count > 0 {
-			m.Attributes = make([]commonv1.KeyValue, 0, field9count)
+		preCapMax := l / 2
+		if c := field9count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.Attributes = make([]commonv1.KeyValue, 0, c)
 		}
-		if field8count > 0 {
-			m.Exemplars = make([]Exemplar, 0, field8count)
+		if c := field8count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.Exemplars = make([]Exemplar, 0, c)
 		}
 	}
 	for iNdEx < l {
@@ -6180,11 +6230,18 @@ func (m *ExponentialHistogramDataPoint) unmarshal(dAtA []byte, depth int) error 
 				break
 			}
 		}
-		if field1count > 0 {
-			m.Attributes = make([]commonv1.KeyValue, 0, field1count)
+		preCapMax := l / 2
+		if c := field1count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.Attributes = make([]commonv1.KeyValue, 0, c)
 		}
-		if field11count > 0 {
-			m.Exemplars = make([]Exemplar, 0, field11count)
+		if c := field11count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.Exemplars = make([]Exemplar, 0, c)
 		}
 	}
 	for iNdEx < l {
@@ -6709,11 +6766,18 @@ func (m *SummaryDataPoint) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		if field7count > 0 {
-			m.Attributes = make([]commonv1.KeyValue, 0, field7count)
+		preCapMax := l / 2
+		if c := field7count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.Attributes = make([]commonv1.KeyValue, 0, c)
 		}
-		if field6count > 0 {
-			m.QuantileValues = make([]SummaryDataPoint_ValueAtQuantile, 0, field6count)
+		if c := field6count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.QuantileValues = make([]SummaryDataPoint_ValueAtQuantile, 0, c)
 		}
 	}
 	for iNdEx < l {
@@ -6987,8 +7051,12 @@ func (m *Exemplar) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		if field7count > 0 {
-			m.FilteredAttributes = make([]commonv1.KeyValue, 0, field7count)
+		preCapMax := l / 2
+		if c := field7count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.FilteredAttributes = make([]commonv1.KeyValue, 0, c)
 		}
 	}
 	for iNdEx < l {

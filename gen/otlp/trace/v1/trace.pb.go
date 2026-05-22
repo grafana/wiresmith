@@ -1742,8 +1742,12 @@ func (m *TracesData) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		if field1count > 0 {
-			m.ResourceSpans = make([]ResourceSpans, 0, field1count)
+		preCapMax := l / 2
+		if c := field1count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.ResourceSpans = make([]ResourceSpans, 0, c)
 		}
 	}
 	for iNdEx < l {
@@ -1887,8 +1891,12 @@ func (m *ResourceSpans) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		if field2count > 0 {
-			m.ScopeSpans = make([]ScopeSpans, 0, field2count)
+		preCapMax := l / 2
+		if c := field2count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.ScopeSpans = make([]ScopeSpans, 0, c)
 		}
 	}
 	for iNdEx < l {
@@ -2110,8 +2118,12 @@ func (m *ScopeSpans) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		if field2count > 0 {
-			m.Spans = make([]Span, 0, field2count)
+		preCapMax := l / 2
+		if c := field2count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.Spans = make([]Span, 0, c)
 		}
 	}
 	for iNdEx < l {
@@ -2333,8 +2345,12 @@ func (m *Span_Event) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		if field3count > 0 {
-			m.Attributes = make([]commonv1.KeyValue, 0, field3count)
+		preCapMax := l / 2
+		if c := field3count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.Attributes = make([]commonv1.KeyValue, 0, c)
 		}
 	}
 	for iNdEx < l {
@@ -2558,8 +2574,12 @@ func (m *Span_Link) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		if field4count > 0 {
-			m.Attributes = make([]commonv1.KeyValue, 0, field4count)
+		preCapMax := l / 2
+		if c := field4count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.Attributes = make([]commonv1.KeyValue, 0, c)
 		}
 	}
 	for iNdEx < l {
@@ -2865,14 +2885,24 @@ func (m *Span) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		if field9count > 0 {
-			m.Attributes = make([]commonv1.KeyValue, 0, field9count)
+		preCapMax := l / 2
+		if c := field9count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.Attributes = make([]commonv1.KeyValue, 0, c)
 		}
-		if field11count > 0 {
-			m.Events = make([]Span_Event, 0, field11count)
+		if c := field11count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.Events = make([]Span_Event, 0, c)
 		}
-		if field13count > 0 {
-			m.Links = make([]Span_Link, 0, field13count)
+		if c := field13count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.Links = make([]Span_Link, 0, c)
 		}
 	}
 	for iNdEx < l {

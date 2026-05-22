@@ -157,16 +157,30 @@ func (fg *FileGenerator) emitPreScan(md protoreflect.MessageDescriptor) {
 	fmt.Fprintf(fg.body, "\t\t\tif preIdx < 0 || preIdx > l {\n\t\t\t\tbreak\n\t\t\t}\n")
 	fmt.Fprintf(fg.body, "\t\t}\n")
 
+	// Cap pre-allocated capacity by an attacker-resistant bound. The minimum
+	// legal wire encoding for any pre-scan-tracked element is 2 bytes: a
+	// single-byte tag (fields 1-15) plus a single-byte zero-length varint.
+	// Without this cap, a payload of N zero-length entries of a struct-typed
+	// repeated field allocates capacity N * sizeof(struct), so a tiny payload
+	// can force a multi-MB allocation (SEC-1). `l/2` is a universal safe
+	// upper bound that costs nothing on legitimate payloads (where count is
+	// already ≤ l/2) and bounds the worst case at len(payload)/2 elements.
+	fmt.Fprintf(fg.body, "\t\tpreCapMax := l / 2\n")
 	for _, fd := range fields {
 		goName := snakeToPascal(string(fd.Name()))
 		// goFieldType respects (wiresmith.options.pointer) so a repeated
 		// pointer-message field pre-allocates as `[]*Msg` rather than `[]Msg`.
 		goType := fg.goFieldType(fd)
-		fmt.Fprintf(fg.body, "\t\tif field%dcount > 0 {\n", fd.Number())
+		// Inline `if c > preCapMax { c = preCapMax }` is observably tighter
+		// than `min(c, preCapMax)` (the latter shows +1.5pp regression on
+		// UnmarshalTraces vs the inline branch); the Go compiler does not
+		// always reduce `min` to a cmov on this hot path.
+		fmt.Fprintf(fg.body, "\t\tif c := field%dcount; c > 0 {\n", fd.Number())
+		fmt.Fprintf(fg.body, "\t\t\tif c > preCapMax {\n\t\t\t\tc = preCapMax\n\t\t\t}\n")
 		if fd.IsMap() {
-			fmt.Fprintf(fg.body, "\t\t\tm.%s = make(%s, field%dcount)\n", goName, goType, fd.Number())
+			fmt.Fprintf(fg.body, "\t\t\tm.%s = make(%s, c)\n", goName, goType)
 		} else {
-			fmt.Fprintf(fg.body, "\t\t\tm.%s = make(%s, 0, field%dcount)\n", goName, goType, fd.Number())
+			fmt.Fprintf(fg.body, "\t\t\tm.%s = make(%s, 0, c)\n", goName, goType)
 		}
 		fmt.Fprintf(fg.body, "\t\t}\n")
 	}

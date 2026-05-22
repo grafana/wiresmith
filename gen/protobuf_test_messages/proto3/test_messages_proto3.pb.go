@@ -3641,80 +3641,156 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				break
 			}
 		}
-		if field44count > 0 {
-			m.RepeatedString = make([]string, 0, field44count)
+		preCapMax := l / 2
+		if c := field44count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.RepeatedString = make([]string, 0, c)
 		}
-		if field45count > 0 {
-			m.RepeatedBytes = make([][]byte, 0, field45count)
+		if c := field45count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.RepeatedBytes = make([][]byte, 0, c)
 		}
-		if field48count > 0 {
-			m.RepeatedNestedMessage = make([]TestAllTypesProto3_NestedMessage, 0, field48count)
+		if c := field48count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.RepeatedNestedMessage = make([]TestAllTypesProto3_NestedMessage, 0, c)
 		}
-		if field49count > 0 {
-			m.RepeatedForeignMessage = make([]ForeignMessage, 0, field49count)
+		if c := field49count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.RepeatedForeignMessage = make([]ForeignMessage, 0, c)
 		}
-		if field54count > 0 {
-			m.RepeatedStringPiece = make([]string, 0, field54count)
+		if c := field54count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.RepeatedStringPiece = make([]string, 0, c)
 		}
-		if field55count > 0 {
-			m.RepeatedCord = make([]string, 0, field55count)
+		if c := field55count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.RepeatedCord = make([]string, 0, c)
 		}
-		if field56count > 0 {
-			m.MapInt32Int32 = make(map[int32]int32, field56count)
+		if c := field56count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.MapInt32Int32 = make(map[int32]int32, c)
 		}
-		if field57count > 0 {
-			m.MapInt64Int64 = make(map[int64]int64, field57count)
+		if c := field57count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.MapInt64Int64 = make(map[int64]int64, c)
 		}
-		if field58count > 0 {
-			m.MapUint32Uint32 = make(map[uint32]uint32, field58count)
+		if c := field58count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.MapUint32Uint32 = make(map[uint32]uint32, c)
 		}
-		if field59count > 0 {
-			m.MapUint64Uint64 = make(map[uint64]uint64, field59count)
+		if c := field59count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.MapUint64Uint64 = make(map[uint64]uint64, c)
 		}
-		if field60count > 0 {
-			m.MapSint32Sint32 = make(map[int32]int32, field60count)
+		if c := field60count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.MapSint32Sint32 = make(map[int32]int32, c)
 		}
-		if field61count > 0 {
-			m.MapSint64Sint64 = make(map[int64]int64, field61count)
+		if c := field61count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.MapSint64Sint64 = make(map[int64]int64, c)
 		}
-		if field62count > 0 {
-			m.MapFixed32Fixed32 = make(map[uint32]uint32, field62count)
+		if c := field62count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.MapFixed32Fixed32 = make(map[uint32]uint32, c)
 		}
-		if field63count > 0 {
-			m.MapFixed64Fixed64 = make(map[uint64]uint64, field63count)
+		if c := field63count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.MapFixed64Fixed64 = make(map[uint64]uint64, c)
 		}
-		if field64count > 0 {
-			m.MapSfixed32Sfixed32 = make(map[int32]int32, field64count)
+		if c := field64count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.MapSfixed32Sfixed32 = make(map[int32]int32, c)
 		}
-		if field65count > 0 {
-			m.MapSfixed64Sfixed64 = make(map[int64]int64, field65count)
+		if c := field65count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.MapSfixed64Sfixed64 = make(map[int64]int64, c)
 		}
-		if field66count > 0 {
-			m.MapInt32Float = make(map[int32]float32, field66count)
+		if c := field66count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.MapInt32Float = make(map[int32]float32, c)
 		}
-		if field67count > 0 {
-			m.MapInt32Double = make(map[int32]float64, field67count)
+		if c := field67count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.MapInt32Double = make(map[int32]float64, c)
 		}
-		if field68count > 0 {
-			m.MapBoolBool = make(map[bool]bool, field68count)
+		if c := field68count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.MapBoolBool = make(map[bool]bool, c)
 		}
-		if field69count > 0 {
-			m.MapStringString = make(map[string]string, field69count)
+		if c := field69count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.MapStringString = make(map[string]string, c)
 		}
-		if field70count > 0 {
-			m.MapStringBytes = make(map[string][]byte, field70count)
+		if c := field70count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.MapStringBytes = make(map[string][]byte, c)
 		}
-		if field71count > 0 {
-			m.MapStringNestedMessage = make(map[string]TestAllTypesProto3_NestedMessage, field71count)
+		if c := field71count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.MapStringNestedMessage = make(map[string]TestAllTypesProto3_NestedMessage, c)
 		}
-		if field72count > 0 {
-			m.MapStringForeignMessage = make(map[string]ForeignMessage, field72count)
+		if c := field72count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.MapStringForeignMessage = make(map[string]ForeignMessage, c)
 		}
-		if field73count > 0 {
-			m.MapStringNestedEnum = make(map[string]TestAllTypesProto3_NestedEnum, field73count)
+		if c := field73count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.MapStringNestedEnum = make(map[string]TestAllTypesProto3_NestedEnum, c)
 		}
-		if field74count > 0 {
-			m.MapStringForeignEnum = make(map[string]ForeignEnum, field74count)
+		if c := field74count; c > 0 {
+			if c > preCapMax {
+				c = preCapMax
+			}
+			m.MapStringForeignEnum = make(map[string]ForeignEnum, c)
 		}
 	}
 	for iNdEx < l {

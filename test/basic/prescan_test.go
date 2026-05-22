@@ -67,6 +67,45 @@ func TestPreScanAbortsOnUnknownWireType(t *testing.T) {
 		"pre-scan must abort on unknown wire type; cap inflated by SEC-2 amplification")
 }
 
+// TestPreScanCapBoundedByPayload is a regression test for SEC-1
+// (wiresmith-bmp). The pre-scan counts field-number occurrences and uses the
+// count directly as slice capacity (`make([]T, 0, count)`). For a
+// repeated-message field whose element type is a large value-type struct
+// (e.g. OTel `Span` ≈ 250 bytes), a payload packed with 2-byte zero-length
+// entries achieves ~payload/2 occurrences, so capacity allocation is
+// ~payload × elementSize/2. A 1MB payload requesting 125MB of memory is a
+// classic amplification primitive — and combined with SEC-2 the count
+// itself can run unbounded.
+//
+// The fix caps the pre-allocated capacity at len(payload)/2: the minimum
+// legal wire encoding for any pre-scan-tracked element (length-delimited
+// field with single-byte tag and zero-length varint) is exactly 2 bytes,
+// so no compliant payload can produce more than len/2 elements. The cap
+// is defense-in-depth — it makes the bound explicit in the generated code
+// even if upstream amplification regressed.
+func TestPreScanCapBoundedByPayload(t *testing.T) {
+	// 1KB of `0x4A 0x00` repeats: tag for field 9 (repeated_string) wire
+	// type 2, length 0. 512 entries, all empty strings.
+	const entries = 512
+	payload := make([]byte, 0, entries*2)
+	for range entries {
+		payload = append(payload, 0x4A, 0x00)
+	}
+	require.GreaterOrEqual(t, len(payload), 256, "payload must exceed preScanMinBytes")
+
+	var m numericv1.MixedModifiers
+	require.NoError(t, m.Unmarshal(payload))
+
+	// Sanity: the message did decode into entries.
+	require.Equal(t, entries, len(m.RepeatedString))
+
+	// SEC-1 invariant: pre-allocated capacity is bounded by len/2.
+	// A 1MB payload of large-struct elements would otherwise allocate
+	// hundreds of MB of capacity.
+	assert.LessOrEqual(t, cap(m.RepeatedString), len(payload)/2,
+		"SEC-1: pre-scan capacity must be bounded by payload/2")
+}
+
 // TestPreScanAmplificationThroughGroupTag confirms the abort fires for every
 // wire type in the default branch of the pre-scan switch (3, 4, 6, 7). Wire
 // type 3 is particularly insidious because the main loop *does* handle it
