@@ -14,7 +14,7 @@ wiresmith takes a different approach: **value-type structs with generated marsha
 
 ## Benchmarks
 
-On a full trace payload (100 spans, Apple M4 Pro, 10 iterations), wiresmith's geometric mean across `MarshalTraces` / `UnmarshalTraces` / `SizeTraces` is **1.96 us/op** — vs 2.33 us for vtproto (+19%), 2.26 us for gogoproto (+15%), and 8.11 us for the official runtime (+314%). Unmarshal also uses 30–40% less memory than the alternatives.
+On a full trace payload (100 spans, Apple M4 Pro, 10 iterations), wiresmith marshals in **6.4 us/op** (vs 7.7 us for vtproto/gogoproto and 46.2 us for the official runtime) and unmarshals in **33.4 us/op** (vs ~36–39 us for vtproto/gogoproto and 70.1 us for the official runtime). Unmarshal also uses 30–40% less memory than the alternatives.
 
 See [docs/comparison.md](docs/comparison.md) for the full per-benchmark tables, the feature matrix, and the methodology.
 

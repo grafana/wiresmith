@@ -7,8 +7,8 @@ The `wiresmith` command compiles `.proto` files in a directory tree into Go pack
 The module path is `wiresmith` (no host prefix), so the CLI is built from a checkout rather than installed via `go install`:
 
 ```sh
-git clone <repo>
-cd wiresmith3
+git clone git@github.com:grafana/wiresmith.git
+cd wiresmith
 go build -o wiresmith ./cmd/wiresmith
 ```
 

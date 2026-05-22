@@ -27,14 +27,16 @@ See [design.md](design.md) for the rationale behind each row in the wiresmith co
 
 Measured on Apple M4 Pro, 10 iterations per library, on a full trace payload (100 spans with attributes, events, links). Bytes are generated once by the official runtime and consumed by all four libraries from the same wire image — see [`bench/AGENTS.md`](../bench/AGENTS.md) for the full methodology. Reproduce with `make bench-compare` (or run `bench/` directly; both wrap `go test ./bench/ -bench=...`).
 
-### Throughput (sec/op, lower is better)
+### Throughput (us/op, lower is better)
 
 | Benchmark         | Ours        | Official            | VTProto             | GogoProto           |
 |-------------------|-------------|---------------------|---------------------|---------------------|
-| MarshalTraces     | **6.4 us**  | 46.2 us (+618%)     | 7.7 us (+20%)       | 7.7 us (+19%)       |
-| UnmarshalTraces   | **33.4 us** | 70.1 us (+110%)     | 38.9 us (+16%)      | 36.4 us (+9%)       |
-| SizeTraces        | **1.4 us**  | 17.0 us (+1076%)    | 2.2 us (+52%)       | 2.0 us (+40%)       |
-| **Geometric mean**| **1.96 us** | 8.11 us (+314%)     | 2.33 us (+19%)      | 2.26 us (+15%)      |
+| MarshalTraces     | **6.4**     | 46.2 (+618%)        | 7.7 (+20%)          | 7.7 (+19%)          |
+| UnmarshalTraces   | **33.4**    | 70.1 (+110%)        | 38.9 (+16%)         | 36.4 (+9%)          |
+| SizeTraces        | **1.4**     | 17.0 (+1076%)       | 2.2 (+52%)          | 2.0 (+40%)          |
+| **Geomean, full `bench/` suite** | **1.96** | 8.11 (+314%)        | 2.33 (+19%)         | 2.26 (+15%)         |
+
+The geomean row aggregates every Marshal/Unmarshal/Size variant in [`bench/`](../bench/AGENTS.md#benchmark-variants) — not just the three trace rows above — so its value can sit below the slowest visible row when the broader suite includes smaller payloads such as `MarshalSingleSpan`.
 
 ### Memory (B/op, lower is better)
 
