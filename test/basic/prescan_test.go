@@ -67,10 +67,20 @@ func TestPreScanAbortsOnUnknownWireType(t *testing.T) {
 		"pre-scan must abort on unknown wire type; cap inflated by SEC-2 amplification")
 }
 
-// TestPreScanCapBoundedByPayload is a regression test for SEC-1
-// (wiresmith-bmp). The pre-scan counts wire-format occurrences of any
-// repeated length-delimited field (string, bytes, message, map entry)
-// and uses the count directly as slice capacity (`make([]T, 0, count)`).
+// TestPreScanCapBoundedByPayload is an end-to-end check for SEC-1
+// (wiresmith-bmp). The bound it asserts — `cap(slice) ≤ len(payload)/2`
+// — is also satisfied by a *well-formed* payload of length-delimited
+// entries regardless of whether the generator emits the cap, so this
+// test alone cannot catch a regression that drops the cap. The actual
+// regression guard lives in `compiler/generator/prescan_cap_test.go`
+// (TestPreScanEmitsCapClamp), which inspects the generated source for
+// the cap pattern; this test exercises the runtime behaviour so a
+// non-functional regression (e.g. emitted code that doesn't compile or
+// produces wrong counts) is caught too.
+//
+// The pre-scan counts wire-format occurrences of any repeated
+// length-delimited field (string, bytes, message, map entry) and uses
+// the count directly as slice capacity (`make([]T, 0, count)`).
 // The amplification potential scales with the size of the Go element
 // type: for a repeated-message field over a large value-type struct
 // (e.g. OTel `Span` ≈ 250 B), a payload packed with 2-byte zero-length
