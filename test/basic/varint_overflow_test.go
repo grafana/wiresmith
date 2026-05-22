@@ -41,10 +41,12 @@ func TestUnmarshalRejectsVarintOverflow(t *testing.T) {
 		assert.Error(t, err, "expected error for varint with overflow in 10th byte")
 	})
 
-	t.Run("varint scalar field: 10th-byte continuation bit set", func(t *testing.T) {
-		// Byte 10 = 0x80 → indicates an 11th byte exists. The pre-existing
-		// shift>=64 check eventually catches this, but the new guard catches
-		// it one iteration earlier with a clearer error.
+	t.Run("varint scalar field: 11-byte varint (10th byte continuation)", func(t *testing.T) {
+		// Byte 10 = 0x80 → indicates an 11th byte exists. This case is caught
+		// by the existing `shift >= 64` guard on the next iteration, not by
+		// the new 10th-byte data-bit guard (which only runs on the terminator
+		// path). Kept here as a defence-in-depth check that 11-byte varints
+		// stay rejected end-to-end.
 		var b []byte
 		b = protowire.AppendTag(b, 3, protowire.VarintType)
 		b = append(b, tenByteVarint(0x80)...)
@@ -55,14 +57,15 @@ func TestUnmarshalRejectsVarintOverflow(t *testing.T) {
 	})
 
 	t.Run("length-delimited prefix: 10th-byte data bits > 1", func(t *testing.T) {
-		// AnyValue.string_value is field 1, wire type 2. The length prefix
-		// goes through emitConsumeBytesLenAt — same overflow path as scalar
-		// varints. Pre-fix, the corrupted length still had to satisfy
-		// postIndex > l, so this could appear to work for crafted inputs.
+		// AnyValue.string_value is field 1, wire type 2. Use 0x02 in the 10th
+		// byte: bit 1 shifted by 63 truncates entirely, so the corrupted
+		// length is 0 — well below the MaxInt guard and trivially satisfying
+		// postIndex<=l with no payload. Pre-fix this would silently accept
+		// an empty string; post-fix the new break-path guard rejects it.
+		// 0x7F here would just trip MaxInt and pass for the wrong reason.
 		var b []byte
 		b = protowire.AppendTag(b, 1, protowire.BytesType)
-		b = append(b, tenByteVarint(0x7F)...)
-		b = append(b, 'x')
+		b = append(b, tenByteVarint(0x02)...)
 
 		var av commonv1.AnyValue
 		err := av.Unmarshal(b)
@@ -71,11 +74,12 @@ func TestUnmarshalRejectsVarintOverflow(t *testing.T) {
 
 	t.Run("unknown field length via skipValue: 10th-byte overflow", func(t *testing.T) {
 		// Field 99 routes through skipValue case 2 (length-delimited). Same
-		// inline varint shape; same guard required.
+		// reasoning as the length-prefix subtest above: 0x02 truncates to a
+		// zero length pre-fix, so the new guard is the only thing rejecting
+		// it. No payload byte is appended — length is 0.
 		var b []byte
 		b = protowire.AppendTag(b, 99, protowire.BytesType)
-		b = append(b, tenByteVarint(0x7F)...)
-		b = append(b, 'x')
+		b = append(b, tenByteVarint(0x02)...)
 
 		var av commonv1.AnyValue
 		err := av.Unmarshal(b)
