@@ -157,14 +157,17 @@ func (fg *FileGenerator) emitPreScan(md protoreflect.MessageDescriptor) {
 	fmt.Fprintf(fg.body, "\t\t\tif preIdx < 0 || preIdx > l {\n\t\t\t\tbreak\n\t\t\t}\n")
 	fmt.Fprintf(fg.body, "\t\t}\n")
 
-	// Cap pre-allocated capacity by an attacker-resistant bound. The minimum
-	// legal wire encoding for any pre-scan-tracked element is 2 bytes: a
-	// single-byte tag (fields 1-15) plus a single-byte zero-length varint.
-	// Without this cap, a payload of N zero-length entries of a struct-typed
-	// repeated field allocates capacity N * sizeof(struct), so a tiny payload
-	// can force a multi-MB allocation (SEC-1). `l/2` is a universal safe
-	// upper bound that costs nothing on legitimate payloads (where count is
-	// already ≤ l/2) and bounds the worst case at len(payload)/2 elements.
+	// Cap pre-allocated capacity by an attacker-resistant bound. Every
+	// pre-scan-tracked element is length-delimited, so each occurrence
+	// consumes at least 2 bytes on the wire: tag varint (≥1 byte) plus
+	// length varint (≥1 byte, encoding 0 in the smallest case). No
+	// compliant payload of length l can therefore produce more than l/2
+	// occurrences. Without this cap, a payload of N zero-length entries of
+	// a struct-typed repeated field allocates capacity N * sizeof(struct),
+	// so a tiny payload can force a multi-MB allocation (SEC-1). `l/2` is
+	// a universal safe upper bound that costs nothing on legitimate
+	// payloads (where count is already ≤ l/2) and bounds the worst case
+	// at len(payload)/2 elements.
 	fmt.Fprintf(fg.body, "\t\tpreCapMax := l / 2\n")
 	for _, fd := range fields {
 		goName := snakeToPascal(string(fd.Name()))

@@ -77,11 +77,11 @@ func TestPreScanAbortsOnUnknownWireType(t *testing.T) {
 // classic amplification primitive — and combined with SEC-2 the count
 // itself can run unbounded.
 //
-// The fix caps the pre-allocated capacity at len(payload)/2: the minimum
-// legal wire encoding for any pre-scan-tracked element (length-delimited
-// field with single-byte tag and zero-length varint) is exactly 2 bytes,
-// so no compliant payload can produce more than len/2 elements. The cap
-// is defense-in-depth — it makes the bound explicit in the generated code
+// The fix caps the pre-allocated capacity at len(payload)/2: every
+// length-delimited element consumes at least 2 bytes on the wire (tag
+// varint ≥1 byte plus length varint ≥1 byte for length 0), so no
+// compliant payload can produce more than len/2 elements. The cap is
+// defense-in-depth — it makes the bound explicit in the generated code
 // even if upstream amplification regressed.
 func TestPreScanCapBoundedByPayload(t *testing.T) {
 	// 1KB of `0x4A 0x00` repeats: tag for field 9 (repeated_string) wire
