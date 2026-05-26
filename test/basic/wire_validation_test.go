@@ -18,8 +18,11 @@ import (
 // This test feeds the smallest payload that exercises the validation
 // (`0x00` = tag varint = (field 0 << 3) | wire type 0) through every
 // generated message constructor and asserts the documented error surface.
+// AllPanicSafeConstructors covers both map-free and map-bearing types —
+// the test only checks the returned error, so map randomization is
+// irrelevant.
 func TestUnmarshalRejectsFieldZero(t *testing.T) {
-	for name, ctor := range testutil.AllMessageConstructors() {
+	for name, ctor := range testutil.AllPanicSafeConstructors() {
 		t.Run(name, func(t *testing.T) {
 			msg := ctor()
 			err := msg.Unmarshal([]byte{0x00})
