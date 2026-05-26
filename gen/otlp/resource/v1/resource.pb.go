@@ -222,6 +222,9 @@ func (m *Resource) Unmarshal(b []byte) error {
 }
 
 func (m *Resource) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 

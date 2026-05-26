@@ -1685,6 +1685,9 @@ func (m *TracesData) Unmarshal(b []byte) error {
 }
 
 func (m *TracesData) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -1841,6 +1844,9 @@ func (m *ResourceSpans) Unmarshal(b []byte) error {
 }
 
 func (m *ResourceSpans) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -2081,6 +2087,9 @@ func (m *ScopeSpans) Unmarshal(b []byte) error {
 }
 
 func (m *ScopeSpans) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -2321,6 +2330,9 @@ func (m *Span_Event) Unmarshal(b []byte) error {
 }
 
 func (m *Span_Event) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -2563,6 +2575,9 @@ func (m *Span_Link) Unmarshal(b []byte) error {
 }
 
 func (m *Span_Link) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -2887,6 +2902,9 @@ func (m *Span) Unmarshal(b []byte) error {
 }
 
 func (m *Span) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -3559,6 +3577,9 @@ func (m *Status) Unmarshal(b []byte) error {
 }
 
 func (m *Status) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 

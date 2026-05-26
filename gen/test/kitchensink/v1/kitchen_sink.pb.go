@@ -3268,6 +3268,9 @@ func (m *AllScalars) Unmarshal(b []byte) error {
 }
 
 func (m *AllScalars) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -3699,6 +3702,9 @@ func (m *AllOptionalScalars) Unmarshal(b []byte) error {
 }
 
 func (m *AllOptionalScalars) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -4129,6 +4135,9 @@ func (m *AllRepeatedScalars) Unmarshal(b []byte) error {
 }
 
 func (m *AllRepeatedScalars) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -5212,6 +5221,9 @@ func (m *OneofVariants) Unmarshal(b []byte) error {
 }
 
 func (m *OneofVariants) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -5628,6 +5640,9 @@ func (m *Outer) Unmarshal(b []byte) error {
 }
 
 func (m *Outer) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -5868,6 +5883,9 @@ func (m *Middle) Unmarshal(b []byte) error {
 }
 
 func (m *Middle) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -6096,6 +6114,9 @@ func (m *Inner) Unmarshal(b []byte) error {
 }
 
 func (m *Inner) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -6273,6 +6294,9 @@ func (m *HighFieldNumbers) Unmarshal(b []byte) error {
 }
 
 func (m *HighFieldNumbers) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -6528,6 +6552,9 @@ func (m *WithEnum) Unmarshal(b []byte) error {
 }
 
 func (m *WithEnum) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -6684,6 +6711,9 @@ func (m *Empty) Unmarshal(b []byte) error {
 }
 
 func (m *Empty) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -6734,6 +6764,9 @@ func (m *OnlyRepeated) Unmarshal(b []byte) error {
 }
 
 func (m *OnlyRepeated) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -7016,6 +7049,9 @@ func (m *Container) Unmarshal(b []byte) error {
 }
 
 func (m *Container) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -7258,6 +7294,9 @@ func (m *AllMaps) Unmarshal(b []byte) error {
 }
 
 func (m *AllMaps) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 

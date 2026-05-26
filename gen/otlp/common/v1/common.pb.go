@@ -1012,6 +1012,9 @@ func (m *AnyValue) Unmarshal(b []byte) error {
 }
 
 func (m *AnyValue) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -1335,6 +1338,9 @@ func (m *ArrayValue) Unmarshal(b []byte) error {
 }
 
 func (m *ArrayValue) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -1491,6 +1497,9 @@ func (m *KeyValueList) Unmarshal(b []byte) error {
 }
 
 func (m *KeyValueList) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -1647,6 +1656,9 @@ func (m *KeyValue) Unmarshal(b []byte) error {
 }
 
 func (m *KeyValue) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -1810,6 +1822,9 @@ func (m *InstrumentationScope) Unmarshal(b []byte) error {
 }
 
 func (m *InstrumentationScope) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -2077,6 +2092,9 @@ func (m *EntityRef) Unmarshal(b []byte) error {
 }
 
 func (m *EntityRef) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 

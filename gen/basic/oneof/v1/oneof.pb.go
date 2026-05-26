@@ -875,6 +875,9 @@ func (m *Payload) Unmarshal(b []byte) error {
 }
 
 func (m *Payload) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -995,6 +998,9 @@ func (m *MultiOneof) Unmarshal(b []byte) error {
 }
 
 func (m *MultiOneof) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -1284,6 +1290,9 @@ func (m *OneofWithTypes) Unmarshal(b []byte) error {
 }
 
 func (m *OneofWithTypes) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -1477,6 +1486,9 @@ func (m *OneofPlusEverything) Unmarshal(b []byte) error {
 }
 
 func (m *OneofPlusEverything) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 

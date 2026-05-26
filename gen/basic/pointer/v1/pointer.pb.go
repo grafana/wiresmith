@@ -373,6 +373,9 @@ func (m *Leaf) Unmarshal(b []byte) error {
 }
 
 func (m *Leaf) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -493,6 +496,9 @@ func (m *PointerHolder) Unmarshal(b []byte) error {
 }
 
 func (m *PointerHolder) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 

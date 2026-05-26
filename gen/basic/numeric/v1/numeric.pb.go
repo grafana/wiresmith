@@ -2537,6 +2537,9 @@ func (m *UnpackedScalars) Unmarshal(b []byte) error {
 }
 
 func (m *UnpackedScalars) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -3468,6 +3471,9 @@ func (m *MixedModifiers) Unmarshal(b []byte) error {
 }
 
 func (m *MixedModifiers) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -4061,6 +4067,9 @@ func (m *WideFields) Unmarshal(b []byte) error {
 }
 
 func (m *WideFields) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 

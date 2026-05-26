@@ -207,10 +207,18 @@ func (fg *FileGenerator) emitUnmarshal(md protoreflect.MessageDescriptor) {
 	// remains monotonic — otherwise a graph bouncing between packages
 	// would silently reset depth at each hop and recurse up to
 	// maxUnmarshalDepth*pkgCount levels (SEC-5).
+	//
+	// Negative starting depth is clamped to 0: the caller-supplied depth
+	// feeds directly into the `depth > maxUnmarshalDepth` guard, so a
+	// negative value would silently widen the budget. Clamping keeps the
+	// guard's monotonicity property even if a buggy caller passes -N.
 	fmt.Fprintf(fg.body, "func (m *%s) Unmarshal(b []byte) error {\n", name)
 	fmt.Fprintf(fg.body, "\treturn m.unmarshal(b, 0)\n")
 	fmt.Fprintf(fg.body, "}\n\n")
 	fmt.Fprintf(fg.body, "func (m *%s) UnmarshalWithDepth(b []byte, depth int) error {\n", name)
+	fmt.Fprintf(fg.body, "\tif depth < 0 {\n")
+	fmt.Fprintf(fg.body, "\t\tdepth = 0\n")
+	fmt.Fprintf(fg.body, "\t}\n")
 	fmt.Fprintf(fg.body, "\treturn m.unmarshal(b, depth)\n")
 	fmt.Fprintf(fg.body, "}\n\n")
 

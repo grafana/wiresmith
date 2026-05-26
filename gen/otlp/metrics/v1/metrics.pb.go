@@ -3376,6 +3376,9 @@ func (m *MetricsData) Unmarshal(b []byte) error {
 }
 
 func (m *MetricsData) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -3532,6 +3535,9 @@ func (m *ResourceMetrics) Unmarshal(b []byte) error {
 }
 
 func (m *ResourceMetrics) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -3772,6 +3778,9 @@ func (m *ScopeMetrics) Unmarshal(b []byte) error {
 }
 
 func (m *ScopeMetrics) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -4012,6 +4021,9 @@ func (m *Metric) Unmarshal(b []byte) error {
 }
 
 func (m *Metric) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -4526,6 +4538,9 @@ func (m *Gauge) Unmarshal(b []byte) error {
 }
 
 func (m *Gauge) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -4682,6 +4697,9 @@ func (m *Sum) Unmarshal(b []byte) error {
 }
 
 func (m *Sum) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -4896,6 +4914,9 @@ func (m *Histogram) Unmarshal(b []byte) error {
 }
 
 func (m *Histogram) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -5081,6 +5102,9 @@ func (m *ExponentialHistogram) Unmarshal(b []byte) error {
 }
 
 func (m *ExponentialHistogram) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -5266,6 +5290,9 @@ func (m *Summary) Unmarshal(b []byte) error {
 }
 
 func (m *Summary) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -5422,6 +5449,9 @@ func (m *NumberDataPoint) Unmarshal(b []byte) error {
 }
 
 func (m *NumberDataPoint) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -5721,6 +5751,9 @@ func (m *HistogramDataPoint) Unmarshal(b []byte) error {
 }
 
 func (m *HistogramDataPoint) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -6170,6 +6203,9 @@ func (m *ExponentialHistogramDataPoint_Buckets) Unmarshal(b []byte) error {
 }
 
 func (m *ExponentialHistogramDataPoint_Buckets) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -6326,6 +6362,9 @@ func (m *ExponentialHistogramDataPoint) Unmarshal(b []byte) error {
 }
 
 func (m *ExponentialHistogramDataPoint) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -6806,6 +6845,9 @@ func (m *SummaryDataPoint_ValueAtQuantile) Unmarshal(b []byte) error {
 }
 
 func (m *SummaryDataPoint_ValueAtQuantile) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -6888,6 +6930,9 @@ func (m *SummaryDataPoint) Unmarshal(b []byte) error {
 }
 
 func (m *SummaryDataPoint) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -7189,6 +7234,9 @@ func (m *Exemplar) Unmarshal(b []byte) error {
 }
 
 func (m *Exemplar) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 

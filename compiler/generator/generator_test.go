@@ -864,6 +864,66 @@ message Outer { depthsec.leaf.v1.Leaf l = 1; }`)
 	}
 }
 
+// TestGenerateCrossPackageMapValueThreadsDepth covers the second SEC-5
+// emit site — `map<K, Msg>` values where `Msg` lives in a different proto
+// package. The map-entry value path is its own code branch (see
+// MessageType.EmitMapEntryUnmarshal), so the SEC-5 fix had to be applied
+// there explicitly; this test pins it so it can't quietly slip back.
+func TestGenerateCrossPackageMapValueThreadsDepth(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "leaf/v1/leaf.proto", `
+syntax = "proto3";
+package depthmap.leaf.v1;
+message Leaf { string s = 1; }`)
+	writeProto(t, protoDir, "outer/v1/outer.proto", `
+syntax = "proto3";
+package depthmap.outer.v1;
+import "leaf/v1/leaf.proto";
+message Outer { map<string, depthmap.leaf.v1.Leaf> entries = 1; }`)
+
+	outDir := t.TempDir()
+	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
+	}
+	outerSrc := mustReadFile(t, filepath.Join(outDir, "depthmap", "outer", "v1", "outer.pb.go"))
+
+	if !strings.Contains(outerSrc, "UnmarshalWithDepth(dAtA[iNdEx:postIndex], depth+1)") {
+		t.Errorf("outer.pb.go map<K, Leaf> entry must thread depth via UnmarshalWithDepth — pre-fix this site called the depth-resetting Unmarshal; full source:\n%s", outerSrc)
+	}
+}
+
+// TestGenerateUnmarshalWithDepthClampsNegative pins the negative-depth
+// guard inside UnmarshalWithDepth. A negative starting depth would
+// silently widen the recursion budget (the guard is `depth > maxDepth`),
+// so the generator emits a clamp-to-zero block at the entry. Without it,
+// a misuse of the public API could re-open SEC-5 from the caller side.
+func TestGenerateUnmarshalWithDepthClampsNegative(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "clamp/v1/clamp.proto", `
+syntax = "proto3";
+package depthclamp.v1;
+message Probe { string s = 1; }`)
+
+	outDir := t.TempDir()
+	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
+	}
+	src := mustReadFile(t, filepath.Join(outDir, "depthclamp", "v1", "clamp.pb.go"))
+
+	if !strings.Contains(src, "func (m *Probe) UnmarshalWithDepth(b []byte, depth int) error") {
+		t.Fatalf("Probe must expose UnmarshalWithDepth; full source:\n%s", src)
+	}
+	// The clamp block must be inside UnmarshalWithDepth, before the call
+	// to the private unmarshal. The literal `if depth < 0` form is what
+	// the generator emits today; keep this assertion exact so a refactor
+	// that drops the clamp can't pass quietly.
+	if !strings.Contains(src, "if depth < 0 {\n\t\tdepth = 0\n\t}") {
+		t.Errorf("UnmarshalWithDepth must clamp negative starting depth to 0; full source:\n%s", src)
+	}
+}
+
 // TestGenerateMixedLayoutImport documents the supported import shape for a
 // mixed flat+nested layout: a nested file importing a top-level file must
 // use the top-level's package-derived path (its canonical key), not the

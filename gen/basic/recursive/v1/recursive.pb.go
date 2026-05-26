@@ -551,6 +551,9 @@ func (m *LinkedList) Unmarshal(b []byte) error {
 }
 
 func (m *LinkedList) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -675,6 +678,9 @@ func (m *TreeNode) Unmarshal(b []byte) error {
 }
 
 func (m *TreeNode) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -901,6 +907,9 @@ func (m *NodeA) Unmarshal(b []byte) error {
 }
 
 func (m *NodeA) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -1143,6 +1152,9 @@ func (m *NodeB) Unmarshal(b []byte) error {
 }
 
 func (m *NodeB) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 

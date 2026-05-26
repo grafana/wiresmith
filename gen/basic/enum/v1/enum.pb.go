@@ -485,6 +485,9 @@ func (m *WithNestedEnum) Unmarshal(b []byte) error {
 }
 
 func (m *WithNestedEnum) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -682,6 +685,9 @@ func (m *EnumContainer) Unmarshal(b []byte) error {
 }
 
 func (m *EnumContainer) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 

@@ -3440,6 +3440,9 @@ func (m *TestAllTypesProto3_NestedMessage) Unmarshal(b []byte) error {
 }
 
 func (m *TestAllTypesProto3_NestedMessage) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -3519,6 +3522,9 @@ func (m *TestAllTypesProto3) Unmarshal(b []byte) error {
 }
 
 func (m *TestAllTypesProto3) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -10908,6 +10914,9 @@ func (m *ForeignMessage) Unmarshal(b []byte) error {
 }
 
 func (m *ForeignMessage) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -10987,6 +10996,9 @@ func (m *NullHypothesisProto3) Unmarshal(b []byte) error {
 }
 
 func (m *NullHypothesisProto3) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -11037,6 +11049,9 @@ func (m *EnumOnlyProto3) Unmarshal(b []byte) error {
 }
 
 func (m *EnumOnlyProto3) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 

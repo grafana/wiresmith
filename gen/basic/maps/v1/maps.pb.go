@@ -363,6 +363,9 @@ func (m *MapBench) Unmarshal(b []byte) error {
 }
 
 func (m *MapBench) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
@@ -941,6 +944,9 @@ func (m *Inner) Unmarshal(b []byte) error {
 }
 
 func (m *Inner) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
 	return m.unmarshal(b, depth)
 }
 
