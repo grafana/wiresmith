@@ -453,11 +453,123 @@ func writeProto(t *testing.T, dir, relPath, content string) {
 	}
 }
 
+// TestGenerateFilesScopesEmission pins the positional-argument contract:
+// when Generator.Files lists a subset of `.proto` files, only those files
+// produce output. Other files in --proto_path remain available for import
+// resolution but do not get a `.pb.go`.
+//
+// This is the property that lets callers say "compile just this one file"
+// (matching protoc/vtproto/gogoproto conventions) without losing the ability
+// to resolve cross-file imports against the full proto tree.
+func TestGenerateFilesScopesEmission(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "a/foo.proto", `
+syntax = "proto3";
+package scoped.a.v1;
+import "b/bar.proto";
+option go_package = "wiresmith/scoped/a";
+message Foo {
+  string name = 1;
+  scoped.b.v1.Bar bar = 2;
+}`)
+	writeProto(t, protoDir, "b/bar.proto", `
+syntax = "proto3";
+package scoped.b.v1;
+option go_package = "wiresmith/scoped/b";
+message Bar { int32 n = 1; }`)
+
+	outDir := t.TempDir()
+	gen := &Generator{
+		Module:   "wiresmith",
+		OutDir:   outDir,
+		ProtoDir: protoDir,
+		Files:    []string{filepath.Join(protoDir, "a", "foo.proto")},
+	}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate (cross-file import must still resolve from --proto_path): %v", err)
+	}
+
+	if _, err := os.Stat(filepath.Join(outDir, "scoped", "a", "v1", "foo.pb.go")); err != nil {
+		t.Errorf("expected a/foo.pb.go in the scoped set: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(outDir, "scoped", "b", "v1", "bar.pb.go")); !os.IsNotExist(err) {
+		t.Errorf("b/bar.pb.go must NOT be emitted (not in Files filter), got err=%v", err)
+	}
+}
+
+// TestGenerateFilesEmptyEmitsAll pins that an empty Files list is the same
+// "walk and emit everything" behavior wiresmith had before positional args
+// were introduced — i.e. positional args are purely an additional filter, not
+// a breaking semantic change.
+func TestGenerateFilesEmptyEmitsAll(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "a/foo.proto", `
+syntax = "proto3";
+package scoped.a.v1;
+option go_package = "wiresmith/scoped/a";
+message Foo { string s = 1; }`)
+	writeProto(t, protoDir, "b/bar.proto", `
+syntax = "proto3";
+package scoped.b.v1;
+option go_package = "wiresmith/scoped/b";
+message Bar { int32 n = 1; }`)
+
+	outDir := t.TempDir()
+	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
+	}
+	for _, rel := range []string{
+		filepath.Join("scoped", "a", "v1", "foo.pb.go"),
+		filepath.Join("scoped", "b", "v1", "bar.pb.go"),
+	} {
+		if _, err := os.Stat(filepath.Join(outDir, rel)); err != nil {
+			t.Errorf("expected %s to be emitted in default-walk mode: %v", rel, err)
+		}
+	}
+}
+
+// TestGenerateFilesRejectsOutsideProtoPath verifies that passing a positional
+// path that doesn't live under --proto_path produces a clear error, rather
+// than silently emitting nothing (which would be a frustrating
+// "command appeared to succeed but did nothing" footgun).
+func TestGenerateFilesRejectsOutsideProtoPath(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "in.proto", `
+syntax = "proto3";
+package scoped.in;
+option go_package = "wiresmith/scoped/in";
+message In { string s = 1; }`)
+
+	outsideDir := t.TempDir()
+	outsideFile := filepath.Join(outsideDir, "outside.proto")
+	if err := os.WriteFile(outsideFile, []byte(`
+syntax = "proto3";
+package scoped.outside;
+message Out { string s = 1; }`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	gen := &Generator{
+		Module:   "wiresmith",
+		OutDir:   t.TempDir(),
+		ProtoDir: protoDir,
+		Files:    []string{outsideFile},
+	}
+	err := gen.Generate(context.Background())
+	if err == nil {
+		t.Fatalf("expected error for positional path outside --proto_path, got nil")
+	}
+	if !strings.Contains(err.Error(), "outside.proto") {
+		t.Errorf("error should name the offending path, got: %v", err)
+	}
+}
+
 func TestBuildImportMappingFlat(t *testing.T) {
 	dir := t.TempDir()
 	writeProto(t, dir, "foo.proto", "syntax = \"proto3\";\npackage test.foo;\nmessage Foo {}")
 
-	mapping, importPaths, err := buildImportMapping(dir)
+	mapping, importPaths, _, err := buildImportMapping(dir)
 	if err != nil {
 		t.Fatalf("buildImportMapping: %v", err)
 	}
@@ -488,7 +600,7 @@ func TestBuildImportMappingRecursive(t *testing.T) {
 	writeProto(t, dir, "trace/v1/trace.proto",
 		"syntax = \"proto3\";\npackage tempopb.trace.v1;\nimport \"common/v1/common.proto\";\nmessage Bar { tempopb.common.v1.Foo foo = 1; }")
 
-	mapping, importPaths, err := buildImportMapping(dir)
+	mapping, importPaths, _, err := buildImportMapping(dir)
 	if err != nil {
 		t.Fatalf("buildImportMapping: %v", err)
 	}
@@ -520,7 +632,7 @@ func TestBuildImportMappingMixed(t *testing.T) {
 	writeProto(t, dir, "sub/v1/nested.proto",
 		"syntax = \"proto3\";\npackage mypkg.sub.v1;\nmessage Nested {}")
 
-	mapping, importPaths, err := buildImportMapping(dir)
+	mapping, importPaths, _, err := buildImportMapping(dir)
 	if err != nil {
 		t.Fatalf("buildImportMapping: %v", err)
 	}
@@ -539,7 +651,7 @@ func TestBuildImportMappingNoPackage(t *testing.T) {
 	dir := t.TempDir()
 	writeProto(t, dir, "bare.proto", "syntax = \"proto3\";\nmessage Bare {}")
 
-	_, _, err := buildImportMapping(dir)
+	_, _, _, err := buildImportMapping(dir)
 	if err == nil {
 		t.Fatal("expected error for proto without package, got nil")
 	}
@@ -559,7 +671,7 @@ func TestBuildImportMappingDuplicateKey(t *testing.T) {
 	writeProto(t, dir, "bar/foo.proto",
 		"syntax = \"proto3\";\npackage bar;\nmessage Foo {}")
 
-	_, _, err := buildImportMapping(dir)
+	_, _, _, err := buildImportMapping(dir)
 	if err == nil {
 		t.Fatal("expected duplicate-key error, got nil")
 	}

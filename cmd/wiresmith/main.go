@@ -23,7 +23,12 @@ func main() {
 		fmt.Fprint(os.Stderr, `wiresmith — generate high-performance Go marshal/unmarshal code from .proto files.
 
 Usage:
-  wiresmith [flags]
+  wiresmith [flags] [files...]
+
+When one or more .proto file paths are given as positional arguments,
+only those files are emitted. Their imports are still resolved against
+the full --proto_path walk. When no files are given, wiresmith walks
+--proto_path and emits every .proto it finds (the default).
 
 Flags:
 `)
@@ -45,6 +50,7 @@ Flags:
 		Module:   *module,
 		OutDir:   *outDir,
 		ProtoDir: *protoDir,
+		Files:    flag.Args(),
 	}
 
 	if err := g.Generate(context.Background()); err != nil {
