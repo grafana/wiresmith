@@ -316,6 +316,106 @@ message Foo { string s = 1; }`)
 	}
 }
 
+// TestGeneratePerSourceFileOutput pins the per-source-file emission contract:
+// two .proto files sharing a proto package must each get their own .pb.go +
+// _reflect.pb.go (named by basename, not aggregated into one Go file), and
+// each registration init() must be self-contained for its own file's types.
+//
+// This is the precondition for source-relative output paths
+// (`<--out>/<source-rel>.pb.go`): aggregation would make that contract
+// impossible to honor for any proto package containing more than one file.
+func TestGeneratePerSourceFileOutput(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "common.proto", `
+syntax = "proto3";
+package example.v1;
+message Foo { string name = 1; }`)
+	writeProto(t, protoDir, "types.proto", `
+syntax = "proto3";
+package example.v1;
+import "example/v1/common.proto";
+message Bar { Foo foo = 1; }`)
+
+	outDir := t.TempDir()
+	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
+	}
+
+	wantFiles := []string{
+		"example/v1/common.pb.go",
+		"example/v1/common_reflect.pb.go",
+		"example/v1/types.pb.go",
+		"example/v1/types_reflect.pb.go",
+	}
+	for _, rel := range wantFiles {
+		if _, err := os.Stat(filepath.Join(outDir, rel)); err != nil {
+			t.Errorf("expected per-source output %s: %v", rel, err)
+		}
+	}
+
+	commonSrc := mustReadFile(t, filepath.Join(outDir, "example/v1/common.pb.go"))
+	typesSrc := mustReadFile(t, filepath.Join(outDir, "example/v1/types.pb.go"))
+	commonReflSrc := mustReadFile(t, filepath.Join(outDir, "example/v1/common_reflect.pb.go"))
+	typesReflSrc := mustReadFile(t, filepath.Join(outDir, "example/v1/types_reflect.pb.go"))
+
+	// Each file declares only its own types — no aggregation into a single
+	// Go file. common.pb.go must contain Foo (not Bar); types.pb.go must
+	// contain Bar (not Foo).
+	if !strings.Contains(commonSrc, "type Foo struct") {
+		t.Errorf("common.pb.go must declare Foo")
+	}
+	if strings.Contains(commonSrc, "type Bar struct") {
+		t.Errorf("common.pb.go must NOT declare Bar (types.proto's type leaked into common.pb.go)")
+	}
+	if !strings.Contains(typesSrc, "type Bar struct") {
+		t.Errorf("types.pb.go must declare Bar")
+	}
+	if strings.Contains(typesSrc, "type Foo struct") {
+		t.Errorf("types.pb.go must NOT declare Foo (common.proto's type leaked into types.pb.go)")
+	}
+
+	// Cross-file references within the same Go package: types.pb.go's Bar
+	// must reference Foo by bare identifier (no package qualifier), since
+	// Go same-package files share a namespace.
+	if !strings.Contains(typesSrc, "Foo ") && !strings.Contains(typesSrc, "Foo\n") && !strings.Contains(typesSrc, "*Foo") {
+		t.Errorf("types.pb.go must reference Foo without a package qualifier — expected to find an unqualified `Foo` reference")
+	}
+
+	// Per-file registration: each _reflect.pb.go owns its file's rawDesc and
+	// its own init() — registration must NOT be aggregated across the proto
+	// package into a single init.
+	if !strings.Contains(commonReflSrc, "file_example_v1_common_proto_rawDesc") {
+		t.Errorf("common_reflect.pb.go missing its own file_*_rawDesc constant")
+	}
+	if !strings.Contains(typesReflSrc, "file_example_v1_types_proto_rawDesc") {
+		t.Errorf("types_reflect.pb.go missing its own file_*_rawDesc constant")
+	}
+	if strings.Contains(commonReflSrc, "file_example_v1_types_proto_rawDesc") {
+		t.Errorf("common_reflect.pb.go references types.proto's rawDesc — registration leaked across source files")
+	}
+	if strings.Contains(typesReflSrc, "file_example_v1_common_proto_rawDesc") {
+		t.Errorf("types_reflect.pb.go references common.proto's rawDesc — registration leaked across source files")
+	}
+	if strings.Count(commonReflSrc, "\nfunc init() {") != 1 {
+		t.Errorf("common_reflect.pb.go must declare exactly one init() function")
+	}
+	if strings.Count(typesReflSrc, "\nfunc init() {") != 1 {
+		t.Errorf("types_reflect.pb.go must declare exactly one init() function")
+	}
+}
+
+// mustReadFile reads path and returns its content as a string, failing the
+// test on error.
+func mustReadFile(t *testing.T, path string) string {
+	t.Helper()
+	b, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("read %s: %v", path, err)
+	}
+	return string(b)
+}
+
 // TestGenerateEmptyProtoDoesNotTriggerDestinationCollision verifies that an
 // empty .proto whose package resolves to the same Go directory as a different
 // non-empty proto's go_package does not fail validateDestinations. Only the
