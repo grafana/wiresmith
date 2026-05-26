@@ -145,11 +145,18 @@ func (g *Generator) Generate(ctx context.Context) error {
 			if err != nil {
 				return fmt.Errorf("resolving %q: %w", src, err)
 			}
-			key, ok := pathToKey[abs]
-			if !ok {
-				return fmt.Errorf("file %q is not under --proto_path=%q (or is not a .proto file in the walked tree)", src, g.ProtoDir)
+			if key, ok := pathToKey[abs]; ok {
+				g.emitFilter[key] = true
+				continue
 			}
-			g.emitFilter[key] = true
+			// Distinguish "file doesn't exist" (typo, far more common) from
+			// "file exists but is outside the walked tree". The first message
+			// blamed --proto_path even when the user just mistyped a filename,
+			// which made typos confusing to diagnose.
+			if _, statErr := os.Stat(src); os.IsNotExist(statErr) {
+				return fmt.Errorf("file %q does not exist", src)
+			}
+			return fmt.Errorf("file %q is not a .proto under --proto_path=%q", src, g.ProtoDir)
 		}
 	}
 

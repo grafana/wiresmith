@@ -580,6 +580,39 @@ message Bar { int32 n = 1; }`)
 	}
 }
 
+// TestGenerateFilesRejectsNonexistent verifies that a positional path
+// pointing at a file that does not exist produces a "no such file or
+// directory"-style error, not the misleading "is not under --proto_path"
+// error that fires when the file exists outside the walked tree. A typo
+// in a positional arg is by far the most common failure mode; the
+// diagnostic should name the actual cause.
+func TestGenerateFilesRejectsNonexistent(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "in.proto", `
+syntax = "proto3";
+package scoped.in;
+option go_package = "wiresmith/scoped/in";
+message In { string s = 1; }`)
+
+	missing := filepath.Join(protoDir, "doesnotexist.proto")
+	gen := &Generator{
+		Module:   "wiresmith",
+		OutDir:   t.TempDir(),
+		ProtoDir: protoDir,
+		Files:    []string{missing},
+	}
+	err := gen.Generate(context.Background())
+	if err == nil {
+		t.Fatalf("expected error for nonexistent positional path, got nil")
+	}
+	if !strings.Contains(err.Error(), "doesnotexist.proto") {
+		t.Errorf("error should name the offending path, got: %v", err)
+	}
+	if !strings.Contains(err.Error(), "does not exist") {
+		t.Errorf("error should distinguish 'does not exist' from 'outside --proto_path', got: %v", err)
+	}
+}
+
 // TestGenerateFilesRejectsOutsideProtoPath verifies that passing a positional
 // path that doesn't live under --proto_path produces a clear error, rather
 // than silently emitting nothing (which would be a frustrating
@@ -613,6 +646,9 @@ message Out { string s = 1; }`), 0o644); err != nil {
 	}
 	if !strings.Contains(err.Error(), "outside.proto") {
 		t.Errorf("error should name the offending path, got: %v", err)
+	}
+	if !strings.Contains(err.Error(), "not a .proto under --proto_path") {
+		t.Errorf("error should distinguish 'outside --proto_path' from 'does not exist', got: %v", err)
 	}
 }
 
