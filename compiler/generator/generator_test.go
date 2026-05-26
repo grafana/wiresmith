@@ -529,6 +529,57 @@ message Bar { int32 n = 1; }`)
 	}
 }
 
+// TestGenerateFilesReuseClearsFilter pins that the emitFilter from a prior
+// scoped Generate call does not leak into a subsequent empty-Files run on
+// the same *Generator instance. Without the explicit reset in Generate,
+// the second call would still be filtered to the first call's subset,
+// silently producing the wrong output.
+func TestGenerateFilesReuseClearsFilter(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "a/foo.proto", `
+syntax = "proto3";
+package scoped.a.v1;
+option go_package = "wiresmith/scoped/a";
+message Foo { string s = 1; }`)
+	writeProto(t, protoDir, "b/bar.proto", `
+syntax = "proto3";
+package scoped.b.v1;
+option go_package = "wiresmith/scoped/b";
+message Bar { int32 n = 1; }`)
+
+	gen := &Generator{
+		Module:   "wiresmith",
+		ProtoDir: protoDir,
+		Files:    []string{filepath.Join(protoDir, "a", "foo.proto")},
+	}
+	scopedOut := t.TempDir()
+	gen.OutDir = scopedOut
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("first (scoped) Generate: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(scopedOut, "scoped", "b", "v1", "bar.pb.go")); !os.IsNotExist(err) {
+		t.Fatalf("first call should have scoped to a/foo.proto only (sanity check): %v", err)
+	}
+
+	// Reuse the same Generator with Files cleared. Without an explicit
+	// reset of emitFilter, the second run would still apply the first
+	// call's filter and skip b/bar.proto.
+	gen.Files = nil
+	allOut := t.TempDir()
+	gen.OutDir = allOut
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("second (walk-everything) Generate after Files cleared: %v", err)
+	}
+	for _, rel := range []string{
+		filepath.Join("scoped", "a", "v1", "foo.pb.go"),
+		filepath.Join("scoped", "b", "v1", "bar.pb.go"),
+	} {
+		if _, err := os.Stat(filepath.Join(allOut, rel)); err != nil {
+			t.Errorf("second Generate must emit %s (Files=nil after a prior scoped run): %v", rel, err)
+		}
+	}
+}
+
 // TestGenerateFilesRejectsOutsideProtoPath verifies that passing a positional
 // path that doesn't live under --proto_path produces a clear error, rather
 // than silently emitting nothing (which would be a frustrating

@@ -135,6 +135,9 @@ func (g *Generator) Generate(ctx context.Context) error {
 		return fmt.Errorf("building import mapping: %w", err)
 	}
 
+	// Reset on every call so a reused Generator can't carry an emitFilter
+	// from a prior scoped run into a subsequent walk-everything one.
+	g.emitFilter = nil
 	if len(g.Files) > 0 {
 		g.emitFilter = make(map[string]bool, len(g.Files))
 		for _, src := range g.Files {
