@@ -343,10 +343,10 @@ message Bar { Foo foo = 1; }`)
 	}
 
 	wantFiles := []string{
-		"example/v1/common.pb.go",
-		"example/v1/common_reflect.pb.go",
-		"example/v1/types.pb.go",
-		"example/v1/types_reflect.pb.go",
+		filepath.Join("example", "v1", "common.pb.go"),
+		filepath.Join("example", "v1", "common_reflect.pb.go"),
+		filepath.Join("example", "v1", "types.pb.go"),
+		filepath.Join("example", "v1", "types_reflect.pb.go"),
 	}
 	for _, rel := range wantFiles {
 		if _, err := os.Stat(filepath.Join(outDir, rel)); err != nil {
@@ -354,10 +354,10 @@ message Bar { Foo foo = 1; }`)
 		}
 	}
 
-	commonSrc := mustReadFile(t, filepath.Join(outDir, "example/v1/common.pb.go"))
-	typesSrc := mustReadFile(t, filepath.Join(outDir, "example/v1/types.pb.go"))
-	commonReflSrc := mustReadFile(t, filepath.Join(outDir, "example/v1/common_reflect.pb.go"))
-	typesReflSrc := mustReadFile(t, filepath.Join(outDir, "example/v1/types_reflect.pb.go"))
+	commonSrc := mustReadFile(t, filepath.Join(outDir, "example", "v1", "common.pb.go"))
+	typesSrc := mustReadFile(t, filepath.Join(outDir, "example", "v1", "types.pb.go"))
+	commonReflSrc := mustReadFile(t, filepath.Join(outDir, "example", "v1", "common_reflect.pb.go"))
+	typesReflSrc := mustReadFile(t, filepath.Join(outDir, "example", "v1", "types_reflect.pb.go"))
 
 	// Each file declares only its own types — no aggregation into a single
 	// Go file. common.pb.go must contain Foo (not Bar); types.pb.go must
