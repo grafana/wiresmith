@@ -25,9 +25,22 @@ type Generator struct {
 	OutDir   string
 	ProtoDir string
 
+	// Files optionally restricts emission to a subset of `.proto` files in
+	// ProtoDir. Entries are filesystem paths (relative to cwd or absolute),
+	// matching protoc's positional-argument convention. Files outside
+	// ProtoDir are rejected. An empty slice keeps the default "walk
+	// --proto_path and emit everything" behavior; cross-file imports are
+	// always resolved against the full walk regardless of this filter.
+	Files []string
+
 	// goPackages maps a proto package name to the raw value of its
 	// `option go_package`. Populated during Generate after compilation.
 	goPackages map[string]string
+
+	// emitFilter is the set of fd.Path() values to emit, derived from Files
+	// at the start of Generate. Nil means "emit every shouldGenerateFile
+	// candidate" (the empty-Files default).
+	emitFilter map[string]bool
 
 	// pointerExt is the linked extension descriptor for
 	// `(wiresmith.options.pointer)`, resolved once after Compile and consulted
@@ -117,9 +130,34 @@ func (fg *FileGenerator) fieldContext(fd protoreflect.FieldDescriptor) types.Fie
 }
 
 func (g *Generator) Generate(ctx context.Context) error {
-	mapping, importPaths, err := buildImportMapping(g.ProtoDir)
+	mapping, importPaths, pathToKey, err := buildImportMapping(g.ProtoDir)
 	if err != nil {
 		return fmt.Errorf("building import mapping: %w", err)
+	}
+
+	// Reset on every call so a reused Generator can't carry an emitFilter
+	// from a prior scoped run into a subsequent walk-everything one.
+	g.emitFilter = nil
+	if len(g.Files) > 0 {
+		g.emitFilter = make(map[string]bool, len(g.Files))
+		for _, src := range g.Files {
+			abs, err := filepath.Abs(src)
+			if err != nil {
+				return fmt.Errorf("resolving %q: %w", src, err)
+			}
+			if key, ok := pathToKey[abs]; ok {
+				g.emitFilter[key] = true
+				continue
+			}
+			// Distinguish "file doesn't exist" (typo, far more common) from
+			// "file exists but is outside the walked tree". The first message
+			// blamed --proto_path even when the user just mistyped a filename,
+			// which made typos confusing to diagnose.
+			if _, statErr := os.Stat(src); os.IsNotExist(statErr) {
+				return fmt.Errorf("file %q does not exist", src)
+			}
+			return fmt.Errorf("file %q is not a .proto under --proto_path=%q", src, g.ProtoDir)
+		}
 	}
 
 	// Always inject the embedded `wiresmith/options.proto` into the input set
@@ -188,7 +226,7 @@ func (g *Generator) Generate(ctx context.Context) error {
 	// Check both paths against the same map.
 	outputs := make(map[string]string, 2*len(results))
 	for _, fd := range results {
-		if !shouldGenerateFile(fd) {
+		if !g.shouldEmit(fd) {
 			continue
 		}
 		for _, outPath := range []string{g.outputPathFor(fd), g.outputReflectPathFor(fd)} {
@@ -201,7 +239,7 @@ func (g *Generator) Generate(ctx context.Context) error {
 	}
 
 	for _, fd := range results {
-		if !shouldGenerateFile(fd) {
+		if !g.shouldEmit(fd) {
 			continue
 		}
 		if err := g.generateFile(fd); err != nil {
@@ -209,6 +247,21 @@ func (g *Generator) Generate(ctx context.Context) error {
 		}
 	}
 	return nil
+}
+
+// shouldEmit reports whether fd should produce output. It combines the
+// content-based shouldGenerateFile check (skips internal schemas and
+// empty protos) with the optional Files-positional-args filter — the
+// latter narrows emission to a caller-listed subset while leaving import
+// resolution unrestricted.
+func (g *Generator) shouldEmit(fd protoreflect.FileDescriptor) bool {
+	if !shouldGenerateFile(fd) {
+		return false
+	}
+	if g.emitFilter != nil && !g.emitFilter[fd.Path()] {
+		return false
+	}
+	return true
 }
 
 // shouldGenerateFile reports whether fd contributes a .pb.go to the output.
@@ -318,7 +371,7 @@ func (g *Generator) collectGoPackages(results linker.Files) error {
 func (g *Generator) validateDestinations(results linker.Files) error {
 	dirOwner := make(map[string]string)
 	for _, fd := range results {
-		if !shouldGenerateFile(fd) {
+		if !g.shouldEmit(fd) {
 			continue
 		}
 		protoPkg := string(fd.Package())
@@ -655,8 +708,9 @@ func oneofVariantName(md protoreflect.MessageDescriptor, fd protoreflect.FieldDe
 // relative-path for nested files. Registering the same content under two
 // keys would cause protocompile to compile it twice and emit duplicate-symbol
 // errors when a consumer imports it via the non-canonical name.
-func buildImportMapping(protoDir string) (map[string][]byte, []string, error) {
+func buildImportMapping(protoDir string) (map[string][]byte, []string, map[string]string, error) {
 	mapping := make(map[string][]byte)
+	pathToKey := make(map[string]string)
 	var importPaths []string
 	pkgRE := regexp.MustCompile(`(?m)^package\s+([\w.]+)\s*;`)
 
@@ -696,14 +750,20 @@ func buildImportMapping(protoDir string) (map[string][]byte, []string, error) {
 		}
 		mapping[key] = content
 		importPaths = append(importPaths, key)
+
+		abs, err := filepath.Abs(path)
+		if err != nil {
+			return err
+		}
+		pathToKey[abs] = key
 		return nil
 	})
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	sort.Strings(importPaths)
-	return mapping, importPaths, nil
+	return mapping, importPaths, pathToKey, nil
 }
 
 // memResolver serves proto file content from memory.

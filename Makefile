@@ -117,10 +117,7 @@ generate-ours: ## Regenerate all wiresmith + conformance code
 	@echo "==> Generating wiresmith code → gen/basic/"
 	$(WIRESMITH) --proto_path=proto/basic --out=gen --module=$(MODULE)
 	@echo "==> Generating wiresmith conformance test messages → gen/protobuf_test_messages/"
-	$(eval CONF_TMP := $(shell mktemp -d))
-	@cp proto/conformance/test_messages_proto3.proto "$(CONF_TMP)/"
-	$(WIRESMITH) --proto_path="$(CONF_TMP)" --out=gen --module=$(MODULE)
-	@rm -rf "$(CONF_TMP)"
+	$(WIRESMITH) --proto_path=proto/conformance --out=gen --module=$(MODULE) proto/conformance/test_messages_proto3.proto
 	@echo "==> Generating conformance protocol code → test/conformance/internal/conformancepb/"
 	protoc -I proto/conformance \
 		--go_out=. --go_opt=module=$(MODULE) \
