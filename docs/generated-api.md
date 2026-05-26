@@ -4,7 +4,7 @@ This page describes the shape of the code wiresmith emits, from a consumer's poi
 
 ## Per-message methods
 
-Every generated message type gets the following methods. All pointer-receiver methods are nil-safe — they return a zero value or `"<nil>"` rather than panicking on a nil receiver.
+Every generated method below is nil-safe — `String()`, `Has<Field>()`, `Get<Field>()`, `Equal()`, `Reset()`, `Marshal()`, `MarshalTo()`, `MarshalToSizedBuffer()`, and `Size()` all handle a nil receiver gracefully (returning a zero value, `"<nil>"`, or `(nil, nil)` as appropriate) instead of panicking. The two exceptions are `Unmarshal()` and `UnmarshalWithDepth()`: they write into the receiver's struct fields, so calling them on a nil pointer panics. Always allocate the destination before unmarshalling (`var m T; m.Unmarshal(...)` or `m := &T{}; m.Unmarshal(...)`).
 
 | Method                                              | Purpose                                                                                   |
 |-----------------------------------------------------|-------------------------------------------------------------------------------------------|
