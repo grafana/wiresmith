@@ -813,6 +813,57 @@ func TestGenerateNestedLayout(t *testing.T) {
 	}
 }
 
+// TestGenerateCrossPackageUnmarshalThreadsDepth pins the SEC-5 fix:
+// when a generated Unmarshal calls into a *different-package* message
+// type, the recursion-depth counter must thread across the call instead
+// of restarting at zero. Historically the cross-package emit site called
+// `.Unmarshal(b)` which routes through the depth=0 public entry point,
+// so a graph bouncing between N packages could recurse to depth
+// maxUnmarshalDepth*N levels without tripping the guard. The fix is to
+// emit `.UnmarshalWithDepth(b, depth+1)` at every cross-package site
+// and expose `UnmarshalWithDepth` as the cross-package surface.
+func TestGenerateCrossPackageUnmarshalThreadsDepth(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "leaf/v1/leaf.proto", `
+syntax = "proto3";
+package depthsec.leaf.v1;
+message Leaf { string s = 1; }`)
+	writeProto(t, protoDir, "outer/v1/outer.proto", `
+syntax = "proto3";
+package depthsec.outer.v1;
+import "leaf/v1/leaf.proto";
+message Outer { depthsec.leaf.v1.Leaf l = 1; }`)
+
+	outDir := t.TempDir()
+	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
+	}
+	outerSrc := mustReadFile(t, filepath.Join(outDir, "depthsec", "outer", "v1", "outer.pb.go"))
+	leafSrc := mustReadFile(t, filepath.Join(outDir, "depthsec", "leaf", "v1", "leaf.pb.go"))
+
+	// The cross-package unmarshal site in outer.pb.go must use the
+	// depth-threading entry point. The pre-fix code emitted
+	// `.Unmarshal(dAtA[iNdEx:postIndex])`, which resets depth at the
+	// boundary — that's the bug this test pins against regression.
+	if !strings.Contains(outerSrc, "UnmarshalWithDepth(dAtA[iNdEx:postIndex], depth+1)") {
+		t.Errorf("outer.pb.go must call .UnmarshalWithDepth(..., depth+1) at the cross-package Leaf site; full source:\n%s", outerSrc)
+	}
+	// Belt-and-braces: an unqualified `.Unmarshal(dAtA[...:...])` call at
+	// the same site would mean the bug is back. Filter for the dAtA slice
+	// signature so we don't false-positive on, e.g., the public Unmarshal
+	// wrapper definition `func (m *Outer) Unmarshal(b []byte) error`.
+	if strings.Contains(outerSrc, ".Unmarshal(dAtA[iNdEx:postIndex])") {
+		t.Errorf("outer.pb.go must not call the depth-resetting .Unmarshal at the cross-package site; full source:\n%s", outerSrc)
+	}
+
+	// Cross-package callers can only reach UnmarshalWithDepth if it is
+	// exported from the callee package — so leaf.pb.go has to declare it.
+	if !strings.Contains(leafSrc, "func (m *Leaf) UnmarshalWithDepth(b []byte, depth int) error") {
+		t.Errorf("leaf.pb.go must expose UnmarshalWithDepth(b, depth) so cross-package callers can thread depth; full source:\n%s", leafSrc)
+	}
+}
+
 // TestGenerateMixedLayoutImport documents the supported import shape for a
 // mixed flat+nested layout: a nested file importing a top-level file must
 // use the top-level's package-derived path (its canonical key), not the

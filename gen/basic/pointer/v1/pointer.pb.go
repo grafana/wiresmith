@@ -372,6 +372,10 @@ func (m *Leaf) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
+func (m *Leaf) UnmarshalWithDepth(b []byte, depth int) error {
+	return m.unmarshal(b, depth)
+}
+
 func (m *Leaf) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
@@ -486,6 +490,10 @@ func (m *Leaf) unmarshal(dAtA []byte, depth int) error {
 
 func (m *PointerHolder) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
+}
+
+func (m *PointerHolder) UnmarshalWithDepth(b []byte, depth int) error {
+	return m.unmarshal(b, depth)
 }
 
 func (m *PointerHolder) unmarshal(dAtA []byte, depth int) error {

@@ -12,6 +12,7 @@ Every generated message type gets the following methods. All pointer-receiver me
 | `MarshalTo(dAtA []byte) (int, error)`               | Serialize into a caller-provided buffer assumed to be `>= Size()`.                        |
 | `MarshalToSizedBuffer(dAtA []byte) (int, error)`    | Reverse-write into a caller-provided buffer of exactly `Size()` bytes. Hot-path entry point. |
 | `Unmarshal(dAtA []byte) error`                      | Parse wire bytes into the receiver. Populates the field-presence bitmap.                  |
+| `UnmarshalWithDepth(dAtA []byte, depth int) error`  | Same as `Unmarshal`, but starts depth tracking at the given value. Used by cross-package callers so the recursion-depth guard remains monotonic across package boundaries. Top-level callers should use `Unmarshal`. |
 | `Size() int`                                        | Computed serialized length (independent of `Marshal`, kept consistent by codegen).        |
 | `Reset()`                                           | Zero the struct (`*m = Type{}`).                                                          |
 | `ProtoMessage()`                                    | Marker method satisfying `proto.Message`.                                                 |

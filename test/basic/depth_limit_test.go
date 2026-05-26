@@ -173,3 +173,35 @@ func TestRecursiveUnmarshalDepthLimit(t *testing.T) {
 		assert.Contains(t, err.Error(), "exceeded max recursion depth")
 	})
 }
+
+// TestUnmarshalWithDepthRespectsStartingDepth pins the SEC-5 fix at the
+// public-API level: UnmarshalWithDepth is the cross-package entry point,
+// and a payload that would normally unmarshal cleanly at depth 0 must
+// fail when entered close enough to the maxUnmarshalDepth ceiling.
+// Without this contract, the cross-package emit site (which passes
+// `depth+1` from the outer message) couldn't actually rate-limit nested
+// recursion at the boundary — the receiver would silently restart.
+func TestUnmarshalWithDepthRespectsStartingDepth(t *testing.T) {
+	// One-level nesting: AnyValue containing an ArrayValue containing
+	// one AnyValue("hello"). At depth 0 this trivially succeeds.
+	b := buildNestedAnyValueBytes(1)
+
+	t.Run("succeeds at depth 0", func(t *testing.T) {
+		var av commonv1.AnyValue
+		require.NoError(t, av.UnmarshalWithDepth(b, 0))
+	})
+
+	t.Run("fails when started near the ceiling", func(t *testing.T) {
+		// buildNestedAnyValueBytes(1) recurses 2 levels (AnyValue ->
+		// ArrayValue -> AnyValue). Entering at depth 9999 means the
+		// deepest inner AnyValue lands at depth 10001 > maxUnmarshalDepth.
+		// Pre-fix code routed cross-package callers through Unmarshal(b)
+		// which discarded the caller's depth — that path would happily
+		// process this payload no matter how deep the outer recursion
+		// already was.
+		var av commonv1.AnyValue
+		err := av.UnmarshalWithDepth(b, 9999)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "exceeded max recursion depth")
+	})
+}

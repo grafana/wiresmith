@@ -3267,6 +3267,10 @@ func (m *AllScalars) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
+func (m *AllScalars) UnmarshalWithDepth(b []byte, depth int) error {
+	return m.unmarshal(b, depth)
+}
+
 func (m *AllScalars) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
@@ -3694,6 +3698,10 @@ func (m *AllOptionalScalars) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
+func (m *AllOptionalScalars) UnmarshalWithDepth(b []byte, depth int) error {
+	return m.unmarshal(b, depth)
+}
+
 func (m *AllOptionalScalars) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
@@ -4118,6 +4126,10 @@ func (m *AllOptionalScalars) unmarshal(dAtA []byte, depth int) error {
 
 func (m *AllRepeatedScalars) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
+}
+
+func (m *AllRepeatedScalars) UnmarshalWithDepth(b []byte, depth int) error {
+	return m.unmarshal(b, depth)
 }
 
 func (m *AllRepeatedScalars) unmarshal(dAtA []byte, depth int) error {
@@ -5199,6 +5211,10 @@ func (m *OneofVariants) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
+func (m *OneofVariants) UnmarshalWithDepth(b []byte, depth int) error {
+	return m.unmarshal(b, depth)
+}
+
 func (m *OneofVariants) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
@@ -5611,6 +5627,10 @@ func (m *Outer) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
+func (m *Outer) UnmarshalWithDepth(b []byte, depth int) error {
+	return m.unmarshal(b, depth)
+}
+
 func (m *Outer) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
@@ -5847,6 +5867,10 @@ func (m *Middle) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
+func (m *Middle) UnmarshalWithDepth(b []byte, depth int) error {
+	return m.unmarshal(b, depth)
+}
+
 func (m *Middle) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
@@ -6071,6 +6095,10 @@ func (m *Inner) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
+func (m *Inner) UnmarshalWithDepth(b []byte, depth int) error {
+	return m.unmarshal(b, depth)
+}
+
 func (m *Inner) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
@@ -6242,6 +6270,10 @@ func (m *Inner) unmarshal(dAtA []byte, depth int) error {
 
 func (m *HighFieldNumbers) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
+}
+
+func (m *HighFieldNumbers) UnmarshalWithDepth(b []byte, depth int) error {
+	return m.unmarshal(b, depth)
 }
 
 func (m *HighFieldNumbers) unmarshal(dAtA []byte, depth int) error {
@@ -6495,6 +6527,10 @@ func (m *WithEnum) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
+func (m *WithEnum) UnmarshalWithDepth(b []byte, depth int) error {
+	return m.unmarshal(b, depth)
+}
+
 func (m *WithEnum) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
@@ -6647,6 +6683,10 @@ func (m *Empty) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
+func (m *Empty) UnmarshalWithDepth(b []byte, depth int) error {
+	return m.unmarshal(b, depth)
+}
+
 func (m *Empty) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
@@ -6691,6 +6731,10 @@ func (m *Empty) unmarshal(dAtA []byte, depth int) error {
 
 func (m *OnlyRepeated) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
+}
+
+func (m *OnlyRepeated) UnmarshalWithDepth(b []byte, depth int) error {
+	return m.unmarshal(b, depth)
 }
 
 func (m *OnlyRepeated) unmarshal(dAtA []byte, depth int) error {
@@ -6971,6 +7015,10 @@ func (m *Container) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
+func (m *Container) UnmarshalWithDepth(b []byte, depth int) error {
+	return m.unmarshal(b, depth)
+}
+
 func (m *Container) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
@@ -7207,6 +7255,10 @@ func (m *Container) unmarshal(dAtA []byte, depth int) error {
 
 func (m *AllMaps) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
+}
+
+func (m *AllMaps) UnmarshalWithDepth(b []byte, depth int) error {
+	return m.unmarshal(b, depth)
 }
 
 func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {

@@ -3439,6 +3439,10 @@ func (m *TestAllTypesProto3_NestedMessage) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
+func (m *TestAllTypesProto3_NestedMessage) UnmarshalWithDepth(b []byte, depth int) error {
+	return m.unmarshal(b, depth)
+}
+
 func (m *TestAllTypesProto3_NestedMessage) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
@@ -3512,6 +3516,10 @@ func (m *TestAllTypesProto3_NestedMessage) unmarshal(dAtA []byte, depth int) err
 
 func (m *TestAllTypesProto3) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
+}
+
+func (m *TestAllTypesProto3) UnmarshalWithDepth(b []byte, depth int) error {
+	return m.unmarshal(b, depth)
 }
 
 func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
@@ -10899,6 +10907,10 @@ func (m *ForeignMessage) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
+func (m *ForeignMessage) UnmarshalWithDepth(b []byte, depth int) error {
+	return m.unmarshal(b, depth)
+}
+
 func (m *ForeignMessage) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
@@ -10974,6 +10986,10 @@ func (m *NullHypothesisProto3) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
+func (m *NullHypothesisProto3) UnmarshalWithDepth(b []byte, depth int) error {
+	return m.unmarshal(b, depth)
+}
+
 func (m *NullHypothesisProto3) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
@@ -11018,6 +11034,10 @@ func (m *NullHypothesisProto3) unmarshal(dAtA []byte, depth int) error {
 
 func (m *EnumOnlyProto3) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
+}
+
+func (m *EnumOnlyProto3) UnmarshalWithDepth(b []byte, depth int) error {
+	return m.unmarshal(b, depth)
 }
 
 func (m *EnumOnlyProto3) unmarshal(dAtA []byte, depth int) error {

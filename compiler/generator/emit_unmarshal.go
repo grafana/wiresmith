@@ -201,9 +201,17 @@ func (fg *FileGenerator) emitUnmarshal(md protoreflect.MessageDescriptor) {
 	fg.imports.addImport("fmt", "")
 	fg.imports.addImport("io", "")
 
-	// Public wrapper that starts depth tracking at zero.
+	// Public wrapper that starts depth tracking at zero. UnmarshalWithDepth
+	// is the cross-package entry point: callers across the package boundary
+	// invoke it with the parent's depth+1 so the recursion-depth counter
+	// remains monotonic — otherwise a graph bouncing between packages
+	// would silently reset depth at each hop and recurse up to
+	// maxUnmarshalDepth*pkgCount levels (SEC-5).
 	fmt.Fprintf(fg.body, "func (m *%s) Unmarshal(b []byte) error {\n", name)
 	fmt.Fprintf(fg.body, "\treturn m.unmarshal(b, 0)\n")
+	fmt.Fprintf(fg.body, "}\n\n")
+	fmt.Fprintf(fg.body, "func (m *%s) UnmarshalWithDepth(b []byte, depth int) error {\n", name)
+	fmt.Fprintf(fg.body, "\treturn m.unmarshal(b, depth)\n")
 	fmt.Fprintf(fg.body, "}\n\n")
 
 	// Private implementation with inline varint decoding (iNdEx/dAtA pattern).
@@ -315,7 +323,7 @@ func (fg *FileGenerator) emitFieldUnmarshal(md protoreflect.MessageDescriptor, f
 			if ctx.IsSamePackage {
 				fmt.Fprintf(fg.body, "\t\t\tif err := msg.unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n")
 			} else {
-				fmt.Fprintf(fg.body, "\t\t\tif err := msg.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n")
+				fmt.Fprintf(fg.body, "\t\t\tif err := msg.UnmarshalWithDepth(dAtA[iNdEx:postIndex], depth+1); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n")
 			}
 			fmt.Fprintf(fg.body, "\t\t\tm.%s = &%s{%s: msg}\n", ooFieldName, variantName, fieldName)
 			fmt.Fprintf(fg.body, "\t\t\tiNdEx = postIndex\n")
@@ -340,7 +348,7 @@ func (fg *FileGenerator) emitFieldUnmarshal(md protoreflect.MessageDescriptor, f
 			if ctx.IsSamePackage {
 				fmt.Fprintf(fg.body, "\t\t\tif err := %s.unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n", access)
 			} else {
-				fmt.Fprintf(fg.body, "\t\t\tif err := %s.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n", access)
+				fmt.Fprintf(fg.body, "\t\t\tif err := %s.UnmarshalWithDepth(dAtA[iNdEx:postIndex], depth+1); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n", access)
 			}
 			fmt.Fprintf(fg.body, "\t\t\tiNdEx = postIndex\n")
 			return
