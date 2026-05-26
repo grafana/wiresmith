@@ -25,7 +25,7 @@ These are NOT generally applicable — they only matter for gogo/protobuf drop-i
 - Registration: `proto.RegisterType()` / `proto.RegisterEnum()` in `init()`
 
 ### Pointer semantics
-- `(gogoproto.nullable)` support — message fields as `*T` instead of `T`
+- `(gogoproto.nullable)` equivalent shipped as `(wiresmith.options.pointer) = true` — singular `*T` and repeated `[]*T` for message fields. See [docs/extensions.md](docs/extensions.md). User protos must `import "wiresmith/options.proto"` (embedded by the compiler, no vendoring).
 - `(gogoproto.customtype)` — replace Go type entirely
 - `(gogoproto.casttype)` — cast to different type name
 

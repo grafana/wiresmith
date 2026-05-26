@@ -80,6 +80,10 @@ borderline cases.
 
 See [docs/design.md](docs/design.md) for the canonical list of design decisions and the deliberate limitations they imply (no unknown-field preservation, no deterministic marshaling, no field-level reflection, etc.). Update that file when a design decision changes; this section intentionally stays a pointer to avoid two sources of truth.
 
+## Custom field options
+
+wiresmith ships one custom field option, `(wiresmith.options.pointer)`, defined in `compiler/generator/embed/wiresmith/options.proto` and served from the canonical import path `wiresmith/options.proto` (embedded in the compiler, no vendoring required). Setting it to `true` switches a singular message field from `T` to `*T` and a repeated message field from `[]T` to `[]*T`; on-wire format is unchanged. It is rejected on scalar, enum, bytes, string, map, oneof, and proto3-`optional` fields — see [docs/extensions.md](docs/extensions.md) for the full rules and a worked example.
+
 ## Supported proto3 features
 
 Messages, nested messages, enums (top-level and nested), oneof, optional, repeated (packed + non-packed), maps, reserved fields, cross-file imports, fully-qualified type references. Scalar types: string, bool, int32, int64, uint32, uint64, sint32, sint64, float, double, bytes, fixed32, fixed64, sfixed32, sfixed64. Map keys: all scalar types except float/double/bytes. Map values: all scalars, enums, messages.
