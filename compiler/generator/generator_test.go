@@ -470,6 +470,59 @@ message Foo { string s = 1; }`)
 	}
 }
 
+// TestValidateOutDir covers the input checks that protect the import-path
+// composition: --out must be a relative, clean, forward-slash path. Each
+// rejected case surfaces a clear error message naming the offending value.
+func TestValidateOutDir(t *testing.T) {
+	good := []string{
+		"",        // implicit module-root output
+		"gen",     // canonical
+		"pkg/api", // multi-segment relative
+		"./gen",   // tolerated; normalized to "gen"
+		"gen/sub", // nested relative
+	}
+	for _, v := range good {
+		t.Run("accept_"+v, func(t *testing.T) {
+			g := &Generator{OutDir: v}
+			if err := g.validateOutDir(); err != nil {
+				t.Errorf("validateOutDir(%q) = %v; want nil", v, err)
+			}
+		})
+	}
+
+	bad := []struct {
+		out, wantSubstr string
+	}{
+		{"/abs", "module-relative"},
+		{"/tmp/gen", "module-relative"},
+		{`pkg\api`, "backslashes"},
+		{"pkg/api/..", "'..'"},
+		{"./pkg/../api", "'..'"},
+		{"gen//sub", "not a clean path"},
+	}
+	for _, tc := range bad {
+		t.Run("reject_"+tc.out, func(t *testing.T) {
+			g := &Generator{OutDir: tc.out}
+			err := g.validateOutDir()
+			if err == nil {
+				t.Fatalf("validateOutDir(%q) = nil; want error containing %q", tc.out, tc.wantSubstr)
+			}
+			if !strings.Contains(err.Error(), tc.wantSubstr) {
+				t.Errorf("validateOutDir(%q) = %v; want substring %q", tc.out, err, tc.wantSubstr)
+			}
+		})
+	}
+
+	// "./gen" is accepted but normalized in place.
+	g := &Generator{OutDir: "./gen"}
+	if err := g.validateOutDir(); err != nil {
+		t.Fatalf("validateOutDir(\"./gen\"): %v", err)
+	}
+	if g.OutDir != "gen" {
+		t.Errorf("validateOutDir did not strip ./ prefix; got OutDir=%q", g.OutDir)
+	}
+}
+
 // testOutDir returns a Generator.OutDir value suitable for tests. It chdirs
 // into a fresh per-test tmp directory (auto-restored on test end) and
 // returns "gen" as the relative outDir. The Generator's import-path base
@@ -592,7 +645,7 @@ message Bar { int32 n = 1; }`)
 		ProtoDir: protoDir,
 		Files:    []string{filepath.Join(protoDir, "a", "foo.proto")},
 	}
-	scopedOut := t.TempDir()
+	scopedOut := testOutDir(t)
 	gen.OutDir = scopedOut
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("first (scoped) Generate: %v", err)
@@ -603,9 +656,10 @@ message Bar { int32 n = 1; }`)
 
 	// Reuse the same Generator with Files cleared. Without an explicit
 	// reset of emitFilter, the second run would still apply the first
-	// call's filter and skip b/bar.proto.
+	// call's filter and skip b/bar.proto. The second outDir needs its own
+	// chdir/relative outDir so the first run's output doesn't leak in.
 	gen.Files = nil
-	allOut := t.TempDir()
+	allOut := testOutDir(t)
 	gen.OutDir = allOut
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("second (walk-everything) Generate after Files cleared: %v", err)

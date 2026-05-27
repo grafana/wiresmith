@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"go/format"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -138,6 +139,14 @@ func (fg *FileGenerator) fieldContext(fd protoreflect.FieldDescriptor) types.Fie
 }
 
 func (g *Generator) Generate(ctx context.Context) error {
+	// --out flows into the Go import-path base (module + outDir), so it has to
+	// be a clean, module-relative, forward-slash path. An absolute, '..'-
+	// containing, or backslash-separated value would emit import paths that
+	// fail Go's directory-equals-import-path rule at build time.
+	if err := g.validateOutDir(); err != nil {
+		return err
+	}
+
 	mapping, importPaths, pathToKey, err := buildImportMapping(g.ProtoDir)
 	if err != nil {
 		return fmt.Errorf("building import mapping: %w", err)
@@ -363,6 +372,37 @@ func (g *Generator) collectGoPackages(results linker.Files) error {
 					goPkg, fd.Path())
 			}
 		}
+	}
+	return nil
+}
+
+// validateOutDir rejects --out values that would produce broken import paths
+// when composed into module + outDir. The acceptable shape is a clean,
+// module-relative, forward-slash path with no '..' segments. We also
+// normalize a leading "./" — convenient for shells that expand bare ".gen"
+// to "./.gen" — so the user doesn't have to learn the difference.
+func (g *Generator) validateOutDir() error {
+	if g.OutDir == "" {
+		return nil // empty is fine: import base is just the module
+	}
+	if strings.ContainsRune(g.OutDir, '\\') {
+		return fmt.Errorf("--out %q contains backslashes; use forward slashes (Go import paths are always slash-separated)", g.OutDir)
+	}
+	if filepath.IsAbs(g.OutDir) || strings.HasPrefix(g.OutDir, "/") {
+		return fmt.Errorf("--out %q must be a module-relative path, not absolute", g.OutDir)
+	}
+	g.OutDir = strings.TrimPrefix(g.OutDir, "./")
+	// Check '..' on the raw segments first so the error names the actual
+	// danger rather than dropping out via the "not clean" branch — both
+	// `pkg/api/..` (cleans to `pkg`) and `./pkg/../api` (cleans to `api`)
+	// canonicalize away the traversal silently.
+	for _, seg := range strings.Split(g.OutDir, "/") {
+		if seg == ".." {
+			return fmt.Errorf("--out %q must not contain '..' segments", g.OutDir)
+		}
+	}
+	if cleaned := path.Clean(g.OutDir); cleaned != g.OutDir {
+		return fmt.Errorf("--out %q is not a clean path; the equivalent canonical form is %q", g.OutDir, cleaned)
 	}
 	return nil
 }
