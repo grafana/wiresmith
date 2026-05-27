@@ -63,170 +63,135 @@ func TestCleanPackageName(t *testing.T) {
 	}
 }
 
-func TestEffectiveBase(t *testing.T) {
+func TestSourceRelDir(t *testing.T) {
 	tests := []struct {
-		module string
-		want   string
+		input string
+		want  string
 	}{
-		{"wiresmith", "wiresmith/gen"},
-		{"example.com/mod", "example.com/mod/gen"},
-		{"github.com/grafana/tempo", "github.com/grafana/tempo/gen"},
+		{"foo.proto", ""},
+		{"a/foo.proto", "a"},
+		{"a/b/c/foo.proto", "a/b/c"},
 	}
 	for _, tt := range tests {
-		got := effectiveBase(tt.module)
+		got := sourceRelDir(tt.input)
 		if got != tt.want {
-			t.Errorf("effectiveBase(%q) = %q, want %q", tt.module, got, tt.want)
+			t.Errorf("sourceRelDir(%q) = %q, want %q", tt.input, got, tt.want)
 		}
 	}
 }
 
-func TestResolveGoPackage(t *testing.T) {
-	goPackages := map[string]string{
-		"myapp.svc":     "example.com/app/gen/myapp/svc;service",
-		"basic.maps.v1": "wiresmith/gen/basic/maps/v1",
-		"external.pkg":  "some.other/module/pkg",
-		"root.pkg":      "wiresmith/gen",
-	}
-
+func TestJoinImport(t *testing.T) {
 	tests := []struct {
-		name       string
-		protoPkg   string
-		base       string
-		wantImport string
-		wantDir    string
-		wantPkg    string
-		wantOk     bool
+		name  string
+		parts []string
+		want  string
 	}{
-		{
-			name:       "matches base with subdir",
-			protoPkg:   "basic.maps.v1",
-			base:       "wiresmith/gen",
-			wantImport: "wiresmith/gen/basic/maps/v1",
-			wantDir:    "basic/maps/v1",
-			wantPkg:    "v1",
-			wantOk:     true,
-		},
-		{
-			name:       "semicolon overrides pkg name",
-			protoPkg:   "myapp.svc",
-			base:       "example.com/app/gen",
-			wantImport: "example.com/app/gen/myapp/svc",
-			wantDir:    "myapp/svc",
-			wantPkg:    "service",
-			wantOk:     true,
-		},
-		{
-			name:     "outside base falls through",
-			protoPkg: "external.pkg",
-			base:     "wiresmith/gen",
-			wantOk:   false,
-		},
-		{
-			name:     "unknown package",
-			protoPkg: "unknown.pkg",
-			base:     "wiresmith/gen",
-			wantOk:   false,
-		},
-		{
-			name:       "exact base match",
-			protoPkg:   "root.pkg",
-			base:       "wiresmith/gen",
-			wantImport: "wiresmith/gen",
-			wantDir:    "",
-			wantPkg:    "gen",
-			wantOk:     true,
-		},
-		{
-			name:     "base prefix without separator must not match",
-			protoPkg: "external.pkg",
-			// "some.other/module/pk" is a string prefix of "some.other/module/pkg"
-			// but not a path-component prefix, so it must NOT match.
-			base:   "some.other/module/pk",
-			wantOk: false,
-		},
+		{"all parts", []string{"wiresmith", "gen", "otlp/common/v1"}, "wiresmith/gen/otlp/common/v1"},
+		{"empty middle", []string{"wiresmith", "", "otlp"}, "wiresmith/otlp"},
+		{"empty trailing relDir", []string{"wiresmith", "gen", ""}, "wiresmith/gen"},
+		{"leading/trailing slashes trimmed", []string{"/wiresmith/", "/gen/", "/otlp/"}, "wiresmith/gen/otlp"},
+		{"all empty", []string{"", ""}, ""},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotImport, gotDir, gotPkg, gotOk := resolveGoPackage(tt.protoPkg, goPackages, tt.base)
-			if gotOk != tt.wantOk {
-				t.Fatalf("ok = %v, want %v", gotOk, tt.wantOk)
-			}
-			if !gotOk {
-				return
-			}
-			if gotImport != tt.wantImport || gotDir != tt.wantDir || gotPkg != tt.wantPkg {
-				t.Errorf("got (%q, %q, %q), want (%q, %q, %q)",
-					gotImport, gotDir, gotPkg, tt.wantImport, tt.wantDir, tt.wantPkg)
+			if got := joinImport(tt.parts...); got != tt.want {
+				t.Errorf("joinImport(%v) = %q, want %q", tt.parts, got, tt.want)
 			}
 		})
 	}
 }
 
-func TestDestFor(t *testing.T) {
+func TestDestForPath(t *testing.T) {
 	goPackages := map[string]string{
-		"basic.maps.v1":                 "wiresmith/gen/basic/maps/v1",              // matches base
-		"myapp.svc":                     "example.com/app/gen/myapp/svc;service",    // wrong base
-		"external.pkg":                  "some.other/module/pkg",                    // outside base
-		"opentelemetry.proto.common.v1": "go.opentelemetry.io/proto/otlp/common/v1", // outside base, OTel special-case applies
+		// Under base — honored, including `;name` form when present.
+		"basic.maps.v1": "wiresmith/gen/basic/maps/v1",
+		"myapp.svc":     "wiresmith/gen/myapp/svc;service",
+		// Outside base — falls through to the source-relative default.
+		"opentelemetry.proto.common.v1": "go.opentelemetry.io/proto/otlp/common/v1",
+		"external.pkg":                  "some.other/module/pkg",
 	}
 
 	tests := []struct {
 		name       string
 		module     string
+		fdPath     string
 		protoPkg   string
 		wantImport string
 		wantRelDir string
 		wantPkg    string
 	}{
 		{
-			name:       "go_package under base",
+			name:       "go_package under base — honored",
 			module:     "wiresmith",
+			fdPath:     "basic/maps/v1/maps.proto",
 			protoPkg:   "basic.maps.v1",
 			wantImport: "wiresmith/gen/basic/maps/v1",
 			wantRelDir: "basic/maps/v1",
 			wantPkg:    "v1",
 		},
 		{
-			name:       "go_package outside base falls back to default",
+			name:       "go_package `;name` form is honored when under base",
 			module:     "wiresmith",
-			protoPkg:   "external.pkg",
-			wantImport: "wiresmith/gen/external/pkg",
-			wantRelDir: "external/pkg",
-			wantPkg:    "externalpkg",
+			fdPath:     "myapp/svc/svc.proto",
+			protoPkg:   "myapp.svc",
+			wantImport: "wiresmith/gen/myapp/svc",
+			wantRelDir: "myapp/svc",
+			wantPkg:    "service",
 		},
 		{
-			name:       "OTel special case in default mapping",
+			name:       "go_package outside base — source-relative fallback",
 			module:     "wiresmith",
+			fdPath:     "opentelemetry/proto/common/v1/common.proto",
 			protoPkg:   "opentelemetry.proto.common.v1",
-			wantImport: "wiresmith/gen/otlp/common/v1",
-			wantRelDir: "otlp/common/v1",
+			wantImport: "wiresmith/gen/opentelemetry/proto/common/v1",
+			wantRelDir: "opentelemetry/proto/common/v1",
 			wantPkg:    "commonv1",
 		},
 		{
 			name:       "no go_package, default mapping",
 			module:     "testmod",
+			fdPath:     "x/y/v1/foo.proto",
 			protoPkg:   "x.y.v1",
 			wantImport: "testmod/gen/x/y/v1",
 			wantRelDir: "x/y/v1",
 			wantPkg:    "yv1",
 		},
 		{
-			name:       "go_package matches different module's base",
-			module:     "example.com/app",
-			protoPkg:   "myapp.svc",
-			wantImport: "example.com/app/gen/myapp/svc",
-			wantRelDir: "myapp/svc",
-			wantPkg:    "service",
+			name:       "module with dotted path composes correctly",
+			module:     "github.com/grafana/tempo",
+			fdPath:     "common/v1/common.proto",
+			protoPkg:   "tempo.common.v1",
+			wantImport: "github.com/grafana/tempo/gen/common/v1",
+			wantRelDir: "common/v1",
+			wantPkg:    "commonv1",
+		},
+		{
+			name:       "flat file (no source dir) lands at the import base",
+			module:     "wiresmith",
+			fdPath:     "root.proto",
+			protoPkg:   "root",
+			wantImport: "wiresmith/gen",
+			wantRelDir: "",
+			wantPkg:    "root",
+		},
+		{
+			name:       "go_package prefix without separator must not match",
+			module:     "wiresmith",
+			fdPath:     "external/pkg/x.proto",
+			protoPkg:   "external.pkg",
+			wantImport: "wiresmith/gen/external/pkg",
+			wantRelDir: "external/pkg",
+			wantPkg:    "externalpkg",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := destFor(tt.module, tt.protoPkg, goPackages)
+			got := destForPath(tt.module, tt.fdPath, tt.protoPkg, goPackages)
 			if got.importPath != tt.wantImport ||
 				got.relDir != tt.wantRelDir ||
 				got.pkgName != tt.wantPkg {
-				t.Errorf("destFor(%q, %q) = {%q, %q, %q}, want {%q, %q, %q}",
-					tt.module, tt.protoPkg,
+				t.Errorf("destForPath(%q, %q, %q) = {%q, %q, %q}, want {%q, %q, %q}",
+					tt.module, tt.fdPath, tt.protoPkg,
 					got.importPath, got.relDir, got.pkgName,
 					tt.wantImport, tt.wantRelDir, tt.wantPkg)
 			}

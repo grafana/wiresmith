@@ -2,6 +2,7 @@ package generator
 
 import (
 	"path"
+	"path/filepath"
 	"strings"
 	"unicode"
 
@@ -34,46 +35,72 @@ func goPackageName(protoPkg string) string {
 	return parts[len(parts)-2] + parts[len(parts)-1]
 }
 
-func goPackageDir(protoPkg string) string {
-	parts := strings.Split(protoPkg, ".")
-	if len(parts) >= 3 && parts[0] == "opentelemetry" && parts[1] == "proto" {
-		return "otlp/" + strings.Join(parts[2:], "/")
+// sourceRelDir returns the directory part of fdPath in forward-slash form.
+// fdPath is the canonical import key from buildImportMapping — either the
+// on-disk path relative to --proto_path (for nested files) or the
+// package-as-path form (for flat files). Either way, dropping the trailing
+// basename gives the source-relative directory the `paths=source_relative`
+// contract writes under.
+func sourceRelDir(fdPath string) string {
+	dir := filepath.ToSlash(filepath.Dir(fdPath))
+	if dir == "." {
+		return ""
 	}
-	return strings.Join(parts, "/")
+	return dir
 }
 
-// effectiveBase returns the Go import path prefix under which wiresmith
-// generates code. A go_package option counts as "ours" only if its import
-// path falls under this base.
-func effectiveBase(module string) string {
-	return module + "/gen"
+// joinImport concatenates Go import-path segments with "/", trimming any
+// leading/trailing slashes so empty segments don't produce double slashes.
+func joinImport(parts ...string) string {
+	var nonEmpty []string
+	for _, p := range parts {
+		p = strings.Trim(p, "/")
+		if p != "" {
+			nonEmpty = append(nonEmpty, p)
+		}
+	}
+	return strings.Join(nonEmpty, "/")
 }
 
-// goDest is the canonical Go destination for a proto package — every
-// consumer (output paths, package clauses, cross-file import resolution,
-// collision detection) reads from here so they can't disagree.
+// goDest is the canonical Go destination for a proto file — every consumer
+// (output paths, package clauses, cross-file import resolution, collision
+// detection) reads from here so they can't disagree.
 type goDest struct {
 	importPath string // full Go import path of the destination
-	relDir     string // path relative to OutDir / effectiveBase
+	relDir     string // path relative to OutDir
 	pkgName    string // declared `package` clause in the generated file
 }
 
-// destFor returns the canonical destination for protoPkg, preferring the
-// proto's `go_package` option when it falls under our base and falling
-// back to the default `<base>/<dotted-package-as-path>` mapping otherwise.
-// This is the single function callers should ask "where does proto pkg
-// X land in Go?" — every other resolver in the package routes through here.
-func destFor(module, protoPkg string, goPackages map[string]string) goDest {
-	base := effectiveBase(module)
-	if importPath, relDir, pkgName, ok := resolveGoPackage(protoPkg, goPackages, base); ok {
-		return goDest{importPath: importPath, relDir: relDir, pkgName: pkgName}
+// destFor returns the canonical destination for fd. The on-disk directory is
+// purely source-relative — filepath.Dir(fd.Path()) under the configured
+// --out, matching the `paths=source_relative` contract. The Go import path
+// still uses the legacy "<module>/gen" base: when the file's go_package
+// declares an import path under that base, the import path and `;name`
+// suffix are honored; otherwise the default <module>/gen/<source-rel>
+// applies. Honoring go_package unconditionally is wiresmith-gz4's job.
+func destFor(module string, fd protoreflect.FileDescriptor, goPackages map[string]string) goDest {
+	return destForPath(module, fd.Path(), string(fd.Package()), goPackages)
+}
+
+// destForPath is the string-only variant of destFor — broken out so unit
+// tests can drive the resolver without constructing a FileDescriptor.
+func destForPath(module, fdPath, protoPkg string, goPackages map[string]string) goDest {
+	relDir := sourceRelDir(fdPath)
+	// The /gen suffix is the legacy convention this bead intentionally leaves
+	// alone — the FLAGS.md migration eventually drops it together with --module
+	// (tracked in wiresmith-j0h), but until go_package becomes the sole authority
+	// for import paths (wiresmith-gz4) we still need a base to gate on.
+	base := joinImport(module, "gen")
+	importPath := joinImport(base, relDir)
+	pkgName := goPackageName(protoPkg)
+	if goPkg, ok := goPackages[protoPkg]; ok && goPkg != "" {
+		gpImport, gpName := parseGoPackage(goPkg)
+		if gpImport == base || strings.HasPrefix(gpImport, base+"/") {
+			importPath = gpImport
+			pkgName = gpName
+		}
 	}
-	relDir := goPackageDir(protoPkg)
-	return goDest{
-		importPath: base + "/" + relDir,
-		relDir:     relDir,
-		pkgName:    goPackageName(protoPkg),
-	}
+	return goDest{importPath: importPath, relDir: relDir, pkgName: pkgName}
 }
 
 // parseGoPackage parses a go_package option value. The proto3 format is
@@ -132,26 +159,6 @@ func cleanPackageName(name string) string {
 		out += "_"
 	}
 	return out
-}
-
-// resolveGoPackage looks up the go_package option for protoPkg and, if it
-// falls under base, returns the import path, the directory relative to base,
-// and the Go package name. ok is false when no go_package is set or when it
-// points outside base — callers should fall back to the default scheme.
-func resolveGoPackage(protoPkg string, goPackages map[string]string, base string) (importPath, relDir, pkgName string, ok bool) {
-	goPkg, exists := goPackages[protoPkg]
-	if !exists {
-		return "", "", "", false
-	}
-	importPath, pkgName = parseGoPackage(goPkg)
-	switch {
-	case importPath == base:
-		return importPath, "", pkgName, true
-	case strings.HasPrefix(importPath, base+"/"):
-		return importPath, strings.TrimPrefix(importPath, base+"/"), pkgName, true
-	default:
-		return "", "", "", false
-	}
 }
 
 func goMessageTypeName(md protoreflect.MessageDescriptor) string {

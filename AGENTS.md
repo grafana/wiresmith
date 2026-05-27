@@ -12,7 +12,7 @@ Custom protobuf compiler that generates high-performance Go code from OpenTeleme
 - `compiler/generator/` - Code generator: reads proto descriptors via `bufbuild/protocompile`, emits Go structs + marshal/unmarshal/size methods
 - `compiler/types/` - Per-kind type dispatch for code emission, see [compiler/types/AGENTS.md](compiler/types/AGENTS.md)
 - `cmd/wiresmith/` - CLI entry point
-- `gen/otlp/` - Generated Go packages (one per proto file)
+- `gen/opentelemetry/proto/` - Generated OTel Go packages (one per proto file; source-relative output)
 - `gen/basic/` - Generated Go packages for basic type coverage protos
 - `gen/vtpb/` - vtproto-generated code for benchmark comparison
 - `gen/gogopb/` - gogoproto-generated code for benchmark comparison
@@ -150,7 +150,7 @@ Approaches that were investigated and deliberately not adopted. Documented to sa
 For wiresmith specifically:
 
 - `protohelpers.EncodeVarint` has a `for` loop and slice writes → not inlined despite the directive. Confirmed: `go fix -inline ./gen/...` left every call site untouched.
-- `protohelpers.SizeOfVarint` is single-expression and *is* inlinable, but the generator already emits its body inline (`(bits.Len64(x|1)+6)/7`) so there are no call sites to fix in `gen/otlp/`, `gen/test/`, or `gen/protobuf_test_messages/`.
+- `protohelpers.SizeOfVarint` is single-expression and *is* inlinable, but the generator already emits its body inline (`(bits.Len64(x|1)+6)/7`) so there are no call sites to fix in `gen/opentelemetry/proto/`, `gen/test/`, or `gen/protobuf_test_messages/`.
 - The proposed unmarshal-side helpers (`ConsumeVarint`, `ConsumeBytesLen`, `ConsumeFixed32`, `ConsumeFixed64`, `ConsumeTag`) all have loops and/or `return 0, 0, err` early-return paths → not inlinable. Extracting them would convert today's inlined unmarshal hot path into uninlined function calls, regressing the 25-28% speedup from commit `594501d` ("perf: inline varint/fixed decoding").
 
 **When this could become viable:** if the Go inliner gains the ability to apply non-literalized rewrites for multi-statement bodies at statement-level call sites (i.e. expand the body inline as a labeled block instead of refusing). Tracking issue: <https://github.com/golang/go/issues/32816> (the original `//go:fix inline` proposal). Until then, wiresmith's "emit the loop directly" approach in `compiler/types/type.go:114-196` and `compiler/generator/emit_unmarshal.go` is the only way to keep these paths inlined.

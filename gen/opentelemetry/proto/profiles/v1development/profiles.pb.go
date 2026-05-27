@@ -10,8 +10,8 @@ import (
 	"google.golang.org/protobuf/encoding/protowire"
 	"io"
 	"math"
-	"wiresmith/gen/otlp/common/v1"
-	"wiresmith/gen/otlp/resource/v1"
+	"wiresmith/gen/opentelemetry/proto/common/v1"
+	"wiresmith/gen/opentelemetry/proto/resource/v1"
 	"wiresmith/gen/protohelpers"
 )
 

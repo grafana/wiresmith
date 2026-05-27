@@ -8,7 +8,7 @@ import (
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"reflect"
 	"unsafe"
-	"wiresmith/gen/otlp/common/v1"
+	"wiresmith/gen/opentelemetry/proto/common/v1"
 	"wiresmith/gen/protohelpers"
 )
 

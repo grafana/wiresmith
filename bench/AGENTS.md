@@ -1,7 +1,7 @@
 # Benchmark Architecture
 
 Comparative benchmarks for protobuf serialization across four implementations:
-- **Ours** (`gen/otlp/`): Value-type structs, reverse-write marshaling, no reflection
+- **Ours** (`gen/opentelemetry/proto/`): Value-type structs, reverse-write marshaling, no reflection
 - **Official** (`go.opentelemetry.io/proto/otlp`): Standard `google.golang.org/protobuf`
 - **VTProto** (`gen/vtpb/`): `planetscale/vtprotobuf` optimized codegen on top of standard proto
 - **GogoProto** (`gen/gogopb/`): `github.com/gogo/protobuf` legacy fast protobuf (unmaintained)
@@ -46,7 +46,7 @@ Each library is benchmarked on:
 ## Generated Code
 
 All generated code lives under `gen/`:
-- `gen/otlp/` — Our generated code (`go run ./cmd/wiresmith/`)
+- `gen/opentelemetry/proto/` — Our generated code (`go run ./cmd/wiresmith/`)
 - `gen/vtpb/` — vtproto (`protoc` + `protoc-gen-go` + `protoc-gen-go-vtproto`)
 - `gen/gogopb/` — gogoproto (`protoc` + `protoc-gen-gogofast`)
 - `gen/basic/maps/v1/` — wiresmith map code; `gen/bench/{official,vtpb,gogopb}/` — other implementations (all four from `proto/basic/maps.proto`)

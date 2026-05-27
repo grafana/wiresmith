@@ -43,18 +43,18 @@ var reservedStdlibImports = []string{
 }
 
 type ImportTracker struct {
-	module     string
-	selfPkg    string
-	goPackages map[string]string // proto pkg -> raw go_package option value
-	imports    map[string]importEntry
+	module  string
+	selfPkg string
+	dests   map[string]goDest // proto pkg -> resolved Go destination
+	imports map[string]importEntry
 }
 
-func newImportTracker(module, selfPkg string, goPackages map[string]string) *ImportTracker {
+func newImportTracker(module, selfPkg string, dests map[string]goDest) *ImportTracker {
 	it := &ImportTracker{
-		module:     module,
-		selfPkg:    selfPkg,
-		goPackages: goPackages,
-		imports:    make(map[string]importEntry),
+		module:  module,
+		selfPkg: selfPkg,
+		dests:   dests,
+		imports: make(map[string]importEntry),
 	}
 	for _, p := range reservedStdlibImports {
 		it.imports[p] = importEntry{naturalName: path.Base(p)}
@@ -84,12 +84,12 @@ func (it *ImportTracker) register(importPath, alias, naturalName string) string 
 
 // resolvePkgName returns the Go package name for protoPkg.
 func (it *ImportTracker) resolvePkgName(protoPkg string) string {
-	return destFor(it.module, protoPkg, it.goPackages).pkgName
+	return it.dests[protoPkg].pkgName
 }
 
 func (it *ImportTracker) addProtoImport(protoPkg string) string {
 	selfName := it.resolvePkgName(it.selfPkg)
-	dest := destFor(it.module, protoPkg, it.goPackages)
+	dest := it.dests[protoPkg]
 
 	// Prefer the destination's declared pkgName as the local alias so the
 	// generated code reads naturally. On collision (with our own pkg name

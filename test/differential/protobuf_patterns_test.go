@@ -10,11 +10,11 @@ import (
 	"google.golang.org/protobuf/encoding/protowire"
 	"google.golang.org/protobuf/proto"
 
-	commonv1 "wiresmith/gen/otlp/common/v1"
-	logsv1 "wiresmith/gen/otlp/logs/v1"
-	metricsv1 "wiresmith/gen/otlp/metrics/v1"
-	resourcev1 "wiresmith/gen/otlp/resource/v1"
-	tracev1 "wiresmith/gen/otlp/trace/v1"
+	commonv1 "wiresmith/gen/opentelemetry/proto/common/v1"
+	logsv1 "wiresmith/gen/opentelemetry/proto/logs/v1"
+	metricsv1 "wiresmith/gen/opentelemetry/proto/metrics/v1"
+	resourcev1 "wiresmith/gen/opentelemetry/proto/resource/v1"
+	tracev1 "wiresmith/gen/opentelemetry/proto/trace/v1"
 	"wiresmith/test/testutil"
 
 	otlpcommon "go.opentelemetry.io/proto/otlp/common/v1"

@@ -88,8 +88,8 @@ conformance: ## Run conformance tests (requires Docker)
 	docker build -f test/conformance/Dockerfile -t wiresmith-conformance .
 	docker run --rm wiresmith-conformance
 
-clean: ## Remove all generated code under gen/
-	rm -rf gen/otlp gen/vtpb gen/gogopb gen/protobuf_test_messages gen/test gen/basic gen/bench
+clean: ## Remove all generated code under gen/ (keeps gen/protohelpers, which is checked-in source)
+	@find gen -mindepth 1 -maxdepth 1 -type d -not -name protohelpers -exec rm -rf {} +
 
 # ── Generate targets ─────────────────────────────────────────────────────────
 

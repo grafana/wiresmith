@@ -37,6 +37,14 @@ type Generator struct {
 	// `option go_package`. Populated during Generate after compilation.
 	goPackages map[string]string
 
+	// dests maps a proto package name to its resolved Go destination. Built
+	// once, after collectGoPackages, by walking compiled files and feeding
+	// each first-seen one through destFor. ImportTracker reads from this map
+	// to resolve cross-package references; the lookup-by-protoPkg shape
+	// matches what cross-file imports need (they only know the proto
+	// package they want, not which file declared it).
+	dests map[string]goDest
+
 	// emitFilter is the set of fd.Path() values to emit, derived from Files
 	// at the start of Generate. Nil means "emit every shouldGenerateFile
 	// candidate" (the empty-Files default).
@@ -207,6 +215,9 @@ func (g *Generator) Generate(ctx context.Context) error {
 	if err := g.collectGoPackages(results); err != nil {
 		return err
 	}
+	if err := g.computeDests(results); err != nil {
+		return err
+	}
 	if err := g.validateDestinations(results); err != nil {
 		return err
 	}
@@ -285,12 +296,11 @@ func isInternalSchemaFile(fd protoreflect.FileDescriptor) bool {
 }
 
 // outputPathFor returns the output path for the .pb.go file produced for fd.
-// The directory is taken straight from destFor — the single source of truth
-// the import tracker and consumers also use, so they can't disagree.
+// The directory is purely source-relative — the dir of fd.Path() under
+// --out — matching the `paths=source_relative` contract.
 func (g *Generator) outputPathFor(fd protoreflect.FileDescriptor) string {
-	dest := destFor(g.Module, string(fd.Package()), g.goPackages)
 	base := strings.TrimSuffix(filepath.Base(fd.Path()), ".proto") + ".pb.go"
-	return filepath.Join(g.OutDir, dest.relDir, base)
+	return filepath.Join(g.OutDir, sourceRelDir(fd.Path()), base)
 }
 
 // collectGoPackages records every file's `option go_package` value, keyed
@@ -305,7 +315,7 @@ func (g *Generator) outputPathFor(fd protoreflect.FileDescriptor) string {
 // later in validateDestinations against the resolved goDest.
 func (g *Generator) collectGoPackages(results linker.Files) error {
 	g.goPackages = make(map[string]string)
-	base := effectiveBase(g.Module)
+	base := joinImport(g.Module, "gen")
 
 	// sighting captures the first go_package value (possibly empty) we saw
 	// for a proto pkg and the file we saw it in, so a later disagreement
@@ -357,13 +367,60 @@ func (g *Generator) collectGoPackages(results linker.Files) error {
 	return nil
 }
 
-// validateDestinations runs destFor for every compiled file and rejects the
-// case where two distinct proto packages resolve to the same Go directory.
-// This catches three failure modes at once: two protos with the same in-base
-// go_package, a go_package shadowing the default mapping of another package,
-// and a default mapping shadowing an explicit go_package. Routing every file
-// through destFor (not just those with go_package set) is the part that
-// makes the cross-mode case visible.
+// computeDests resolves each proto package's Go destination once and stores
+// the result keyed by proto package. Cross-file import resolution in
+// ImportTracker only knows the destination proto package (not which file
+// declared it), so keying the map by proto package is what makes the
+// lookup possible without re-running destFor at every emit site.
+//
+// All files declaring the same proto package must live in the same
+// source-relative directory; Go's directory-equals-package rule would
+// later reject the disagreement, but flagging it here gives the user a
+// clearer error referencing both .proto files.
+func (g *Generator) computeDests(results linker.Files) error {
+	g.dests = make(map[string]goDest)
+	type sighting struct{ relDir, path string }
+	seen := make(map[string]sighting)
+	// Two files with the same go_package — or one with go_package and another
+	// whose default destination shadows it — would land in the same Go import
+	// path while sitting in different source-relative directories. Go's "one
+	// directory, one import path" rule rejects this at build time; we surface
+	// it earlier with both endpoints named.
+	importOwner := make(map[string]string)
+	for _, fd := range results {
+		// Skip files that will not produce output: they neither claim a Go
+		// directory on disk nor reserve an import path, so they cannot
+		// collide with anything.
+		if !g.shouldEmit(fd) {
+			continue
+		}
+		protoPkg := string(fd.Package())
+		relDir := sourceRelDir(fd.Path())
+		if prev, ok := seen[protoPkg]; ok {
+			if prev.relDir != relDir {
+				return fmt.Errorf("proto package %q spans multiple source-relative directories: %s declares %q but %s declares %q",
+					protoPkg, prev.path, prev.relDir, fd.Path(), relDir)
+			}
+			continue
+		}
+		seen[protoPkg] = sighting{relDir: relDir, path: fd.Path()}
+		dest := destFor(g.Module, fd, g.goPackages)
+		if owner, exists := importOwner[dest.importPath]; exists && owner != protoPkg {
+			return fmt.Errorf("Go import path %q is claimed by both proto packages %q and %q (check go_package options)",
+				dest.importPath, owner, protoPkg)
+		}
+		importOwner[dest.importPath] = protoPkg
+		g.dests[protoPkg] = dest
+	}
+	return nil
+}
+
+// validateDestinations rejects the case where two distinct proto packages
+// resolve to the same source-relative Go directory. With per-source-file
+// emission and source-relative output paths, two .proto files in different
+// proto packages but the same directory would land in the same Go package
+// — which is exactly the disagreement Go's directory-equals-package rule
+// would later flag at build time, just much later and less clearly.
 //
 // Files that won't emit are skipped: an empty .proto cannot collide on disk
 // with a non-empty proto resolving to the same Go dir, because it writes
@@ -375,12 +432,12 @@ func (g *Generator) validateDestinations(results linker.Files) error {
 			continue
 		}
 		protoPkg := string(fd.Package())
-		dest := destFor(g.Module, protoPkg, g.goPackages)
-		if owner, ok := dirOwner[dest.relDir]; ok && owner != protoPkg {
-			return fmt.Errorf("destination %q is claimed by both proto packages %q and %q (check go_package options)",
-				dest.relDir, owner, protoPkg)
+		relDir := sourceRelDir(fd.Path())
+		if owner, ok := dirOwner[relDir]; ok && owner != protoPkg {
+			return fmt.Errorf("destination %q is claimed by both proto packages %q and %q (two proto packages cannot share one source-relative directory)",
+				relDir, owner, protoPkg)
 		}
-		dirOwner[dest.relDir] = protoPkg
+		dirOwner[relDir] = protoPkg
 	}
 	return nil
 }
@@ -389,9 +446,9 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 	fg := &FileGenerator{
 		fd:             fd,
 		module:         g.Module,
-		imports:        newImportTracker(g.Module, string(fd.Package()), g.goPackages),
+		imports:        newImportTracker(g.Module, string(fd.Package()), g.dests),
 		body:           &bytes.Buffer{},
-		reflectImports: newImportTracker(g.Module, string(fd.Package()), g.goPackages),
+		reflectImports: newImportTracker(g.Module, string(fd.Package()), g.dests),
 		reflectBody:    &bytes.Buffer{},
 		fileVarName:    sanitizeFileVarName(fd.Path()),
 		pointerExt:     g.pointerExt,
@@ -463,9 +520,8 @@ func (g *Generator) writeFormatted(outPath string, src []byte, sourceProto strin
 // the protoc-gen-go-impl convention where extra generated material lives in
 // `<name>_<flavor>.pb.go`.
 func (g *Generator) outputReflectPathFor(fd protoreflect.FileDescriptor) string {
-	dest := destFor(g.Module, string(fd.Package()), g.goPackages)
 	base := strings.TrimSuffix(filepath.Base(fd.Path()), ".proto") + "_reflect.pb.go"
-	return filepath.Join(g.OutDir, dest.relDir, base)
+	return filepath.Join(g.OutDir, sourceRelDir(fd.Path()), base)
 }
 
 // emitHeader writes the "Code generated by ..." banner, the package clause,

@@ -30,13 +30,13 @@ func expectCycleError(t *testing.T, err error, reasonSubstr string) {
 func TestCycleCheck_SelfReferenceRejected(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
-package test;
+package test.v1;
 option go_package = "wiresmith/gen/test/v1";
 message Tree {
   Tree child = 1;
 }
 `)
-	expectCycleError(t, err, "test.Tree.child")
+	expectCycleError(t, err, "test.v1.Tree.child")
 }
 
 // TestCycleCheck_MutualRecursionRejected covers the two-message cycle:
@@ -47,7 +47,7 @@ message Tree {
 func TestCycleCheck_MutualRecursionRejected(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
-package test;
+package test.v1;
 option go_package = "wiresmith/gen/test/v1";
 message A {
   B b = 1;
@@ -56,8 +56,8 @@ message B {
   A a = 1;
 }
 `)
-	expectCycleError(t, err, "test.A")
-	if err != nil && !strings.Contains(err.Error(), "test.B") {
+	expectCycleError(t, err, "test.v1.A")
+	if err != nil && !strings.Contains(err.Error(), "test.v1.B") {
 		t.Errorf("expected both A and B in cycle error, got: %s", err.Error())
 	}
 }
@@ -68,16 +68,16 @@ message B {
 func TestCycleCheck_LongerCycleRejected(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
-package test;
+package test.v1;
 option go_package = "wiresmith/gen/test/v1";
 message A { B b = 1; }
 message B { C c = 1; }
 message C { A a = 1; }
 `)
-	expectCycleError(t, err, "test.A")
+	expectCycleError(t, err, "test.v1.A")
 	if err != nil {
 		msg := err.Error()
-		for _, want := range []string{"test.B", "test.C"} {
+		for _, want := range []string{"test.v1.B", "test.v1.C"} {
 			if !strings.Contains(msg, want) {
 				t.Errorf("expected %q in cycle error, got: %s", want, msg)
 			}
@@ -92,7 +92,7 @@ message C { A a = 1; }
 func TestCycleCheck_OptionalSelfReferenceAllowed(t *testing.T) {
 	if err := runGenerator(t, `
 syntax = "proto3";
-package test;
+package test.v1;
 option go_package = "wiresmith/gen/test/v1";
 message LinkedList {
   int64 value = 1;
@@ -110,7 +110,7 @@ message LinkedList {
 func TestCycleCheck_RepeatedSelfReferenceAllowed(t *testing.T) {
 	if err := runGenerator(t, `
 syntax = "proto3";
-package test;
+package test.v1;
 option go_package = "wiresmith/gen/test/v1";
 message TreeNode {
   string label = 1;
@@ -129,7 +129,7 @@ message TreeNode {
 func TestCycleCheck_PointerOptionSelfReferenceAllowed(t *testing.T) {
 	if err := runGenerator(t, `
 syntax = "proto3";
-package test;
+package test.v1;
 option go_package = "wiresmith/gen/test/v1";
 import "wiresmith/options.proto";
 message Node {
@@ -147,7 +147,7 @@ message Node {
 func TestCycleCheck_OneofSelfReferenceAllowed(t *testing.T) {
 	if err := runGenerator(t, `
 syntax = "proto3";
-package test;
+package test.v1;
 option go_package = "wiresmith/gen/test/v1";
 message Box {
   oneof choice {
@@ -167,7 +167,7 @@ message Box {
 func TestCycleCheck_MapSelfReferenceAllowed(t *testing.T) {
 	if err := runGenerator(t, `
 syntax = "proto3";
-package test;
+package test.v1;
 option go_package = "wiresmith/gen/test/v1";
 message Tree {
   string name = 1;
@@ -185,7 +185,7 @@ message Tree {
 func TestCycleCheck_NoCycleHonoursAcyclicReferences(t *testing.T) {
 	if err := runGenerator(t, `
 syntax = "proto3";
-package test;
+package test.v1;
 option go_package = "wiresmith/gen/test/v1";
 message Inner { int32 x = 1; }
 message Outer { Inner i = 1; }
@@ -202,7 +202,7 @@ message Outer { Inner i = 1; }
 func TestCycleCheck_OneEdgeBrokenAvoidsCycle(t *testing.T) {
 	if err := runGenerator(t, `
 syntax = "proto3";
-package test;
+package test.v1;
 option go_package = "wiresmith/gen/test/v1";
 message A {
   optional B b = 1;
@@ -222,7 +222,7 @@ message B {
 func TestCycleCheck_DisjointCyclesAllReported(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
-package test;
+package test.v1;
 option go_package = "wiresmith/gen/test/v1";
 message Loop1 { Loop1 self = 1; }
 message Loop2 { Loop2 self = 1; }
@@ -231,7 +231,7 @@ message Loop2 { Loop2 self = 1; }
 		t.Fatalf("expected error, got nil")
 	}
 	msg := err.Error()
-	for _, want := range []string{"test.Loop1", "test.Loop2"} {
+	for _, want := range []string{"test.v1.Loop1", "test.v1.Loop2"} {
 		if !strings.Contains(msg, want) {
 			t.Errorf("expected %q in error, got: %s", want, msg)
 		}
@@ -244,7 +244,7 @@ message Loop2 { Loop2 self = 1; }
 func TestCycleCheck_NestedMessageSelfReferenceRejected(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
-package test;
+package test.v1;
 option go_package = "wiresmith/gen/test/v1";
 message Outer {
   message Inner {
@@ -253,7 +253,7 @@ message Outer {
   Inner i = 1;
 }
 `)
-	expectCycleError(t, err, "test.Outer.Inner")
+	expectCycleError(t, err, "test.v1.Outer.Inner")
 }
 
 // TestCycleCheck_OneofAndSelfTogether documents that having BOTH a oneof
@@ -265,7 +265,7 @@ message Outer {
 func TestCycleCheck_OneofAndSelfTogether(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
-package test;
+package test.v1;
 option go_package = "wiresmith/gen/test/v1";
 message Tangle {
   oneof choice {
@@ -275,5 +275,5 @@ message Tangle {
   Tangle direct = 3;
 }
 `)
-	expectCycleError(t, err, "test.Tangle.direct")
+	expectCycleError(t, err, "test.v1.Tangle.direct")
 }
