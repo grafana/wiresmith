@@ -194,8 +194,8 @@ func TestGenerateMatchesCheckedIn(t *testing.T) {
 			}
 
 			// Walk the freshly generated output and compare against checked-in
-			// files. The generator writes to outDir/goPackageDir(pkg), which
-			// mirrors the layout under gen/.
+			// files. The generator writes to outDir/sourceRelDir(fd.Path()),
+			// which mirrors the layout under gen/.
 			generatedFiles := make(map[string]struct{})
 			err := filepath.Walk(tmpDir, func(path string, info os.FileInfo, err error) error {
 				if err != nil {
@@ -311,7 +311,11 @@ message Foo { string s = 1; }`)
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)
 	}
-	if _, err := os.Stat(filepath.Join(outDir, "shared", "shared.pb.go")); err != nil {
+	// Under source-relative output, b/shared.proto lands at outDir/b/shared.pb.go
+	// regardless of the empty a/shared.proto. The empty file emits nothing, so
+	// the proto-package-spans-multiple-dirs check (which would otherwise reject
+	// `shared` declaring both "a" and "b") leaves the real file alone.
+	if _, err := os.Stat(filepath.Join(outDir, "b", "shared.pb.go")); err != nil {
 		t.Errorf("expected non-empty proto to still produce a .pb.go: %v", err)
 	}
 }
@@ -437,7 +441,11 @@ message Foo { string s = 1; }`)
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)
 	}
-	if _, err := os.Stat(filepath.Join(outDir, "alpha", "real.pb.go")); err != nil {
+	// Under source-relative output, real.proto's package "beta" determines its
+	// on-disk location regardless of go_package. The empty file at
+	// alpha/empty.proto emits nothing, so it cannot clobber a neighbour even
+	// though its declared package would have routed it to the same Go dir.
+	if _, err := os.Stat(filepath.Join(outDir, "beta", "real.pb.go")); err != nil {
 		t.Errorf("expected non-empty proto to still produce a .pb.go: %v", err)
 	}
 }
@@ -489,10 +497,10 @@ message Bar { int32 n = 1; }`)
 		t.Fatalf("Generate (cross-file import must still resolve from --proto_path): %v", err)
 	}
 
-	if _, err := os.Stat(filepath.Join(outDir, "scoped", "a", "v1", "foo.pb.go")); err != nil {
+	if _, err := os.Stat(filepath.Join(outDir, "a", "foo.pb.go")); err != nil {
 		t.Errorf("expected a/foo.pb.go in the scoped set: %v", err)
 	}
-	if _, err := os.Stat(filepath.Join(outDir, "scoped", "b", "v1", "bar.pb.go")); !os.IsNotExist(err) {
+	if _, err := os.Stat(filepath.Join(outDir, "b", "bar.pb.go")); !os.IsNotExist(err) {
 		t.Errorf("b/bar.pb.go must NOT be emitted (not in Files filter), got err=%v", err)
 	}
 }
@@ -520,8 +528,8 @@ message Bar { int32 n = 1; }`)
 		t.Fatalf("Generate: %v", err)
 	}
 	for _, rel := range []string{
-		filepath.Join("scoped", "a", "v1", "foo.pb.go"),
-		filepath.Join("scoped", "b", "v1", "bar.pb.go"),
+		filepath.Join("a", "foo.pb.go"),
+		filepath.Join("b", "bar.pb.go"),
 	} {
 		if _, err := os.Stat(filepath.Join(outDir, rel)); err != nil {
 			t.Errorf("expected %s to be emitted in default-walk mode: %v", rel, err)
@@ -557,7 +565,7 @@ message Bar { int32 n = 1; }`)
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("first (scoped) Generate: %v", err)
 	}
-	if _, err := os.Stat(filepath.Join(scopedOut, "scoped", "b", "v1", "bar.pb.go")); !os.IsNotExist(err) {
+	if _, err := os.Stat(filepath.Join(scopedOut, "b", "bar.pb.go")); !os.IsNotExist(err) {
 		t.Fatalf("first call should have scoped to a/foo.proto only (sanity check): %v", err)
 	}
 
@@ -571,8 +579,8 @@ message Bar { int32 n = 1; }`)
 		t.Fatalf("second (walk-everything) Generate after Files cleared: %v", err)
 	}
 	for _, rel := range []string{
-		filepath.Join("scoped", "a", "v1", "foo.pb.go"),
-		filepath.Join("scoped", "b", "v1", "bar.pb.go"),
+		filepath.Join("a", "foo.pb.go"),
+		filepath.Join("b", "bar.pb.go"),
 	} {
 		if _, err := os.Stat(filepath.Join(allOut, rel)); err != nil {
 			t.Errorf("second Generate must emit %s (Files=nil after a prior scoped run): %v", rel, err)
@@ -771,13 +779,14 @@ func TestBuildImportMappingDuplicateKey(t *testing.T) {
 // recursive proto layout where a nested file imports another nested file.
 // This is the integration-level counterpart to TestBuildImportMappingRecursive:
 // it verifies the import keys we register actually resolve through protocompile
-// and that .pb.go files land at the expected goPackageDir locations.
+// and that .pb.go files land at the source-relative location dictated by
+// each input's directory under --proto_path.
 func TestGenerateNestedLayout(t *testing.T) {
 	protoDir := t.TempDir()
-	writeProto(t, protoDir, "common/v1/common.proto",
+	writeProto(t, protoDir, "testpb/common/v1/common.proto",
 		"syntax = \"proto3\";\npackage testpb.common.v1;\nmessage Resource { string name = 1; }")
-	writeProto(t, protoDir, "trace/v1/trace.proto",
-		"syntax = \"proto3\";\npackage testpb.trace.v1;\nimport \"common/v1/common.proto\";\nmessage Span { testpb.common.v1.Resource resource = 1; }")
+	writeProto(t, protoDir, "testpb/trace/v1/trace.proto",
+		"syntax = \"proto3\";\npackage testpb.trace.v1;\nimport \"testpb/common/v1/common.proto\";\nmessage Span { testpb.common.v1.Resource resource = 1; }")
 
 	outDir := t.TempDir()
 	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
@@ -824,14 +833,14 @@ func TestGenerateNestedLayout(t *testing.T) {
 // and expose `UnmarshalWithDepth` as the cross-package surface.
 func TestGenerateCrossPackageUnmarshalThreadsDepth(t *testing.T) {
 	protoDir := t.TempDir()
-	writeProto(t, protoDir, "leaf/v1/leaf.proto", `
+	writeProto(t, protoDir, "depthsec/leaf/v1/leaf.proto", `
 syntax = "proto3";
 package depthsec.leaf.v1;
 message Leaf { string s = 1; }`)
-	writeProto(t, protoDir, "outer/v1/outer.proto", `
+	writeProto(t, protoDir, "depthsec/outer/v1/outer.proto", `
 syntax = "proto3";
 package depthsec.outer.v1;
-import "leaf/v1/leaf.proto";
+import "depthsec/leaf/v1/leaf.proto";
 message Outer { depthsec.leaf.v1.Leaf l = 1; }`)
 
 	outDir := t.TempDir()
@@ -871,14 +880,14 @@ message Outer { depthsec.leaf.v1.Leaf l = 1; }`)
 // there explicitly; this test pins it so it can't quietly slip back.
 func TestGenerateCrossPackageMapValueThreadsDepth(t *testing.T) {
 	protoDir := t.TempDir()
-	writeProto(t, protoDir, "leaf/v1/leaf.proto", `
+	writeProto(t, protoDir, "depthmap/leaf/v1/leaf.proto", `
 syntax = "proto3";
 package depthmap.leaf.v1;
 message Leaf { string s = 1; }`)
-	writeProto(t, protoDir, "outer/v1/outer.proto", `
+	writeProto(t, protoDir, "depthmap/outer/v1/outer.proto", `
 syntax = "proto3";
 package depthmap.outer.v1;
-import "leaf/v1/leaf.proto";
+import "depthmap/leaf/v1/leaf.proto";
 message Outer { map<string, depthmap.leaf.v1.Leaf> entries = 1; }`)
 
 	outDir := t.TempDir()
@@ -900,7 +909,7 @@ message Outer { map<string, depthmap.leaf.v1.Leaf> entries = 1; }`)
 // a misuse of the public API could re-open SEC-5 from the caller side.
 func TestGenerateUnmarshalWithDepthClampsNegative(t *testing.T) {
 	protoDir := t.TempDir()
-	writeProto(t, protoDir, "clamp/v1/clamp.proto", `
+	writeProto(t, protoDir, "depthclamp/v1/clamp.proto", `
 syntax = "proto3";
 package depthclamp.v1;
 message Probe { string s = 1; }`)
@@ -931,9 +940,12 @@ message Probe { string s = 1; }`)
 // the queried path as file identity and would compile the file twice.
 func TestGenerateMixedLayoutImport(t *testing.T) {
 	protoDir := t.TempDir()
+	// Flat common.proto registers under its package-derived key
+	// `testpb/common.proto`; the source-relative output therefore lands at
+	// outDir/testpb/common.pb.go.
 	writeProto(t, protoDir, "common.proto",
 		"syntax = \"proto3\";\npackage testpb;\nmessage Resource { string name = 1; }")
-	writeProto(t, protoDir, "trace/v1/trace.proto",
+	writeProto(t, protoDir, "testpb/trace/v1/trace.proto",
 		"syntax = \"proto3\";\npackage testpb.trace.v1;\nimport \"testpb/common.proto\";\nmessage Span { testpb.Resource resource = 1; }")
 
 	outDir := t.TempDir()
@@ -957,7 +969,7 @@ func TestGenerateMixedLayoutImport(t *testing.T) {
 	protoDir2 := t.TempDir()
 	writeProto(t, protoDir2, "common.proto",
 		"syntax = \"proto3\";\npackage testpb;\nmessage Resource { string name = 1; }")
-	writeProto(t, protoDir2, "trace/v1/trace.proto",
+	writeProto(t, protoDir2, "testpb/trace/v1/trace.proto",
 		"syntax = \"proto3\";\npackage testpb.trace.v1;\nimport \"common.proto\";\nmessage Span { testpb.Resource resource = 1; }")
 	gen2 := &Generator{Module: "wiresmith", OutDir: t.TempDir(), ProtoDir: protoDir2}
 	if err := gen2.Generate(context.Background()); err == nil {
@@ -966,9 +978,11 @@ func TestGenerateMixedLayoutImport(t *testing.T) {
 }
 
 // TestGenerateOutputCollision verifies that two protos in different
-// subdirectories sharing the same package and basename are rejected
-// before any file is written. Without this guard, recursive scanning
-// would silently clobber the first .pb.go with the second.
+// source-relative directories sharing the same proto package are rejected
+// before any file is written. With source-relative output the on-disk paths
+// would not collide (the files live in different dirs), but Go forbids one
+// package spanning two directories — flagging the configuration up front
+// gives a clearer error than waiting for `go build` to reject the result.
 func TestGenerateOutputCollision(t *testing.T) {
 	protoDir := t.TempDir()
 	writeProto(t, protoDir, "a/v1/shared.proto",
@@ -980,10 +994,10 @@ func TestGenerateOutputCollision(t *testing.T) {
 	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
 	err := gen.Generate(context.Background())
 	if err == nil {
-		t.Fatal("expected output-collision error, got nil")
+		t.Fatal("expected proto-package-span error, got nil")
 	}
-	if !strings.Contains(err.Error(), "output collision") {
-		t.Errorf("expected 'output collision' error, got: %v", err)
+	if !strings.Contains(err.Error(), "spans multiple source-relative directories") {
+		t.Errorf("expected 'spans multiple source-relative directories' error, got: %v", err)
 	}
 
 	// Fail-fast guarantee: no .pb.go should have been written before the
@@ -1260,22 +1274,22 @@ message User { x.fmtish.Sprintf s = 1; }`)
 // aliases.
 func TestGenerateGoPackageAliasCollision(t *testing.T) {
 	protoDir := t.TempDir()
-	writeProto(t, protoDir, "common.proto", `
+	writeProto(t, protoDir, "common/v1/common.proto", `
 syntax = "proto3";
 package myproject.common;
 option go_package = "example.com/mod/gen/common/v1;v1";
 message Foo { string name = 1; }`)
-	writeProto(t, protoDir, "trace.proto", `
+	writeProto(t, protoDir, "trace/v1/trace.proto", `
 syntax = "proto3";
 package myproject.trace;
 option go_package = "example.com/mod/gen/trace/v1;v1";
 message Bar { string id = 1; }`)
-	writeProto(t, protoDir, "api.proto", `
+	writeProto(t, protoDir, "api/v1/api.proto", `
 syntax = "proto3";
 package myproject.api;
 option go_package = "example.com/mod/gen/api/v1;v1";
-import "myproject/common/common.proto";
-import "myproject/trace/trace.proto";
+import "common/v1/common.proto";
+import "trace/v1/trace.proto";
 message Request {
   myproject.common.Foo foo = 1;
   myproject.trace.Bar bar = 2;
@@ -1340,7 +1354,7 @@ syntax = "proto3";
 package myproject.bcommon.v1;
 option go_package = "example.com/mod/gen/b/common/v1;v1";
 message Bar { string s = 1; }`)
-	writeProto(t, protoDir, "svc.proto", `
+	writeProto(t, protoDir, "svc/svc.proto", `
 syntax = "proto3";
 package myproject.svc;
 option go_package = "example.com/mod/gen/svc;service";
@@ -1384,7 +1398,7 @@ message Req {
 // generated file's `package` clause is valid Go.
 func TestGenerateGoPackageKeyword(t *testing.T) {
 	protoDir := t.TempDir()
-	writeProto(t, protoDir, "x.proto", `
+	writeProto(t, protoDir, "myproject/type/x.proto", `
 syntax = "proto3";
 package myproject.x;
 option go_package = "example.com/mod/gen/myproject/type";
@@ -1418,22 +1432,22 @@ message Msg { string s = 1; }`)
 // so the fallback only fires when the second import sees the first's alias.
 func TestGenerateGoPackageAliasCollisionBetweenImports(t *testing.T) {
 	protoDir := t.TempDir()
-	writeProto(t, protoDir, "common.proto", `
+	writeProto(t, protoDir, "common/v1/common.proto", `
 syntax = "proto3";
 package myproject.common;
 option go_package = "example.com/mod/gen/common/v1;v1";
 message Foo { string name = 1; }`)
-	writeProto(t, protoDir, "trace.proto", `
+	writeProto(t, protoDir, "trace/v1/trace.proto", `
 syntax = "proto3";
 package myproject.trace;
 option go_package = "example.com/mod/gen/trace/v1;v1";
 message Bar { string id = 1; }`)
-	writeProto(t, protoDir, "api.proto", `
+	writeProto(t, protoDir, "api/v1/api.proto", `
 syntax = "proto3";
 package myproject.api;
 option go_package = "example.com/mod/gen/api/v1;service";
-import "myproject/common/common.proto";
-import "myproject/trace/trace.proto";
+import "common/v1/common.proto";
+import "trace/v1/trace.proto";
 message Request {
   myproject.common.Foo foo = 1;
   myproject.trace.Bar bar = 2;
@@ -1518,8 +1532,8 @@ message Bar { string s = 1; }`)
 	if err == nil {
 		t.Fatal("expected duplicate-import-path error, got nil")
 	}
-	if !strings.Contains(err.Error(), `claimed by both proto packages`) {
-		t.Errorf("expected destination-collision error, got: %v", err)
+	if !strings.Contains(err.Error(), `import path`) {
+		t.Errorf("expected duplicate-import-path error, got: %v", err)
 	}
 }
 
@@ -1551,7 +1565,7 @@ message Bar { string s = 1; }`)
 	if err == nil {
 		t.Fatal("expected destination-collision error, got nil")
 	}
-	if !strings.Contains(err.Error(), "claimed by both proto packages") {
+	if !strings.Contains(err.Error(), "import path") {
 		t.Errorf("expected destination-collision error, got: %v", err)
 	}
 }

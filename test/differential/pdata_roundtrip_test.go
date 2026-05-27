@@ -10,10 +10,10 @@ import (
 	"go.opentelemetry.io/collector/pdata/pmetric"
 	"go.opentelemetry.io/collector/pdata/ptrace"
 
-	commonv1 "wiresmith/gen/otlp/common/v1"
-	logsv1 "wiresmith/gen/otlp/logs/v1"
-	metricsv1 "wiresmith/gen/otlp/metrics/v1"
-	tracev1 "wiresmith/gen/otlp/trace/v1"
+	commonv1 "wiresmith/gen/opentelemetry/proto/common/v1"
+	logsv1 "wiresmith/gen/opentelemetry/proto/logs/v1"
+	metricsv1 "wiresmith/gen/opentelemetry/proto/metrics/v1"
+	tracev1 "wiresmith/gen/opentelemetry/proto/trace/v1"
 )
 
 // TestPdataTracesRoundTrip builds traces via the official pdata API, serializes

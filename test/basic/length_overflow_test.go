@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/encoding/protowire"
 
-	commonv1 "wiresmith/gen/otlp/common/v1"
+	commonv1 "wiresmith/gen/opentelemetry/proto/common/v1"
 )
 
 // SEC-3: 32-bit length-decode truncation. A length varint encoding a value

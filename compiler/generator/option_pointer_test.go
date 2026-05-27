@@ -53,7 +53,7 @@ func expectInvalidPointer(t *testing.T, err error, reasonSubstr string) {
 func TestPointerOption_RejectsScalar(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
-package test;
+package test.v1;
 option go_package = "wiresmith/gen/test/v1";
 import "wiresmith/options.proto";
 message M {
@@ -66,7 +66,7 @@ message M {
 func TestPointerOption_RejectsOptional(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
-package test;
+package test.v1;
 option go_package = "wiresmith/gen/test/v1";
 import "wiresmith/options.proto";
 message Inner {}
@@ -80,7 +80,7 @@ message M {
 func TestPointerOption_RejectsOneofVariant(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
-package test;
+package test.v1;
 option go_package = "wiresmith/gen/test/v1";
 import "wiresmith/options.proto";
 message Inner {}
@@ -97,7 +97,7 @@ message M {
 func TestPointerOption_RejectsMap(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
-package test;
+package test.v1;
 option go_package = "wiresmith/gen/test/v1";
 import "wiresmith/options.proto";
 message Inner {}
@@ -116,7 +116,7 @@ func TestPointerOption_AcceptsMessage(t *testing.T) {
 
 	const body = `
 syntax = "proto3";
-package test;
+package test.v1;
 option go_package = "wiresmith/gen/test/v1";
 import "wiresmith/options.proto";
 message Inner { int32 x = 1; }
@@ -161,7 +161,7 @@ func TestPointerOption_UserFileSharingEmbeddedPackageStillEmits(t *testing.T) {
 	const body = `
 syntax = "proto3";
 package wiresmith.options;
-option go_package = "wiresmith/gen/userwo/v1";
+option go_package = "wiresmith/gen/wiresmith/options";
 message UserMessage { int32 x = 1; }
 `
 	if err := os.WriteFile(filepath.Join(protoDir, "user.proto"), []byte(body), 0o644); err != nil {
@@ -173,7 +173,11 @@ message UserMessage { int32 x = 1; }
 		t.Fatalf("Generate failed: %v", err)
 	}
 
-	out := filepath.Join(outDir, "userwo", "v1", "user.pb.go")
+	// Under source-relative output, a flat user file with package
+	// `wiresmith.options` lands at the package-derived path
+	// wiresmith/options/user.pb.go — the embedded schema lives at
+	// wiresmith/options.proto and emits nothing, so the two don't collide.
+	out := filepath.Join(outDir, "wiresmith", "options", "user.pb.go")
 	if _, err := os.Stat(out); err != nil {
 		t.Fatalf("expected generated file at %s: %v", out, err)
 	}

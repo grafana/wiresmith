@@ -6,9 +6,9 @@ import (
 
 	"google.golang.org/protobuf/proto"
 
-	logsv1 "wiresmith/gen/otlp/logs/v1"
-	metricsv1 "wiresmith/gen/otlp/metrics/v1"
-	tracev1 "wiresmith/gen/otlp/trace/v1"
+	logsv1 "wiresmith/gen/opentelemetry/proto/logs/v1"
+	metricsv1 "wiresmith/gen/opentelemetry/proto/metrics/v1"
+	tracev1 "wiresmith/gen/opentelemetry/proto/trace/v1"
 	"wiresmith/test/testutil"
 
 	otlplogs "go.opentelemetry.io/proto/otlp/logs/v1"
