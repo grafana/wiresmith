@@ -106,6 +106,7 @@ func TestDestForPath(t *testing.T) {
 		// Under base — honored, including `;name` form when present.
 		"basic.maps.v1": "wiresmith/gen/basic/maps/v1",
 		"myapp.svc":     "wiresmith/gen/myapp/svc;service",
+		"tempo.svc":     "github.com/grafana/tempo/pkg/tempopb/svc",
 		// Outside base — falls through to the source-relative default.
 		"opentelemetry.proto.common.v1": "go.opentelemetry.io/proto/otlp/common/v1",
 		"external.pkg":                  "some.other/module/pkg",
@@ -114,6 +115,7 @@ func TestDestForPath(t *testing.T) {
 	tests := []struct {
 		name       string
 		module     string
+		outDir     string
 		fdPath     string
 		protoPkg   string
 		wantImport string
@@ -123,6 +125,7 @@ func TestDestForPath(t *testing.T) {
 		{
 			name:       "go_package under base — honored",
 			module:     "wiresmith",
+			outDir:     "gen",
 			fdPath:     "basic/maps/v1/maps.proto",
 			protoPkg:   "basic.maps.v1",
 			wantImport: "wiresmith/gen/basic/maps/v1",
@@ -132,6 +135,7 @@ func TestDestForPath(t *testing.T) {
 		{
 			name:       "go_package `;name` form is honored when under base",
 			module:     "wiresmith",
+			outDir:     "gen",
 			fdPath:     "myapp/svc/svc.proto",
 			protoPkg:   "myapp.svc",
 			wantImport: "wiresmith/gen/myapp/svc",
@@ -139,8 +143,19 @@ func TestDestForPath(t *testing.T) {
 			wantPkg:    "service",
 		},
 		{
+			name:       "multi-segment outDir composes into the base, honoring go_package under it",
+			module:     "github.com/grafana/tempo",
+			outDir:     "pkg/tempopb",
+			fdPath:     "svc/svc.proto",
+			protoPkg:   "tempo.svc",
+			wantImport: "github.com/grafana/tempo/pkg/tempopb/svc",
+			wantRelDir: "svc",
+			wantPkg:    "svc",
+		},
+		{
 			name:       "go_package outside base — source-relative fallback",
 			module:     "wiresmith",
+			outDir:     "gen",
 			fdPath:     "opentelemetry/proto/common/v1/common.proto",
 			protoPkg:   "opentelemetry.proto.common.v1",
 			wantImport: "wiresmith/gen/opentelemetry/proto/common/v1",
@@ -150,6 +165,7 @@ func TestDestForPath(t *testing.T) {
 		{
 			name:       "no go_package, default mapping",
 			module:     "testmod",
+			outDir:     "gen",
 			fdPath:     "x/y/v1/foo.proto",
 			protoPkg:   "x.y.v1",
 			wantImport: "testmod/gen/x/y/v1",
@@ -157,17 +173,19 @@ func TestDestForPath(t *testing.T) {
 			wantPkg:    "yv1",
 		},
 		{
-			name:       "module with dotted path composes correctly",
+			name:       "non-gen outDir flows into the import base too",
 			module:     "github.com/grafana/tempo",
+			outDir:     "pkg/tempopb",
 			fdPath:     "common/v1/common.proto",
 			protoPkg:   "tempo.common.v1",
-			wantImport: "github.com/grafana/tempo/gen/common/v1",
+			wantImport: "github.com/grafana/tempo/pkg/tempopb/common/v1",
 			wantRelDir: "common/v1",
 			wantPkg:    "commonv1",
 		},
 		{
 			name:       "flat file (no source dir) lands at the import base",
 			module:     "wiresmith",
+			outDir:     "gen",
 			fdPath:     "root.proto",
 			protoPkg:   "root",
 			wantImport: "wiresmith/gen",
@@ -177,6 +195,7 @@ func TestDestForPath(t *testing.T) {
 		{
 			name:       "go_package prefix without separator must not match",
 			module:     "wiresmith",
+			outDir:     "gen",
 			fdPath:     "external/pkg/x.proto",
 			protoPkg:   "external.pkg",
 			wantImport: "wiresmith/gen/external/pkg",
@@ -186,12 +205,12 @@ func TestDestForPath(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := destForPath(tt.module, tt.fdPath, tt.protoPkg, goPackages)
+			got := destForPath(tt.module, tt.outDir, tt.fdPath, tt.protoPkg, goPackages)
 			if got.importPath != tt.wantImport ||
 				got.relDir != tt.wantRelDir ||
 				got.pkgName != tt.wantPkg {
-				t.Errorf("destForPath(%q, %q, %q) = {%q, %q, %q}, want {%q, %q, %q}",
-					tt.module, tt.fdPath, tt.protoPkg,
+				t.Errorf("destForPath(%q, %q, %q, %q) = {%q, %q, %q}, want {%q, %q, %q}",
+					tt.module, tt.outDir, tt.fdPath, tt.protoPkg,
 					got.importPath, got.relDir, got.pkgName,
 					tt.wantImport, tt.wantRelDir, tt.wantPkg)
 			}

@@ -34,7 +34,7 @@ message Container {
 `
 
 	protoDir := t.TempDir()
-	outDir := t.TempDir()
+	outDir := testOutDir(t)
 	if err := os.WriteFile(filepath.Join(protoDir, "test.proto"), []byte(protoBody), 0o644); err != nil {
 		t.Fatalf("writing proto: %v", err)
 	}

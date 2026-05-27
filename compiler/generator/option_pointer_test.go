@@ -15,7 +15,7 @@ func runGenerator(t *testing.T, protoBody string) error {
 	t.Helper()
 
 	protoDir := t.TempDir()
-	outDir := t.TempDir()
+	outDir := testOutDir(t)
 
 	// The proto body imports wiresmith/options.proto; that file is served
 	// from the embed by the generator's resolver, so callers only need to
@@ -112,7 +112,7 @@ message M {
 // produces output, and the resulting Go file compiles via go/format.
 func TestPointerOption_AcceptsMessage(t *testing.T) {
 	protoDir := t.TempDir()
-	outDir := t.TempDir()
+	outDir := testOutDir(t)
 
 	const body = `
 syntax = "proto3";
@@ -156,7 +156,7 @@ message Holder {
 // package would silently drop this user file's output.
 func TestPointerOption_UserFileSharingEmbeddedPackageStillEmits(t *testing.T) {
 	protoDir := t.TempDir()
-	outDir := t.TempDir()
+	outDir := testOutDir(t)
 
 	const body = `
 syntax = "proto3";
@@ -189,7 +189,7 @@ message UserMessage { int32 x = 1; }
 // buildImportMapping to register the file under "wiresmith/options.proto".
 func TestPointerOption_UserFileAtCanonicalEmbedPathErrors(t *testing.T) {
 	protoDir := t.TempDir()
-	outDir := t.TempDir()
+	outDir := testOutDir(t)
 
 	nested := filepath.Join(protoDir, "wiresmith")
 	if err := os.MkdirAll(nested, 0o755); err != nil {
@@ -220,7 +220,7 @@ message M {}
 // gain a file under gen/wiresmith — this test pins the absence.
 func TestPointerOption_OptionsProtoDoesNotEmit(t *testing.T) {
 	protoDir := t.TempDir()
-	outDir := t.TempDir()
+	outDir := testOutDir(t)
 
 	// Trivial user proto so Generate has at least one real file to emit.
 	const body = `

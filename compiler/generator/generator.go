@@ -315,7 +315,7 @@ func (g *Generator) outputPathFor(fd protoreflect.FileDescriptor) string {
 // later in validateDestinations against the resolved goDest.
 func (g *Generator) collectGoPackages(results linker.Files) error {
 	g.goPackages = make(map[string]string)
-	base := joinImport(g.Module, "gen")
+	base := joinImport(g.Module, g.OutDir)
 
 	// sighting captures the first go_package value (possibly empty) we saw
 	// for a proto pkg and the file we saw it in, so a later disagreement
@@ -404,7 +404,7 @@ func (g *Generator) computeDests(results linker.Files) error {
 			continue
 		}
 		seen[protoPkg] = sighting{relDir: relDir, path: fd.Path()}
-		dest := destFor(g.Module, fd, g.goPackages)
+		dest := destFor(g.Module, g.OutDir, fd, g.goPackages)
 		if owner, exists := importOwner[dest.importPath]; exists && owner != protoPkg {
 			return fmt.Errorf("import path %q is claimed by both proto packages %q and %q (check go_package options)",
 				dest.importPath, owner, protoPkg)

@@ -50,85 +50,98 @@ func TestGeneratorDeterminism(t *testing.T) {
 
 func checkDeterminism(t *testing.T, protoDir string, iterations int) {
 	t.Helper()
+	// The import-path base is now module + outDir; running twice with
+	// different absolute --out values would emit different cross-package
+	// import strings (one TMPDIR vs. another), trivially failing the
+	// determinism check. Run each iteration in the SAME relative outDir,
+	// snapshotting the bytes between runs.
+	cwd := t.TempDir()
+	t.Chdir(cwd)
+	outDir := "gen"
+	absOutDir := filepath.Join(cwd, outDir)
+
+	ctx := context.Background()
 
 	for i := 0; i < iterations; i++ {
-		dirA := t.TempDir()
-		dirB := t.TempDir()
-
-		genA := &Generator{
-			Module:   "wiresmith",
-			OutDir:   dirA,
-			ProtoDir: protoDir,
-		}
-		genB := &Generator{
-			Module:   "wiresmith",
-			OutDir:   dirB,
-			ProtoDir: protoDir,
+		// Clean previous iteration's output so file existence checks below
+		// only see the current iteration's files.
+		if err := os.RemoveAll(absOutDir); err != nil {
+			t.Fatalf("iteration %d: cleanup: %v", i, err)
 		}
 
-		ctx := context.Background()
-
-		if err := genA.Generate(ctx); err != nil {
+		gen := &Generator{
+			Module:   "wiresmith",
+			OutDir:   outDir,
+			ProtoDir: protoDir,
+		}
+		if err := gen.Generate(ctx); err != nil {
 			t.Fatalf("iteration %d: first Generate failed: %v", i, err)
 		}
-		if err := genB.Generate(ctx); err != nil {
+
+		// Snapshot run 1 by reading every file into memory keyed by its
+		// path relative to absOutDir.
+		runA := make(map[string][]byte)
+		err := filepath.Walk(absOutDir, func(path string, info os.FileInfo, err error) error {
+			if err != nil || info.IsDir() {
+				return err
+			}
+			rel, err := filepath.Rel(absOutDir, path)
+			if err != nil {
+				return err
+			}
+			content, err := os.ReadFile(path)
+			if err != nil {
+				return err
+			}
+			runA[rel] = content
+			return nil
+		})
+		if err != nil {
+			t.Fatalf("iteration %d: walking first run output: %v", i, err)
+		}
+
+		// Second run overwrites the same outDir; compare against the snapshot.
+		if err := os.RemoveAll(absOutDir); err != nil {
+			t.Fatalf("iteration %d: cleanup before second run: %v", i, err)
+		}
+		if err := gen.Generate(ctx); err != nil {
 			t.Fatalf("iteration %d: second Generate failed: %v", i, err)
 		}
 
-		// Walk dirA and compare every file with its counterpart in dirB.
-		err := filepath.Walk(dirA, func(pathA string, info os.FileInfo, err error) error {
+		runB := make(map[string][]byte)
+		err = filepath.Walk(absOutDir, func(path string, info os.FileInfo, err error) error {
+			if err != nil || info.IsDir() {
+				return err
+			}
+			rel, err := filepath.Rel(absOutDir, path)
 			if err != nil {
 				return err
 			}
-			if info.IsDir() {
-				return nil
-			}
-
-			rel, err := filepath.Rel(dirA, pathA)
+			content, err := os.ReadFile(path)
 			if err != nil {
 				return err
 			}
-			pathB := filepath.Join(dirB, rel)
+			runB[rel] = content
+			return nil
+		})
+		if err != nil {
+			t.Fatalf("iteration %d: walking second run output: %v", i, err)
+		}
 
-			contentA, err := os.ReadFile(pathA)
-			if err != nil {
-				return err
+		for rel, contentA := range runA {
+			contentB, ok := runB[rel]
+			if !ok {
+				t.Errorf("iteration %d: %s exists in first output but not in second", i, rel)
+				continue
 			}
-			contentB, err := os.ReadFile(pathB)
-			if err != nil {
-				t.Errorf("iteration %d: file %s exists in first output but not in second", i, rel)
-				return nil
-			}
-
 			if !bytes.Equal(contentA, contentB) {
 				t.Errorf("iteration %d: file %s differs between runs", i, rel)
 			}
-			return nil
-		})
-		if err != nil {
-			t.Fatalf("iteration %d: walking output directory: %v", i, err)
 		}
-
-		// Also walk dirB to catch files that exist only in the second output.
-		err = filepath.Walk(dirB, func(pathB string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
+		for rel := range runB {
+			if _, ok := runA[rel]; !ok {
+				t.Errorf("iteration %d: %s exists in second output but not in first", i, rel)
 			}
-			if info.IsDir() {
-				return nil
-			}
-			rel, err := filepath.Rel(dirB, pathB)
-			if err != nil {
-				return err
-			}
-			pathA := filepath.Join(dirA, rel)
-			if _, err := os.Stat(pathA); os.IsNotExist(err) {
-				t.Errorf("iteration %d: file %s exists in second output but not in first", i, rel)
-			}
-			return nil
-		})
-		if err != nil {
-			t.Fatalf("iteration %d: walking second output directory: %v", i, err)
 		}
 	}
 }
@@ -166,7 +179,14 @@ func TestGenerateMatchesCheckedIn(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			tmpDir := t.TempDir()
+			// Chdir to a fresh tmp dir so the generator can use a relative
+			// --out value. The import-path base (module + outDir) only makes
+			// sense as a Go path when outDir is relative; an absolute t.TempDir
+			// would yield a nonsense base like wiresmith/var/folders/....
+			cwd := t.TempDir()
+			t.Chdir(cwd)
+			outDir := "gen"
+			absOutDir := filepath.Join(cwd, outDir)
 
 			// For conformance, only test_messages_proto3.proto is generated
 			// by wiresmith; conformance.proto uses protoc. Copy just that file
@@ -186,7 +206,7 @@ func TestGenerateMatchesCheckedIn(t *testing.T) {
 
 			gen := &Generator{
 				Module:   "wiresmith",
-				OutDir:   tmpDir,
+				OutDir:   outDir,
 				ProtoDir: protoDir,
 			}
 			if err := gen.Generate(ctx); err != nil {
@@ -197,14 +217,14 @@ func TestGenerateMatchesCheckedIn(t *testing.T) {
 			// files. The generator writes to outDir/sourceRelDir(fd.Path()),
 			// which mirrors the layout under gen/.
 			generatedFiles := make(map[string]struct{})
-			err := filepath.Walk(tmpDir, func(path string, info os.FileInfo, err error) error {
+			err := filepath.Walk(absOutDir, func(path string, info os.FileInfo, err error) error {
 				if err != nil {
 					return err
 				}
 				if info.IsDir() {
 					return nil
 				}
-				rel, err := filepath.Rel(tmpDir, path)
+				rel, err := filepath.Rel(absOutDir, path)
 				if err != nil {
 					return err
 				}
@@ -277,7 +297,7 @@ syntax = "proto3";
 package real_pkg;
 message Foo { string name = 1; }`)
 
-	outDir := t.TempDir()
+	outDir := testOutDir(t)
 	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)
@@ -306,7 +326,7 @@ syntax = "proto3";
 package shared;
 message Foo { string s = 1; }`)
 
-	outDir := t.TempDir()
+	outDir := testOutDir(t)
 	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)
@@ -340,7 +360,7 @@ package example.v1;
 import "example/v1/common.proto";
 message Bar { Foo foo = 1; }`)
 
-	outDir := t.TempDir()
+	outDir := testOutDir(t)
 	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)
@@ -436,7 +456,7 @@ package beta;
 option go_package = "wiresmith/gen/alpha";
 message Foo { string s = 1; }`)
 
-	outDir := t.TempDir()
+	outDir := testOutDir(t)
 	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)
@@ -448,6 +468,18 @@ message Foo { string s = 1; }`)
 	if _, err := os.Stat(filepath.Join(outDir, "beta", "real.pb.go")); err != nil {
 		t.Errorf("expected non-empty proto to still produce a .pb.go: %v", err)
 	}
+}
+
+// testOutDir returns a Generator.OutDir value suitable for tests. It chdirs
+// into a fresh per-test tmp directory (auto-restored on test end) and
+// returns "gen" as the relative outDir. The Generator's import-path base
+// formula composes module + outDir, so the relative form is what tests
+// must use — passing an absolute t.TempDir() would produce nonsense Go
+// import paths like wiresmith/var/folders/.../gen.
+func testOutDir(t *testing.T) string {
+	t.Helper()
+	t.Chdir(t.TempDir())
+	return "gen"
 }
 
 func writeProto(t *testing.T, dir, relPath, content string) {
@@ -486,7 +518,7 @@ package scoped.b.v1;
 option go_package = "wiresmith/scoped/b";
 message Bar { int32 n = 1; }`)
 
-	outDir := t.TempDir()
+	outDir := testOutDir(t)
 	gen := &Generator{
 		Module:   "wiresmith",
 		OutDir:   outDir,
@@ -522,7 +554,7 @@ package scoped.b.v1;
 option go_package = "wiresmith/scoped/b";
 message Bar { int32 n = 1; }`)
 
-	outDir := t.TempDir()
+	outDir := testOutDir(t)
 	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)
@@ -605,7 +637,7 @@ message In { string s = 1; }`)
 	missing := filepath.Join(protoDir, "doesnotexist.proto")
 	gen := &Generator{
 		Module:   "wiresmith",
-		OutDir:   t.TempDir(),
+		OutDir:   testOutDir(t),
 		ProtoDir: protoDir,
 		Files:    []string{missing},
 	}
@@ -644,7 +676,7 @@ message Out { string s = 1; }`), 0o644); err != nil {
 
 	gen := &Generator{
 		Module:   "wiresmith",
-		OutDir:   t.TempDir(),
+		OutDir:   testOutDir(t),
 		ProtoDir: protoDir,
 		Files:    []string{outsideFile},
 	}
@@ -775,6 +807,63 @@ func TestBuildImportMappingDuplicateKey(t *testing.T) {
 	}
 }
 
+// TestGenerateRespectsOutDirInImportBase pins the contract that --out feeds
+// into the Go import-path base (module + outDir), not just the on-disk
+// destination. A user pointing --out at a directory other than `gen` —
+// e.g. `pkg/api` inside their own module — must get generated code whose
+// cross-file imports resolve under that prefix, otherwise Go's
+// directory-equals-import-path rule rejects the output at build time.
+//
+// Pre-fix the import base was hardcoded as `<module>/gen` regardless of
+// --out, so any --out other than `gen` silently produced unbuildable code.
+func TestGenerateRespectsOutDirInImportBase(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "common/v1/common.proto", `
+syntax = "proto3";
+package svc.common.v1;
+message Item { string id = 1; }`)
+	writeProto(t, protoDir, "api/v1/api.proto", `
+syntax = "proto3";
+package svc.api.v1;
+import "common/v1/common.proto";
+message Req { svc.common.v1.Item item = 1; }`)
+
+	cwd := t.TempDir()
+	t.Chdir(cwd)
+	gen := &Generator{
+		Module:   "example.com/svc",
+		OutDir:   "pkg/api",
+		ProtoDir: protoDir,
+	}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
+	}
+
+	for _, rel := range []string{
+		filepath.Join("pkg", "api", "common", "v1", "common.pb.go"),
+		filepath.Join("pkg", "api", "api", "v1", "api.pb.go"),
+	} {
+		if _, err := os.Stat(filepath.Join(cwd, rel)); err != nil {
+			t.Errorf("expected %s under outDir: %v", rel, err)
+		}
+	}
+
+	// The cross-file import in api.pb.go must reference the outDir-derived
+	// base — example.com/svc/pkg/api/common/v1 — not the legacy
+	// example.com/svc/gen/common/v1 the old hardcode would have produced.
+	apiContent, err := os.ReadFile(filepath.Join(cwd, "pkg", "api", "api", "v1", "api.pb.go"))
+	if err != nil {
+		t.Fatalf("reading api.pb.go: %v", err)
+	}
+	apiStr := string(apiContent)
+	if !strings.Contains(apiStr, `"example.com/svc/pkg/api/common/v1"`) {
+		t.Errorf("api.pb.go must import the common pkg under example.com/svc/pkg/api/common/v1; got:\n%s", apiStr)
+	}
+	if strings.Contains(apiStr, `"example.com/svc/gen/common/v1"`) {
+		t.Errorf("api.pb.go must NOT import under the legacy /gen/ base; the hardcode is back. Got:\n%s", apiStr)
+	}
+}
+
 // TestGenerateNestedLayout runs the full generator pipeline against a
 // recursive proto layout where a nested file imports another nested file.
 // This is the integration-level counterpart to TestBuildImportMappingRecursive:
@@ -788,7 +877,7 @@ func TestGenerateNestedLayout(t *testing.T) {
 	writeProto(t, protoDir, "testpb/trace/v1/trace.proto",
 		"syntax = \"proto3\";\npackage testpb.trace.v1;\nimport \"testpb/common/v1/common.proto\";\nmessage Span { testpb.common.v1.Resource resource = 1; }")
 
-	outDir := t.TempDir()
+	outDir := testOutDir(t)
 	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate failed: %v", err)
@@ -843,7 +932,7 @@ package depthsec.outer.v1;
 import "depthsec/leaf/v1/leaf.proto";
 message Outer { depthsec.leaf.v1.Leaf l = 1; }`)
 
-	outDir := t.TempDir()
+	outDir := testOutDir(t)
 	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)
@@ -890,7 +979,7 @@ package depthmap.outer.v1;
 import "depthmap/leaf/v1/leaf.proto";
 message Outer { map<string, depthmap.leaf.v1.Leaf> entries = 1; }`)
 
-	outDir := t.TempDir()
+	outDir := testOutDir(t)
 	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)
@@ -914,7 +1003,7 @@ syntax = "proto3";
 package depthclamp.v1;
 message Probe { string s = 1; }`)
 
-	outDir := t.TempDir()
+	outDir := testOutDir(t)
 	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)
@@ -948,7 +1037,7 @@ func TestGenerateMixedLayoutImport(t *testing.T) {
 	writeProto(t, protoDir, "testpb/trace/v1/trace.proto",
 		"syntax = \"proto3\";\npackage testpb.trace.v1;\nimport \"testpb/common.proto\";\nmessage Span { testpb.Resource resource = 1; }")
 
-	outDir := t.TempDir()
+	outDir := testOutDir(t)
 	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate failed: %v", err)
@@ -971,7 +1060,7 @@ func TestGenerateMixedLayoutImport(t *testing.T) {
 		"syntax = \"proto3\";\npackage testpb;\nmessage Resource { string name = 1; }")
 	writeProto(t, protoDir2, "testpb/trace/v1/trace.proto",
 		"syntax = \"proto3\";\npackage testpb.trace.v1;\nimport \"common.proto\";\nmessage Span { testpb.Resource resource = 1; }")
-	gen2 := &Generator{Module: "wiresmith", OutDir: t.TempDir(), ProtoDir: protoDir2}
+	gen2 := &Generator{Module: "wiresmith", OutDir: testOutDir(t), ProtoDir: protoDir2}
 	if err := gen2.Generate(context.Background()); err == nil {
 		t.Error("expected plain-basename import to fail; canonical pkg-derived path is required for cross-imports")
 	}
@@ -990,7 +1079,7 @@ func TestGenerateOutputCollision(t *testing.T) {
 	writeProto(t, protoDir, "b/v1/shared.proto",
 		"syntax = \"proto3\";\npackage testpb.shared.v1;\nmessage B {}")
 
-	outDir := t.TempDir()
+	outDir := testOutDir(t)
 	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
 	err := gen.Generate(context.Background())
 	if err == nil {
@@ -1020,7 +1109,7 @@ func TestGenerateReflectOutputCollision(t *testing.T) {
 	writeProto(t, protoDir, "foo_reflect.proto",
 		"syntax = \"proto3\";\npackage testpb.v1;\nmessage FooReflect {}")
 
-	outDir := t.TempDir()
+	outDir := testOutDir(t)
 	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
 	err := gen.Generate(context.Background())
 	if err == nil {
@@ -1055,7 +1144,7 @@ option go_package = "example.com/mod/gen/myproject/b;b";
 import "myproject/a/a.proto";
 message Bar { myproject.a.Foo foo = 1; }`)
 
-	outDir := t.TempDir()
+	outDir := testOutDir(t)
 	gen := &Generator{
 		Module:   "example.com/mod",
 		OutDir:   outDir,
@@ -1101,7 +1190,7 @@ package mytest.x;
 option go_package = "some.other/module/pkg";
 message Msg { int32 val = 1; }`)
 
-	outDir := t.TempDir()
+	outDir := testOutDir(t)
 	gen := &Generator{
 		Module:   "wiresmith",
 		OutDir:   outDir,
@@ -1132,7 +1221,7 @@ package myapp.svc;
 option go_package = "example.com/app/gen/myapp/svc;service";
 message Request { string id = 1; }`)
 
-	outDir := t.TempDir()
+	outDir := testOutDir(t)
 	gen := &Generator{
 		Module:   "example.com/app",
 		OutDir:   outDir,
@@ -1171,7 +1260,7 @@ message Bar { string id = 1; }`)
 
 	gen := &Generator{
 		Module:   "example.com/mod",
-		OutDir:   t.TempDir(),
+		OutDir:   testOutDir(t),
 		ProtoDir: protoDir,
 	}
 	err := gen.Generate(context.Background())
@@ -1201,7 +1290,7 @@ message Bar { string s = 1; }`)
 
 	gen := &Generator{
 		Module:   "example.com/mod",
-		OutDir:   t.TempDir(),
+		OutDir:   testOutDir(t),
 		ProtoDir: protoDir,
 	}
 	err := gen.Generate(context.Background())
@@ -1234,7 +1323,7 @@ package y.use;
 import "x/fmtish/fmtish.proto";
 message User { x.fmtish.Sprintf s = 1; }`)
 
-	outDir := t.TempDir()
+	outDir := testOutDir(t)
 	gen := &Generator{
 		Module:   "example.com/mod",
 		OutDir:   outDir,
@@ -1295,7 +1384,7 @@ message Request {
   myproject.trace.Bar bar = 2;
 }`)
 
-	outDir := t.TempDir()
+	outDir := testOutDir(t)
 	gen := &Generator{
 		Module:   "example.com/mod",
 		OutDir:   outDir,
@@ -1365,7 +1454,7 @@ message Req {
   myproject.bcommon.v1.Bar b = 2;
 }`)
 
-	outDir := t.TempDir()
+	outDir := testOutDir(t)
 	gen := &Generator{
 		Module:   "example.com/mod",
 		OutDir:   outDir,
@@ -1404,7 +1493,7 @@ package myproject.x;
 option go_package = "example.com/mod/gen/myproject/type";
 message Msg { string s = 1; }`)
 
-	outDir := t.TempDir()
+	outDir := testOutDir(t)
 	gen := &Generator{
 		Module:   "example.com/mod",
 		OutDir:   outDir,
@@ -1453,7 +1542,7 @@ message Request {
   myproject.trace.Bar bar = 2;
 }`)
 
-	outDir := t.TempDir()
+	outDir := testOutDir(t)
 	gen := &Generator{
 		Module:   "example.com/mod",
 		OutDir:   outDir,
@@ -1495,7 +1584,7 @@ message Mal { string s = 1; }`)
 
 	gen := &Generator{
 		Module:   "example.com/mod",
-		OutDir:   t.TempDir(),
+		OutDir:   testOutDir(t),
 		ProtoDir: protoDir,
 	}
 	err := gen.Generate(context.Background())
@@ -1525,7 +1614,7 @@ message Bar { string s = 1; }`)
 
 	gen := &Generator{
 		Module:   "example.com/mod",
-		OutDir:   t.TempDir(),
+		OutDir:   testOutDir(t),
 		ProtoDir: protoDir,
 	}
 	err := gen.Generate(context.Background())
@@ -1558,7 +1647,7 @@ message Bar { string s = 1; }`)
 
 	gen := &Generator{
 		Module:   "example.com/mod",
-		OutDir:   t.TempDir(),
+		OutDir:   testOutDir(t),
 		ProtoDir: protoDir,
 	}
 	err := gen.Generate(context.Background())
@@ -1595,7 +1684,7 @@ option go_package = "example.com/mod/gen/y/use;myalias";
 import "x/pkgone/dep.proto";
 message Bar { x.pkgone.Foo foo = 1; }`)
 
-	outDir := t.TempDir()
+	outDir := testOutDir(t)
 	gen := &Generator{
 		Module:   "example.com/mod",
 		OutDir:   outDir,
@@ -1648,7 +1737,7 @@ option go_package = "example.com/mod/gen/q/use;myalias";
 import "p/xfoo/dep.proto";
 message Bar { p.xfoo.Foo foo = 1; }`)
 
-	outDir := t.TempDir()
+	outDir := testOutDir(t)
 	gen := &Generator{
 		Module:   "example.com/mod",
 		OutDir:   outDir,
