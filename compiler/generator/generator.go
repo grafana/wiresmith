@@ -406,7 +406,7 @@ func (g *Generator) computeDests(results linker.Files) error {
 		seen[protoPkg] = sighting{relDir: relDir, path: fd.Path()}
 		dest := destFor(g.Module, fd, g.goPackages)
 		if owner, exists := importOwner[dest.importPath]; exists && owner != protoPkg {
-			return fmt.Errorf("Go import path %q is claimed by both proto packages %q and %q (check go_package options)",
+			return fmt.Errorf("import path %q is claimed by both proto packages %q and %q (check go_package options)",
 				dest.importPath, owner, protoPkg)
 		}
 		importOwner[dest.importPath] = protoPkg

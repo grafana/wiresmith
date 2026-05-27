@@ -1532,7 +1532,7 @@ message Bar { string s = 1; }`)
 	if err == nil {
 		t.Fatal("expected duplicate-import-path error, got nil")
 	}
-	if !strings.Contains(err.Error(), `Go import path`) {
+	if !strings.Contains(err.Error(), `import path`) {
 		t.Errorf("expected duplicate-import-path error, got: %v", err)
 	}
 }
@@ -1565,7 +1565,7 @@ message Bar { string s = 1; }`)
 	if err == nil {
 		t.Fatal("expected destination-collision error, got nil")
 	}
-	if !strings.Contains(err.Error(), "Go import path") {
+	if !strings.Contains(err.Error(), "import path") {
 		t.Errorf("expected destination-collision error, got: %v", err)
 	}
 }
