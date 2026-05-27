@@ -68,7 +68,31 @@ Map keys: all scalar types except `float`, `double`, and `bytes`. Map values: al
 
 Not supported (not needed for OTel protos): services/RPCs, extensions, well-known types, proto2.
 
-## Usage
+## Install
+
+The module path is `wiresmith` (no host prefix), so `go install` cannot fetch the binary — build from a checkout:
+
+```sh
+git clone git@github.com:grafana/wiresmith.git
+cd wiresmith
+go build -o wiresmith ./cmd/wiresmith
+```
+
+## Run
+
+```sh
+./wiresmith --proto_path=proto --out=gen --module=wiresmith
+```
+
+`--proto_path` walks the .proto tree, `--out` is the destination for generated `.pb.go` files (source-relative under that root), and `--module` is the Go module prefix used in import paths. Passing one or more `.proto` paths as positional arguments scopes emission to just those files; their imports are still resolved against the full `--proto_path` walk.
+
+`wiresmith --help` lists every flag; `wiresmith --version` prints the build version.
+
+See [docs/cli.md](docs/cli.md) for the full CLI reference and a worked example.
+
+## Development
+
+Inside the repo, the Makefile is the canonical entry point:
 
 ```
 make generate    # regenerate Go code from .proto files
@@ -77,7 +101,7 @@ make test        # run round-trip correctness tests
 make bench       # run comparative benchmarks
 ```
 
-See `Makefile` for all targets, and [docs/cli.md](docs/cli.md) for the `wiresmith` CLI flags and an end-to-end example.
+See `Makefile` for all targets.
 
 ## Documentation
 
