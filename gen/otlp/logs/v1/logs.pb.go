@@ -1030,6 +1030,13 @@ func (m *LogsData) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
+func (m *LogsData) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
+}
+
 func (m *LogsData) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
@@ -1182,6 +1189,13 @@ func (m *ResourceLogs) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
+func (m *ResourceLogs) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
+}
+
 func (m *ResourceLogs) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
@@ -1311,7 +1325,7 @@ func (m *ResourceLogs) unmarshal(dAtA []byte, depth int) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.Resource.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.Resource.UnmarshalWithDepth(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -1416,6 +1430,13 @@ func (m *ResourceLogs) unmarshal(dAtA []byte, depth int) error {
 
 func (m *ScopeLogs) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
+}
+
+func (m *ScopeLogs) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
 }
 
 func (m *ScopeLogs) unmarshal(dAtA []byte, depth int) error {
@@ -1547,7 +1568,7 @@ func (m *ScopeLogs) unmarshal(dAtA []byte, depth int) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.Scope.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.Scope.UnmarshalWithDepth(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -1652,6 +1673,13 @@ func (m *ScopeLogs) unmarshal(dAtA []byte, depth int) error {
 
 func (m *LogRecord) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
+}
+
+func (m *LogRecord) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
 }
 
 func (m *LogRecord) unmarshal(dAtA []byte, depth int) error {
@@ -1885,7 +1913,7 @@ func (m *LogRecord) unmarshal(dAtA []byte, depth int) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.Body.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.Body.UnmarshalWithDepth(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -1929,7 +1957,7 @@ func (m *LogRecord) unmarshal(dAtA []byte, depth int) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.Attributes = append(m.Attributes, commonv1.KeyValue{})
-			if err := m.Attributes[len(m.Attributes)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.Attributes[len(m.Attributes)-1].UnmarshalWithDepth(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
 			iNdEx = postIndex

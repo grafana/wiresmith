@@ -257,7 +257,12 @@ func emitUnmarshalCall(e Emitter, access string, isSamePackage bool) {
 	if isSamePackage {
 		e.Writef("\t\t\tif err := %s.unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n", access)
 	} else {
-		e.Writef("\t\t\tif err := %s.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n", access)
+		// Cross-package callee: route through UnmarshalWithDepth so the
+		// recursion-depth counter survives the boundary. The public
+		// .Unmarshal(b) entry would restart depth at 0, letting a graph
+		// that bounces between packages recurse to maxUnmarshalDepth ×
+		// pkgCount levels (SEC-5).
+		e.Writef("\t\t\tif err := %s.UnmarshalWithDepth(dAtA[iNdEx:postIndex], depth+1); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n", access)
 	}
 }
 

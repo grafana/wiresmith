@@ -1684,6 +1684,13 @@ func (m *TracesData) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
+func (m *TracesData) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
+}
+
 func (m *TracesData) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
@@ -1836,6 +1843,13 @@ func (m *ResourceSpans) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
+func (m *ResourceSpans) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
+}
+
 func (m *ResourceSpans) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
@@ -1965,7 +1979,7 @@ func (m *ResourceSpans) unmarshal(dAtA []byte, depth int) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.Resource.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.Resource.UnmarshalWithDepth(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -2070,6 +2084,13 @@ func (m *ResourceSpans) unmarshal(dAtA []byte, depth int) error {
 
 func (m *ScopeSpans) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
+}
+
+func (m *ScopeSpans) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
 }
 
 func (m *ScopeSpans) unmarshal(dAtA []byte, depth int) error {
@@ -2201,7 +2222,7 @@ func (m *ScopeSpans) unmarshal(dAtA []byte, depth int) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.Scope.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.Scope.UnmarshalWithDepth(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -2306,6 +2327,13 @@ func (m *ScopeSpans) unmarshal(dAtA []byte, depth int) error {
 
 func (m *Span_Event) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
+}
+
+func (m *Span_Event) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
 }
 
 func (m *Span_Event) unmarshal(dAtA []byte, depth int) error {
@@ -2495,7 +2523,7 @@ func (m *Span_Event) unmarshal(dAtA []byte, depth int) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.Attributes = append(m.Attributes, commonv1.KeyValue{})
-			if err := m.Attributes[len(m.Attributes)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.Attributes[len(m.Attributes)-1].UnmarshalWithDepth(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -2544,6 +2572,13 @@ func (m *Span_Event) unmarshal(dAtA []byte, depth int) error {
 
 func (m *Span_Link) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
+}
+
+func (m *Span_Link) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
 }
 
 func (m *Span_Link) unmarshal(dAtA []byte, depth int) error {
@@ -2799,7 +2834,7 @@ func (m *Span_Link) unmarshal(dAtA []byte, depth int) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.Attributes = append(m.Attributes, commonv1.KeyValue{})
-			if err := m.Attributes[len(m.Attributes)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.Attributes[len(m.Attributes)-1].UnmarshalWithDepth(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -2864,6 +2899,13 @@ func (m *Span_Link) unmarshal(dAtA []byte, depth int) error {
 
 func (m *Span) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
+}
+
+func (m *Span) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
 }
 
 func (m *Span) unmarshal(dAtA []byte, depth int) error {
@@ -3296,7 +3338,7 @@ func (m *Span) unmarshal(dAtA []byte, depth int) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.Attributes = append(m.Attributes, commonv1.KeyValue{})
-			if err := m.Attributes[len(m.Attributes)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.Attributes[len(m.Attributes)-1].UnmarshalWithDepth(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -3532,6 +3574,13 @@ func (m *Span) unmarshal(dAtA []byte, depth int) error {
 
 func (m *Status) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
+}
+
+func (m *Status) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
 }
 
 func (m *Status) unmarshal(dAtA []byte, depth int) error {

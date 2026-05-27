@@ -813,6 +813,117 @@ func TestGenerateNestedLayout(t *testing.T) {
 	}
 }
 
+// TestGenerateCrossPackageUnmarshalThreadsDepth pins the SEC-5 fix:
+// when a generated Unmarshal calls into a *different-package* message
+// type, the recursion-depth counter must thread across the call instead
+// of restarting at zero. Historically the cross-package emit site called
+// `.Unmarshal(b)` which routes through the depth=0 public entry point,
+// so a graph bouncing between N packages could recurse to depth
+// maxUnmarshalDepth*N levels without tripping the guard. The fix is to
+// emit `.UnmarshalWithDepth(b, depth+1)` at every cross-package site
+// and expose `UnmarshalWithDepth` as the cross-package surface.
+func TestGenerateCrossPackageUnmarshalThreadsDepth(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "leaf/v1/leaf.proto", `
+syntax = "proto3";
+package depthsec.leaf.v1;
+message Leaf { string s = 1; }`)
+	writeProto(t, protoDir, "outer/v1/outer.proto", `
+syntax = "proto3";
+package depthsec.outer.v1;
+import "leaf/v1/leaf.proto";
+message Outer { depthsec.leaf.v1.Leaf l = 1; }`)
+
+	outDir := t.TempDir()
+	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
+	}
+	outerSrc := mustReadFile(t, filepath.Join(outDir, "depthsec", "outer", "v1", "outer.pb.go"))
+	leafSrc := mustReadFile(t, filepath.Join(outDir, "depthsec", "leaf", "v1", "leaf.pb.go"))
+
+	// The cross-package unmarshal site in outer.pb.go must use the
+	// depth-threading entry point. The pre-fix code emitted
+	// `.Unmarshal(dAtA[iNdEx:postIndex])`, which resets depth at the
+	// boundary — that's the bug this test pins against regression.
+	if !strings.Contains(outerSrc, "UnmarshalWithDepth(dAtA[iNdEx:postIndex], depth+1)") {
+		t.Errorf("outer.pb.go must call .UnmarshalWithDepth(..., depth+1) at the cross-package Leaf site; full source:\n%s", outerSrc)
+	}
+	// Belt-and-braces: an unqualified `.Unmarshal(dAtA[...:...])` call at
+	// the same site would mean the bug is back. Filter for the dAtA slice
+	// signature so we don't false-positive on, e.g., the public Unmarshal
+	// wrapper definition `func (m *Outer) Unmarshal(b []byte) error`.
+	if strings.Contains(outerSrc, ".Unmarshal(dAtA[iNdEx:postIndex])") {
+		t.Errorf("outer.pb.go must not call the depth-resetting .Unmarshal at the cross-package site; full source:\n%s", outerSrc)
+	}
+
+	// Cross-package callers can only reach UnmarshalWithDepth if it is
+	// exported from the callee package — so leaf.pb.go has to declare it.
+	if !strings.Contains(leafSrc, "func (m *Leaf) UnmarshalWithDepth(b []byte, depth int) error") {
+		t.Errorf("leaf.pb.go must expose UnmarshalWithDepth(b, depth) so cross-package callers can thread depth; full source:\n%s", leafSrc)
+	}
+}
+
+// TestGenerateCrossPackageMapValueThreadsDepth covers the second SEC-5
+// emit site — `map<K, Msg>` values where `Msg` lives in a different proto
+// package. The map-entry value path is its own code branch (see
+// MessageType.EmitMapEntryUnmarshal), so the SEC-5 fix had to be applied
+// there explicitly; this test pins it so it can't quietly slip back.
+func TestGenerateCrossPackageMapValueThreadsDepth(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "leaf/v1/leaf.proto", `
+syntax = "proto3";
+package depthmap.leaf.v1;
+message Leaf { string s = 1; }`)
+	writeProto(t, protoDir, "outer/v1/outer.proto", `
+syntax = "proto3";
+package depthmap.outer.v1;
+import "leaf/v1/leaf.proto";
+message Outer { map<string, depthmap.leaf.v1.Leaf> entries = 1; }`)
+
+	outDir := t.TempDir()
+	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
+	}
+	outerSrc := mustReadFile(t, filepath.Join(outDir, "depthmap", "outer", "v1", "outer.pb.go"))
+
+	if !strings.Contains(outerSrc, "UnmarshalWithDepth(dAtA[iNdEx:postIndex], depth+1)") {
+		t.Errorf("outer.pb.go map<K, Leaf> entry must thread depth via UnmarshalWithDepth — pre-fix this site called the depth-resetting Unmarshal; full source:\n%s", outerSrc)
+	}
+}
+
+// TestGenerateUnmarshalWithDepthClampsNegative pins the negative-depth
+// guard inside UnmarshalWithDepth. A negative starting depth would
+// silently widen the recursion budget (the guard is `depth > maxDepth`),
+// so the generator emits a clamp-to-zero block at the entry. Without it,
+// a misuse of the public API could re-open SEC-5 from the caller side.
+func TestGenerateUnmarshalWithDepthClampsNegative(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "clamp/v1/clamp.proto", `
+syntax = "proto3";
+package depthclamp.v1;
+message Probe { string s = 1; }`)
+
+	outDir := t.TempDir()
+	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
+	}
+	src := mustReadFile(t, filepath.Join(outDir, "depthclamp", "v1", "clamp.pb.go"))
+
+	if !strings.Contains(src, "func (m *Probe) UnmarshalWithDepth(b []byte, depth int) error") {
+		t.Fatalf("Probe must expose UnmarshalWithDepth; full source:\n%s", src)
+	}
+	// The clamp block must be inside UnmarshalWithDepth, before the call
+	// to the private unmarshal. The literal `if depth < 0` form is what
+	// the generator emits today; keep this assertion exact so a refactor
+	// that drops the clamp can't pass quietly.
+	if !strings.Contains(src, "if depth < 0 {\n\t\tdepth = 0\n\t}") {
+		t.Errorf("UnmarshalWithDepth must clamp negative starting depth to 0; full source:\n%s", src)
+	}
+}
+
 // TestGenerateMixedLayoutImport documents the supported import shape for a
 // mixed flat+nested layout: a nested file importing a top-level file must
 // use the top-level's package-derived path (its canonical key), not the

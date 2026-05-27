@@ -1011,6 +1011,13 @@ func (m *AnyValue) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
+func (m *AnyValue) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
+}
+
 func (m *AnyValue) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
@@ -1330,6 +1337,13 @@ func (m *ArrayValue) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
+func (m *ArrayValue) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
+}
+
 func (m *ArrayValue) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
@@ -1482,6 +1496,13 @@ func (m *KeyValueList) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
+func (m *KeyValueList) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
+}
+
 func (m *KeyValueList) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
@@ -1632,6 +1653,13 @@ func (m *KeyValueList) unmarshal(dAtA []byte, depth int) error {
 
 func (m *KeyValue) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
+}
+
+func (m *KeyValue) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
 }
 
 func (m *KeyValue) unmarshal(dAtA []byte, depth int) error {
@@ -1791,6 +1819,13 @@ func (m *KeyValue) unmarshal(dAtA []byte, depth int) error {
 
 func (m *InstrumentationScope) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
+}
+
+func (m *InstrumentationScope) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
 }
 
 func (m *InstrumentationScope) unmarshal(dAtA []byte, depth int) error {
@@ -2054,6 +2089,13 @@ func (m *InstrumentationScope) unmarshal(dAtA []byte, depth int) error {
 
 func (m *EntityRef) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
+}
+
+func (m *EntityRef) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
 }
 
 func (m *EntityRef) unmarshal(dAtA []byte, depth int) error {

@@ -550,6 +550,13 @@ func (m *LinkedList) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
+func (m *LinkedList) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
+}
+
 func (m *LinkedList) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
@@ -668,6 +675,13 @@ func (m *LinkedList) unmarshal(dAtA []byte, depth int) error {
 
 func (m *TreeNode) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
+}
+
+func (m *TreeNode) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
 }
 
 func (m *TreeNode) unmarshal(dAtA []byte, depth int) error {
@@ -890,6 +904,13 @@ func (m *TreeNode) unmarshal(dAtA []byte, depth int) error {
 
 func (m *NodeA) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
+}
+
+func (m *NodeA) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
 }
 
 func (m *NodeA) unmarshal(dAtA []byte, depth int) error {
@@ -1128,6 +1149,13 @@ func (m *NodeA) unmarshal(dAtA []byte, depth int) error {
 
 func (m *NodeB) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
+}
+
+func (m *NodeB) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
 }
 
 func (m *NodeB) unmarshal(dAtA []byte, depth int) error {

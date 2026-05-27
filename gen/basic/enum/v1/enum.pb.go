@@ -484,6 +484,13 @@ func (m *WithNestedEnum) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
+func (m *WithNestedEnum) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
+}
+
 func (m *WithNestedEnum) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
@@ -675,6 +682,13 @@ func (m *WithNestedEnum) unmarshal(dAtA []byte, depth int) error {
 
 func (m *EnumContainer) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
+}
+
+func (m *EnumContainer) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
 }
 
 func (m *EnumContainer) unmarshal(dAtA []byte, depth int) error {

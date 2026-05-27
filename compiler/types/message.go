@@ -82,7 +82,10 @@ func (MessageType) EmitMapEntryUnmarshal(e Emitter, varName, indent string, ctx 
 	if ctx.IsSamePackage {
 		e.Writef("%sif err := %s.unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {\n%s\treturn err\n%s}\n", indent, varName, indent, indent)
 	} else {
-		e.Writef("%sif err := %s.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {\n%s\treturn err\n%s}\n", indent, varName, indent, indent)
+		// Cross-package map<K, Msg>: thread depth through UnmarshalWithDepth.
+		// Calling the public .Unmarshal(b) here would reset depth at the
+		// boundary, re-opening the SEC-5 hole the rest of the codegen closed.
+		e.Writef("%sif err := %s.UnmarshalWithDepth(dAtA[iNdEx:postIndex], depth+1); err != nil {\n%s\treturn err\n%s}\n", indent, varName, indent, indent)
 	}
 	e.Writef("%siNdEx = postIndex\n", indent)
 }

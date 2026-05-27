@@ -221,6 +221,13 @@ func (m *Resource) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
+func (m *Resource) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
+}
+
 func (m *Resource) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
@@ -360,7 +367,7 @@ func (m *Resource) unmarshal(dAtA []byte, depth int) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.Attributes = append(m.Attributes, commonv1.KeyValue{})
-			if err := m.Attributes[len(m.Attributes)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.Attributes[len(m.Attributes)-1].UnmarshalWithDepth(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -432,7 +439,7 @@ func (m *Resource) unmarshal(dAtA []byte, depth int) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.EntityRefs = append(m.EntityRefs, commonv1.EntityRef{})
-			if err := m.EntityRefs[len(m.EntityRefs)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.EntityRefs[len(m.EntityRefs)-1].UnmarshalWithDepth(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
 			iNdEx = postIndex

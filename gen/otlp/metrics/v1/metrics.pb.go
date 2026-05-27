@@ -3375,6 +3375,13 @@ func (m *MetricsData) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
+func (m *MetricsData) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
+}
+
 func (m *MetricsData) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
@@ -3527,6 +3534,13 @@ func (m *ResourceMetrics) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
+func (m *ResourceMetrics) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
+}
+
 func (m *ResourceMetrics) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
@@ -3656,7 +3670,7 @@ func (m *ResourceMetrics) unmarshal(dAtA []byte, depth int) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.Resource.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.Resource.UnmarshalWithDepth(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -3761,6 +3775,13 @@ func (m *ResourceMetrics) unmarshal(dAtA []byte, depth int) error {
 
 func (m *ScopeMetrics) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
+}
+
+func (m *ScopeMetrics) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
 }
 
 func (m *ScopeMetrics) unmarshal(dAtA []byte, depth int) error {
@@ -3892,7 +3913,7 @@ func (m *ScopeMetrics) unmarshal(dAtA []byte, depth int) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.Scope.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.Scope.UnmarshalWithDepth(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -3997,6 +4018,13 @@ func (m *ScopeMetrics) unmarshal(dAtA []byte, depth int) error {
 
 func (m *Metric) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
+}
+
+func (m *Metric) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
 }
 
 func (m *Metric) unmarshal(dAtA []byte, depth int) error {
@@ -4487,7 +4515,7 @@ func (m *Metric) unmarshal(dAtA []byte, depth int) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.Metadata = append(m.Metadata, commonv1.KeyValue{})
-			if err := m.Metadata[len(m.Metadata)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.Metadata[len(m.Metadata)-1].UnmarshalWithDepth(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -4507,6 +4535,13 @@ func (m *Metric) unmarshal(dAtA []byte, depth int) error {
 
 func (m *Gauge) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
+}
+
+func (m *Gauge) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
 }
 
 func (m *Gauge) unmarshal(dAtA []byte, depth int) error {
@@ -4659,6 +4694,13 @@ func (m *Gauge) unmarshal(dAtA []byte, depth int) error {
 
 func (m *Sum) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
+}
+
+func (m *Sum) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
 }
 
 func (m *Sum) unmarshal(dAtA []byte, depth int) error {
@@ -4871,6 +4913,13 @@ func (m *Histogram) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
+func (m *Histogram) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
+}
+
 func (m *Histogram) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
@@ -5050,6 +5099,13 @@ func (m *Histogram) unmarshal(dAtA []byte, depth int) error {
 
 func (m *ExponentialHistogram) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
+}
+
+func (m *ExponentialHistogram) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
 }
 
 func (m *ExponentialHistogram) unmarshal(dAtA []byte, depth int) error {
@@ -5233,6 +5289,13 @@ func (m *Summary) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
+func (m *Summary) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
+}
+
 func (m *Summary) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
@@ -5385,6 +5448,13 @@ func (m *NumberDataPoint) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
+func (m *NumberDataPoint) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
+}
+
 func (m *NumberDataPoint) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
@@ -5524,7 +5594,7 @@ func (m *NumberDataPoint) unmarshal(dAtA []byte, depth int) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.Attributes = append(m.Attributes, commonv1.KeyValue{})
-			if err := m.Attributes[len(m.Attributes)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.Attributes[len(m.Attributes)-1].UnmarshalWithDepth(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -5680,6 +5750,13 @@ func (m *HistogramDataPoint) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
+func (m *HistogramDataPoint) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
+}
+
 func (m *HistogramDataPoint) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
@@ -5819,7 +5896,7 @@ func (m *HistogramDataPoint) unmarshal(dAtA []byte, depth int) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.Attributes = append(m.Attributes, commonv1.KeyValue{})
-			if err := m.Attributes[len(m.Attributes)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.Attributes[len(m.Attributes)-1].UnmarshalWithDepth(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -6125,6 +6202,13 @@ func (m *ExponentialHistogramDataPoint_Buckets) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
+func (m *ExponentialHistogramDataPoint_Buckets) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
+}
+
 func (m *ExponentialHistogramDataPoint_Buckets) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
@@ -6277,6 +6361,13 @@ func (m *ExponentialHistogramDataPoint) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
+func (m *ExponentialHistogramDataPoint) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
+}
+
 func (m *ExponentialHistogramDataPoint) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
@@ -6416,7 +6507,7 @@ func (m *ExponentialHistogramDataPoint) unmarshal(dAtA []byte, depth int) error 
 				return io.ErrUnexpectedEOF
 			}
 			m.Attributes = append(m.Attributes, commonv1.KeyValue{})
-			if err := m.Attributes[len(m.Attributes)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.Attributes[len(m.Attributes)-1].UnmarshalWithDepth(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -6753,6 +6844,13 @@ func (m *SummaryDataPoint_ValueAtQuantile) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
+func (m *SummaryDataPoint_ValueAtQuantile) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
+}
+
 func (m *SummaryDataPoint_ValueAtQuantile) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
@@ -6829,6 +6927,13 @@ func (m *SummaryDataPoint_ValueAtQuantile) unmarshal(dAtA []byte, depth int) err
 
 func (m *SummaryDataPoint) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
+}
+
+func (m *SummaryDataPoint) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
 }
 
 func (m *SummaryDataPoint) unmarshal(dAtA []byte, depth int) error {
@@ -6970,7 +7075,7 @@ func (m *SummaryDataPoint) unmarshal(dAtA []byte, depth int) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.Attributes = append(m.Attributes, commonv1.KeyValue{})
-			if err := m.Attributes[len(m.Attributes)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.Attributes[len(m.Attributes)-1].UnmarshalWithDepth(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -7128,6 +7233,13 @@ func (m *Exemplar) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
+func (m *Exemplar) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
+}
+
 func (m *Exemplar) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
@@ -7258,7 +7370,7 @@ func (m *Exemplar) unmarshal(dAtA []byte, depth int) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.FilteredAttributes = append(m.FilteredAttributes, commonv1.KeyValue{})
-			if err := m.FilteredAttributes[len(m.FilteredAttributes)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.FilteredAttributes[len(m.FilteredAttributes)-1].UnmarshalWithDepth(dAtA[iNdEx:postIndex], depth+1); err != nil {
 				return err
 			}
 			iNdEx = postIndex

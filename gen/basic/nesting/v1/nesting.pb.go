@@ -749,6 +749,13 @@ func (m *Level0_Level1_Level2_Level3) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
+func (m *Level0_Level1_Level2_Level3) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
+}
+
 func (m *Level0_Level1_Level2_Level3) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
@@ -863,6 +870,13 @@ func (m *Level0_Level1_Level2_Level3) unmarshal(dAtA []byte, depth int) error {
 
 func (m *Level0_Level1_Level2) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
+}
+
+func (m *Level0_Level1_Level2) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
 }
 
 func (m *Level0_Level1_Level2) unmarshal(dAtA []byte, depth int) error {
@@ -993,6 +1007,13 @@ func (m *Level0_Level1_Level2) unmarshal(dAtA []byte, depth int) error {
 
 func (m *Level0_Level1) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
+}
+
+func (m *Level0_Level1) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
 }
 
 func (m *Level0_Level1) unmarshal(dAtA []byte, depth int) error {
@@ -1231,6 +1252,13 @@ func (m *Level0) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
 
+func (m *Level0) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
+}
+
 func (m *Level0) unmarshal(dAtA []byte, depth int) error {
 	if depth > maxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
@@ -1359,6 +1387,13 @@ func (m *Level0) unmarshal(dAtA []byte, depth int) error {
 
 func (m *CrossRef) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
+}
+
+func (m *CrossRef) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
 }
 
 func (m *CrossRef) unmarshal(dAtA []byte, depth int) error {
