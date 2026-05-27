@@ -70,23 +70,29 @@ Not supported (not needed for OTel protos): services/RPCs, extensions, well-know
 
 ## Install
 
-The module path is `wiresmith` (no host prefix), so `go install` cannot fetch the binary — build from a checkout:
+The module path is bare `wiresmith` (no host prefix), so a remote `go install wiresmith/cmd/wiresmith@latest` can't resolve — build from a checkout instead:
 
 ```sh
-git clone git@github.com:grafana/wiresmith.git
+git clone https://github.com/grafana/wiresmith.git
 cd wiresmith
-go build -o wiresmith ./cmd/wiresmith
+go build -o wiresmith ./cmd/wiresmith     # binary in ./wiresmith
+# or, to drop it into $GOBIN:
+go install ./cmd/wiresmith
 ```
+
+(Use the SSH form `git@github.com:grafana/wiresmith.git` if you prefer.)
 
 ## Run
 
 ```sh
-./wiresmith --proto_path=proto --out=gen --module=wiresmith
+./wiresmith --proto_path=proto --out=gen --module=github.com/your/module
 ```
 
-`--proto_path` walks the .proto tree, `--out` is the destination for generated `.pb.go` files (source-relative under that root), and `--module` is the Go module prefix used in import paths. Passing one or more `.proto` paths as positional arguments scopes emission to just those files; their imports are still resolved against the full `--proto_path` walk.
+`--proto_path` walks the .proto tree, `--out` is the destination for generated `.pb.go` files (source-relative under that root), and `--module` is the **Go module prefix used in cross-file imports** — set it to your own module's path. Inside this repo, that's `wiresmith`; in your project, it's whatever your `go.mod` declares.
 
-`wiresmith --help` lists every flag; `wiresmith --version` prints the build version.
+Passing one or more `.proto` paths as positional arguments scopes emission to just those files; the paths must live under `--proto_path` (a path outside that tree is rejected up front). Their imports are still resolved against the full `--proto_path` walk regardless of the filter.
+
+`./wiresmith --help` lists every flag; `./wiresmith --version` prints the build version. Drop the `./` once the binary is on `$PATH`.
 
 See [docs/cli.md](docs/cli.md) for the full CLI reference and a worked example.
 
