@@ -378,10 +378,11 @@ func (g *Generator) collectGoPackages(results linker.Files) error {
 
 // validateOutDir rejects --out values that would produce broken import paths
 // when composed into module + outDir. The acceptable shape is a clean,
-// module-relative, forward-slash path with no '..' segments. We also
-// normalize a leading "./" — convenient for shells that expand bare ".gen"
+// module-relative, forward-slash path with no '..' segments. A leading "./"
+// is tolerated and stripped — convenient for shells that expand bare ".gen"
 // to "./.gen" — so the user doesn't have to learn the difference.
 func (g *Generator) validateOutDir() error {
+	g.OutDir = strings.TrimPrefix(g.OutDir, "./")
 	if g.OutDir == "" {
 		return nil // empty is fine: import base is just the module
 	}
@@ -391,7 +392,6 @@ func (g *Generator) validateOutDir() error {
 	if filepath.IsAbs(g.OutDir) || strings.HasPrefix(g.OutDir, "/") {
 		return fmt.Errorf("--out %q must be a module-relative path, not absolute", g.OutDir)
 	}
-	g.OutDir = strings.TrimPrefix(g.OutDir, "./")
 	// Check '..' on the raw segments first so the error names the actual
 	// danger rather than dropping out via the "not clean" branch — both
 	// `pkg/api/..` (cleans to `pkg`) and `./pkg/../api` (cleans to `api`)
@@ -444,7 +444,7 @@ func (g *Generator) computeDests(results linker.Files) error {
 			continue
 		}
 		seen[protoPkg] = sighting{relDir: relDir, path: fd.Path()}
-		dest := destFor(g.Module, g.OutDir, fd, g.goPackages)
+		dest := g.destFor(fd)
 		if owner, exists := importOwner[dest.importPath]; exists && owner != protoPkg {
 			return fmt.Errorf("import path %q is claimed by both proto packages %q and %q (check go_package options)",
 				dest.importPath, owner, protoPkg)

@@ -3,6 +3,7 @@ package generator
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"go/format"
 	"os"
 	"path/filepath"
@@ -78,27 +79,7 @@ func checkDeterminism(t *testing.T, protoDir string, iterations int) {
 			t.Fatalf("iteration %d: first Generate failed: %v", i, err)
 		}
 
-		// Snapshot run 1 by reading every file into memory keyed by its
-		// path relative to absOutDir.
-		runA := make(map[string][]byte)
-		err := filepath.Walk(absOutDir, func(path string, info os.FileInfo, err error) error {
-			if err != nil || info.IsDir() {
-				return err
-			}
-			rel, err := filepath.Rel(absOutDir, path)
-			if err != nil {
-				return err
-			}
-			content, err := os.ReadFile(path)
-			if err != nil {
-				return err
-			}
-			runA[rel] = content
-			return nil
-		})
-		if err != nil {
-			t.Fatalf("iteration %d: walking first run output: %v", i, err)
-		}
+		runA := snapshotDir(t, absOutDir, fmt.Sprintf("iteration %d first run", i))
 
 		// Second run overwrites the same outDir; compare against the snapshot.
 		if err := os.RemoveAll(absOutDir); err != nil {
@@ -108,25 +89,7 @@ func checkDeterminism(t *testing.T, protoDir string, iterations int) {
 			t.Fatalf("iteration %d: second Generate failed: %v", i, err)
 		}
 
-		runB := make(map[string][]byte)
-		err = filepath.Walk(absOutDir, func(path string, info os.FileInfo, err error) error {
-			if err != nil || info.IsDir() {
-				return err
-			}
-			rel, err := filepath.Rel(absOutDir, path)
-			if err != nil {
-				return err
-			}
-			content, err := os.ReadFile(path)
-			if err != nil {
-				return err
-			}
-			runB[rel] = content
-			return nil
-		})
-		if err != nil {
-			t.Fatalf("iteration %d: walking second run output: %v", i, err)
-		}
+		runB := snapshotDir(t, absOutDir, fmt.Sprintf("iteration %d second run", i))
 
 		for rel, contentA := range runA {
 			contentB, ok := runB[rel]
@@ -521,6 +484,33 @@ func TestValidateOutDir(t *testing.T) {
 	if g.OutDir != "gen" {
 		t.Errorf("validateOutDir did not strip ./ prefix; got OutDir=%q", g.OutDir)
 	}
+}
+
+// snapshotDir reads every regular file under root into a map keyed by its
+// path relative to root. The label is woven into fatal messages so the
+// caller's loop iteration is identifiable in test output.
+func snapshotDir(t *testing.T, root, label string) map[string][]byte {
+	t.Helper()
+	out := make(map[string][]byte)
+	err := filepath.Walk(root, func(p string, info os.FileInfo, err error) error {
+		if err != nil || info.IsDir() {
+			return err
+		}
+		rel, err := filepath.Rel(root, p)
+		if err != nil {
+			return err
+		}
+		content, err := os.ReadFile(p)
+		if err != nil {
+			return err
+		}
+		out[rel] = content
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("walking %s (%s): %v", root, label, err)
+	}
+	return out
 }
 
 // testOutDir returns a Generator.OutDir value suitable for tests. It chdirs

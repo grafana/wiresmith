@@ -80,8 +80,12 @@ type goDest struct {
 // that base, both its import path and `;name` suffix are honored; otherwise
 // the source-relative default <module>/<outDir>/<source-rel> applies.
 // Honoring go_package unconditionally is wiresmith-gz4's job.
-func destFor(module, outDir string, fd protoreflect.FileDescriptor, goPackages map[string]string) goDest {
-	return destForPath(module, outDir, fd.Path(), string(fd.Package()), goPackages)
+//
+// Production sites all live behind a *Generator (Module + OutDir + goPackages
+// are already in scope). Unit tests reach for destForPath instead to bypass
+// the FileDescriptor construction overhead.
+func (g *Generator) destFor(fd protoreflect.FileDescriptor) goDest {
+	return destForPath(g.Module, g.OutDir, fd.Path(), string(fd.Package()), g.goPackages)
 }
 
 // destForPath is the string-only variant of destFor — broken out so unit
