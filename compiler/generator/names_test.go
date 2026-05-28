@@ -103,13 +103,23 @@ func TestJoinImport(t *testing.T) {
 
 func TestDestForPath(t *testing.T) {
 	goPackages := map[string]string{
-		// Under base — honored, including `;name` form when present.
+		// Under module/gen — same destination as the default.
 		"basic.maps.v1": "wiresmith/gen/basic/maps/v1",
-		"myapp.svc":     "wiresmith/gen/myapp/svc;service",
-		"tempo.svc":     "github.com/grafana/tempo/pkg/tempopb/svc",
-		// Outside base — falls through to the source-relative default.
+		// `;name` form lets the proto author pick a package name independent
+		// of the import path's basename.
+		"myapp.svc": "wiresmith/gen/myapp/svc;service",
+		// Honored under a non-gen outDir too — exercises the outDir-composes case.
+		"tempo.svc": "github.com/grafana/tempo/pkg/tempopb/svc",
+		// Outside module/gen — honored literally (no base gate).
 		"opentelemetry.proto.common.v1": "go.opentelemetry.io/proto/otlp/common/v1",
-		"external.pkg":                  "some.other/module/pkg",
+		// File whose go_package will be M-overridden in a test below.
+		"vendor.otel.common.v1": "go.opentelemetry.io/proto/otlp/common/v1",
+	}
+	overrides := map[string]string{
+		// Override beats go_package — matches protoc's M-flag precedence.
+		"opentelemetry/proto/common/v1/common.proto": "wiresmith/gen/opentelemetry/proto/common/v1",
+		// Override supplies `;name` form for a file that has no go_package.
+		"no_pkg/no_pkg.proto": "example.com/redirect;chosen",
 	}
 
 	tests := []struct {
@@ -123,7 +133,7 @@ func TestDestForPath(t *testing.T) {
 		wantPkg    string
 	}{
 		{
-			name:       "go_package under base — honored",
+			name:       "go_package matching default — honored",
 			module:     "wiresmith",
 			outDir:     "gen",
 			fdPath:     "basic/maps/v1/maps.proto",
@@ -133,7 +143,7 @@ func TestDestForPath(t *testing.T) {
 			wantPkg:    "v1",
 		},
 		{
-			name:       "go_package `;name` form is honored when under base",
+			name:       "go_package `;name` form is honored",
 			module:     "wiresmith",
 			outDir:     "gen",
 			fdPath:     "myapp/svc/svc.proto",
@@ -153,17 +163,37 @@ func TestDestForPath(t *testing.T) {
 			wantPkg:    "svc",
 		},
 		{
-			name:       "go_package outside base — source-relative fallback",
+			name:       "go_package outside module/gen — now honored literally",
+			module:     "wiresmith",
+			outDir:     "gen",
+			fdPath:     "vendor/otel/common/v1/common.proto",
+			protoPkg:   "vendor.otel.common.v1",
+			wantImport: "go.opentelemetry.io/proto/otlp/common/v1",
+			wantRelDir: "vendor/otel/common/v1",
+			wantPkg:    "v1",
+		},
+		{
+			name:       "M-override beats go_package",
 			module:     "wiresmith",
 			outDir:     "gen",
 			fdPath:     "opentelemetry/proto/common/v1/common.proto",
 			protoPkg:   "opentelemetry.proto.common.v1",
 			wantImport: "wiresmith/gen/opentelemetry/proto/common/v1",
 			wantRelDir: "opentelemetry/proto/common/v1",
-			wantPkg:    "commonv1",
+			wantPkg:    "v1",
 		},
 		{
-			name:       "no go_package, default mapping",
+			name:       "M-override `;name` form on file with no go_package",
+			module:     "wiresmith",
+			outDir:     "gen",
+			fdPath:     "no_pkg/no_pkg.proto",
+			protoPkg:   "no.pkg",
+			wantImport: "example.com/redirect",
+			wantRelDir: "no_pkg",
+			wantPkg:    "chosen",
+		},
+		{
+			name:       "no go_package, no override — default mapping",
 			module:     "testmod",
 			outDir:     "gen",
 			fdPath:     "x/y/v1/foo.proto",
@@ -192,20 +222,10 @@ func TestDestForPath(t *testing.T) {
 			wantRelDir: "",
 			wantPkg:    "root",
 		},
-		{
-			name:       "go_package prefix without separator must not match",
-			module:     "wiresmith",
-			outDir:     "gen",
-			fdPath:     "external/pkg/x.proto",
-			protoPkg:   "external.pkg",
-			wantImport: "wiresmith/gen/external/pkg",
-			wantRelDir: "external/pkg",
-			wantPkg:    "externalpkg",
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := destForPath(tt.module, tt.outDir, tt.fdPath, tt.protoPkg, goPackages)
+			got := destForPath(tt.module, tt.outDir, tt.fdPath, tt.protoPkg, goPackages, overrides)
 			if got.importPath != tt.wantImport ||
 				got.relDir != tt.wantRelDir ||
 				got.pkgName != tt.wantPkg {

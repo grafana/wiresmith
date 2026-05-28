@@ -73,34 +73,42 @@ type goDest struct {
 
 // destFor returns the canonical destination for fd. The on-disk directory is
 // purely source-relative — filepath.Dir(fd.Path()) under the configured
-// --out, matching the `paths=source_relative` contract. The Go import path
-// uses "<module>/<outDir>" as the base so that the directory the generator
-// writes to and the import path the generated code emits always agree under
-// Go's module root. When the file's go_package declares an import path under
-// that base, both its import path and `;name` suffix are honored; otherwise
-// the source-relative default <module>/<outDir>/<source-rel> applies.
-// Honoring go_package unconditionally is wiresmith-gz4's job.
+// --out, matching the `paths=source_relative` contract — regardless of what
+// go_package says.
 //
-// Production sites all live behind a *Generator (Module + OutDir + goPackages
-// are already in scope). Unit tests reach for destForPath instead to bypass
-// the FileDescriptor construction overhead.
+// The Go import path follows protoc-gen-go's resolution order:
+//
+//  1. An entry in g.Overrides (set via the CLI's `--M source=dest` flag,
+//     keyed by fd.Path()) wins. Matches protoc's `M<source>=<destpath>`
+//     option: an out-of-tree go_package can be redirected without editing
+//     the .proto.
+//  2. The file's `option go_package` is honored literally — including its
+//     `;name` suffix — with no "is it under the module base" gate.
+//  3. The default `<module>/<outDir>/<source-relative>` applies when
+//     neither of the above is set; the on-disk write path and the
+//     declared import path agree under Go's directory-equals-import-path
+//     rule.
+//
+// Production sites all live behind a *Generator (Module + OutDir +
+// goPackages + Overrides are already in scope). Unit tests reach for
+// destForPath instead to bypass the FileDescriptor construction overhead.
 func (g *Generator) destFor(fd protoreflect.FileDescriptor) goDest {
-	return destForPath(g.Module, g.OutDir, fd.Path(), string(fd.Package()), g.goPackages)
+	return destForPath(g.Module, g.OutDir, fd.Path(), string(fd.Package()), g.goPackages, g.Overrides)
 }
 
 // destForPath is the string-only variant of destFor — broken out so unit
 // tests can drive the resolver without constructing a FileDescriptor.
-func destForPath(module, outDir, fdPath, protoPkg string, goPackages map[string]string) goDest {
+func destForPath(module, outDir, fdPath, protoPkg string, goPackages, overrides map[string]string) goDest {
 	relDir := sourceRelDir(fdPath)
-	base := joinImport(module, outDir)
-	importPath := joinImport(base, relDir)
+	importPath := joinImport(module, outDir, relDir)
 	pkgName := goPackageName(protoPkg)
-	if goPkg, ok := goPackages[protoPkg]; ok && goPkg != "" {
-		gpImport, gpName := parseGoPackage(goPkg)
-		if gpImport == base || strings.HasPrefix(gpImport, base+"/") {
-			importPath = gpImport
-			pkgName = gpName
-		}
+	// The override key is fdPath (the import-mapping key produced by
+	// buildImportMapping), which is also the path users see in import
+	// statements. The same key shape protoc consumes via `Mkey=value`.
+	if override, ok := overrides[fdPath]; ok && override != "" {
+		importPath, pkgName = parseGoPackage(override)
+	} else if goPkg, ok := goPackages[protoPkg]; ok && goPkg != "" {
+		importPath, pkgName = parseGoPackage(goPkg)
 	}
 	return goDest{importPath: importPath, relDir: relDir, pkgName: pkgName}
 }

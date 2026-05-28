@@ -34,6 +34,15 @@ type Generator struct {
 	// always resolved against the full walk regardless of this filter.
 	Files []string
 
+	// Overrides maps an import-mapping key (the same fd.Path() string
+	// buildImportMapping produces) to a Go import path, with an optional
+	// `;name` suffix matching go_package syntax. Set from the CLI's
+	// repeatable `-M source=dest` flag and wins over in-source go_package
+	// during destination resolution — matches protoc's `M<source>=<dest>`
+	// semantics. Useful when a vendored .proto declares a go_package that
+	// doesn't match the generator's target tree.
+	Overrides map[string]string
+
 	// goPackages maps a proto package name to the raw value of its
 	// `option go_package`. Populated during Generate after compilation.
 	goPackages map[string]string
@@ -319,12 +328,13 @@ func (g *Generator) outputPathFor(fd protoreflect.FileDescriptor) string {
 // the unset file as if it inherited A's value would contradict the
 // upfront-agreement contract and could move generated files unexpectedly.
 //
-// The path-traversal check sits here because it only makes sense against
-// the raw go_package string; cross-mode destination collisions are caught
-// later in validateDestinations against the resolved goDest.
+// No validation is performed on the go_package string itself: disk
+// destinations are source-relative (independent of go_package), so a
+// malformed value can only produce a malformed import-path string in the
+// generated file — which fails loudly at `go build` with a clear error.
+// This matches protoc-gen-go.
 func (g *Generator) collectGoPackages(results linker.Files) error {
 	g.goPackages = make(map[string]string)
-	base := joinImport(g.Module, g.OutDir)
 
 	// sighting captures the first go_package value (possibly empty) we saw
 	// for a proto pkg and the file we saw it in, so a later disagreement
@@ -354,23 +364,8 @@ func (g *Generator) collectGoPackages(results linker.Files) error {
 		}
 		seen[pkg] = sighting{value: goPkg, path: fd.Path()}
 
-		if goPkg == "" {
-			continue
-		}
-		g.goPackages[pkg] = goPkg
-
-		// Reject `..` segments in go_package values that fall under our
-		// base. Without this, filepath.Join(g.OutDir, relDir) would
-		// silently write outside the configured output directory.
-		importPath, _ := parseGoPackage(goPkg)
-		if importPath != base && !strings.HasPrefix(importPath, base+"/") {
-			continue
-		}
-		for _, seg := range strings.Split(importPath, "/") {
-			if seg == ".." {
-				return fmt.Errorf("invalid go_package %q in %s: path contains '..' segment",
-					goPkg, fd.Path())
-			}
+		if goPkg != "" {
+			g.goPackages[pkg] = goPkg
 		}
 	}
 	return nil

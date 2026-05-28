@@ -6,9 +6,41 @@ import (
 	"fmt"
 	"os"
 	"runtime/debug"
+	"strings"
 
 	"wiresmith/compiler/generator"
 )
+
+// overridesFlag implements flag.Value for the repeatable `-M src=dest`
+// option. Each occurrence registers one source→Go-import-path mapping in
+// the underlying map; the destination string may carry an optional
+// `;name` suffix matching go_package syntax. Mirrors protoc's
+// `M<source>=<destpath>` convention.
+type overridesFlag struct{ m map[string]string }
+
+func (o *overridesFlag) String() string {
+	if o == nil || len(o.m) == 0 {
+		return ""
+	}
+	var parts []string
+	for k, v := range o.m {
+		parts = append(parts, k+"="+v)
+	}
+	return strings.Join(parts, ",")
+}
+
+func (o *overridesFlag) Set(v string) error {
+	i := strings.Index(v, "=")
+	if i <= 0 || i == len(v)-1 {
+		return fmt.Errorf("-M expects source=dest, got %q", v)
+	}
+	src, dest := v[:i], v[i+1:]
+	if _, dup := o.m[src]; dup {
+		return fmt.Errorf("-M source %q given more than once", src)
+	}
+	o.m[src] = dest
+	return nil
+}
 
 // version is overridden at build time via -ldflags "-X main.version=...".
 // When unset, buildVersion falls back to runtime/debug build info so
@@ -43,6 +75,9 @@ Flags:
 	outDir := flag.String("out", "gen", "output directory for generated Go files")
 	module := flag.String("module", "wiresmith", "Go module name")
 	showVersion := flag.Bool("version", false, "print version and exit")
+	overrides := &overridesFlag{m: map[string]string{}}
+	flag.Var(overrides, "M",
+		`override the Go import path for one .proto file (repeatable). Format: -M source=destpath[;name]. The source key matches the file's import-mapping key (the path used in 'import' statements); the destination wins over the file's own option go_package, mirroring protoc's M-flag semantics. Useful for vendored .protos whose go_package points outside the consumer's tree.`)
 	flag.Parse()
 
 	if *showVersion {
@@ -51,10 +86,11 @@ Flags:
 	}
 
 	g := &generator.Generator{
-		Module:   *module,
-		OutDir:   *outDir,
-		ProtoDir: *protoDir,
-		Files:    flag.Args(),
+		Module:    *module,
+		OutDir:    *outDir,
+		ProtoDir:  *protoDir,
+		Files:     flag.Args(),
+		Overrides: overrides.m,
 	}
 
 	if err := g.Generate(context.Background()); err != nil {
