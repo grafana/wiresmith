@@ -484,6 +484,18 @@ func TestValidateOutDir(t *testing.T) {
 	if g.OutDir != "gen" {
 		t.Errorf("validateOutDir did not strip ./ prefix; got OutDir=%q", g.OutDir)
 	}
+
+	// Bare "." and "./." normalize to "" (module root) so joinImport doesn't
+	// embed a literal "." segment in downstream import paths.
+	for _, in := range []string{".", "./."} {
+		g := &Generator{OutDir: in}
+		if err := g.validateOutDir(); err != nil {
+			t.Fatalf("validateOutDir(%q): %v", in, err)
+		}
+		if g.OutDir != "" {
+			t.Errorf("validateOutDir(%q) did not normalize to empty; got OutDir=%q", in, g.OutDir)
+		}
+	}
 }
 
 // snapshotDir reads every regular file under root into a map keyed by its

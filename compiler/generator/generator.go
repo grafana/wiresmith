@@ -380,9 +380,15 @@ func (g *Generator) collectGoPackages(results linker.Files) error {
 // when composed into module + outDir. The acceptable shape is a clean,
 // module-relative, forward-slash path with no '..' segments. A leading "./"
 // is tolerated and stripped — convenient for shells that expand bare ".gen"
-// to "./.gen" — so the user doesn't have to learn the difference.
+// to "./.gen" — so the user doesn't have to learn the difference. A bare "."
+// (or "./.") is treated as the module root, matching the empty-string case:
+// without normalization, joinImport(module, ".") would compose to "module/."
+// and downstream imports would land as "module/./<pkg>".
 func (g *Generator) validateOutDir() error {
 	g.OutDir = strings.TrimPrefix(g.OutDir, "./")
+	if g.OutDir == "." {
+		g.OutDir = ""
+	}
 	if g.OutDir == "" {
 		return nil // empty is fine: import base is just the module
 	}
