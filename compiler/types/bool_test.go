@@ -44,7 +44,13 @@ func TestBoolType_EmitSize(t *testing.T) {
 	}
 }
 
-func TestBoolType_EmitMarshal_BoolToByte(t *testing.T) {
+// EmitMarshal wraps the body in `if m.X { ... }`, so a false bool field is
+// elided from the wire. The inner `else { dAtA[i] = 0 }` that EmitEncode
+// generates is unreachable for the singular case — we intentionally do NOT
+// assert the false-byte branch here, so dead-code cleanup remains free.
+// The false branch is locked down separately via EmitEncode (which is the
+// public surface called from packed-repeated contexts where it is reachable).
+func TestBoolType_EmitMarshal_TruePath(t *testing.T) {
 	e := &captureEmitter{}
 	BoolType{}.EmitMarshal(e, "m.X", 1)
 	got := e.buf.String()
@@ -52,10 +58,27 @@ func TestBoolType_EmitMarshal_BoolToByte(t *testing.T) {
 		"if m.X {",
 		"i--",
 		"dAtA[i] = 1",
-		"dAtA[i] = 0",
 	} {
 		if !strings.Contains(got, sub) {
 			t.Errorf("EmitMarshal: missing %q in:\n%s", sub, got)
+		}
+	}
+}
+
+// EmitEncode is the bare encoding form (no zero-guard) used by packed loops.
+// Both branches of the bool-to-byte conversion are reachable here.
+func TestBoolType_EmitEncode_BothBranches(t *testing.T) {
+	e := &captureEmitter{}
+	BoolType{}.EmitEncode(e, "\t", "m.X")
+	got := e.buf.String()
+	for _, sub := range []string{
+		"i--",
+		"if m.X {",
+		"dAtA[i] = 1",
+		"dAtA[i] = 0",
+	} {
+		if !strings.Contains(got, sub) {
+			t.Errorf("EmitEncode: missing %q in:\n%s", sub, got)
 		}
 	}
 }
