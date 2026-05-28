@@ -158,13 +158,23 @@ func EmitConsumeTagAt(e Emitter, indent, varName string) {
 	e.AddImport("io", "")
 	e.AddImport("fmt", "")
 	e.Writef("%svar %s uint64\n", indent, varName)
-	e.Writef("%sfor shift := uint(0); ; shift += 7 {\n", indent)
-	e.Writef("%s\tif shift >= 35 {\n%s\t\treturn fmt.Errorf(\"proto: integer overflow\")\n%s\t}\n", indent, indent, indent)
-	e.Writef("%s\tif iNdEx >= l {\n%s\t\treturn io.ErrUnexpectedEOF\n%s\t}\n", indent, indent, indent)
-	e.Writef("%s\tb := dAtA[iNdEx]\n", indent)
+	// Single-byte peel: OTel field numbers are overwhelmingly 1-15, which
+	// encode as one byte with the high bit clear. Skipping the varint loop
+	// here removes the loop setup + per-byte bounds checks from the hot
+	// path. The post-loop field-number range check catches the byte<8 case
+	// (fieldNum=0), so no extra validation is needed here.
+	e.Writef("%sif iNdEx < l && dAtA[iNdEx] < 0x80 {\n", indent)
+	e.Writef("%s\t%s = uint64(dAtA[iNdEx])\n", indent, varName)
 	e.Writef("%s\tiNdEx++\n", indent)
-	e.Writef("%s\t%s |= uint64(b&0x7F) << shift\n", indent, varName)
-	e.Writef("%s\tif b < 0x80 {\n%s\t\tbreak\n%s\t}\n", indent, indent, indent)
+	e.Writef("%s} else {\n", indent)
+	e.Writef("%s\tfor shift := uint(0); ; shift += 7 {\n", indent)
+	e.Writef("%s\t\tif shift >= 35 {\n%s\t\t\treturn fmt.Errorf(\"proto: integer overflow\")\n%s\t\t}\n", indent, indent, indent)
+	e.Writef("%s\t\tif iNdEx >= l {\n%s\t\t\treturn io.ErrUnexpectedEOF\n%s\t\t}\n", indent, indent, indent)
+	e.Writef("%s\t\tb := dAtA[iNdEx]\n", indent)
+	e.Writef("%s\t\tiNdEx++\n", indent)
+	e.Writef("%s\t\t%s |= uint64(b&0x7F) << shift\n", indent, varName)
+	e.Writef("%s\t\tif b < 0x80 {\n%s\t\t\tbreak\n%s\t\t}\n", indent, indent, indent)
+	e.Writef("%s\t}\n", indent)
 	e.Writef("%s}\n", indent)
 	e.Writef("%sif %s>>3 < 1 || %s>>3 > 0x1FFFFFFF {\n%s\treturn fmt.Errorf(\"invalid field number\")\n%s}\n", indent, varName, varName, indent, indent)
 }
@@ -228,16 +238,26 @@ func emitConsumeBytesLenAt(e Emitter, indent string) {
 	e.AddImport("io", "")
 	e.AddImport("math", "")
 	e.Writef("%svar byteLen uint64\n", indent)
-	e.Writef("%sfor shift := uint(0); ; shift += 7 {\n", indent)
-	e.Writef("%s\tif shift >= 64 {\n%s\t\treturn fmt.Errorf(\"proto: integer overflow\")\n%s\t}\n", indent, indent, indent)
-	e.Writef("%s\tif iNdEx >= l {\n%s\t\treturn io.ErrUnexpectedEOF\n%s\t}\n", indent, indent, indent)
-	e.Writef("%s\tb := dAtA[iNdEx]\n", indent)
+	// Single-byte peel: lengths < 128 — short strings, small nested messages,
+	// and the per-element headers of packed scalar runs — fit in one byte.
+	// Skipping the varint loop here removes loop setup + per-byte bounds
+	// checks. byteLen=0 is valid (empty payload) and falls through to the
+	// downstream bound checks unchanged.
+	e.Writef("%sif iNdEx < l && dAtA[iNdEx] < 0x80 {\n", indent)
+	e.Writef("%s\tbyteLen = uint64(dAtA[iNdEx])\n", indent)
 	e.Writef("%s\tiNdEx++\n", indent)
-	e.Writef("%s\tbyteLen |= uint64(b&0x7F) << shift\n", indent)
+	e.Writef("%s} else {\n", indent)
+	e.Writef("%s\tfor shift := uint(0); ; shift += 7 {\n", indent)
+	e.Writef("%s\t\tif shift >= 64 {\n%s\t\t\treturn fmt.Errorf(\"proto: integer overflow\")\n%s\t\t}\n", indent, indent, indent)
+	e.Writef("%s\t\tif iNdEx >= l {\n%s\t\t\treturn io.ErrUnexpectedEOF\n%s\t\t}\n", indent, indent, indent)
+	e.Writef("%s\t\tb := dAtA[iNdEx]\n", indent)
+	e.Writef("%s\t\tiNdEx++\n", indent)
+	e.Writef("%s\t\tbyteLen |= uint64(b&0x7F) << shift\n", indent)
 	// See emitConsumeVarintAt for the 10th-byte overflow rationale.
-	e.Writef("%s\tif b < 0x80 {\n", indent)
-	e.Writef("%s\t\tif shift == 63 && b > 1 {\n%s\t\t\treturn fmt.Errorf(\"proto: varint overflow\")\n%s\t\t}\n", indent, indent, indent)
-	e.Writef("%s\t\tbreak\n%s\t}\n", indent, indent)
+	e.Writef("%s\t\tif b < 0x80 {\n", indent)
+	e.Writef("%s\t\t\tif shift == 63 && b > 1 {\n%s\t\t\t\treturn fmt.Errorf(\"proto: varint overflow\")\n%s\t\t\t}\n", indent, indent, indent)
+	e.Writef("%s\t\t\tbreak\n%s\t\t}\n", indent, indent)
+	e.Writef("%s\t}\n", indent)
 	e.Writef("%s}\n", indent)
 	// Guard against int truncation on 32-bit platforms (GOARCH=386/arm/wasm).
 	// Without this, a uint64 length above MaxInt32 would silently wrap to a
