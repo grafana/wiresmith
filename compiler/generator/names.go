@@ -74,23 +74,25 @@ type goDest struct {
 // destFor returns the canonical destination for fd. The on-disk directory is
 // purely source-relative — filepath.Dir(fd.Path()) under the configured
 // --out, matching the `paths=source_relative` contract. The Go import path
-// still uses the legacy "<module>/gen" base: when the file's go_package
-// declares an import path under that base, the import path and `;name`
-// suffix are honored; otherwise the default <module>/gen/<source-rel>
-// applies. Honoring go_package unconditionally is wiresmith-gz4's job.
-func destFor(module string, fd protoreflect.FileDescriptor, goPackages map[string]string) goDest {
-	return destForPath(module, fd.Path(), string(fd.Package()), goPackages)
+// uses "<module>/<outDir>" as the base so that the directory the generator
+// writes to and the import path the generated code emits always agree under
+// Go's module root. When the file's go_package declares an import path under
+// that base, both its import path and `;name` suffix are honored; otherwise
+// the source-relative default <module>/<outDir>/<source-rel> applies.
+// Honoring go_package unconditionally is wiresmith-gz4's job.
+//
+// Production sites all live behind a *Generator (Module + OutDir + goPackages
+// are already in scope). Unit tests reach for destForPath instead to bypass
+// the FileDescriptor construction overhead.
+func (g *Generator) destFor(fd protoreflect.FileDescriptor) goDest {
+	return destForPath(g.Module, g.OutDir, fd.Path(), string(fd.Package()), g.goPackages)
 }
 
 // destForPath is the string-only variant of destFor — broken out so unit
 // tests can drive the resolver without constructing a FileDescriptor.
-func destForPath(module, fdPath, protoPkg string, goPackages map[string]string) goDest {
+func destForPath(module, outDir, fdPath, protoPkg string, goPackages map[string]string) goDest {
 	relDir := sourceRelDir(fdPath)
-	// The /gen suffix is the legacy convention this bead intentionally leaves
-	// alone — the FLAGS.md migration eventually drops it together with --module
-	// (tracked in wiresmith-j0h), but until go_package becomes the sole authority
-	// for import paths (wiresmith-gz4) we still need a base to gate on.
-	base := joinImport(module, "gen")
+	base := joinImport(module, outDir)
 	importPath := joinImport(base, relDir)
 	pkgName := goPackageName(protoPkg)
 	if goPkg, ok := goPackages[protoPkg]; ok && goPkg != "" {

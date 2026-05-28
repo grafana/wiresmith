@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"go/format"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -138,6 +139,14 @@ func (fg *FileGenerator) fieldContext(fd protoreflect.FieldDescriptor) types.Fie
 }
 
 func (g *Generator) Generate(ctx context.Context) error {
+	// --out flows into the Go import-path base (module + outDir), so it has to
+	// be a clean, module-relative, forward-slash path. An absolute, '..'-
+	// containing, or backslash-separated value would emit import paths that
+	// fail Go's directory-equals-import-path rule at build time.
+	if err := g.validateOutDir(); err != nil {
+		return err
+	}
+
 	mapping, importPaths, pathToKey, err := buildImportMapping(g.ProtoDir)
 	if err != nil {
 		return fmt.Errorf("building import mapping: %w", err)
@@ -315,7 +324,7 @@ func (g *Generator) outputPathFor(fd protoreflect.FileDescriptor) string {
 // later in validateDestinations against the resolved goDest.
 func (g *Generator) collectGoPackages(results linker.Files) error {
 	g.goPackages = make(map[string]string)
-	base := joinImport(g.Module, "gen")
+	base := joinImport(g.Module, g.OutDir)
 
 	// sighting captures the first go_package value (possibly empty) we saw
 	// for a proto pkg and the file we saw it in, so a later disagreement
@@ -367,6 +376,43 @@ func (g *Generator) collectGoPackages(results linker.Files) error {
 	return nil
 }
 
+// validateOutDir rejects --out values that would produce broken import paths
+// when composed into module + outDir. The acceptable shape is a clean,
+// module-relative, forward-slash path with no '..' segments. A leading "./"
+// is tolerated and stripped — convenient for shells that expand bare ".gen"
+// to "./.gen" — so the user doesn't have to learn the difference. A bare "."
+// (or "./.") is treated as the module root, matching the empty-string case:
+// without normalization, joinImport(module, ".") would compose to "module/."
+// and downstream imports would land as "module/./<pkg>".
+func (g *Generator) validateOutDir() error {
+	g.OutDir = strings.TrimPrefix(g.OutDir, "./")
+	if g.OutDir == "." {
+		g.OutDir = ""
+	}
+	if g.OutDir == "" {
+		return nil // empty is fine: import base is just the module
+	}
+	if strings.ContainsRune(g.OutDir, '\\') {
+		return fmt.Errorf("--out %q contains backslashes; use forward slashes (Go import paths are always slash-separated)", g.OutDir)
+	}
+	if filepath.IsAbs(g.OutDir) || strings.HasPrefix(g.OutDir, "/") {
+		return fmt.Errorf("--out %q must be a module-relative path, not absolute", g.OutDir)
+	}
+	// Check '..' on the raw segments first so the error names the actual
+	// danger rather than dropping out via the "not clean" branch — both
+	// `pkg/api/..` (cleans to `pkg`) and `./pkg/../api` (cleans to `api`)
+	// canonicalize away the traversal silently.
+	for _, seg := range strings.Split(g.OutDir, "/") {
+		if seg == ".." {
+			return fmt.Errorf("--out %q must not contain '..' segments", g.OutDir)
+		}
+	}
+	if cleaned := path.Clean(g.OutDir); cleaned != g.OutDir {
+		return fmt.Errorf("--out %q is not a clean path; the equivalent canonical form is %q", g.OutDir, cleaned)
+	}
+	return nil
+}
+
 // computeDests resolves each proto package's Go destination once and stores
 // the result keyed by proto package. Cross-file import resolution in
 // ImportTracker only knows the destination proto package (not which file
@@ -404,7 +450,7 @@ func (g *Generator) computeDests(results linker.Files) error {
 			continue
 		}
 		seen[protoPkg] = sighting{relDir: relDir, path: fd.Path()}
-		dest := destFor(g.Module, fd, g.goPackages)
+		dest := g.destFor(fd)
 		if owner, exists := importOwner[dest.importPath]; exists && owner != protoPkg {
 			return fmt.Errorf("import path %q is claimed by both proto packages %q and %q (check go_package options)",
 				dest.importPath, owner, protoPkg)
