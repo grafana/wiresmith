@@ -106,6 +106,47 @@ func TestMapField_EmitUnmarshal_MergePresentNotLen(t *testing.T) {
 	}
 }
 
+// Cross-package companion to TestMapField_EmitUnmarshal_MergePresentNotLen:
+// the merge predicate must stay nil-based regardless of whether the value
+// message lives in the same package. Locks the cross-package merge body's
+// shape: it cannot reach the private `existing.unmarshal()` method (no
+// access across packages) so it dispatches through `existing.Unmarshal()`.
+//
+// NB: the public `.Unmarshal()` call here resets the unmarshal-depth counter
+// at the package boundary — unlike the initial-value path in
+// MessageType.EmitMapEntryUnmarshal, which threads depth via
+// UnmarshalWithDepth. That gap is tracked separately; this test only locks
+// down the current emit shape so a future SEC-5 follow-up has a fixed
+// failure to update.
+func TestMapField_EmitUnmarshal_CrossPackageMessageMerge(t *testing.T) {
+	e := &captureEmitter{}
+	mf := &MapField{
+		Key:       StringType{},
+		Val:       &MessageType{},
+		MapType:   "map[string]*external.Resource",
+		KeyGoType: "string",
+		ValGoType: "*external.Resource",
+		ValCtx:    FieldContext{MessageType: "external.Resource", IsSamePackage: false},
+	}
+	mf.EmitUnmarshal(e, "m.M", FieldContext{})
+	got := e.buf.String()
+
+	if !strings.Contains(got, "ok && mapValueBytes != nil") {
+		t.Errorf("Cross-package merge must trigger on `mapValueBytes != nil`:\n%s", got)
+	}
+	if strings.Contains(got, "len(mapValueBytes)") {
+		t.Errorf("Cross-package merge must NOT gate on len(mapValueBytes):\n%s", got)
+	}
+	// Private `existing.unmarshal()` is package-local; cross-package emit
+	// must NOT reach for it.
+	if strings.Contains(got, "existing.unmarshal(") {
+		t.Errorf("Cross-package: private unmarshal() is not accessible:\n%s", got)
+	}
+	if !strings.Contains(got, "existing.Unmarshal(mapValueBytes)") {
+		t.Errorf("Cross-package merge must call public Unmarshal on the merged value bytes:\n%s", got)
+	}
+}
+
 // Non-message map values take a simpler path (no merge): just write the
 // decoded value into the map. The `mapValueBytes` machinery must NOT appear.
 func TestMapField_EmitUnmarshal_ScalarValueNoMergeBlock(t *testing.T) {
