@@ -2,23 +2,19 @@ package types
 
 import "google.golang.org/protobuf/encoding/protowire"
 
-// OneofField wraps a Type to handle oneof field semantics.
+// OneofField wraps a Type for a oneof variant.
 //
 // Size and marshal operate on the already-extracted variant value (access is
 // e.g. `v.FieldName` from inside a type-switch), so they only need Inner.
 //
-// Unmarshal is the reverse direction: the wire bytes arrive without knowing
-// which variant they belong to, so the emitter has to wrap them in the
-// variant struct (`&Span_StringValue{StringValue: decoded}`). That dispatch
-// needs the oneof's pascal-cased field name, the variant wrapper struct
-// name, and the inner field name on that struct. Those three strings come
-// from descriptors at codegen time and are stored here so the composite
-// alone is enough to drive emit (no extra `EmitOneofVariantUnmarshal`
-// method on the Type interface, per ARCH-1).
+// Unmarshal arrives without a variant tag, so the emitter has to wrap the
+// decoded value in the variant struct (`&Span_StringValue{StringValue: ...}`).
+// The wrapper's three pascal-cased names are stored on the composite so
+// unmarshal doesn't need an extra method on the Type interface.
 type OneofField struct {
 	Inner Type
 
-	// Unmarshal-only metadata. Empty for size/marshal call sites.
+	// Unmarshal-only; zero-valued for size/marshal call sites.
 	OneofName   string // pascal-cased oneof name (e.g. "Status")
 	VariantName string // wrapper struct (e.g. "Span_StringValue")
 	FieldName   string // inner field on the wrapper (e.g. "StringValue")
@@ -47,19 +43,12 @@ func (f *OneofField) EmitMarshal(e Emitter, access string, num protowire.Number)
 	f.Inner.EmitValueMarshal(e, "\t\t", access, num)
 }
 
-// EmitUnmarshal consumes the wire value and assigns it into the oneof field
-// wrapped in the appropriate variant struct. The caller passes the access
-// expression for the oneof's interface field (`m.<OneofName>`).
+// EmitUnmarshal consumes the wire value and wraps it in the variant struct
+// assigned at access (the oneof's interface field, `m.<OneofName>`).
 //
-// Three branches mirror the three classes of inner type:
-//   - MessageKind: length-delimited. The merge contract reuses the existing
-//     variant's message when the same variant is hit twice; otherwise a
-//     fresh zero value is unmarshaled into. Cross-package callees go
-//     through UnmarshalWithDepth so the SEC-5 depth counter survives the
-//     package boundary.
-//   - Length-delimited non-message (string, bytes): cast the
-//     dAtA[iNdEx:postIndex] slice directly into the field.
-//   - Value types (varint, fixed): cast the v local that EmitConsume set.
+// The MessageKind branch reuses the existing variant's message when the same
+// variant is hit twice — proto3 merge semantics. Depth threading and the
+// same-vs-cross-package unmarshal dispatch go through emitUnmarshalCall.
 func (f *OneofField) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
 	AddTypeImports(e, f.Inner)
 	f.Inner.EmitConsume(e)

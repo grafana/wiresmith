@@ -324,11 +324,9 @@ func (fg *FileGenerator) emitFieldUnmarshal(md protoreflect.MessageDescriptor, f
 	}
 
 	if fd.HasOptionalKeyword() {
-		// Optional message and the `(wiresmith.options.pointer)` shape both
-		// land on `*Msg` with identical lazy-allocate + unmarshal semantics,
-		// so they share the same composite (PointerField). Non-message
-		// optionals keep going through OptionalField, which handles the
-		// scalar/string/bytes variants and the `*T` allocation dance.
+		// Optional message has the same `*Msg` shape as the pointer-option
+		// case, so reuse PointerField. Other optional kinds need the *T
+		// allocation in OptionalField.
 		if fd.Kind() == protoreflect.MessageKind {
 			pf := &types.PointerField{Inner: t}
 			types.AddTypeImports(fg, pf)
