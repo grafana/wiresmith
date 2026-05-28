@@ -108,16 +108,18 @@ func TestMapField_EmitUnmarshal_MergePresentNotLen(t *testing.T) {
 
 // Cross-package companion to TestMapField_EmitUnmarshal_MergePresentNotLen:
 // the merge predicate must stay nil-based regardless of whether the value
-// message lives in the same package. Locks the cross-package merge body's
-// shape: it cannot reach the private `existing.unmarshal()` method (no
-// access across packages) so it dispatches through `existing.Unmarshal()`.
+// message lives in the same package. Cross-package emit cannot reach the
+// package-local `existing.unmarshal()` helper, so we also assert that
+// private form is absent.
 //
-// NB: the public `.Unmarshal()` call here resets the unmarshal-depth counter
-// at the package boundary — unlike the initial-value path in
-// MessageType.EmitMapEntryUnmarshal, which threads depth via
-// UnmarshalWithDepth. That gap is tracked separately; this test only locks
-// down the current emit shape so a future SEC-5 follow-up has a fixed
-// failure to update.
+// Intentionally NOT pinning the specific public call form (`.Unmarshal()` vs
+// `.UnmarshalWithDepth(..., depth+1)`). Today the emit uses the public
+// depth-resetting `Unmarshal`, which is the SEC-5 regression tracked by
+// wiresmith-1c0; once that fix lands, the call must become
+// `UnmarshalWithDepth`. An assertion that pinned today's form would turn CI
+// into a guard against the fix, so we leave the exact symbol unchecked here
+// and let the integration-level depth-tracking test in
+// compiler/generator/generator_test.go own that invariant.
 func TestMapField_EmitUnmarshal_CrossPackageMessageMerge(t *testing.T) {
 	e := &captureEmitter{}
 	mf := &MapField{
@@ -141,9 +143,6 @@ func TestMapField_EmitUnmarshal_CrossPackageMessageMerge(t *testing.T) {
 	// must NOT reach for it.
 	if strings.Contains(got, "existing.unmarshal(") {
 		t.Errorf("Cross-package: private unmarshal() is not accessible:\n%s", got)
-	}
-	if !strings.Contains(got, "existing.Unmarshal(mapValueBytes)") {
-		t.Errorf("Cross-package merge must call public Unmarshal on the merged value bytes:\n%s", got)
 	}
 }
 
