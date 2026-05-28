@@ -18,7 +18,7 @@ Every generated method below is nil-safe — `String()`, `Has<Field>()`, `Get<Fi
 | `ProtoMessage()`                                    | Marker method satisfying `proto.Message`.                                                 |
 | `String() string`                                   | Debug representation via `fmt.Sprintf("%v", *m)`.                                         |
 | `ProtoReflect() protoreflect.Message`               | Returns a fast-path `protoreflect.Message` that supports `proto.Marshal/Unmarshal/Size/Equal`. See caveats below. |
-| `Equal(other *T) bool`                              | Semantic equality. Compares oneof variants by type + value, not by interface identity.    |
+| `Equal(other *T) bool`                              | Semantic equality. Compares oneof variants by type + value, not by interface identity. Float and double fields are compared by `math.Float{32,64}bits` (bit-exact) so identical NaN payloads are equal and `-0.0`/`+0.0` are not — matching `proto.Equal` and the marshal path's bit-exact preservation. |
 | `Get<Field>() <FieldType>`                          | One per field. See "Field shape" below for the return type per shape.                     |
 | `Has<Field>() bool`                                 | Only for singular non-optional, non-oneof fields. Reads the presence bitmap.              |
 

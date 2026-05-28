@@ -21,7 +21,14 @@ type fixed64Base struct {
 	// that -0.0 (which compares equal to +0.0 in Go) survives marshal, matching
 	// google.golang.org/protobuf (vtproto and gogoproto silently strip -0.0).
 	nonzeroExpr string
-	imports     []string
+	// equalCastExpr: format applied to each side of the Equal `!=` guard. One
+	// %s for access. Defaults to "%s" (no cast). Double overrides to
+	// "math.Float64bits(%s)" so NaN payloads compare equal to themselves (Go's
+	// `==` says `NaN != NaN`) and -0.0/+0.0 compare unequal — matching both
+	// google.golang.org/protobuf proto.Equal and the marshal path's bit-exact
+	// preservation contract.
+	equalCastExpr string
+	imports       []string
 }
 
 func (f fixed64Base) nonzero(access string) string {
@@ -114,8 +121,15 @@ func (f fixed64Base) get(varName string) string {
 
 func (fixed64Base) ZeroLiteral() string { return "0" }
 
-func (fixed64Base) EmitEqual(e Emitter, indent, lhs, rhs string) {
-	scalarNotEqualGuard(e, indent, lhs, rhs)
+func (f fixed64Base) equalCast(access string) string {
+	if f.equalCastExpr == "" {
+		return access
+	}
+	return fmt.Sprintf(f.equalCastExpr, access)
+}
+
+func (f fixed64Base) EmitEqual(e Emitter, indent, lhs, rhs string) {
+	scalarNotEqualGuard(e, indent, f.equalCast(lhs), f.equalCast(rhs))
 }
 
 // Fixed64Type is the Type for protoreflect.Fixed64Kind.

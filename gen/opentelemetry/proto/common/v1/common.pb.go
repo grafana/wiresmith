@@ -2427,7 +2427,7 @@ func (this *AnyValue) Equal(that interface{}) bool {
 			if !ok {
 				return false
 			}
-			if v.DoubleValue != v2.DoubleValue {
+			if math.Float64bits(v.DoubleValue) != math.Float64bits(v2.DoubleValue) {
 				return false
 			}
 		case *AnyValue_ArrayValue:

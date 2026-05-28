@@ -9727,10 +9727,10 @@ func (this *AllScalars) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
-	if this.FieldDouble != that1.FieldDouble {
+	if math.Float64bits(this.FieldDouble) != math.Float64bits(that1.FieldDouble) {
 		return false
 	}
-	if this.FieldFloat != that1.FieldFloat {
+	if math.Float32bits(this.FieldFloat) != math.Float32bits(that1.FieldFloat) {
 		return false
 	}
 	if this.FieldInt32 != that1.FieldInt32 {
@@ -9938,7 +9938,7 @@ func (this *AllRepeatedScalars) Equal(that interface{}) bool {
 		return false
 	}
 	for i := range this.FieldDouble {
-		if this.FieldDouble[i] != that1.FieldDouble[i] {
+		if math.Float64bits(this.FieldDouble[i]) != math.Float64bits(that1.FieldDouble[i]) {
 			return false
 		}
 	}
@@ -9946,7 +9946,7 @@ func (this *AllRepeatedScalars) Equal(that interface{}) bool {
 		return false
 	}
 	for i := range this.FieldFloat {
-		if this.FieldFloat[i] != that1.FieldFloat[i] {
+		if math.Float32bits(this.FieldFloat[i]) != math.Float32bits(that1.FieldFloat[i]) {
 			return false
 		}
 	}
@@ -10086,7 +10086,7 @@ func (this *OneofVariants) Equal(that interface{}) bool {
 			if !ok {
 				return false
 			}
-			if v.DoubleValue != v2.DoubleValue {
+			if math.Float64bits(v.DoubleValue) != math.Float64bits(v2.DoubleValue) {
 				return false
 			}
 		case *OneofVariants_FloatValue:
@@ -10094,7 +10094,7 @@ func (this *OneofVariants) Equal(that interface{}) bool {
 			if !ok {
 				return false
 			}
-			if v.FloatValue != v2.FloatValue {
+			if math.Float32bits(v.FloatValue) != math.Float32bits(v2.FloatValue) {
 				return false
 			}
 		case *OneofVariants_Int32Value:
@@ -10671,7 +10671,7 @@ func (this *AllMaps) Equal(that interface{}) bool {
 		if !ok {
 			return false
 		}
-		if v != v2 {
+		if math.Float32bits(v) != math.Float32bits(v2) {
 			return false
 		}
 	}
@@ -10683,7 +10683,7 @@ func (this *AllMaps) Equal(that interface{}) bool {
 		if !ok {
 			return false
 		}
-		if v != v2 {
+		if math.Float64bits(v) != math.Float64bits(v2) {
 			return false
 		}
 	}

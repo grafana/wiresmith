@@ -2101,7 +2101,7 @@ func (this *MultiOneof) Equal(that interface{}) bool {
 			if !ok {
 				return false
 			}
-			if v.DblVal != v2.DblVal {
+			if math.Float64bits(v.DblVal) != math.Float64bits(v2.DblVal) {
 				return false
 			}
 		case *MultiOneof_BytesVal:

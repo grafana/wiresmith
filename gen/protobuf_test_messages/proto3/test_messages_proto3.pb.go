@@ -11171,10 +11171,10 @@ func (this *TestAllTypesProto3) Equal(that interface{}) bool {
 	if this.OptionalSfixed64 != that1.OptionalSfixed64 {
 		return false
 	}
-	if this.OptionalFloat != that1.OptionalFloat {
+	if math.Float32bits(this.OptionalFloat) != math.Float32bits(that1.OptionalFloat) {
 		return false
 	}
-	if this.OptionalDouble != that1.OptionalDouble {
+	if math.Float64bits(this.OptionalDouble) != math.Float64bits(that1.OptionalDouble) {
 		return false
 	}
 	if this.OptionalBool != that1.OptionalBool {
@@ -11288,7 +11288,7 @@ func (this *TestAllTypesProto3) Equal(that interface{}) bool {
 		return false
 	}
 	for i := range this.RepeatedFloat {
-		if this.RepeatedFloat[i] != that1.RepeatedFloat[i] {
+		if math.Float32bits(this.RepeatedFloat[i]) != math.Float32bits(that1.RepeatedFloat[i]) {
 			return false
 		}
 	}
@@ -11296,7 +11296,7 @@ func (this *TestAllTypesProto3) Equal(that interface{}) bool {
 		return false
 	}
 	for i := range this.RepeatedDouble {
-		if this.RepeatedDouble[i] != that1.RepeatedDouble[i] {
+		if math.Float64bits(this.RepeatedDouble[i]) != math.Float64bits(that1.RepeatedDouble[i]) {
 			return false
 		}
 	}
@@ -11500,7 +11500,7 @@ func (this *TestAllTypesProto3) Equal(that interface{}) bool {
 		if !ok {
 			return false
 		}
-		if v != v2 {
+		if math.Float32bits(v) != math.Float32bits(v2) {
 			return false
 		}
 	}
@@ -11512,7 +11512,7 @@ func (this *TestAllTypesProto3) Equal(that interface{}) bool {
 		if !ok {
 			return false
 		}
-		if v != v2 {
+		if math.Float64bits(v) != math.Float64bits(v2) {
 			return false
 		}
 	}
@@ -11684,7 +11684,7 @@ func (this *TestAllTypesProto3) Equal(that interface{}) bool {
 		return false
 	}
 	for i := range this.PackedFloat {
-		if this.PackedFloat[i] != that1.PackedFloat[i] {
+		if math.Float32bits(this.PackedFloat[i]) != math.Float32bits(that1.PackedFloat[i]) {
 			return false
 		}
 	}
@@ -11692,7 +11692,7 @@ func (this *TestAllTypesProto3) Equal(that interface{}) bool {
 		return false
 	}
 	for i := range this.PackedDouble {
-		if this.PackedDouble[i] != that1.PackedDouble[i] {
+		if math.Float64bits(this.PackedDouble[i]) != math.Float64bits(that1.PackedDouble[i]) {
 			return false
 		}
 	}
@@ -11796,7 +11796,7 @@ func (this *TestAllTypesProto3) Equal(that interface{}) bool {
 		return false
 	}
 	for i := range this.UnpackedFloat {
-		if this.UnpackedFloat[i] != that1.UnpackedFloat[i] {
+		if math.Float32bits(this.UnpackedFloat[i]) != math.Float32bits(that1.UnpackedFloat[i]) {
 			return false
 		}
 	}
@@ -11804,7 +11804,7 @@ func (this *TestAllTypesProto3) Equal(that interface{}) bool {
 		return false
 	}
 	for i := range this.UnpackedDouble {
-		if this.UnpackedDouble[i] != that1.UnpackedDouble[i] {
+		if math.Float64bits(this.UnpackedDouble[i]) != math.Float64bits(that1.UnpackedDouble[i]) {
 			return false
 		}
 	}
@@ -11882,7 +11882,7 @@ func (this *TestAllTypesProto3) Equal(that interface{}) bool {
 			if !ok {
 				return false
 			}
-			if v.OneofFloat != v2.OneofFloat {
+			if math.Float32bits(v.OneofFloat) != math.Float32bits(v2.OneofFloat) {
 				return false
 			}
 		case *TestAllTypesProto3_OneofDouble:
@@ -11890,7 +11890,7 @@ func (this *TestAllTypesProto3) Equal(that interface{}) bool {
 			if !ok {
 				return false
 			}
-			if v.OneofDouble != v2.OneofDouble {
+			if math.Float64bits(v.OneofDouble) != math.Float64bits(v2.OneofDouble) {
 				return false
 			}
 		case *TestAllTypesProto3_OneofEnum:
