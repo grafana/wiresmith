@@ -21,7 +21,13 @@ type fixed32Base struct {
 	// that -0.0 (which compares equal to +0.0 in Go) survives marshal, matching
 	// google.golang.org/protobuf (vtproto and gogoproto silently strip -0.0).
 	nonzeroExpr string
-	imports     []string
+	// equalCastExpr: format applied to each side of the Equal `!=` guard. One
+	// %s for access. Defaults to "%s" (no cast). Float overrides to
+	// "math.Float32bits(%s)" so NaN payloads compare equal to themselves and
+	// -0.0/+0.0 compare unequal — matching proto.Equal and the marshal path's
+	// bit-exact preservation contract. See fixed64.go for the parallel rationale.
+	equalCastExpr string
+	imports       []string
 }
 
 func (f fixed32Base) nonzero(access string) string {
@@ -114,8 +120,15 @@ func (f fixed32Base) get(varName string) string {
 
 func (fixed32Base) ZeroLiteral() string { return "0" }
 
-func (fixed32Base) EmitEqual(e Emitter, indent, lhs, rhs string) {
-	scalarNotEqualGuard(e, indent, lhs, rhs)
+func (f fixed32Base) equalCast(access string) string {
+	if f.equalCastExpr == "" {
+		return access
+	}
+	return fmt.Sprintf(f.equalCastExpr, access)
+}
+
+func (f fixed32Base) EmitEqual(e Emitter, indent, lhs, rhs string) {
+	scalarNotEqualGuard(e, indent, f.equalCast(lhs), f.equalCast(rhs))
 }
 
 // Fixed32Type is the Type for protoreflect.Fixed32Kind.

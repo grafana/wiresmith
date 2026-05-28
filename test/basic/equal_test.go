@@ -1,12 +1,66 @@
 package basic
 
 import (
+	"math"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	ks "wiresmith/gen/test/kitchensink/v1"
 )
+
+// --- Float bit-exact equality (CR-5) ---
+//
+// Equal() compares float fields by their bit pattern, not by Go's `==`
+// operator. This matches the official google.golang.org/protobuf proto.Equal
+// contract — and also wiresmith's own marshal path, which preserves -0.0 and
+// arbitrary NaN bit patterns instead of canonicalizing them.
+
+func TestEqual_NaNFloat64_SameBits(t *testing.T) {
+	// Two messages with the same NaN bit pattern must compare equal.
+	// Without bit-exact comparison, `NaN != NaN` (per IEEE 754) makes the
+	// guard always fire — even when both sides are the same NaN value.
+	bits := uint64(0x7ff8000000000001) // a quiet NaN with payload 1
+	a := &ks.AllScalars{FieldDouble: math.Float64frombits(bits)}
+	b := &ks.AllScalars{FieldDouble: math.Float64frombits(bits)}
+	assert.True(t, a.Equal(b), "two messages with the same NaN bit pattern must be equal")
+}
+
+func TestEqual_NaNFloat32_SameBits(t *testing.T) {
+	bits := uint32(0x7fc00001)
+	a := &ks.AllScalars{FieldFloat: math.Float32frombits(bits)}
+	b := &ks.AllScalars{FieldFloat: math.Float32frombits(bits)}
+	assert.True(t, a.Equal(b), "two messages with the same float32 NaN bit pattern must be equal")
+}
+
+func TestEqual_NaNFloat64_DifferentBits(t *testing.T) {
+	// Different NaN bit patterns must NOT be equal under bit-exact comparison.
+	a := &ks.AllScalars{FieldDouble: math.Float64frombits(0x7ff8000000000001)}
+	b := &ks.AllScalars{FieldDouble: math.Float64frombits(0x7ff8000000000002)}
+	assert.False(t, a.Equal(b), "NaNs with distinct bit patterns must not be equal")
+}
+
+func TestEqual_NaNFloat32_DifferentBits(t *testing.T) {
+	a := &ks.AllScalars{FieldFloat: math.Float32frombits(0x7fc00001)}
+	b := &ks.AllScalars{FieldFloat: math.Float32frombits(0x7fc00002)}
+	assert.False(t, a.Equal(b), "float32 NaNs with distinct bit patterns must not be equal")
+}
+
+func TestEqual_NegativeZeroFloat64(t *testing.T) {
+	// -0.0 and +0.0 compare equal under IEEE 754 `==`, but bit-exact
+	// comparison distinguishes them. This matches the marshal path: -0.0
+	// roundtrips as -0.0 while +0.0 is omitted as a default, so they cannot
+	// be considered equal without breaking the marshal/Equal contract.
+	a := &ks.AllScalars{FieldDouble: math.Copysign(0, -1)}
+	b := &ks.AllScalars{FieldDouble: 0}
+	assert.False(t, a.Equal(b), "-0.0 and +0.0 must compare unequal (bit-exact)")
+}
+
+func TestEqual_NegativeZeroFloat32(t *testing.T) {
+	a := &ks.AllScalars{FieldFloat: float32(math.Copysign(0, -1))}
+	b := &ks.AllScalars{FieldFloat: 0}
+	assert.False(t, a.Equal(b), "-0.0 and +0.0 (float32) must compare unequal (bit-exact)")
+}
 
 func TestEqual_NilReceiver(t *testing.T) {
 	var a *ks.AllScalars

@@ -7911,7 +7911,7 @@ func (this *NumberDataPoint) Equal(that interface{}) bool {
 			if !ok {
 				return false
 			}
-			if v.AsDouble != v2.AsDouble {
+			if math.Float64bits(v.AsDouble) != math.Float64bits(v2.AsDouble) {
 				return false
 			}
 		case *NumberDataPoint_AsInt:
@@ -7996,7 +7996,7 @@ func (this *HistogramDataPoint) Equal(that interface{}) bool {
 		return false
 	}
 	for i := range this.ExplicitBounds {
-		if this.ExplicitBounds[i] != that1.ExplicitBounds[i] {
+		if math.Float64bits(this.ExplicitBounds[i]) != math.Float64bits(that1.ExplicitBounds[i]) {
 			return false
 		}
 	}
@@ -8146,7 +8146,7 @@ func (this *ExponentialHistogramDataPoint) Equal(that interface{}) bool {
 			return false
 		}
 	}
-	if this.ZeroThreshold != that1.ZeroThreshold {
+	if math.Float64bits(this.ZeroThreshold) != math.Float64bits(that1.ZeroThreshold) {
 		return false
 	}
 	return true
@@ -8171,10 +8171,10 @@ func (this *SummaryDataPoint_ValueAtQuantile) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
-	if this.Quantile != that1.Quantile {
+	if math.Float64bits(this.Quantile) != math.Float64bits(that1.Quantile) {
 		return false
 	}
-	if this.Value != that1.Value {
+	if math.Float64bits(this.Value) != math.Float64bits(that1.Value) {
 		return false
 	}
 	return true
@@ -8216,7 +8216,7 @@ func (this *SummaryDataPoint) Equal(that interface{}) bool {
 	if this.Count != that1.Count {
 		return false
 	}
-	if this.Sum != that1.Sum {
+	if math.Float64bits(this.Sum) != math.Float64bits(that1.Sum) {
 		return false
 	}
 	if len(this.QuantileValues) != len(that1.QuantileValues) {
@@ -8273,7 +8273,7 @@ func (this *Exemplar) Equal(that interface{}) bool {
 			if !ok {
 				return false
 			}
-			if v.AsDouble != v2.AsDouble {
+			if math.Float64bits(v.AsDouble) != math.Float64bits(v2.AsDouble) {
 				return false
 			}
 		case *Exemplar_AsInt:

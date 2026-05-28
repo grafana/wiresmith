@@ -6278,7 +6278,7 @@ func (this *UnpackedScalars) Equal(that interface{}) bool {
 		return false
 	}
 	for i := range this.FieldDouble {
-		if this.FieldDouble[i] != that1.FieldDouble[i] {
+		if math.Float64bits(this.FieldDouble[i]) != math.Float64bits(that1.FieldDouble[i]) {
 			return false
 		}
 	}
@@ -6286,7 +6286,7 @@ func (this *UnpackedScalars) Equal(that interface{}) bool {
 		return false
 	}
 	for i := range this.FieldFloat {
-		if this.FieldFloat[i] != that1.FieldFloat[i] {
+		if math.Float32bits(this.FieldFloat[i]) != math.Float32bits(that1.FieldFloat[i]) {
 			return false
 		}
 	}
@@ -6419,7 +6419,7 @@ func (this *MixedModifiers) Equal(that interface{}) bool {
 			return false
 		}
 	}
-	if this.RegularDouble != that1.RegularDouble {
+	if math.Float64bits(this.RegularDouble) != math.Float64bits(that1.RegularDouble) {
 		return false
 	}
 	if this.OptionalDouble != that1.OptionalDouble {
@@ -6434,7 +6434,7 @@ func (this *MixedModifiers) Equal(that interface{}) bool {
 		return false
 	}
 	for i := range this.RepeatedDouble {
-		if this.RepeatedDouble[i] != that1.RepeatedDouble[i] {
+		if math.Float64bits(this.RepeatedDouble[i]) != math.Float64bits(that1.RepeatedDouble[i]) {
 			return false
 		}
 	}
@@ -6646,34 +6646,34 @@ func (this *WideFields) Equal(that interface{}) bool {
 	if this.F50 != that1.F50 {
 		return false
 	}
-	if this.F51 != that1.F51 {
+	if math.Float64bits(this.F51) != math.Float64bits(that1.F51) {
 		return false
 	}
-	if this.F52 != that1.F52 {
+	if math.Float64bits(this.F52) != math.Float64bits(that1.F52) {
 		return false
 	}
-	if this.F53 != that1.F53 {
+	if math.Float64bits(this.F53) != math.Float64bits(that1.F53) {
 		return false
 	}
-	if this.F54 != that1.F54 {
+	if math.Float64bits(this.F54) != math.Float64bits(that1.F54) {
 		return false
 	}
-	if this.F55 != that1.F55 {
+	if math.Float64bits(this.F55) != math.Float64bits(that1.F55) {
 		return false
 	}
-	if this.F56 != that1.F56 {
+	if math.Float64bits(this.F56) != math.Float64bits(that1.F56) {
 		return false
 	}
-	if this.F57 != that1.F57 {
+	if math.Float64bits(this.F57) != math.Float64bits(that1.F57) {
 		return false
 	}
-	if this.F58 != that1.F58 {
+	if math.Float64bits(this.F58) != math.Float64bits(that1.F58) {
 		return false
 	}
-	if this.F59 != that1.F59 {
+	if math.Float64bits(this.F59) != math.Float64bits(that1.F59) {
 		return false
 	}
-	if this.F60 != that1.F60 {
+	if math.Float64bits(this.F60) != math.Float64bits(that1.F60) {
 		return false
 	}
 	if this.F61 != that1.F61 {
