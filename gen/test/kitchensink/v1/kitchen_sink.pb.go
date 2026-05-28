@@ -3282,18 +3282,23 @@ func (m *AllScalars) unmarshal(dAtA []byte, depth int) error {
 	iNdEx := 0
 	for iNdEx < l {
 		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 35 {
-				return fmt.Errorf("proto: integer overflow")
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
+		if iNdEx < l && dAtA[iNdEx] < 0x80 {
+			wire = uint64(dAtA[iNdEx])
 			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
+		} else {
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 35 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 		}
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
@@ -3611,21 +3616,26 @@ func (m *AllScalars) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -3652,21 +3662,26 @@ func (m *AllScalars) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -3716,18 +3731,23 @@ func (m *AllOptionalScalars) unmarshal(dAtA []byte, depth int) error {
 	iNdEx := 0
 	for iNdEx < l {
 		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 35 {
-				return fmt.Errorf("proto: integer overflow")
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
+		if iNdEx < l && dAtA[iNdEx] < 0x80 {
+			wire = uint64(dAtA[iNdEx])
 			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
+		} else {
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 35 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 		}
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
@@ -4042,21 +4062,26 @@ func (m *AllOptionalScalars) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -4083,21 +4108,26 @@ func (m *AllOptionalScalars) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -4221,18 +4251,23 @@ func (m *AllRepeatedScalars) unmarshal(dAtA []byte, depth int) error {
 	}
 	for iNdEx < l {
 		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 35 {
-				return fmt.Errorf("proto: integer overflow")
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
+		if iNdEx < l && dAtA[iNdEx] < 0x80 {
+			wire = uint64(dAtA[iNdEx])
 			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
+		} else {
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 35 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 		}
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
@@ -4244,21 +4279,26 @@ func (m *AllRepeatedScalars) unmarshal(dAtA []byte, depth int) error {
 		case 1: // field_double
 			if wireType == 2 {
 				var byteLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return fmt.Errorf("proto: integer overflow")
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
+				if iNdEx < l && dAtA[iNdEx] < 0x80 {
+					byteLen = uint64(dAtA[iNdEx])
 					iNdEx++
-					byteLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						if shift == 63 && b > 1 {
-							return fmt.Errorf("proto: varint overflow")
+				} else {
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
 						}
-						break
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						byteLen |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 				}
 				if byteLen > uint64(math.MaxInt) {
@@ -4302,21 +4342,26 @@ func (m *AllRepeatedScalars) unmarshal(dAtA []byte, depth int) error {
 		case 2: // field_float
 			if wireType == 2 {
 				var byteLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return fmt.Errorf("proto: integer overflow")
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
+				if iNdEx < l && dAtA[iNdEx] < 0x80 {
+					byteLen = uint64(dAtA[iNdEx])
 					iNdEx++
-					byteLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						if shift == 63 && b > 1 {
-							return fmt.Errorf("proto: varint overflow")
+				} else {
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
 						}
-						break
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						byteLen |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 				}
 				if byteLen > uint64(math.MaxInt) {
@@ -4360,21 +4405,26 @@ func (m *AllRepeatedScalars) unmarshal(dAtA []byte, depth int) error {
 		case 3: // field_int32
 			if wireType == 2 {
 				var byteLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return fmt.Errorf("proto: integer overflow")
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
+				if iNdEx < l && dAtA[iNdEx] < 0x80 {
+					byteLen = uint64(dAtA[iNdEx])
 					iNdEx++
-					byteLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						if shift == 63 && b > 1 {
-							return fmt.Errorf("proto: varint overflow")
+				} else {
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
 						}
-						break
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						byteLen |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 				}
 				if byteLen > uint64(math.MaxInt) {
@@ -4437,21 +4487,26 @@ func (m *AllRepeatedScalars) unmarshal(dAtA []byte, depth int) error {
 		case 4: // field_int64
 			if wireType == 2 {
 				var byteLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return fmt.Errorf("proto: integer overflow")
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
+				if iNdEx < l && dAtA[iNdEx] < 0x80 {
+					byteLen = uint64(dAtA[iNdEx])
 					iNdEx++
-					byteLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						if shift == 63 && b > 1 {
-							return fmt.Errorf("proto: varint overflow")
+				} else {
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
 						}
-						break
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						byteLen |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 				}
 				if byteLen > uint64(math.MaxInt) {
@@ -4514,21 +4569,26 @@ func (m *AllRepeatedScalars) unmarshal(dAtA []byte, depth int) error {
 		case 5: // field_uint32
 			if wireType == 2 {
 				var byteLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return fmt.Errorf("proto: integer overflow")
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
+				if iNdEx < l && dAtA[iNdEx] < 0x80 {
+					byteLen = uint64(dAtA[iNdEx])
 					iNdEx++
-					byteLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						if shift == 63 && b > 1 {
-							return fmt.Errorf("proto: varint overflow")
+				} else {
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
 						}
-						break
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						byteLen |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 				}
 				if byteLen > uint64(math.MaxInt) {
@@ -4591,21 +4651,26 @@ func (m *AllRepeatedScalars) unmarshal(dAtA []byte, depth int) error {
 		case 6: // field_uint64
 			if wireType == 2 {
 				var byteLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return fmt.Errorf("proto: integer overflow")
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
+				if iNdEx < l && dAtA[iNdEx] < 0x80 {
+					byteLen = uint64(dAtA[iNdEx])
 					iNdEx++
-					byteLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						if shift == 63 && b > 1 {
-							return fmt.Errorf("proto: varint overflow")
+				} else {
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
 						}
-						break
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						byteLen |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 				}
 				if byteLen > uint64(math.MaxInt) {
@@ -4668,21 +4733,26 @@ func (m *AllRepeatedScalars) unmarshal(dAtA []byte, depth int) error {
 		case 7: // field_sint32
 			if wireType == 2 {
 				var byteLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return fmt.Errorf("proto: integer overflow")
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
+				if iNdEx < l && dAtA[iNdEx] < 0x80 {
+					byteLen = uint64(dAtA[iNdEx])
 					iNdEx++
-					byteLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						if shift == 63 && b > 1 {
-							return fmt.Errorf("proto: varint overflow")
+				} else {
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
 						}
-						break
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						byteLen |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 				}
 				if byteLen > uint64(math.MaxInt) {
@@ -4745,21 +4815,26 @@ func (m *AllRepeatedScalars) unmarshal(dAtA []byte, depth int) error {
 		case 8: // field_sint64
 			if wireType == 2 {
 				var byteLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return fmt.Errorf("proto: integer overflow")
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
+				if iNdEx < l && dAtA[iNdEx] < 0x80 {
+					byteLen = uint64(dAtA[iNdEx])
 					iNdEx++
-					byteLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						if shift == 63 && b > 1 {
-							return fmt.Errorf("proto: varint overflow")
+				} else {
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
 						}
-						break
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						byteLen |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 				}
 				if byteLen > uint64(math.MaxInt) {
@@ -4822,21 +4897,26 @@ func (m *AllRepeatedScalars) unmarshal(dAtA []byte, depth int) error {
 		case 9: // field_fixed32
 			if wireType == 2 {
 				var byteLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return fmt.Errorf("proto: integer overflow")
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
+				if iNdEx < l && dAtA[iNdEx] < 0x80 {
+					byteLen = uint64(dAtA[iNdEx])
 					iNdEx++
-					byteLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						if shift == 63 && b > 1 {
-							return fmt.Errorf("proto: varint overflow")
+				} else {
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
 						}
-						break
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						byteLen |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 				}
 				if byteLen > uint64(math.MaxInt) {
@@ -4880,21 +4960,26 @@ func (m *AllRepeatedScalars) unmarshal(dAtA []byte, depth int) error {
 		case 10: // field_fixed64
 			if wireType == 2 {
 				var byteLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return fmt.Errorf("proto: integer overflow")
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
+				if iNdEx < l && dAtA[iNdEx] < 0x80 {
+					byteLen = uint64(dAtA[iNdEx])
 					iNdEx++
-					byteLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						if shift == 63 && b > 1 {
-							return fmt.Errorf("proto: varint overflow")
+				} else {
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
 						}
-						break
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						byteLen |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 				}
 				if byteLen > uint64(math.MaxInt) {
@@ -4938,21 +5023,26 @@ func (m *AllRepeatedScalars) unmarshal(dAtA []byte, depth int) error {
 		case 11: // field_sfixed32
 			if wireType == 2 {
 				var byteLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return fmt.Errorf("proto: integer overflow")
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
+				if iNdEx < l && dAtA[iNdEx] < 0x80 {
+					byteLen = uint64(dAtA[iNdEx])
 					iNdEx++
-					byteLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						if shift == 63 && b > 1 {
-							return fmt.Errorf("proto: varint overflow")
+				} else {
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
 						}
-						break
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						byteLen |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 				}
 				if byteLen > uint64(math.MaxInt) {
@@ -4996,21 +5086,26 @@ func (m *AllRepeatedScalars) unmarshal(dAtA []byte, depth int) error {
 		case 12: // field_sfixed64
 			if wireType == 2 {
 				var byteLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return fmt.Errorf("proto: integer overflow")
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
+				if iNdEx < l && dAtA[iNdEx] < 0x80 {
+					byteLen = uint64(dAtA[iNdEx])
 					iNdEx++
-					byteLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						if shift == 63 && b > 1 {
-							return fmt.Errorf("proto: varint overflow")
+				} else {
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
 						}
-						break
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						byteLen |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 				}
 				if byteLen > uint64(math.MaxInt) {
@@ -5054,21 +5149,26 @@ func (m *AllRepeatedScalars) unmarshal(dAtA []byte, depth int) error {
 		case 13: // field_bool
 			if wireType == 2 {
 				var byteLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return fmt.Errorf("proto: integer overflow")
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
+				if iNdEx < l && dAtA[iNdEx] < 0x80 {
+					byteLen = uint64(dAtA[iNdEx])
 					iNdEx++
-					byteLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						if shift == 63 && b > 1 {
-							return fmt.Errorf("proto: varint overflow")
+				} else {
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
 						}
-						break
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						byteLen |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 				}
 				if byteLen > uint64(math.MaxInt) {
@@ -5132,21 +5232,26 @@ func (m *AllRepeatedScalars) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -5172,21 +5277,26 @@ func (m *AllRepeatedScalars) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -5235,18 +5345,23 @@ func (m *OneofVariants) unmarshal(dAtA []byte, depth int) error {
 	iNdEx := 0
 	for iNdEx < l {
 		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 35 {
-				return fmt.Errorf("proto: integer overflow")
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
+		if iNdEx < l && dAtA[iNdEx] < 0x80 {
+			wire = uint64(dAtA[iNdEx])
 			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
+		} else {
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 35 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 		}
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
@@ -5551,21 +5666,26 @@ func (m *OneofVariants) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -5591,21 +5711,26 @@ func (m *OneofVariants) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -5717,18 +5842,23 @@ func (m *Outer) unmarshal(dAtA []byte, depth int) error {
 	}
 	for iNdEx < l {
 		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 35 {
-				return fmt.Errorf("proto: integer overflow")
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
+		if iNdEx < l && dAtA[iNdEx] < 0x80 {
+			wire = uint64(dAtA[iNdEx])
 			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
+		} else {
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 35 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 		}
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
@@ -5747,21 +5877,26 @@ func (m *Outer) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -5790,21 +5925,26 @@ func (m *Outer) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -5833,21 +5973,26 @@ func (m *Outer) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -5960,18 +6105,23 @@ func (m *Middle) unmarshal(dAtA []byte, depth int) error {
 	}
 	for iNdEx < l {
 		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 35 {
-				return fmt.Errorf("proto: integer overflow")
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
+		if iNdEx < l && dAtA[iNdEx] < 0x80 {
+			wire = uint64(dAtA[iNdEx])
 			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
+		} else {
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 35 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 		}
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
@@ -5990,21 +6140,26 @@ func (m *Middle) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -6033,21 +6188,26 @@ func (m *Middle) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -6128,18 +6288,23 @@ func (m *Inner) unmarshal(dAtA []byte, depth int) error {
 	iNdEx := 0
 	for iNdEx < l {
 		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 35 {
-				return fmt.Errorf("proto: integer overflow")
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
+		if iNdEx < l && dAtA[iNdEx] < 0x80 {
+			wire = uint64(dAtA[iNdEx])
 			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
+		} else {
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 35 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 		}
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
@@ -6158,21 +6323,26 @@ func (m *Inner) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -6199,21 +6369,26 @@ func (m *Inner) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -6308,18 +6483,23 @@ func (m *HighFieldNumbers) unmarshal(dAtA []byte, depth int) error {
 	iNdEx := 0
 	for iNdEx < l {
 		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 35 {
-				return fmt.Errorf("proto: integer overflow")
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
+		if iNdEx < l && dAtA[iNdEx] < 0x80 {
+			wire = uint64(dAtA[iNdEx])
 			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
+		} else {
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 35 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 		}
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
@@ -6338,21 +6518,26 @@ func (m *HighFieldNumbers) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -6379,21 +6564,26 @@ func (m *HighFieldNumbers) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -6420,21 +6610,26 @@ func (m *HighFieldNumbers) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -6461,21 +6656,26 @@ func (m *HighFieldNumbers) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -6502,21 +6702,26 @@ func (m *HighFieldNumbers) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -6566,18 +6771,23 @@ func (m *WithEnum) unmarshal(dAtA []byte, depth int) error {
 	iNdEx := 0
 	for iNdEx < l {
 		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 35 {
-				return fmt.Errorf("proto: integer overflow")
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
+		if iNdEx < l && dAtA[iNdEx] < 0x80 {
+			wire = uint64(dAtA[iNdEx])
 			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
+		} else {
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 35 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 		}
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
@@ -6618,21 +6828,26 @@ func (m *WithEnum) unmarshal(dAtA []byte, depth int) error {
 		case 2: // colors
 			if wireType == 2 {
 				var byteLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return fmt.Errorf("proto: integer overflow")
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
+				if iNdEx < l && dAtA[iNdEx] < 0x80 {
+					byteLen = uint64(dAtA[iNdEx])
 					iNdEx++
-					byteLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						if shift == 63 && b > 1 {
-							return fmt.Errorf("proto: varint overflow")
+				} else {
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
 						}
-						break
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						byteLen |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 				}
 				if byteLen > uint64(math.MaxInt) {
@@ -6725,18 +6940,23 @@ func (m *Empty) unmarshal(dAtA []byte, depth int) error {
 	iNdEx := 0
 	for iNdEx < l {
 		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 35 {
-				return fmt.Errorf("proto: integer overflow")
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
+		if iNdEx < l && dAtA[iNdEx] < 0x80 {
+			wire = uint64(dAtA[iNdEx])
 			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
+		} else {
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 35 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 		}
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
@@ -6850,18 +7070,23 @@ func (m *OnlyRepeated) unmarshal(dAtA []byte, depth int) error {
 	}
 	for iNdEx < l {
 		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 35 {
-				return fmt.Errorf("proto: integer overflow")
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
+		if iNdEx < l && dAtA[iNdEx] < 0x80 {
+			wire = uint64(dAtA[iNdEx])
 			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
+		} else {
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 35 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 		}
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
@@ -6880,21 +7105,26 @@ func (m *OnlyRepeated) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -6913,21 +7143,26 @@ func (m *OnlyRepeated) unmarshal(dAtA []byte, depth int) error {
 		case 2: // values
 			if wireType == 2 {
 				var byteLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return fmt.Errorf("proto: integer overflow")
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
+				if iNdEx < l && dAtA[iNdEx] < 0x80 {
+					byteLen = uint64(dAtA[iNdEx])
 					iNdEx++
-					byteLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						if shift == 63 && b > 1 {
-							return fmt.Errorf("proto: varint overflow")
+				} else {
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
 						}
-						break
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						byteLen |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 				}
 				if byteLen > uint64(math.MaxInt) {
@@ -6997,21 +7232,26 @@ func (m *OnlyRepeated) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -7126,18 +7366,23 @@ func (m *Container) unmarshal(dAtA []byte, depth int) error {
 	}
 	for iNdEx < l {
 		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 35 {
-				return fmt.Errorf("proto: integer overflow")
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
+		if iNdEx < l && dAtA[iNdEx] < 0x80 {
+			wire = uint64(dAtA[iNdEx])
 			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
+		} else {
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 35 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 		}
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
@@ -7156,21 +7401,26 @@ func (m *Container) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -7199,21 +7449,26 @@ func (m *Container) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -7242,21 +7497,26 @@ func (m *Container) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -7515,18 +7775,23 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 	}
 	for iNdEx < l {
 		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 35 {
-				return fmt.Errorf("proto: integer overflow")
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
+		if iNdEx < l && dAtA[iNdEx] < 0x80 {
+			wire = uint64(dAtA[iNdEx])
 			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
+		} else {
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 35 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
 		}
 		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
@@ -7545,21 +7810,26 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -7580,18 +7850,23 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			var mapvalue int32
 			for iNdEx < postIndex {
 				var entryWire uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 35 {
-						return fmt.Errorf("proto: integer overflow")
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
+				if iNdEx < l && dAtA[iNdEx] < 0x80 {
+					entryWire = uint64(dAtA[iNdEx])
 					iNdEx++
-					entryWire |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
+				} else {
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 35 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						entryWire |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
 					}
 				}
 				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
@@ -7674,21 +7949,26 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -7709,18 +7989,23 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			var mapvalue int64
 			for iNdEx < postIndex {
 				var entryWire uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 35 {
-						return fmt.Errorf("proto: integer overflow")
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
+				if iNdEx < l && dAtA[iNdEx] < 0x80 {
+					entryWire = uint64(dAtA[iNdEx])
 					iNdEx++
-					entryWire |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
+				} else {
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 35 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						entryWire |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
 					}
 				}
 				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
@@ -7803,21 +8088,26 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -7838,18 +8128,23 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			var mapvalue uint32
 			for iNdEx < postIndex {
 				var entryWire uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 35 {
-						return fmt.Errorf("proto: integer overflow")
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
+				if iNdEx < l && dAtA[iNdEx] < 0x80 {
+					entryWire = uint64(dAtA[iNdEx])
 					iNdEx++
-					entryWire |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
+				} else {
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 35 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						entryWire |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
 					}
 				}
 				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
@@ -7932,21 +8227,26 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -7967,18 +8267,23 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			var mapvalue uint64
 			for iNdEx < postIndex {
 				var entryWire uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 35 {
-						return fmt.Errorf("proto: integer overflow")
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
+				if iNdEx < l && dAtA[iNdEx] < 0x80 {
+					entryWire = uint64(dAtA[iNdEx])
 					iNdEx++
-					entryWire |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
+				} else {
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 35 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						entryWire |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
 					}
 				}
 				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
@@ -8061,21 +8366,26 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -8096,18 +8406,23 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			var mapvalue int32
 			for iNdEx < postIndex {
 				var entryWire uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 35 {
-						return fmt.Errorf("proto: integer overflow")
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
+				if iNdEx < l && dAtA[iNdEx] < 0x80 {
+					entryWire = uint64(dAtA[iNdEx])
 					iNdEx++
-					entryWire |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
+				} else {
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 35 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						entryWire |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
 					}
 				}
 				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
@@ -8190,21 +8505,26 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -8225,18 +8545,23 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			var mapvalue int64
 			for iNdEx < postIndex {
 				var entryWire uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 35 {
-						return fmt.Errorf("proto: integer overflow")
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
+				if iNdEx < l && dAtA[iNdEx] < 0x80 {
+					entryWire = uint64(dAtA[iNdEx])
 					iNdEx++
-					entryWire |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
+				} else {
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 35 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						entryWire |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
 					}
 				}
 				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
@@ -8319,21 +8644,26 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -8354,18 +8684,23 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			var mapvalue uint32
 			for iNdEx < postIndex {
 				var entryWire uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 35 {
-						return fmt.Errorf("proto: integer overflow")
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
+				if iNdEx < l && dAtA[iNdEx] < 0x80 {
+					entryWire = uint64(dAtA[iNdEx])
 					iNdEx++
-					entryWire |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
+				} else {
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 35 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						entryWire |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
 					}
 				}
 				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
@@ -8422,21 +8757,26 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -8457,18 +8797,23 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			var mapvalue uint64
 			for iNdEx < postIndex {
 				var entryWire uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 35 {
-						return fmt.Errorf("proto: integer overflow")
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
+				if iNdEx < l && dAtA[iNdEx] < 0x80 {
+					entryWire = uint64(dAtA[iNdEx])
 					iNdEx++
-					entryWire |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
+				} else {
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 35 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						entryWire |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
 					}
 				}
 				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
@@ -8525,21 +8870,26 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -8560,18 +8910,23 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			var mapvalue int32
 			for iNdEx < postIndex {
 				var entryWire uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 35 {
-						return fmt.Errorf("proto: integer overflow")
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
+				if iNdEx < l && dAtA[iNdEx] < 0x80 {
+					entryWire = uint64(dAtA[iNdEx])
 					iNdEx++
-					entryWire |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
+				} else {
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 35 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						entryWire |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
 					}
 				}
 				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
@@ -8628,21 +8983,26 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -8663,18 +9023,23 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			var mapvalue int64
 			for iNdEx < postIndex {
 				var entryWire uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 35 {
-						return fmt.Errorf("proto: integer overflow")
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
+				if iNdEx < l && dAtA[iNdEx] < 0x80 {
+					entryWire = uint64(dAtA[iNdEx])
 					iNdEx++
-					entryWire |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
+				} else {
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 35 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						entryWire |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
 					}
 				}
 				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
@@ -8731,21 +9096,26 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -8766,18 +9136,23 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			var mapvalue bool
 			for iNdEx < postIndex {
 				var entryWire uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 35 {
-						return fmt.Errorf("proto: integer overflow")
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
+				if iNdEx < l && dAtA[iNdEx] < 0x80 {
+					entryWire = uint64(dAtA[iNdEx])
 					iNdEx++
-					entryWire |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
+				} else {
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 35 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						entryWire |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
 					}
 				}
 				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
@@ -8860,21 +9235,26 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -8895,18 +9275,23 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			var mapvalue string
 			for iNdEx < postIndex {
 				var entryWire uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 35 {
-						return fmt.Errorf("proto: integer overflow")
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
+				if iNdEx < l && dAtA[iNdEx] < 0x80 {
+					entryWire = uint64(dAtA[iNdEx])
 					iNdEx++
-					entryWire |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
+				} else {
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 35 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						entryWire |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
 					}
 				}
 				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
@@ -8923,21 +9308,26 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 						continue
 					}
 					var byteLen uint64
-					for shift := uint(0); ; shift += 7 {
-						if shift >= 64 {
-							return fmt.Errorf("proto: integer overflow")
-						}
-						if iNdEx >= l {
-							return io.ErrUnexpectedEOF
-						}
-						b := dAtA[iNdEx]
+					if iNdEx < l && dAtA[iNdEx] < 0x80 {
+						byteLen = uint64(dAtA[iNdEx])
 						iNdEx++
-						byteLen |= uint64(b&0x7F) << shift
-						if b < 0x80 {
-							if shift == 63 && b > 1 {
-								return fmt.Errorf("proto: varint overflow")
+					} else {
+						for shift := uint(0); ; shift += 7 {
+							if shift >= 64 {
+								return fmt.Errorf("proto: integer overflow")
 							}
-							break
+							if iNdEx >= l {
+								return io.ErrUnexpectedEOF
+							}
+							b := dAtA[iNdEx]
+							iNdEx++
+							byteLen |= uint64(b&0x7F) << shift
+							if b < 0x80 {
+								if shift == 63 && b > 1 {
+									return fmt.Errorf("proto: varint overflow")
+								}
+								break
+							}
 						}
 					}
 					if byteLen > uint64(math.MaxInt) {
@@ -8963,21 +9353,26 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 						continue
 					}
 					var byteLen uint64
-					for shift := uint(0); ; shift += 7 {
-						if shift >= 64 {
-							return fmt.Errorf("proto: integer overflow")
-						}
-						if iNdEx >= l {
-							return io.ErrUnexpectedEOF
-						}
-						b := dAtA[iNdEx]
+					if iNdEx < l && dAtA[iNdEx] < 0x80 {
+						byteLen = uint64(dAtA[iNdEx])
 						iNdEx++
-						byteLen |= uint64(b&0x7F) << shift
-						if b < 0x80 {
-							if shift == 63 && b > 1 {
-								return fmt.Errorf("proto: varint overflow")
+					} else {
+						for shift := uint(0); ; shift += 7 {
+							if shift >= 64 {
+								return fmt.Errorf("proto: integer overflow")
 							}
-							break
+							if iNdEx >= l {
+								return io.ErrUnexpectedEOF
+							}
+							b := dAtA[iNdEx]
+							iNdEx++
+							byteLen |= uint64(b&0x7F) << shift
+							if b < 0x80 {
+								if shift == 63 && b > 1 {
+									return fmt.Errorf("proto: varint overflow")
+								}
+								break
+							}
 						}
 					}
 					if byteLen > uint64(math.MaxInt) {
@@ -9013,21 +9408,26 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -9048,18 +9448,23 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			var mapvalue []byte
 			for iNdEx < postIndex {
 				var entryWire uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 35 {
-						return fmt.Errorf("proto: integer overflow")
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
+				if iNdEx < l && dAtA[iNdEx] < 0x80 {
+					entryWire = uint64(dAtA[iNdEx])
 					iNdEx++
-					entryWire |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
+				} else {
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 35 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						entryWire |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
 					}
 				}
 				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
@@ -9076,21 +9481,26 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 						continue
 					}
 					var byteLen uint64
-					for shift := uint(0); ; shift += 7 {
-						if shift >= 64 {
-							return fmt.Errorf("proto: integer overflow")
-						}
-						if iNdEx >= l {
-							return io.ErrUnexpectedEOF
-						}
-						b := dAtA[iNdEx]
+					if iNdEx < l && dAtA[iNdEx] < 0x80 {
+						byteLen = uint64(dAtA[iNdEx])
 						iNdEx++
-						byteLen |= uint64(b&0x7F) << shift
-						if b < 0x80 {
-							if shift == 63 && b > 1 {
-								return fmt.Errorf("proto: varint overflow")
+					} else {
+						for shift := uint(0); ; shift += 7 {
+							if shift >= 64 {
+								return fmt.Errorf("proto: integer overflow")
 							}
-							break
+							if iNdEx >= l {
+								return io.ErrUnexpectedEOF
+							}
+							b := dAtA[iNdEx]
+							iNdEx++
+							byteLen |= uint64(b&0x7F) << shift
+							if b < 0x80 {
+								if shift == 63 && b > 1 {
+									return fmt.Errorf("proto: varint overflow")
+								}
+								break
+							}
 						}
 					}
 					if byteLen > uint64(math.MaxInt) {
@@ -9116,21 +9526,26 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 						continue
 					}
 					var byteLen uint64
-					for shift := uint(0); ; shift += 7 {
-						if shift >= 64 {
-							return fmt.Errorf("proto: integer overflow")
-						}
-						if iNdEx >= l {
-							return io.ErrUnexpectedEOF
-						}
-						b := dAtA[iNdEx]
+					if iNdEx < l && dAtA[iNdEx] < 0x80 {
+						byteLen = uint64(dAtA[iNdEx])
 						iNdEx++
-						byteLen |= uint64(b&0x7F) << shift
-						if b < 0x80 {
-							if shift == 63 && b > 1 {
-								return fmt.Errorf("proto: varint overflow")
+					} else {
+						for shift := uint(0); ; shift += 7 {
+							if shift >= 64 {
+								return fmt.Errorf("proto: integer overflow")
 							}
-							break
+							if iNdEx >= l {
+								return io.ErrUnexpectedEOF
+							}
+							b := dAtA[iNdEx]
+							iNdEx++
+							byteLen |= uint64(b&0x7F) << shift
+							if b < 0x80 {
+								if shift == 63 && b > 1 {
+									return fmt.Errorf("proto: varint overflow")
+								}
+								break
+							}
 						}
 					}
 					if byteLen > uint64(math.MaxInt) {
@@ -9166,21 +9581,26 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -9201,18 +9621,23 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			var mapvalue float32
 			for iNdEx < postIndex {
 				var entryWire uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 35 {
-						return fmt.Errorf("proto: integer overflow")
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
+				if iNdEx < l && dAtA[iNdEx] < 0x80 {
+					entryWire = uint64(dAtA[iNdEx])
 					iNdEx++
-					entryWire |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
+				} else {
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 35 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						entryWire |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
 					}
 				}
 				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
@@ -9282,21 +9707,26 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -9317,18 +9747,23 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			var mapvalue float64
 			for iNdEx < postIndex {
 				var entryWire uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 35 {
-						return fmt.Errorf("proto: integer overflow")
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
+				if iNdEx < l && dAtA[iNdEx] < 0x80 {
+					entryWire = uint64(dAtA[iNdEx])
 					iNdEx++
-					entryWire |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
+				} else {
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 35 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						entryWire |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
 					}
 				}
 				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
@@ -9398,21 +9833,26 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -9434,18 +9874,23 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			var mapValueBytes []byte
 			for iNdEx < postIndex {
 				var entryWire uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 35 {
-						return fmt.Errorf("proto: integer overflow")
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
+				if iNdEx < l && dAtA[iNdEx] < 0x80 {
+					entryWire = uint64(dAtA[iNdEx])
 					iNdEx++
-					entryWire |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
+				} else {
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 35 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						entryWire |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
 					}
 				}
 				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
@@ -9462,21 +9907,26 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 						continue
 					}
 					var byteLen uint64
-					for shift := uint(0); ; shift += 7 {
-						if shift >= 64 {
-							return fmt.Errorf("proto: integer overflow")
-						}
-						if iNdEx >= l {
-							return io.ErrUnexpectedEOF
-						}
-						b := dAtA[iNdEx]
+					if iNdEx < l && dAtA[iNdEx] < 0x80 {
+						byteLen = uint64(dAtA[iNdEx])
 						iNdEx++
-						byteLen |= uint64(b&0x7F) << shift
-						if b < 0x80 {
-							if shift == 63 && b > 1 {
-								return fmt.Errorf("proto: varint overflow")
+					} else {
+						for shift := uint(0); ; shift += 7 {
+							if shift >= 64 {
+								return fmt.Errorf("proto: integer overflow")
 							}
-							break
+							if iNdEx >= l {
+								return io.ErrUnexpectedEOF
+							}
+							b := dAtA[iNdEx]
+							iNdEx++
+							byteLen |= uint64(b&0x7F) << shift
+							if b < 0x80 {
+								if shift == 63 && b > 1 {
+									return fmt.Errorf("proto: varint overflow")
+								}
+								break
+							}
 						}
 					}
 					if byteLen > uint64(math.MaxInt) {
@@ -9502,21 +9952,26 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 						continue
 					}
 					var byteLen uint64
-					for shift := uint(0); ; shift += 7 {
-						if shift >= 64 {
-							return fmt.Errorf("proto: integer overflow")
-						}
-						if iNdEx >= l {
-							return io.ErrUnexpectedEOF
-						}
-						b := dAtA[iNdEx]
+					if iNdEx < l && dAtA[iNdEx] < 0x80 {
+						byteLen = uint64(dAtA[iNdEx])
 						iNdEx++
-						byteLen |= uint64(b&0x7F) << shift
-						if b < 0x80 {
-							if shift == 63 && b > 1 {
-								return fmt.Errorf("proto: varint overflow")
+					} else {
+						for shift := uint(0); ; shift += 7 {
+							if shift >= 64 {
+								return fmt.Errorf("proto: integer overflow")
 							}
-							break
+							if iNdEx >= l {
+								return io.ErrUnexpectedEOF
+							}
+							b := dAtA[iNdEx]
+							iNdEx++
+							byteLen |= uint64(b&0x7F) << shift
+							if b < 0x80 {
+								if shift == 63 && b > 1 {
+									return fmt.Errorf("proto: varint overflow")
+								}
+								break
+							}
 						}
 					}
 					if byteLen > uint64(math.MaxInt) {
@@ -9563,21 +10018,26 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 				continue
 			}
 			var byteLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
 				iNdEx++
-				byteLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return fmt.Errorf("proto: varint overflow")
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
 					}
-					break
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
 				}
 			}
 			if byteLen > uint64(math.MaxInt) {
@@ -9598,18 +10058,23 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			var mapvalue Color
 			for iNdEx < postIndex {
 				var entryWire uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 35 {
-						return fmt.Errorf("proto: integer overflow")
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
+				if iNdEx < l && dAtA[iNdEx] < 0x80 {
+					entryWire = uint64(dAtA[iNdEx])
 					iNdEx++
-					entryWire |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
+				} else {
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 35 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						entryWire |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
 					}
 				}
 				if entryWire>>3 < 1 || entryWire>>3 > 0x1FFFFFFF {
@@ -9626,21 +10091,26 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 						continue
 					}
 					var byteLen uint64
-					for shift := uint(0); ; shift += 7 {
-						if shift >= 64 {
-							return fmt.Errorf("proto: integer overflow")
-						}
-						if iNdEx >= l {
-							return io.ErrUnexpectedEOF
-						}
-						b := dAtA[iNdEx]
+					if iNdEx < l && dAtA[iNdEx] < 0x80 {
+						byteLen = uint64(dAtA[iNdEx])
 						iNdEx++
-						byteLen |= uint64(b&0x7F) << shift
-						if b < 0x80 {
-							if shift == 63 && b > 1 {
-								return fmt.Errorf("proto: varint overflow")
+					} else {
+						for shift := uint(0); ; shift += 7 {
+							if shift >= 64 {
+								return fmt.Errorf("proto: integer overflow")
 							}
-							break
+							if iNdEx >= l {
+								return io.ErrUnexpectedEOF
+							}
+							b := dAtA[iNdEx]
+							iNdEx++
+							byteLen |= uint64(b&0x7F) << shift
+							if b < 0x80 {
+								if shift == 63 && b > 1 {
+									return fmt.Errorf("proto: varint overflow")
+								}
+								break
+							}
 						}
 					}
 					if byteLen > uint64(math.MaxInt) {
