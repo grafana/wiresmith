@@ -37,7 +37,7 @@ type Generator struct {
 	// Overrides maps an import-mapping key (the same fd.Path() string
 	// buildImportMapping produces) to a Go import path, with an optional
 	// `;name` suffix matching go_package syntax. Set from the CLI's
-	// repeatable `--M source=dest` flag and wins over in-source go_package
+	// repeatable `-M source=dest` flag and wins over in-source go_package
 	// during destination resolution — matches protoc's `M<source>=<dest>`
 	// semantics. Useful when a vendored .proto declares a go_package that
 	// doesn't match the generator's target tree.

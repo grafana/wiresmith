@@ -11,7 +11,7 @@ import (
 	"wiresmith/compiler/generator"
 )
 
-// overridesFlag implements flag.Value for the repeatable `--M src=dest`
+// overridesFlag implements flag.Value for the repeatable `-M src=dest`
 // option. Each occurrence registers one source→Go-import-path mapping in
 // the underlying map; the destination string may carry an optional
 // `;name` suffix matching go_package syntax. Mirrors protoc's
@@ -32,11 +32,11 @@ func (o *overridesFlag) String() string {
 func (o *overridesFlag) Set(v string) error {
 	i := strings.Index(v, "=")
 	if i <= 0 || i == len(v)-1 {
-		return fmt.Errorf("--M expects source=dest, got %q", v)
+		return fmt.Errorf("-M expects source=dest, got %q", v)
 	}
 	src, dest := v[:i], v[i+1:]
 	if _, dup := o.m[src]; dup {
-		return fmt.Errorf("--M source %q given more than once", src)
+		return fmt.Errorf("-M source %q given more than once", src)
 	}
 	o.m[src] = dest
 	return nil
