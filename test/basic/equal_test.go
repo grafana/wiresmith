@@ -40,6 +40,12 @@ func TestEqual_NaNFloat64_DifferentBits(t *testing.T) {
 	assert.False(t, a.Equal(b), "NaNs with distinct bit patterns must not be equal")
 }
 
+func TestEqual_NaNFloat32_DifferentBits(t *testing.T) {
+	a := &ks.AllScalars{FieldFloat: math.Float32frombits(0x7fc00001)}
+	b := &ks.AllScalars{FieldFloat: math.Float32frombits(0x7fc00002)}
+	assert.False(t, a.Equal(b), "float32 NaNs with distinct bit patterns must not be equal")
+}
+
 func TestEqual_NegativeZeroFloat64(t *testing.T) {
 	// -0.0 and +0.0 compare equal under IEEE 754 `==`, but bit-exact
 	// comparison distinguishes them. This matches the marshal path: -0.0
