@@ -67,7 +67,7 @@ func TestMapField_EmitMarshal_ValueBeforeKey(t *testing.T) {
 		t.Fatalf("EmitMarshal missing one of baseI/val-copy/key-copy/entry-len:\n%s", got)
 	}
 	// Reverse-write order: baseI → value → key → entry-length varint.
-	if !(idxBase < idxVal && idxVal < idxKey && idxKey < idxLen) {
+	if idxBase >= idxVal || idxVal >= idxKey || idxKey >= idxLen {
 		t.Errorf("EmitMarshal order wrong (want baseI < value < key < entry-len): base=%d val=%d key=%d len=%d\n%s",
 			idxBase, idxVal, idxKey, idxLen, got)
 	}
