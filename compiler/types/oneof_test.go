@@ -115,16 +115,96 @@ func TestOneofField_EmitMarshal_DelegatesAndRegistersImports(t *testing.T) {
 	}
 }
 
-// Oneof unmarshal is handled by the generator (per-variant case), not by the
-// composite — the composite's EmitUnmarshal must panic to catch accidental
-// direct calls.
-func TestOneofField_EmitUnmarshal_Panics(t *testing.T) {
-	defer func() {
-		if r := recover(); r == nil {
-			t.Fatal("expected panic on direct EmitUnmarshal call, got none")
-		}
-	}()
-	(&OneofField{Inner: BoolType{}}).EmitUnmarshal(&captureEmitter{}, "x", FieldContext{})
+// EmitUnmarshal value-type branch (varint, fixed): cast EmitConsume's `v`
+// local and assign through the variant wrapper. No iNdEx advance — the
+// inline consume helpers already advanced it.
+func TestOneofField_EmitUnmarshal_ValueType(t *testing.T) {
+	e := &captureEmitter{}
+	of := &OneofField{
+		Inner:       BoolType{},
+		OneofName:   "Status",
+		VariantName: "Span_BoolValue",
+		FieldName:   "BoolValue",
+	}
+	of.EmitUnmarshal(e, "m.Status", FieldContext{})
+	got := e.buf.String()
+	want := "m.Status = &Span_BoolValue{BoolValue: v != 0}"
+	if !strings.Contains(got, want) {
+		t.Errorf("value-type oneof: missing variant wrapping %q in:\n%s", want, got)
+	}
+	if strings.Contains(got, "iNdEx = postIndex") {
+		t.Errorf("value-type oneof must not advance iNdEx to postIndex (no length-delim payload):\n%s", got)
+	}
+}
+
+// EmitUnmarshal length-delimited non-message branch (string, bytes): cast
+// the dAtA[iNdEx:postIndex] payload, assign into variant, then advance iNdEx.
+func TestOneofField_EmitUnmarshal_StringVariant(t *testing.T) {
+	e := &captureEmitter{}
+	of := &OneofField{
+		Inner:       StringType{},
+		OneofName:   "Status",
+		VariantName: "Span_StringValue",
+		FieldName:   "StringValue",
+	}
+	of.EmitUnmarshal(e, "m.Status", FieldContext{})
+	got := e.buf.String()
+	if !strings.Contains(got, "m.Status = &Span_StringValue{StringValue: string(dAtA[iNdEx:postIndex])}") {
+		t.Errorf("string oneof: missing slice cast / variant wrap:\n%s", got)
+	}
+	if !strings.Contains(got, "iNdEx = postIndex") {
+		t.Errorf("string oneof: must advance iNdEx after consuming payload:\n%s", got)
+	}
+}
+
+// EmitUnmarshal message branch: reuse-or-replace merge into the existing
+// variant. Same-package callees use the private `.unmarshal(..., depth+1)`
+// so the SEC-5 depth counter threads through.
+func TestOneofField_EmitUnmarshal_MessageVariant_SamePackage(t *testing.T) {
+	e := &captureEmitter{}
+	of := &OneofField{
+		Inner:       &MessageType{},
+		OneofName:   "Body",
+		VariantName: "LogRecord_Message",
+		FieldName:   "Message",
+	}
+	of.EmitUnmarshal(e, "m.Body", FieldContext{MessageType: "InnerMsg", IsSamePackage: true})
+	got := e.buf.String()
+	// Reuse-or-replace merge: pull existing variant's message if same variant.
+	if !strings.Contains(got, "var msg InnerMsg") {
+		t.Errorf("message oneof: missing reusable msg local:\n%s", got)
+	}
+	if !strings.Contains(got, "if ov, ok := m.Body.(*LogRecord_Message); ok {") {
+		t.Errorf("message oneof: missing reuse-variant type switch:\n%s", got)
+	}
+	if !strings.Contains(got, "msg = ov.Message") {
+		t.Errorf("message oneof: must copy existing variant's message into local:\n%s", got)
+	}
+	if !strings.Contains(got, "msg.unmarshal(dAtA[iNdEx:postIndex], depth+1)") {
+		t.Errorf("message oneof same-package: must call private unmarshal w/ depth:\n%s", got)
+	}
+	if !strings.Contains(got, "m.Body = &LogRecord_Message{Message: msg}") {
+		t.Errorf("message oneof: missing final variant assignment:\n%s", got)
+	}
+}
+
+// Cross-package message oneof variant threads depth via UnmarshalWithDepth.
+func TestOneofField_EmitUnmarshal_MessageVariant_CrossPackage(t *testing.T) {
+	e := &captureEmitter{}
+	of := &OneofField{
+		Inner:       &MessageType{},
+		OneofName:   "Body",
+		VariantName: "LogRecord_Message",
+		FieldName:   "Message",
+	}
+	of.EmitUnmarshal(e, "m.Body", FieldContext{MessageType: "external.InnerMsg", IsSamePackage: false})
+	got := e.buf.String()
+	if !strings.Contains(got, "msg.UnmarshalWithDepth(dAtA[iNdEx:postIndex], depth+1)") {
+		t.Errorf("message oneof cross-package: must call UnmarshalWithDepth:\n%s", got)
+	}
+	if strings.Contains(got, "msg.unmarshal(") {
+		t.Errorf("message oneof cross-package: must NOT call private unmarshal:\n%s", got)
+	}
 }
 
 func TestOneofField_RequiredImports_PassesThrough(t *testing.T) {

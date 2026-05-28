@@ -313,52 +313,26 @@ func (fg *FileGenerator) emitFieldUnmarshal(md protoreflect.MessageDescriptor, f
 
 	if isRealOneof(fd) {
 		oo := fd.ContainingOneof()
-		ooFieldName := snakeToPascal(string(oo.Name()))
-		variantName := oneofVariantName(md, fd)
-		fieldName := snakeToPascal(string(fd.Name()))
-		types.AddTypeImports(fg, t)
-		t.EmitConsume(fg)
-
-		switch kind {
-		case protoreflect.MessageKind:
-			// EmitConsume set postIndex for length-delimited types.
-			// Merge semantics: if the oneof already holds the same variant,
-			// unmarshal into the existing message instead of replacing it.
-			fmt.Fprintf(fg.body, "\t\t\tvar msg %s\n", ctx.MessageType)
-			fmt.Fprintf(fg.body, "\t\t\tif ov, ok := m.%s.(*%s); ok {\n", ooFieldName, variantName)
-			fmt.Fprintf(fg.body, "\t\t\t\tmsg = ov.%s\n", fieldName)
-			fmt.Fprintf(fg.body, "\t\t\t}\n")
-			if ctx.IsSamePackage {
-				fmt.Fprintf(fg.body, "\t\t\tif err := msg.unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n")
-			} else {
-				fmt.Fprintf(fg.body, "\t\t\tif err := msg.UnmarshalWithDepth(dAtA[iNdEx:postIndex], depth+1); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n")
-			}
-			fmt.Fprintf(fg.body, "\t\t\tm.%s = &%s{%s: msg}\n", ooFieldName, variantName, fieldName)
-			fmt.Fprintf(fg.body, "\t\t\tiNdEx = postIndex\n")
-		case protoreflect.StringKind, protoreflect.BytesKind:
-			// EmitConsume set postIndex for length-delimited types.
-			fmt.Fprintf(fg.body, "\t\t\tm.%s = &%s{%s: %s}\n", ooFieldName, variantName, fieldName, t.CastExpr("dAtA[iNdEx:postIndex]", ctx))
-			fmt.Fprintf(fg.body, "\t\t\tiNdEx = postIndex\n")
-		default:
-			// EmitConsume set v for value types (varint/fixed).
-			fmt.Fprintf(fg.body, "\t\t\tm.%s = &%s{%s: %s}\n", ooFieldName, variantName, fieldName, t.CastExpr("v", ctx))
+		of := &types.OneofField{
+			Inner:       t,
+			OneofName:   snakeToPascal(string(oo.Name())),
+			VariantName: oneofVariantName(md, fd),
+			FieldName:   snakeToPascal(string(fd.Name())),
 		}
+		of.EmitUnmarshal(fg, "m."+of.OneofName, ctx)
 		return
 	}
 
 	if fd.HasOptionalKeyword() {
+		// Optional message and the `(wiresmith.options.pointer)` shape both
+		// land on `*Msg` with identical lazy-allocate + unmarshal semantics,
+		// so they share the same composite (PointerField). Non-message
+		// optionals keep going through OptionalField, which handles the
+		// scalar/string/bytes variants and the `*T` allocation dance.
 		if fd.Kind() == protoreflect.MessageKind {
-			// Optional message: allocate pointer if nil, then unmarshal into it.
-			types.AddTypeImports(fg, t)
-			t.EmitConsume(fg)
-			msgType := fg.imports.goSingularType(fd)
-			fmt.Fprintf(fg.body, "\t\t\tif %s == nil {\n\t\t\t\t%s = new(%s)\n\t\t\t}\n", access, access, msgType)
-			if ctx.IsSamePackage {
-				fmt.Fprintf(fg.body, "\t\t\tif err := %s.unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n", access)
-			} else {
-				fmt.Fprintf(fg.body, "\t\t\tif err := %s.UnmarshalWithDepth(dAtA[iNdEx:postIndex], depth+1); err != nil {\n\t\t\t\treturn err\n\t\t\t}\n", access)
-			}
-			fmt.Fprintf(fg.body, "\t\t\tiNdEx = postIndex\n")
+			pf := &types.PointerField{Inner: t}
+			types.AddTypeImports(fg, pf)
+			pf.EmitUnmarshal(fg, access, ctx)
 			return
 		}
 		of := &types.OptionalField{Inner: t}
