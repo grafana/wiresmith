@@ -22,6 +22,21 @@ define mflags
 $(foreach p,$(ALL_PROTOS),--$(2)=M$(p)=$(MODULE)/$(1)/$(call pkgsuffix,$(p)))
 endef
 
+# wiresmith's -M flag (single hyphen, takes one src=dest per occurrence)
+# overrides each OTel proto's upstream `go_package = "go.opentelemetry.io/..."`
+# so generated imports match the on-disk source-relative output. Matches
+# protoc-gen-go's M<src>=<dest> semantics; the vtproto/gogoproto passes
+# above use the same trick at the protoc level.
+#
+# The `;name` suffix pins the Go package clause to wiresmith's historical
+# synthetic name (commonv1, logsv1, …) instead of path.Base's "v1". This
+# preserves the existing API of gen/opentelemetry/proto/...; switching to
+# the path.Base default (matching vtproto/gogoproto) is deferred — see
+# the rename bead linked from FLAGS.md.
+define wiresmith_mflags
+$(foreach p,$(ALL_PROTOS),-M $(p)=$(MODULE)/gen/opentelemetry/proto/$(call pkgsuffix,$(p))\;$(subst /,,$(call pkgsuffix,$(p))))
+endef
+
 # Comma-separated M-flags for gogoproto (no spaces — $(foreach) joins with spaces
 # so we strip them to produce the single token gogofast_out= expects).
 empty :=
@@ -110,8 +125,8 @@ endef
 
 generate-ours: ## Regenerate all wiresmith + conformance code
 	$(eval WIRESMITH := $(shell go build -o /tmp/wiresmith-gen ./cmd/wiresmith/ && echo /tmp/wiresmith-gen))
-	@echo "==> Generating wiresmith code → gen/otlp/"
-	$(WIRESMITH) --proto_path=proto/otlp --out=gen --module=$(MODULE)
+	@echo "==> Generating wiresmith code → gen/opentelemetry/proto/"
+	$(WIRESMITH) --proto_path=proto/otlp --out=gen --module=$(MODULE) $(call wiresmith_mflags)
 	@echo "==> Generating wiresmith code → gen/test/kitchensink/"
 	$(WIRESMITH) --proto_path=proto/test --out=gen --module=$(MODULE)
 	@echo "==> Generating wiresmith code → gen/basic/"

@@ -116,13 +116,29 @@ func TestGenerateMatchesCheckedIn(t *testing.T) {
 	root := repoRoot(t)
 	ctx := context.Background()
 
+	// otelOverrides mirrors the `-M ...;<name>` flags emitted by the
+	// Makefile's wiresmith_mflags helper. The upstream OTel protos declare
+	// `go_package = "go.opentelemetry.io/..."`; without these overrides the
+	// generator would honor that literally and produce a different file
+	// than the checked-in copy.
+	otelOverrides := map[string]string{
+		"opentelemetry/proto/common/v1/common.proto":                "wiresmith/gen/opentelemetry/proto/common/v1;commonv1",
+		"opentelemetry/proto/resource/v1/resource.proto":            "wiresmith/gen/opentelemetry/proto/resource/v1;resourcev1",
+		"opentelemetry/proto/metrics/v1/metrics.proto":              "wiresmith/gen/opentelemetry/proto/metrics/v1;metricsv1",
+		"opentelemetry/proto/trace/v1/trace.proto":                  "wiresmith/gen/opentelemetry/proto/trace/v1;tracev1",
+		"opentelemetry/proto/logs/v1/logs.proto":                    "wiresmith/gen/opentelemetry/proto/logs/v1;logsv1",
+		"opentelemetry/proto/profiles/v1development/profiles.proto": "wiresmith/gen/opentelemetry/proto/profiles/v1development;profilesv1development",
+	}
+
 	cases := []struct {
-		name     string
-		protoDir string
+		name      string
+		protoDir  string
+		overrides map[string]string
 	}{
 		{
-			name:     "otlp",
-			protoDir: filepath.Join(root, "proto", "otlp"),
+			name:      "otlp",
+			protoDir:  filepath.Join(root, "proto", "otlp"),
+			overrides: otelOverrides,
 		},
 		{
 			name:     "test/kitchensink",
@@ -168,9 +184,10 @@ func TestGenerateMatchesCheckedIn(t *testing.T) {
 			}
 
 			gen := &Generator{
-				Module:   "wiresmith",
-				OutDir:   outDir,
-				ProtoDir: protoDir,
+				Module:    "wiresmith",
+				OutDir:    outDir,
+				ProtoDir:  protoDir,
+				Overrides: tc.overrides,
 			}
 			if err := gen.Generate(ctx); err != nil {
 				t.Fatalf("Generate failed: %v", err)
@@ -1183,9 +1200,8 @@ func TestGenerateReflectOutputCollision(t *testing.T) {
 }
 
 // TestGenerateWithGoPackage verifies that a proto's `option go_package` drives
-// the Go package name, output directory, and the alias used by importing
-// files, as long as the go_package import path falls under the module's
-// effective base (module + "/gen").
+// the generated file's import path and Go package name, and the alias used by
+// importing files. Output location is independent (always source-relative).
 func TestGenerateWithGoPackage(t *testing.T) {
 	protoDir := t.TempDir()
 	writeProto(t, protoDir, "a.proto", `
@@ -1234,11 +1250,12 @@ message Bar { myproject.a.Foo foo = 1; }`)
 	}
 }
 
-// TestGenerateGoPackageFallback verifies that a go_package option pointing
-// outside the module's effective base is ignored — the proto falls back to
-// the default package-derived layout. This matches the OTel case where
-// go_package is "go.opentelemetry.io/..." but we generate under "wiresmith/gen".
-func TestGenerateGoPackageFallback(t *testing.T) {
+// TestGenerateGoPackageHonoredLiterally verifies wiresmith-gz4: a go_package
+// pointing outside the module's `<module>/gen` base is honored verbatim, not
+// rewritten or ignored. The on-disk path stays source-relative; only the
+// import-path string the generated file declares follows go_package. This
+// matches protoc-gen-go's behavior in `paths=source_relative` mode.
+func TestGenerateGoPackageHonoredLiterally(t *testing.T) {
 	protoDir := t.TempDir()
 	writeProto(t, protoDir, "x.proto", `
 syntax = "proto3";
@@ -1256,13 +1273,75 @@ message Msg { int32 val = 1; }`)
 		t.Fatalf("Generate: %v", err)
 	}
 
+	// On-disk path stays source-relative.
 	content, err := os.ReadFile(filepath.Join(outDir, "mytest", "x", "x.pb.go"))
 	if err != nil {
-		t.Fatalf("expected fallback output: %v", err)
+		t.Fatalf("expected source-relative output: %v", err)
 	}
-	// Falls back to default goPackageName ("mytestx"), not "pkg" from go_package.
-	if !strings.Contains(string(content), "package mytestx\n") {
-		t.Errorf("expected fallback 'package mytestx', got:\n%s", string(content))
+	// Package name comes from path.Base of the go_package — not the proto
+	// package — confirming the literal honor.
+	if !strings.Contains(string(content), "package pkg\n") {
+		t.Errorf("expected 'package pkg' (from go_package), got:\n%s", string(content))
+	}
+}
+
+// TestGenerateWithMOverride verifies the CLI `--M source=dest` override:
+// the override wins over the file's option go_package and supplies the
+// import path used both in the generated file's package declaration and in
+// importers of that file. Mirrors protoc's `M<source>=<dest>` semantics —
+// the documented escape hatch when a vendored .proto's go_package doesn't
+// match the consumer's tree.
+func TestGenerateWithMOverride(t *testing.T) {
+	protoDir := t.TempDir()
+	// a.proto declares an "external" go_package that an M-override redirects
+	// back into the consumer's tree.
+	writeProto(t, protoDir, "vendored/a/a.proto", `
+syntax = "proto3";
+package vendored.a;
+option go_package = "go.example.com/upstream/a";
+message Foo { string name = 1; }`)
+	// b.proto imports a.proto and must pick up the overridden path when
+	// emitting a cross-file import alias.
+	writeProto(t, protoDir, "b/b.proto", `
+syntax = "proto3";
+package myapp.b;
+option go_package = "example.com/mod/gen/b";
+import "vendored/a/a.proto";
+message Bar { vendored.a.Foo foo = 1; }`)
+
+	outDir := testOutDir(t)
+	gen := &Generator{
+		Module:   "example.com/mod",
+		OutDir:   outDir,
+		ProtoDir: protoDir,
+		Overrides: map[string]string{
+			"vendored/a/a.proto": "example.com/mod/gen/a;aliased",
+		},
+	}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
+	}
+
+	aContent, err := os.ReadFile(filepath.Join(outDir, "vendored", "a", "a.pb.go"))
+	if err != nil {
+		t.Fatalf("a.pb.go: %v", err)
+	}
+	// The `;name` form in the override sets the package clause.
+	if !strings.Contains(string(aContent), "package aliased\n") {
+		t.Errorf("expected 'package aliased' from override, got:\n%s", string(aContent))
+	}
+
+	bContent, err := os.ReadFile(filepath.Join(outDir, "b", "b.pb.go"))
+	if err != nil {
+		t.Fatalf("b.pb.go: %v", err)
+	}
+	// The cross-file import in b.pb.go must use the override's import path,
+	// not a.proto's go_package — that's the whole point of the override.
+	if !strings.Contains(string(bContent), `"example.com/mod/gen/a"`) {
+		t.Errorf("expected cross-import via override path, got:\n%s", string(bContent))
+	}
+	if strings.Contains(string(bContent), `"go.example.com/upstream/a"`) {
+		t.Errorf("override ignored — b.pb.go still imports the upstream path:\n%s", string(bContent))
 	}
 }
 
@@ -1628,9 +1707,46 @@ message Request {
 	}
 }
 
-// TestGenerateGoPackagePathTraversal rejects go_package values that contain
-// `..` segments — they'd let filepath.Join write outside g.OutDir.
-func TestGenerateGoPackagePathTraversal(t *testing.T) {
+// TestGenerateOverrideDoesNotEscapeOutDir mirrors
+// TestGenerateGoPackageDoesNotEscapeOutDir for the `-M src=dest` CLI
+// override path: a `..` segment in an override value cannot make the
+// generator write outside g.OutDir. The override only influences the
+// generated file's import-path string, never the disk location (which is
+// derived from sourceRelDir(fd.Path()) and is `..`-free by construction).
+func TestGenerateOverrideDoesNotEscapeOutDir(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "x.proto", `
+syntax = "proto3";
+package myproject.x;
+message Msg { string s = 1; }`)
+
+	outDir := testOutDir(t)
+	gen := &Generator{
+		Module:   "example.com/mod",
+		OutDir:   outDir,
+		ProtoDir: protoDir,
+		Overrides: map[string]string{
+			"myproject/x/x.proto": "example.com/mod/gen/../escape",
+		},
+	}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
+	}
+
+	if _, err := os.Stat(filepath.Join(outDir, "myproject", "x", "x.pb.go")); err != nil {
+		t.Fatalf("expected source-relative output: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(filepath.Dir(outDir), "escape")); err == nil {
+		t.Errorf("-M escaped OutDir")
+	}
+}
+
+// TestGenerateGoPackageDoesNotEscapeOutDir verifies that a `..` segment in
+// go_package cannot make the generator write outside g.OutDir. Disk paths
+// are derived from the source-relative fd.Path() — not from go_package —
+// so the `..` can only appear in the generated file's import-path string
+// (which then fails loudly at `go build`, matching protoc-gen-go).
+func TestGenerateGoPackageDoesNotEscapeOutDir(t *testing.T) {
 	protoDir := t.TempDir()
 	writeProto(t, protoDir, "evil.proto", `
 syntax = "proto3";
@@ -1638,17 +1754,22 @@ package myproject.evil;
 option go_package = "example.com/mod/gen/../outside;evil";
 message Mal { string s = 1; }`)
 
+	outDir := testOutDir(t)
 	gen := &Generator{
 		Module:   "example.com/mod",
-		OutDir:   testOutDir(t),
+		OutDir:   outDir,
 		ProtoDir: protoDir,
 	}
-	err := gen.Generate(context.Background())
-	if err == nil {
-		t.Fatal("expected path-traversal error, got nil")
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
 	}
-	if !strings.Contains(err.Error(), "'..'") {
-		t.Errorf("expected '..'-segment error, got: %v", err)
+
+	// Output lands at the source-relative path, never at "<outDir>/../outside".
+	if _, err := os.Stat(filepath.Join(outDir, "myproject", "evil", "evil.pb.go")); err != nil {
+		t.Fatalf("expected source-relative output: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(filepath.Dir(outDir), "outside")); err == nil {
+		t.Errorf("generator escaped OutDir")
 	}
 }
 

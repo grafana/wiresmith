@@ -38,9 +38,22 @@ generation run. This matches the positional-argument convention used by
 | `--proto_path` | `proto`       | Directory containing `.proto` files (walked recursively).  |
 | `--out`        | `gen`         | Output directory for generated Go packages.                |
 | `--module`     | `wiresmith`   | Go module name used as the prefix when emitting imports.   |
+| `-M`           | _(repeatable)_| Override the Go import path for one `.proto` (see below).  |
 | `--version`    | _(boolean)_   | Print the build version and exit.                          |
 
 The flag set is defined in [`cmd/wiresmith/main.go`](../cmd/wiresmith/main.go). `--version` falls back to `runtime/debug.ReadBuildInfo()` when `-ldflags "-X main.version=..."` is not set.
+
+### Import-path resolution
+
+The Go import path of a generated file is resolved in this order, matching `protoc-gen-go`:
+
+1. **`-M source=destpath[;name]`** (highest precedence). The source key is the file's import-mapping key — the same path that appears in `import` statements between `.proto` files. Mirrors `protoc`'s `M<source>=<dest>` semantics.
+2. **`option go_package`** in the `.proto`. Honored literally — including the `;name` suffix.
+3. **Default**: `<module>/<out>/<source-relative path>`, where the source-relative path is `fd.Path()` minus the basename.
+
+The on-disk write location is always `<out>/<source-relative path>` regardless of which step above produced the import path, matching `paths=source_relative`. `-M` and `go_package` only influence the import-path string in the generated file, not where the file is written.
+
+`-M` is the documented escape hatch when a vendored `.proto` declares a `go_package` that doesn't match the consumer's tree — for example wiresmith's own OTel build, where the upstream `go_package = "go.opentelemetry.io/proto/otlp/..."` is overridden to `wiresmith/gen/opentelemetry/proto/...;...` so the generated imports resolve under the local module.
 
 ## Examples
 
