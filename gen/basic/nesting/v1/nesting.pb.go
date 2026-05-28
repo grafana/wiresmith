@@ -400,11 +400,7 @@ func (m *Level0_Level1_Level2_Level3) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Level0_Level1_Level2_Level3) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *Level0_Level1_Level2_Level3) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -444,11 +440,7 @@ func (m *Level0_Level1_Level2) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Level0_Level1_Level2) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *Level0_Level1_Level2) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -500,11 +492,7 @@ func (m *Level0_Level1) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Level0_Level1) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *Level0_Level1) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -566,11 +554,7 @@ func (m *Level0) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Level0) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *Level0) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -622,11 +606,7 @@ func (m *CrossRef) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *CrossRef) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *CrossRef) MarshalToSizedBuffer(dAtA []byte) (int, error) {

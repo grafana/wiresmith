@@ -110,11 +110,7 @@ func (m *Resource) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Resource) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *Resource) MarshalToSizedBuffer(dAtA []byte) (int, error) {

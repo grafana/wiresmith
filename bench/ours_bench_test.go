@@ -119,6 +119,65 @@ func BenchmarkMarshalProfiles_Ours(b *testing.B) {
 	}
 }
 
+// --- Marshal into pre-allocated buffer ---
+//
+// These isolate MarshalTo's per-iteration cost from the size-and-allocate
+// work that Marshal() bundles in. PERF-3 (wiresmith-w32) targets the
+// redundant m.Size() that the generated MarshalTo paid on every call before
+// delegating to MarshalToSizedBuffer.
+
+func BenchmarkMarshalTracesPreallocated_Ours(b *testing.B) {
+	var data tracev1.TracesData
+	if err := data.Unmarshal(tracesBytes100); err != nil {
+		b.Fatal(err)
+	}
+	buf := make([]byte, data.Size())
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_, _ = data.MarshalTo(buf)
+	}
+}
+
+func BenchmarkMarshalSingleSpanPreallocated_Ours(b *testing.B) {
+	var span tracev1.Span
+	if err := span.Unmarshal(singleSpanBytes); err != nil {
+		b.Fatal(err)
+	}
+	buf := make([]byte, span.Size())
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_, _ = span.MarshalTo(buf)
+	}
+}
+
+func BenchmarkMarshalLogsPreallocated_Ours(b *testing.B) {
+	var data logsv1.LogsData
+	if err := data.Unmarshal(logsBytes50); err != nil {
+		b.Fatal(err)
+	}
+	buf := make([]byte, data.Size())
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_, _ = data.MarshalTo(buf)
+	}
+}
+
+func BenchmarkMarshalHistogramPreallocated_Ours(b *testing.B) {
+	var data metricsv1.MetricsData
+	if err := data.Unmarshal(histogramBytes50); err != nil {
+		b.Fatal(err)
+	}
+	buf := make([]byte, data.Size())
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_, _ = data.MarshalTo(buf)
+	}
+}
+
 // --- Unmarshal ---
 
 func BenchmarkUnmarshalTraces_Ours(b *testing.B) {

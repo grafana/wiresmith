@@ -1926,11 +1926,7 @@ func (m *AllScalars) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *AllScalars) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *AllScalars) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -2048,11 +2044,7 @@ func (m *AllOptionalScalars) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *AllOptionalScalars) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *AllOptionalScalars) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -2172,11 +2164,7 @@ func (m *AllRepeatedScalars) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *AllRepeatedScalars) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *AllRepeatedScalars) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -2347,11 +2335,7 @@ func (m *OneofVariants) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *OneofVariants) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *OneofVariants) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -2456,11 +2440,7 @@ func (m *Outer) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Outer) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *Outer) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -2522,11 +2502,7 @@ func (m *Middle) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Middle) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *Middle) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -2586,11 +2562,7 @@ func (m *Inner) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Inner) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *Inner) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -2643,11 +2615,7 @@ func (m *HighFieldNumbers) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *HighFieldNumbers) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *HighFieldNumbers) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -2722,11 +2690,7 @@ func (m *WithEnum) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *WithEnum) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *WithEnum) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -2769,11 +2733,7 @@ func (m *Empty) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Empty) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *Empty) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -2801,11 +2761,7 @@ func (m *OnlyRepeated) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *OnlyRepeated) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *OnlyRepeated) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -2860,11 +2816,7 @@ func (m *Container) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Container) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *Container) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -2936,11 +2888,7 @@ func (m *AllMaps) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *AllMaps) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *AllMaps) MarshalToSizedBuffer(dAtA []byte) (int, error) {

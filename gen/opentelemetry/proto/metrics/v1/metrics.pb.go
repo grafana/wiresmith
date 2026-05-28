@@ -2220,11 +2220,7 @@ func (m *MetricsData) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *MetricsData) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *MetricsData) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -2262,11 +2258,7 @@ func (m *ResourceMetrics) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *ResourceMetrics) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *ResourceMetrics) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -2328,11 +2320,7 @@ func (m *ScopeMetrics) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *ScopeMetrics) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *ScopeMetrics) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -2394,11 +2382,7 @@ func (m *Metric) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Metric) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *Metric) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -2504,11 +2488,7 @@ func (m *Gauge) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Gauge) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *Gauge) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -2546,11 +2526,7 @@ func (m *Sum) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Sum) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *Sum) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -2603,11 +2579,7 @@ func (m *Histogram) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Histogram) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *Histogram) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -2650,11 +2622,7 @@ func (m *ExponentialHistogram) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *ExponentialHistogram) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *ExponentialHistogram) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -2697,11 +2665,7 @@ func (m *Summary) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Summary) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *Summary) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -2739,11 +2703,7 @@ func (m *NumberDataPoint) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *NumberDataPoint) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *NumberDataPoint) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -2820,11 +2780,7 @@ func (m *HistogramDataPoint) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *HistogramDataPoint) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *HistogramDataPoint) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -2931,11 +2887,7 @@ func (m *ExponentialHistogramDataPoint_Buckets) Marshal() (dAtA []byte, err erro
 }
 
 func (m *ExponentialHistogramDataPoint_Buckets) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *ExponentialHistogramDataPoint_Buckets) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -2978,11 +2930,7 @@ func (m *ExponentialHistogramDataPoint) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *ExponentialHistogramDataPoint) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *ExponentialHistogramDataPoint) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -3122,11 +3070,7 @@ func (m *SummaryDataPoint_ValueAtQuantile) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *SummaryDataPoint_ValueAtQuantile) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *SummaryDataPoint_ValueAtQuantile) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -3166,11 +3110,7 @@ func (m *SummaryDataPoint) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *SummaryDataPoint) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *SummaryDataPoint) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -3247,11 +3187,7 @@ func (m *Exemplar) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Exemplar) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *Exemplar) MarshalToSizedBuffer(dAtA []byte) (int, error) {

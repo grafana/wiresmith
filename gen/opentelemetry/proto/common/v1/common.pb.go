@@ -605,11 +605,7 @@ func (m *AnyValue) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *AnyValue) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *AnyValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -691,11 +687,7 @@ func (m *ArrayValue) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *ArrayValue) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *ArrayValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -733,11 +725,7 @@ func (m *KeyValueList) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *KeyValueList) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *KeyValueList) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -775,11 +763,7 @@ func (m *KeyValue) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *KeyValue) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *KeyValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -836,11 +820,7 @@ func (m *InstrumentationScope) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *InstrumentationScope) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *InstrumentationScope) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -897,11 +877,7 @@ func (m *EntityRef) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *EntityRef) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *EntityRef) MarshalToSizedBuffer(dAtA []byte) (int, error) {

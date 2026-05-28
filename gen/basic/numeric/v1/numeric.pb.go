@@ -1667,11 +1667,7 @@ func (m *UnpackedScalars) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *UnpackedScalars) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *UnpackedScalars) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -1775,11 +1771,7 @@ func (m *MixedModifiers) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *MixedModifiers) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *MixedModifiers) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -1890,11 +1882,7 @@ func (m *WideFields) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *WideFields) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *WideFields) MarshalToSizedBuffer(dAtA []byte) (int, error) {

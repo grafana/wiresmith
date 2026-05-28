@@ -543,11 +543,7 @@ func (m *Payload) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Payload) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *Payload) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -587,11 +583,7 @@ func (m *MultiOneof) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *MultiOneof) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *MultiOneof) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -669,11 +661,7 @@ func (m *OneofWithTypes) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *OneofWithTypes) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *OneofWithTypes) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -726,11 +714,7 @@ func (m *OneofPlusEverything) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *OneofPlusEverything) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *OneofPlusEverything) MarshalToSizedBuffer(dAtA []byte) (int, error) {

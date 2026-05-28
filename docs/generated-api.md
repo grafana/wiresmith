@@ -9,7 +9,7 @@ Every generated method below is nil-safe — `String()`, `Has<Field>()`, `Get<Fi
 | Method                                              | Purpose                                                                                   |
 |-----------------------------------------------------|-------------------------------------------------------------------------------------------|
 | `Marshal() ([]byte, error)`                         | Allocate a buffer of the right size and serialize into it.                                |
-| `MarshalTo(dAtA []byte) (int, error)`               | Serialize into a caller-provided buffer assumed to be `>= Size()`.                        |
+| `MarshalTo(dAtA []byte) (int, error)`               | Serialize into a caller-provided buffer. Precondition: `len(dAtA) >= Size()`. Delegates straight to `MarshalToSizedBuffer` — no internal `Size()` call. Pass a buffer of exactly `Size()` to land the bytes at `dAtA[0:n]`; an oversized buffer fills from the tail (`dAtA[len-n:len]`) because the encoder reverse-writes. |
 | `MarshalToSizedBuffer(dAtA []byte) (int, error)`    | Reverse-write into a caller-provided buffer of exactly `Size()` bytes. Hot-path entry point. |
 | `Unmarshal(dAtA []byte) error`                      | Parse wire bytes into the receiver. Populates the field-presence bitmap.                  |
 | `UnmarshalWithDepth(dAtA []byte, depth int) error`  | Same as `Unmarshal`, but starts depth tracking at the given value. Used by cross-package callers so the recursion-depth guard remains monotonic across package boundaries. Top-level callers should use `Unmarshal`. |

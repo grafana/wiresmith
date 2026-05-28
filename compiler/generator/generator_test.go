@@ -1095,6 +1095,47 @@ message Probe { string s = 1; }`)
 	}
 }
 
+// TestGenerateMarshalToOmitsSize pins the PERF-3 (wiresmith-w32) shape of
+// the generated MarshalTo: it must delegate directly to MarshalToSizedBuffer
+// without an internal m.Size() call or a `dAtA[:size]` slice. The historical
+// emit walked the message tree twice per encode (once in Size, once in
+// MarshalToSizedBuffer); the new shape trusts the caller's precondition
+// that `len(dAtA) >= m.Size()` and lets MarshalToSizedBuffer's own
+// nil-receiver guard cover the receiver-nil case.
+func TestGenerateMarshalToOmitsSize(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "marshalto/v1/probe.proto", `
+syntax = "proto3";
+package marshalto.v1;
+message Probe { string s = 1; }`)
+
+	outDir := testOutDir(t)
+	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
+	}
+	src := mustReadFile(t, filepath.Join(outDir, "marshalto", "v1", "probe.pb.go"))
+
+	// New shape: function body is a single return that forwards dAtA verbatim.
+	wantBody := "func (m *Probe) MarshalTo(dAtA []byte) (int, error) {\n\treturn m.MarshalToSizedBuffer(dAtA)\n}"
+	if !strings.Contains(src, wantBody) {
+		t.Errorf("MarshalTo must delegate to MarshalToSizedBuffer without slicing; full source:\n%s", src)
+	}
+	// Pre-fix body had `size := m.Size()` and `m.MarshalToSizedBuffer(dAtA[:size])`.
+	// Either string reappearing means the redundant Size call is back.
+	bodyStart := strings.Index(src, "func (m *Probe) MarshalTo(")
+	bodyEnd := strings.Index(src[bodyStart:], "\n}\n")
+	if bodyStart < 0 || bodyEnd < 0 {
+		t.Fatalf("could not locate MarshalTo body; full source:\n%s", src)
+	}
+	body := src[bodyStart : bodyStart+bodyEnd]
+	for _, banned := range []string{"size := m.Size()", "MarshalToSizedBuffer(dAtA[:"} {
+		if strings.Contains(body, banned) {
+			t.Errorf("MarshalTo body must not contain %q (re-introduced redundant Size); body:\n%s", banned, body)
+		}
+	}
+}
+
 // TestGenerateMixedLayoutImport documents the supported import shape for a
 // mixed flat+nested layout: a nested file importing a top-level file must
 // use the top-level's package-derived path (its canonical key), not the

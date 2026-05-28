@@ -195,11 +195,7 @@ func (m *Leaf) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Leaf) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *Leaf) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -239,11 +235,7 @@ func (m *PointerHolder) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *PointerHolder) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *PointerHolder) MarshalToSizedBuffer(dAtA []byte) (int, error) {

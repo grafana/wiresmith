@@ -178,11 +178,7 @@ func (m *MapBench) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *MapBench) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *MapBench) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -257,11 +253,7 @@ func (m *Inner) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Inner) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *Inner) MarshalToSizedBuffer(dAtA []byte) (int, error) {

@@ -2026,11 +2026,7 @@ func (m *TestAllTypesProto3_NestedMessage) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *TestAllTypesProto3_NestedMessage) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *TestAllTypesProto3_NestedMessage) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -2063,11 +2059,7 @@ func (m *TestAllTypesProto3) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *TestAllTypesProto3) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *TestAllTypesProto3) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -3284,11 +3276,7 @@ func (m *ForeignMessage) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *ForeignMessage) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *ForeignMessage) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -3321,11 +3309,7 @@ func (m *NullHypothesisProto3) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *NullHypothesisProto3) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *NullHypothesisProto3) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -3353,11 +3337,7 @@ func (m *EnumOnlyProto3) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *EnumOnlyProto3) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *EnumOnlyProto3) MarshalToSizedBuffer(dAtA []byte) (int, error) {

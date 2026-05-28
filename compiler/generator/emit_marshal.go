@@ -24,11 +24,15 @@ func (fg *FileGenerator) emitMarshal(md protoreflect.MessageDescriptor) {
 	fmt.Fprintf(fg.body, "\treturn dAtA[:n], nil\n")
 	fmt.Fprintf(fg.body, "}\n\n")
 
-	// MarshalTo writes the message into dAtA.
+	// MarshalTo writes the message into dAtA. The caller is responsible for
+	// passing a buffer of exactly m.Size() bytes (or larger if the trailing
+	// bytes can be discarded — the reverse-write fills from the tail). The
+	// historical impl called m.Size() here to slice dAtA down to the exact
+	// size, walking the whole message tree a second time per encode. The
+	// internal Size() call is now stripped: the nil guard is delegated to
+	// MarshalToSizedBuffer, which already shares the same return convention.
 	fmt.Fprintf(fg.body, "func (m *%s) MarshalTo(dAtA []byte) (int, error) {\n", name)
-	fmt.Fprintf(fg.body, "\tif m == nil {\n\t\treturn 0, nil\n\t}\n")
-	fmt.Fprintf(fg.body, "\tsize := m.Size()\n")
-	fmt.Fprintf(fg.body, "\treturn m.MarshalToSizedBuffer(dAtA[:size])\n")
+	fmt.Fprintf(fg.body, "\treturn m.MarshalToSizedBuffer(dAtA)\n")
 	fmt.Fprintf(fg.body, "}\n\n")
 
 	// MarshalToSizedBuffer writes the message backwards into dAtA.

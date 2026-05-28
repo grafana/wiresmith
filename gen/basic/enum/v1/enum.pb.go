@@ -305,11 +305,7 @@ func (m *WithNestedEnum) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *WithNestedEnum) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *WithNestedEnum) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -359,11 +355,7 @@ func (m *EnumContainer) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *EnumContainer) MarshalTo(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA)
 }
 
 func (m *EnumContainer) MarshalToSizedBuffer(dAtA []byte) (int, error) {
