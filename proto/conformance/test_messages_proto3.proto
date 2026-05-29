@@ -10,9 +10,13 @@
 //
 // Includes only features supported by wiresmith. Removed:
 //   - well-known type fields (201-219, 301-318) and their imports
-//   - recursive_message (27) — value-type structs can't self-reference
 //   - AliasedEnum and field 23 — allow_alias untested
 //   - oneof_null_value (120) — NullValue is a well-known type
+//
+// Self-referencing fields use `optional` so wiresmith generates them as
+// pointer-shaped (`*T`) — the value-type default would be infinitely
+// large at type-definition time. See proto/basic/recursive.proto for
+// the same idiom on LinkedList/TreeNode.
 //
 // All kept fields preserve their original field numbers so the conformance
 // runner's binary payloads are wire-compatible. Unsupported fields in incoming
@@ -25,7 +29,7 @@ package protobuf_test_messages.proto3;
 message TestAllTypesProto3 {
   message NestedMessage {
     int32 a = 1;
-    // corecursive field removed — value-type struct would be infinite
+    optional TestAllTypesProto3 corecursive = 2;
   }
 
   enum NestedEnum {
@@ -60,7 +64,7 @@ message TestAllTypesProto3 {
   // field 23 (optional_aliased_enum) removed — allow_alias untested
   string         optional_string_piece    = 24;
   string         optional_cord            = 25;
-  // field 27 (recursive_message) removed — self-referencing value type
+  optional TestAllTypesProto3 recursive_message = 27;
 
   // Repeated scalar fields.
   repeated int32    repeated_int32    = 31;

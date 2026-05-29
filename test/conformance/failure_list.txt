@@ -1,28 +1,35 @@
 # Conformance tests expected to fail.
 #
-# wiresmith does not support: well-known types, recursive messages,
-# JSON/text format, proto2, editions. Tests exercising these features are
-# listed here so the conformance runner treats them as expected failures.
+# wiresmith does not support: well-known types, JSON/text format, proto2,
+# editions. It also has one wire-format behavioural divergence
+# (cross-entry map-value MERGE; tracked separately). Tests exercising
+# these features are listed here so the conformance runner treats them as
+# expected failures.
 #
 # As wiresmith adds features, entries should be removed from this list.
 # The runner will flag any test that unexpectedly passes or fails.
 #
-# Summary: 5 expected failures
-#     3 — message merge with recursive messages (wiresmith does not
-#         generate recursive message fields; corecursive data is
-#         discarded as unknown fields)
+# Summary: 3 expected failures
 #     2 — unknown field preservation (wiresmith intentionally discards
 #         unknown fields for performance; it is designed to work with
 #         messages of known schema)
-
-# Message merge with recursive messages — the corecursive field is
-# unknown to wiresmith, so it is discarded during unmarshal and
-# absent from the merged output.
-Required.Proto3.ProtobufInput.RepeatedScalarMessageMerge.ProtobufOutput
-Required.Proto3.ProtobufInput.ValidDataMap.STRING.MESSAGE.MergeValue.ProtobufOutput
-Required.Proto3.ProtobufInput.ValidDataOneof.MESSAGE.Merge.ProtobufOutput
+#     1 — map duplicate-key value MERGE vs REPLACE (wiresmith merges
+#         message values when the same map key appears more than once
+#         on the wire; proto3 spec & protobuf-go reference use REPLACE
+#         / "last write wins". See follow-up bead wiresmith-05d for the fix.)
 
 # Unknown field preservation — wiresmith intentionally drops unknown
 # fields instead of preserving them in the output.
 Required.Proto3.ProtobufInput.UnknownOrdering.ProtobufOutput
 Required.Proto3.ProtobufInput.UnknownVarint.ProtobufOutput
+
+# Cross-entry map-value semantics: when the same map key appears twice on
+# the wire, wiresmith merges the two value messages (see
+# `compiler/types/map.go::EmitUnmarshal`, post-loop merge branch); proto3
+# expects the second entry to replace the first. The two earlier
+# recursive-merge failures from this list (RepeatedScalarMessageMerge,
+# ValidDataOneof.MESSAGE.Merge) covered the same path but didn't exercise
+# this codepath because corecursive was missing from the test proto; with
+# corecursive re-enabled (wiresmith-sb1) the underlying merge-vs-replace
+# divergence now shows up here.
+Required.Proto3.ProtobufInput.ValidDataMap.STRING.MESSAGE.MergeValue.ProtobufOutput

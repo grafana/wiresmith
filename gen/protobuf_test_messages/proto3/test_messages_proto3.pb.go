@@ -154,7 +154,8 @@ type TestAllTypesProto3_OneofEnum struct {
 func (*TestAllTypesProto3_OneofEnum) isTestAllTypesProto3_OneofField() {}
 
 type TestAllTypesProto3_NestedMessage struct {
-	A int32 `protobuf:"varint,1,opt,name=a,proto3" json:"a,omitempty"`
+	A           int32               `protobuf:"varint,1,opt,name=a,proto3" json:"a,omitempty"`
+	Corecursive *TestAllTypesProto3 `protobuf:"bytes,2,opt,name=corecursive,proto3,oneof" json:"corecursive,omitempty"`
 
 	fieldsPresent [1]uint64
 }
@@ -182,8 +183,9 @@ type TestAllTypesProto3 struct {
 	OptionalNestedEnum     TestAllTypesProto3_NestedEnum    `protobuf:"varint,21,opt,name=optional_nested_enum,json=optionalNestedEnum,proto3,enum=protobuf_test_messages.proto3.TestAllTypesProto3.NestedEnum" json:"optional_nested_enum,omitempty"`
 	OptionalForeignEnum    ForeignEnum                      `protobuf:"varint,22,opt,name=optional_foreign_enum,json=optionalForeignEnum,proto3,enum=protobuf_test_messages.proto3.ForeignEnum" json:"optional_foreign_enum,omitempty"`
 	// field 23 (optional_aliased_enum) removed — allow_alias untested
-	OptionalStringPiece string `protobuf:"bytes,24,opt,name=optional_string_piece,json=optionalStringPiece,proto3" json:"optional_string_piece,omitempty"`
-	OptionalCord        string `protobuf:"bytes,25,opt,name=optional_cord,json=optionalCord,proto3" json:"optional_cord,omitempty"`
+	OptionalStringPiece string              `protobuf:"bytes,24,opt,name=optional_string_piece,json=optionalStringPiece,proto3" json:"optional_string_piece,omitempty"`
+	OptionalCord        string              `protobuf:"bytes,25,opt,name=optional_cord,json=optionalCord,proto3" json:"optional_cord,omitempty"`
+	RecursiveMessage    *TestAllTypesProto3 `protobuf:"bytes,27,opt,name=recursive_message,json=recursiveMessage,proto3,oneof" json:"recursive_message,omitempty"`
 	// Repeated scalar fields.
 	RepeatedInt32    []int32   `protobuf:"varint,31,rep,packed,name=repeated_int32,json=repeatedInt32,proto3" json:"repeated_int32,omitempty"`
 	RepeatedInt64    []int64   `protobuf:"varint,32,rep,packed,name=repeated_int64,json=repeatedInt64,proto3" json:"repeated_int64,omitempty"`
@@ -659,6 +661,13 @@ func (m *TestAllTypesProto3_NestedMessage) GetA() int32 {
 	return 0
 }
 
+func (m *TestAllTypesProto3_NestedMessage) GetCorecursive() *TestAllTypesProto3 {
+	if m != nil {
+		return m.Corecursive
+	}
+	return nil
+}
+
 func (m *TestAllTypesProto3) GetOptionalInt32() int32 {
 	if m != nil {
 		return m.OptionalInt32
@@ -804,6 +813,13 @@ func (m *TestAllTypesProto3) GetOptionalCord() string {
 		return m.OptionalCord
 	}
 	return ""
+}
+
+func (m *TestAllTypesProto3) GetRecursiveMessage() *TestAllTypesProto3 {
+	if m != nil {
+		return m.RecursiveMessage
+	}
+	return nil
 }
 
 func (m *TestAllTypesProto3) GetRepeatedInt32() []int32 {
@@ -1493,6 +1509,10 @@ func (m *TestAllTypesProto3_NestedMessage) Size() int {
 	if m.A != 0 {
 		n += 1 + protowire.SizeVarint(uint64(m.A))
 	}
+	if m.Corecursive != nil {
+		s := (*m.Corecursive).Size()
+		n += 1 + protowire.SizeVarint(uint64(s)) + s
+	}
 	return n
 }
 
@@ -1573,6 +1593,10 @@ func (m *TestAllTypesProto3) Size() int {
 	}
 	if len(m.OptionalCord) > 0 {
 		n += 2 + protowire.SizeVarint(uint64(len(m.OptionalCord))) + len(m.OptionalCord)
+	}
+	if m.RecursiveMessage != nil {
+		s := (*m.RecursiveMessage).Size()
+		n += 2 + protowire.SizeVarint(uint64(s)) + s
 	}
 	if len(m.RepeatedInt32) > 0 {
 		var dataLen int
@@ -2038,6 +2062,16 @@ func (m *TestAllTypesProto3_NestedMessage) MarshalToSizedBuffer(dAtA []byte) (in
 		return 0, nil
 	}
 	i := len(dAtA)
+	if m.Corecursive != nil {
+		size, err := (*m.Corecursive).MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		i--
+		dAtA[i] = 0x12
+	}
 	if m.A != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.A))
 		i--
@@ -3100,6 +3134,18 @@ func (m *TestAllTypesProto3) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0xfa
 	}
+	if m.RecursiveMessage != nil {
+		size, err := (*m.RecursiveMessage).MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		i--
+		dAtA[i] = 0x01
+		i--
+		dAtA[i] = 0xda
+	}
 	if len(m.OptionalCord) > 0 {
 		i -= len(m.OptionalCord)
 		copy(dAtA[i:], m.OptionalCord)
@@ -3508,6 +3554,56 @@ func (m *TestAllTypesProto3_NestedMessage) unmarshal(dAtA []byte, depth int) err
 			}
 			m.A = int32(v)
 			m.fieldsPresent[0] |= 1 << 0
+		case 2: // corecursive
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				if err != nil {
+					return err
+				}
+				iNdEx += n
+				continue
+			}
+			var byteLen uint64
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
+				iNdEx++
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
+				}
+			}
+			if byteLen > uint64(math.MaxInt) {
+				return io.ErrUnexpectedEOF
+			}
+			intByteLen := int(byteLen)
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Corecursive == nil {
+				m.Corecursive = new(TestAllTypesProto3)
+			}
+			if err := m.Corecursive.unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
@@ -4482,6 +4578,56 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.OptionalCord = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 			m.fieldsPresent[0] |= 1 << 20
+		case 27: // recursive_message
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				if err != nil {
+					return err
+				}
+				iNdEx += n
+				continue
+			}
+			var byteLen uint64
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
+				iNdEx++
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
+				}
+			}
+			if byteLen > uint64(math.MaxInt) {
+				return io.ErrUnexpectedEOF
+			}
+			intByteLen := int(byteLen)
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.RecursiveMessage == nil {
+				m.RecursiveMessage = new(TestAllTypesProto3)
+			}
+			if err := m.RecursiveMessage.unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		case 31: // repeated_int32
 			if wireType == 2 {
 				var byteLen uint64
@@ -12049,6 +12195,12 @@ func (this *TestAllTypesProto3_NestedMessage) Equal(that interface{}) bool {
 	if this.A != that1.A {
 		return false
 	}
+	if (this.Corecursive == nil) != (that1.Corecursive == nil) {
+		return false
+	}
+	if this.Corecursive != nil && !this.Corecursive.Equal(that1.Corecursive) {
+		return false
+	}
 	return true
 }
 
@@ -12132,6 +12284,12 @@ func (this *TestAllTypesProto3) Equal(that interface{}) bool {
 		return false
 	}
 	if this.OptionalCord != that1.OptionalCord {
+		return false
+	}
+	if (this.RecursiveMessage == nil) != (that1.RecursiveMessage == nil) {
+		return false
+	}
+	if this.RecursiveMessage != nil && !this.RecursiveMessage.Equal(that1.RecursiveMessage) {
 		return false
 	}
 	if len(this.RepeatedInt32) != len(that1.RepeatedInt32) {
