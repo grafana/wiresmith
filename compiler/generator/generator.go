@@ -3,8 +3,10 @@ package generator
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"go/format"
+	"io/fs"
 	"os"
 	"path"
 	"path/filepath"
@@ -154,6 +156,19 @@ func (g *Generator) Generate(ctx context.Context) error {
 	// fail Go's directory-equals-import-path rule at build time.
 	if err := g.validateOutDir(); err != nil {
 		return err
+	}
+
+	// Surface --proto_path problems before they leak the underlying syscall
+	// name (e.g. "lstat /nonexistent: no such file or directory") through
+	// the filepath.WalkDir callback. Stat once here so the user-facing
+	// error names the flag and the actual problem.
+	if info, err := os.Stat(g.ProtoDir); err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return fmt.Errorf("--proto_path %q: directory does not exist", g.ProtoDir)
+		}
+		return fmt.Errorf("--proto_path %q: %w", g.ProtoDir, err)
+	} else if !info.IsDir() {
+		return fmt.Errorf("--proto_path %q: not a directory", g.ProtoDir)
 	}
 
 	mapping, importPaths, pathToKey, err := buildImportMapping(g.ProtoDir)
@@ -549,10 +564,17 @@ func (g *Generator) writeFormatted(outPath string, src []byte, sourceProto strin
 		formatted = src
 		fmt.Fprintf(os.Stderr, "warning: format error for %s -> %s: %v\n", sourceProto, outPath, err)
 	}
-	if err := os.MkdirAll(filepath.Dir(outPath), 0o755); err != nil {
-		return err
+	// Wrap MkdirAll/WriteFile errors with the --out-relative path so users
+	// see "--out %q: <reason>" rather than the raw syscall name (mirrors
+	// the --proto_path treatment in Generate; wiresmith-d2x).
+	dir := filepath.Dir(outPath)
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return fmt.Errorf("--out %q: %w", dir, err)
 	}
-	return os.WriteFile(outPath, formatted, 0o644)
+	if err := os.WriteFile(outPath, formatted, 0o644); err != nil {
+		return fmt.Errorf("--out %q: %w", outPath, err)
+	}
+	return nil
 }
 
 // outputReflectPathFor returns the path for the companion `_reflect.pb.go`
