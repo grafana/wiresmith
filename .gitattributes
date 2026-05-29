@@ -1,2 +1,6 @@
 # Generated code — always keep our side on merge conflicts.
 gen/** merge=ours
+
+# Append-only beads interaction log — union both sides on conflict so
+# concurrent close/claim entries from different branches don't collide.
+.beads/interactions.jsonl merge=union
