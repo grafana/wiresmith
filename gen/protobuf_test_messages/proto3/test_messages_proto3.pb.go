@@ -8220,7 +8220,6 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			}
 			var mapkey string
 			var mapvalue TestAllTypesProto3_NestedMessage
-			var mapValueBytes []byte
 			for iNdEx < postIndex {
 				var entryWire uint64
 				if iNdEx < l && dAtA[iNdEx] < 0x80 {
@@ -8334,12 +8333,10 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					if postIndex > l {
 						return io.ErrUnexpectedEOF
 					}
-					mapValueStart := iNdEx
 					if err := mapvalue.unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {
 						return err
 					}
 					iNdEx = postIndex
-					mapValueBytes = dAtA[mapValueStart:iNdEx]
 				default:
 					n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 					if err != nil {
@@ -8348,14 +8345,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					iNdEx += n
 				}
 			}
-			if existing, ok := m.MapStringNestedMessage[mapkey]; ok && mapValueBytes != nil {
-				if err := existing.unmarshal(mapValueBytes, depth+1); err != nil {
-					return err
-				}
-				m.MapStringNestedMessage[mapkey] = existing
-			} else if !ok {
-				m.MapStringNestedMessage[mapkey] = mapvalue
-			}
+			m.MapStringNestedMessage[mapkey] = mapvalue
 			iNdEx = postIndex
 		case 72: // map_string_foreign_message
 			if wireType != 2 {
@@ -8405,7 +8395,6 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			}
 			var mapkey string
 			var mapvalue ForeignMessage
-			var mapValueBytes []byte
 			for iNdEx < postIndex {
 				var entryWire uint64
 				if iNdEx < l && dAtA[iNdEx] < 0x80 {
@@ -8519,12 +8508,10 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					if postIndex > l {
 						return io.ErrUnexpectedEOF
 					}
-					mapValueStart := iNdEx
 					if err := mapvalue.unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {
 						return err
 					}
 					iNdEx = postIndex
-					mapValueBytes = dAtA[mapValueStart:iNdEx]
 				default:
 					n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 					if err != nil {
@@ -8533,14 +8520,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					iNdEx += n
 				}
 			}
-			if existing, ok := m.MapStringForeignMessage[mapkey]; ok && mapValueBytes != nil {
-				if err := existing.unmarshal(mapValueBytes, depth+1); err != nil {
-					return err
-				}
-				m.MapStringForeignMessage[mapkey] = existing
-			} else if !ok {
-				m.MapStringForeignMessage[mapkey] = mapvalue
-			}
+			m.MapStringForeignMessage[mapkey] = mapvalue
 			iNdEx = postIndex
 		case 73: // map_string_nested_enum
 			if wireType != 2 {

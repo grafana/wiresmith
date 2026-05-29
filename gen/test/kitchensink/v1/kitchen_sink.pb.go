@@ -10006,7 +10006,6 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			}
 			var mapkey string
 			var mapvalue Inner
-			var mapValueBytes []byte
 			for iNdEx < postIndex {
 				var entryWire uint64
 				if iNdEx < l && dAtA[iNdEx] < 0x80 {
@@ -10120,12 +10119,10 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 					if postIndex > l {
 						return io.ErrUnexpectedEOF
 					}
-					mapValueStart := iNdEx
 					if err := mapvalue.unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {
 						return err
 					}
 					iNdEx = postIndex
-					mapValueBytes = dAtA[mapValueStart:iNdEx]
 				default:
 					n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 					if err != nil {
@@ -10134,14 +10131,7 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 					iNdEx += n
 				}
 			}
-			if existing, ok := m.MapStringMessage[mapkey]; ok && mapValueBytes != nil {
-				if err := existing.unmarshal(mapValueBytes, depth+1); err != nil {
-					return err
-				}
-				m.MapStringMessage[mapkey] = existing
-			} else if !ok {
-				m.MapStringMessage[mapkey] = mapvalue
-			}
+			m.MapStringMessage[mapkey] = mapvalue
 			iNdEx = postIndex
 		case 17: // map_string_enum
 			if wireType != 2 {

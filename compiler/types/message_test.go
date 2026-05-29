@@ -118,14 +118,42 @@ func TestMessageType_EmitUnmarshal_CrossPackageWithDepth(t *testing.T) {
 	}
 }
 
-// EmitMapEntryUnmarshal must capture iNdEx as `mapValueStart` BEFORE calling
-// unmarshal. The map's outer EmitUnmarshal uses the [mapValueStart:iNdEx]
-// slice to detect "value field was present" for merge semantics.
-func TestMessageType_EmitMapEntryUnmarshal_CapturesStart(t *testing.T) {
+// Same-package map<K, Msg> entry decode must go through the private
+// `varName.unmarshal(b, depth+1)` to keep the recursion-depth counter
+// threaded; the public Unmarshal would reset depth and reopen SEC-5.
+func TestMessageType_EmitMapEntryUnmarshal_SamePackageThreadsDepth(t *testing.T) {
 	e := &captureEmitter{}
 	MessageType{}.EmitMapEntryUnmarshal(e, "mapvalue", "\t\t", FieldContext{IsSamePackage: true})
 	got := e.buf.String()
-	if !strings.Contains(got, "mapValueStart := iNdEx") {
-		t.Errorf("EmitMapEntryUnmarshal: must declare mapValueStart for merge detection:\n%s", got)
+	if !strings.Contains(got, "mapvalue.unmarshal(dAtA[iNdEx:postIndex], depth+1)") {
+		t.Errorf("same-package map entry must call mapvalue.unmarshal(b, depth+1):\n%s", got)
+	}
+	// The pre-wiresmith-05d codegen captured `mapValueStart := iNdEx` so
+	// the outer MapField could synthesise mapValueBytes for the merge
+	// branch. With REPLACE semantics there is no merge branch, so the
+	// capture must be gone.
+	if strings.Contains(got, "mapValueStart") {
+		t.Errorf("EmitMapEntryUnmarshal must not emit mapValueStart (merge is gone, wiresmith-05d):\n%s", got)
+	}
+}
+
+// Cross-package map<K, Msg> entry decode must route through
+// `varName.UnmarshalWithDepth(b, depth+1)` rather than the public
+// `Unmarshal(b)`. This is the SEC-5 wiresmith-1c0 guard at the
+// *initial* decode site; with wiresmith-05d backing out the post-loop
+// merge, this is now the only place depth threading happens for
+// cross-package map values.
+func TestMessageType_EmitMapEntryUnmarshal_CrossPackageThreadsDepth(t *testing.T) {
+	e := &captureEmitter{}
+	MessageType{}.EmitMapEntryUnmarshal(e, "mapvalue", "\t\t", FieldContext{IsSamePackage: false})
+	got := e.buf.String()
+	if !strings.Contains(got, "mapvalue.UnmarshalWithDepth(dAtA[iNdEx:postIndex], depth+1)") {
+		t.Errorf("cross-package map entry must call mapvalue.UnmarshalWithDepth(b, depth+1):\n%s", got)
+	}
+	if strings.Contains(got, "mapvalue.Unmarshal(dAtA[iNdEx:postIndex])") {
+		t.Errorf("cross-package map entry must not use the depth-resetting public Unmarshal:\n%s", got)
+	}
+	if strings.Contains(got, "mapValueStart") {
+		t.Errorf("EmitMapEntryUnmarshal must not emit mapValueStart (merge is gone, wiresmith-05d):\n%s", got)
 	}
 }

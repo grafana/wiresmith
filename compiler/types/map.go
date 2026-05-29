@@ -69,8 +69,6 @@ func (m *MapField) EmitMarshal(e Emitter, access string, num protowire.Number) {
 }
 
 func (m *MapField) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
-	_, isMsg := m.Val.(*MessageType)
-
 	emitConsumeBytesLen(e)
 
 	e.Writef("\t\t\tif %s == nil {\n", access)
@@ -78,9 +76,6 @@ func (m *MapField) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
 	e.Writef("\t\t\t}\n")
 	e.Writef("\t\t\tvar mapkey %s\n", m.KeyGoType)
 	e.Writef("\t\t\tvar mapvalue %s\n", m.ValGoType)
-	if isMsg {
-		e.Writef("\t\t\tvar mapValueBytes []byte\n")
-	}
 
 	// Index-based iteration: reuse iNdEx directly instead of creating
 	// an entryData sub-slice, and inline tag decode to avoid non-inlined
@@ -100,11 +95,6 @@ func (m *MapField) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
 	e.Writef("\t\t\t\tcase 2:\n")
 	emitMapEntryWireTypeCheck(e, m.Val.WireType())
 	m.Val.EmitMapEntryUnmarshal(e, "mapvalue", "\t\t\t\t\t", m.ValCtx)
-	if isMsg {
-		// Save raw value bytes for merge semantics when the same
-		// key appears in multiple wire entries.
-		e.Writef("\t\t\t\t\tmapValueBytes = dAtA[mapValueStart:iNdEx]\n")
-	}
 
 	// Unknown fields
 	e.Writef("\t\t\t\tdefault:\n")
@@ -115,32 +105,17 @@ func (m *MapField) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
 	e.Writef("\t\t\t\t}\n") // end switch
 	e.Writef("\t\t\t}\n")   // end for
 
-	if isMsg {
-		// Merge semantics: if the key already exists and the value field
-		// was present (even if empty), merge into the existing message.
-		// When value is absent (mapValueBytes == nil) and key exists,
-		// preserve the existing entry per proto merge rules.
-		e.Writef("\t\t\tif existing, ok := %s[mapkey]; ok && mapValueBytes != nil {\n", access)
-		if m.ValCtx.IsSamePackage {
-			e.Writef("\t\t\t\tif err := existing.unmarshal(mapValueBytes, depth+1); err != nil {\n\t\t\t\t\treturn err\n\t\t\t\t}\n")
-		} else {
-			// Cross-package merge: thread depth through UnmarshalWithDepth.
-			// Calling the public Unmarshal here would reset depth at the
-			// boundary, re-opening the SEC-5 hole that the rest of the
-			// codegen closes for cross-package message access (and which
-			// MessageType.EmitMapEntryUnmarshal closes for the *initial*
-			// map-entry decode). An attacker who can place duplicate keys
-			// on the wire could otherwise get a fresh depth budget per
-			// merge and ping-pong indefinitely. See wiresmith-1c0.
-			e.Writef("\t\t\t\tif err := existing.UnmarshalWithDepth(mapValueBytes, depth+1); err != nil {\n\t\t\t\t\treturn err\n\t\t\t\t}\n")
-		}
-		e.Writef("\t\t\t\t%s[mapkey] = existing\n", access)
-		e.Writef("\t\t\t} else if !ok {\n")
-		e.Writef("\t\t\t\t%s[mapkey] = mapvalue\n", access)
-		e.Writef("\t\t\t}\n")
-	} else {
-		e.Writef("\t\t\t%s[mapkey] = mapvalue\n", access)
-	}
+	// proto3 map duplicate-key semantics: REPLACE / last-write-wins. Each
+	// MapField.EmitUnmarshal call processes ONE wire entry; the outer
+	// unmarshal loop calls us again for every additional entry tag, and a
+	// later entry with the same key just overwrites the prior assignment.
+	// Matches protobuf-go's `internal/impl/codec_map.go::consumeMapOfMessage`,
+	// which allocates a fresh value per entry and SetMapIndex's it
+	// unconditionally. wiresmith-05d backs out the prior merge branch — the
+	// recursion-depth threading from wiresmith-1c0 still lives at the
+	// initial value decode in MessageType.EmitMapEntryUnmarshal, but a
+	// merge call to do it twice is no longer needed.
+	e.Writef("\t\t\t%s[mapkey] = mapvalue\n", access)
 	e.Writef("\t\t\tiNdEx = postIndex\n")
 }
 

@@ -77,8 +77,6 @@ func (MessageType) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
 
 func (MessageType) EmitMapEntryUnmarshal(e Emitter, varName, indent string, ctx FieldContext) {
 	emitConsumeBytesLenAt(e, indent)
-	// Save start position so the caller can capture raw bytes for merge semantics.
-	e.Writef("%smapValueStart := iNdEx\n", indent)
 	if ctx.IsSamePackage {
 		e.Writef("%sif err := %s.unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {\n%s\treturn err\n%s}\n", indent, varName, indent, indent)
 	} else {

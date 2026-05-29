@@ -125,7 +125,7 @@ Every generated method with a pointer receiver (`String()`, `Has<Field>()`, `Get
 - **32-bit length safety**: Length-delimited varint decode into `int` truncates on 32-bit architectures when `shift >= 32`. Decode into `uint64` first, then bounds-check before converting.
 
 ### Map field correctness
-- **Merge semantics**: Track value-field presence with a boolean, not `len(mapValueBytes) > 0`. An empty-but-present message value (length 0) must trigger merge, not overwrite. Absent value field must preserve the existing entry.
+- **Duplicate-key semantics**: proto3 maps use REPLACE / last-write-wins for duplicate keys on the wire (see `protobuf-go::internal/impl/codec_map.go::consumeMapOfMessage`, which allocates a fresh value per entry and `SetMapIndex`-s unconditionally). Each call to `MapField.EmitUnmarshal` decodes one entry into a fresh `mapvalue` and ends with `m[mapkey] = mapvalue` — the outer loop calls us again per wire-tag, and a later entry with the same key just overwrites. Don't reintroduce a post-loop `existing.unmarshal(...)` merge call; the recursion-depth threading that one had (wiresmith-1c0) lives at the *initial* value decode in `MessageType.EmitMapEntryUnmarshal`. wiresmith-05d removed the merge branch.
 - **Bytes aliasing**: Bytes map values must allocate a fresh slice per entry (`append([]byte(nil), ...)` or `slices.Clone`). Reusing a backing array via `append(varName[:0], ...)` corrupts previously stored entries.
 
 ### Oneof equality requires value comparison

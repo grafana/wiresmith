@@ -843,7 +843,6 @@ func (m *MapBench) unmarshal(dAtA []byte, depth int) error {
 			}
 			var mapkey string
 			var mapvalue Inner
-			var mapValueBytes []byte
 			for iNdEx < postIndex {
 				var entryWire uint64
 				if iNdEx < l && dAtA[iNdEx] < 0x80 {
@@ -957,12 +956,10 @@ func (m *MapBench) unmarshal(dAtA []byte, depth int) error {
 					if postIndex > l {
 						return io.ErrUnexpectedEOF
 					}
-					mapValueStart := iNdEx
 					if err := mapvalue.unmarshal(dAtA[iNdEx:postIndex], depth+1); err != nil {
 						return err
 					}
 					iNdEx = postIndex
-					mapValueBytes = dAtA[mapValueStart:iNdEx]
 				default:
 					n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 					if err != nil {
@@ -971,14 +968,7 @@ func (m *MapBench) unmarshal(dAtA []byte, depth int) error {
 					iNdEx += n
 				}
 			}
-			if existing, ok := m.MessageMap[mapkey]; ok && mapValueBytes != nil {
-				if err := existing.unmarshal(mapValueBytes, depth+1); err != nil {
-					return err
-				}
-				m.MessageMap[mapkey] = existing
-			} else if !ok {
-				m.MessageMap[mapkey] = mapvalue
-			}
+			m.MessageMap[mapkey] = mapvalue
 			iNdEx = postIndex
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
