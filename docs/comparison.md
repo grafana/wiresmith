@@ -25,7 +25,7 @@ See [design.md](design.md) for the rationale behind each row in the wiresmith co
 
 ## Benchmarks
 
-_As of 2026-05-22 ([`fffc26c`](https://github.com/grafana/wiresmith/commit/fffc26c))._ Reproduce locally with `make bench-compare COUNT=-count=10` (or run `bench/` directly; both wrap `go test ./bench/ -bench=...`). Perf-sensitive PRs landed since this snapshot record their own deltas in their bead notes and PR descriptions.
+_As of 2026-05-22 ([`fffc26c`](https://github.com/grafana/wiresmith/commit/fffc26c))._ Reproduce locally with `make bench-compare` (or run `bench/` directly; both wrap `go test ./bench/ -bench=...`).
 
 Measured on Apple M4 Pro, 10 iterations per library, on a full trace payload (100 spans with attributes, events, links). Bytes are generated once by the official runtime and consumed by all four libraries from the same wire image — see [`bench/AGENTS.md`](../bench/AGENTS.md) for the full methodology.
 
