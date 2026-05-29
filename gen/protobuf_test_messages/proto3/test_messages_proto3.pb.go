@@ -4529,9 +4529,24 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					m.RepeatedInt32 = make([]int32, 0, elementCount)
 				}
 				for len(data) > 0 {
-					v, vn := protowire.ConsumeVarint(data)
-					if vn < 0 {
-						return fmt.Errorf("invalid packed varint")
+					var v uint64
+					var vn int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if vn >= len(data) {
+							return io.ErrUnexpectedEOF
+						}
+						b := data[vn]
+						vn++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 					m.RepeatedInt32 = append(m.RepeatedInt32, int32(v))
 					data = data[vn:]
@@ -4611,9 +4626,24 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					m.RepeatedInt64 = make([]int64, 0, elementCount)
 				}
 				for len(data) > 0 {
-					v, vn := protowire.ConsumeVarint(data)
-					if vn < 0 {
-						return fmt.Errorf("invalid packed varint")
+					var v uint64
+					var vn int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if vn >= len(data) {
+							return io.ErrUnexpectedEOF
+						}
+						b := data[vn]
+						vn++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 					m.RepeatedInt64 = append(m.RepeatedInt64, int64(v))
 					data = data[vn:]
@@ -4693,9 +4723,24 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					m.RepeatedUint32 = make([]uint32, 0, elementCount)
 				}
 				for len(data) > 0 {
-					v, vn := protowire.ConsumeVarint(data)
-					if vn < 0 {
-						return fmt.Errorf("invalid packed varint")
+					var v uint64
+					var vn int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if vn >= len(data) {
+							return io.ErrUnexpectedEOF
+						}
+						b := data[vn]
+						vn++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 					m.RepeatedUint32 = append(m.RepeatedUint32, uint32(v))
 					data = data[vn:]
@@ -4775,9 +4820,24 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					m.RepeatedUint64 = make([]uint64, 0, elementCount)
 				}
 				for len(data) > 0 {
-					v, vn := protowire.ConsumeVarint(data)
-					if vn < 0 {
-						return fmt.Errorf("invalid packed varint")
+					var v uint64
+					var vn int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if vn >= len(data) {
+							return io.ErrUnexpectedEOF
+						}
+						b := data[vn]
+						vn++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 					m.RepeatedUint64 = append(m.RepeatedUint64, v)
 					data = data[vn:]
@@ -4857,9 +4917,24 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					m.RepeatedSint32 = make([]int32, 0, elementCount)
 				}
 				for len(data) > 0 {
-					v, vn := protowire.ConsumeVarint(data)
-					if vn < 0 {
-						return fmt.Errorf("invalid packed varint")
+					var v uint64
+					var vn int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if vn >= len(data) {
+							return io.ErrUnexpectedEOF
+						}
+						b := data[vn]
+						vn++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 					m.RepeatedSint32 = append(m.RepeatedSint32, int32(uint32(v)>>1)^int32(uint32(v))<<31>>31)
 					data = data[vn:]
@@ -4939,9 +5014,24 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					m.RepeatedSint64 = make([]int64, 0, elementCount)
 				}
 				for len(data) > 0 {
-					v, vn := protowire.ConsumeVarint(data)
-					if vn < 0 {
-						return fmt.Errorf("invalid packed varint")
+					var v uint64
+					var vn int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if vn >= len(data) {
+							return io.ErrUnexpectedEOF
+						}
+						b := data[vn]
+						vn++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 					m.RepeatedSint64 = append(m.RepeatedSint64, int64(v>>1)^int64(v)<<63>>63)
 					data = data[vn:]
@@ -5393,9 +5483,24 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					m.RepeatedBool = make([]bool, 0, elementCount)
 				}
 				for len(data) > 0 {
-					v, vn := protowire.ConsumeVarint(data)
-					if vn < 0 {
-						return fmt.Errorf("invalid packed varint")
+					var v uint64
+					var vn int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if vn >= len(data) {
+							return io.ErrUnexpectedEOF
+						}
+						b := data[vn]
+						vn++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 					m.RepeatedBool = append(m.RepeatedBool, v != 0)
 					data = data[vn:]
@@ -5661,9 +5766,24 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					m.RepeatedNestedEnum = make([]TestAllTypesProto3_NestedEnum, 0, elementCount)
 				}
 				for len(data) > 0 {
-					v, vn := protowire.ConsumeVarint(data)
-					if vn < 0 {
-						return fmt.Errorf("invalid packed varint")
+					var v uint64
+					var vn int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if vn >= len(data) {
+							return io.ErrUnexpectedEOF
+						}
+						b := data[vn]
+						vn++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 					m.RepeatedNestedEnum = append(m.RepeatedNestedEnum, TestAllTypesProto3_NestedEnum(v))
 					data = data[vn:]
@@ -5743,9 +5863,24 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					m.RepeatedForeignEnum = make([]ForeignEnum, 0, elementCount)
 				}
 				for len(data) > 0 {
-					v, vn := protowire.ConsumeVarint(data)
-					if vn < 0 {
-						return fmt.Errorf("invalid packed varint")
+					var v uint64
+					var vn int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if vn >= len(data) {
+							return io.ErrUnexpectedEOF
+						}
+						b := data[vn]
+						vn++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 					m.RepeatedForeignEnum = append(m.RepeatedForeignEnum, ForeignEnum(v))
 					data = data[vn:]
@@ -8620,9 +8755,24 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					m.PackedInt32 = make([]int32, 0, elementCount)
 				}
 				for len(data) > 0 {
-					v, vn := protowire.ConsumeVarint(data)
-					if vn < 0 {
-						return fmt.Errorf("invalid packed varint")
+					var v uint64
+					var vn int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if vn >= len(data) {
+							return io.ErrUnexpectedEOF
+						}
+						b := data[vn]
+						vn++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 					m.PackedInt32 = append(m.PackedInt32, int32(v))
 					data = data[vn:]
@@ -8702,9 +8852,24 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					m.PackedInt64 = make([]int64, 0, elementCount)
 				}
 				for len(data) > 0 {
-					v, vn := protowire.ConsumeVarint(data)
-					if vn < 0 {
-						return fmt.Errorf("invalid packed varint")
+					var v uint64
+					var vn int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if vn >= len(data) {
+							return io.ErrUnexpectedEOF
+						}
+						b := data[vn]
+						vn++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 					m.PackedInt64 = append(m.PackedInt64, int64(v))
 					data = data[vn:]
@@ -8784,9 +8949,24 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					m.PackedUint32 = make([]uint32, 0, elementCount)
 				}
 				for len(data) > 0 {
-					v, vn := protowire.ConsumeVarint(data)
-					if vn < 0 {
-						return fmt.Errorf("invalid packed varint")
+					var v uint64
+					var vn int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if vn >= len(data) {
+							return io.ErrUnexpectedEOF
+						}
+						b := data[vn]
+						vn++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 					m.PackedUint32 = append(m.PackedUint32, uint32(v))
 					data = data[vn:]
@@ -8866,9 +9046,24 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					m.PackedUint64 = make([]uint64, 0, elementCount)
 				}
 				for len(data) > 0 {
-					v, vn := protowire.ConsumeVarint(data)
-					if vn < 0 {
-						return fmt.Errorf("invalid packed varint")
+					var v uint64
+					var vn int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if vn >= len(data) {
+							return io.ErrUnexpectedEOF
+						}
+						b := data[vn]
+						vn++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 					m.PackedUint64 = append(m.PackedUint64, v)
 					data = data[vn:]
@@ -8948,9 +9143,24 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					m.PackedSint32 = make([]int32, 0, elementCount)
 				}
 				for len(data) > 0 {
-					v, vn := protowire.ConsumeVarint(data)
-					if vn < 0 {
-						return fmt.Errorf("invalid packed varint")
+					var v uint64
+					var vn int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if vn >= len(data) {
+							return io.ErrUnexpectedEOF
+						}
+						b := data[vn]
+						vn++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 					m.PackedSint32 = append(m.PackedSint32, int32(uint32(v)>>1)^int32(uint32(v))<<31>>31)
 					data = data[vn:]
@@ -9030,9 +9240,24 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					m.PackedSint64 = make([]int64, 0, elementCount)
 				}
 				for len(data) > 0 {
-					v, vn := protowire.ConsumeVarint(data)
-					if vn < 0 {
-						return fmt.Errorf("invalid packed varint")
+					var v uint64
+					var vn int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if vn >= len(data) {
+							return io.ErrUnexpectedEOF
+						}
+						b := data[vn]
+						vn++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 					m.PackedSint64 = append(m.PackedSint64, int64(v>>1)^int64(v)<<63>>63)
 					data = data[vn:]
@@ -9484,9 +9709,24 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					m.PackedBool = make([]bool, 0, elementCount)
 				}
 				for len(data) > 0 {
-					v, vn := protowire.ConsumeVarint(data)
-					if vn < 0 {
-						return fmt.Errorf("invalid packed varint")
+					var v uint64
+					var vn int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if vn >= len(data) {
+							return io.ErrUnexpectedEOF
+						}
+						b := data[vn]
+						vn++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 					m.PackedBool = append(m.PackedBool, v != 0)
 					data = data[vn:]
@@ -9566,9 +9806,24 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					m.PackedNestedEnum = make([]TestAllTypesProto3_NestedEnum, 0, elementCount)
 				}
 				for len(data) > 0 {
-					v, vn := protowire.ConsumeVarint(data)
-					if vn < 0 {
-						return fmt.Errorf("invalid packed varint")
+					var v uint64
+					var vn int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if vn >= len(data) {
+							return io.ErrUnexpectedEOF
+						}
+						b := data[vn]
+						vn++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 					m.PackedNestedEnum = append(m.PackedNestedEnum, TestAllTypesProto3_NestedEnum(v))
 					data = data[vn:]
@@ -9648,9 +9903,24 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					m.UnpackedInt32 = make([]int32, 0, elementCount)
 				}
 				for len(data) > 0 {
-					v, vn := protowire.ConsumeVarint(data)
-					if vn < 0 {
-						return fmt.Errorf("invalid packed varint")
+					var v uint64
+					var vn int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if vn >= len(data) {
+							return io.ErrUnexpectedEOF
+						}
+						b := data[vn]
+						vn++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 					m.UnpackedInt32 = append(m.UnpackedInt32, int32(v))
 					data = data[vn:]
@@ -9730,9 +10000,24 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					m.UnpackedInt64 = make([]int64, 0, elementCount)
 				}
 				for len(data) > 0 {
-					v, vn := protowire.ConsumeVarint(data)
-					if vn < 0 {
-						return fmt.Errorf("invalid packed varint")
+					var v uint64
+					var vn int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if vn >= len(data) {
+							return io.ErrUnexpectedEOF
+						}
+						b := data[vn]
+						vn++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 					m.UnpackedInt64 = append(m.UnpackedInt64, int64(v))
 					data = data[vn:]
@@ -9812,9 +10097,24 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					m.UnpackedUint32 = make([]uint32, 0, elementCount)
 				}
 				for len(data) > 0 {
-					v, vn := protowire.ConsumeVarint(data)
-					if vn < 0 {
-						return fmt.Errorf("invalid packed varint")
+					var v uint64
+					var vn int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if vn >= len(data) {
+							return io.ErrUnexpectedEOF
+						}
+						b := data[vn]
+						vn++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 					m.UnpackedUint32 = append(m.UnpackedUint32, uint32(v))
 					data = data[vn:]
@@ -9894,9 +10194,24 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					m.UnpackedUint64 = make([]uint64, 0, elementCount)
 				}
 				for len(data) > 0 {
-					v, vn := protowire.ConsumeVarint(data)
-					if vn < 0 {
-						return fmt.Errorf("invalid packed varint")
+					var v uint64
+					var vn int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if vn >= len(data) {
+							return io.ErrUnexpectedEOF
+						}
+						b := data[vn]
+						vn++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 					m.UnpackedUint64 = append(m.UnpackedUint64, v)
 					data = data[vn:]
@@ -9976,9 +10291,24 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					m.UnpackedSint32 = make([]int32, 0, elementCount)
 				}
 				for len(data) > 0 {
-					v, vn := protowire.ConsumeVarint(data)
-					if vn < 0 {
-						return fmt.Errorf("invalid packed varint")
+					var v uint64
+					var vn int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if vn >= len(data) {
+							return io.ErrUnexpectedEOF
+						}
+						b := data[vn]
+						vn++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 					m.UnpackedSint32 = append(m.UnpackedSint32, int32(uint32(v)>>1)^int32(uint32(v))<<31>>31)
 					data = data[vn:]
@@ -10058,9 +10388,24 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					m.UnpackedSint64 = make([]int64, 0, elementCount)
 				}
 				for len(data) > 0 {
-					v, vn := protowire.ConsumeVarint(data)
-					if vn < 0 {
-						return fmt.Errorf("invalid packed varint")
+					var v uint64
+					var vn int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if vn >= len(data) {
+							return io.ErrUnexpectedEOF
+						}
+						b := data[vn]
+						vn++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 					m.UnpackedSint64 = append(m.UnpackedSint64, int64(v>>1)^int64(v)<<63>>63)
 					data = data[vn:]
@@ -10512,9 +10857,24 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					m.UnpackedBool = make([]bool, 0, elementCount)
 				}
 				for len(data) > 0 {
-					v, vn := protowire.ConsumeVarint(data)
-					if vn < 0 {
-						return fmt.Errorf("invalid packed varint")
+					var v uint64
+					var vn int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if vn >= len(data) {
+							return io.ErrUnexpectedEOF
+						}
+						b := data[vn]
+						vn++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 					m.UnpackedBool = append(m.UnpackedBool, v != 0)
 					data = data[vn:]
@@ -10594,9 +10954,24 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					m.UnpackedNestedEnum = make([]TestAllTypesProto3_NestedEnum, 0, elementCount)
 				}
 				for len(data) > 0 {
-					v, vn := protowire.ConsumeVarint(data)
-					if vn < 0 {
-						return fmt.Errorf("invalid packed varint")
+					var v uint64
+					var vn int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if vn >= len(data) {
+							return io.ErrUnexpectedEOF
+						}
+						b := data[vn]
+						vn++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 					m.UnpackedNestedEnum = append(m.UnpackedNestedEnum, TestAllTypesProto3_NestedEnum(v))
 					data = data[vn:]
