@@ -693,12 +693,6 @@ message Bar { int32 n = 1; }`)
 	}
 }
 
-// TestGenerateFilesRejectsNonexistent verifies that a positional path
-// pointing at a file that does not exist produces a "no such file or
-// directory"-style error, not the misleading "is not under --proto_path"
-// error that fires when the file exists outside the walked tree. A typo
-// in a positional arg is by far the most common failure mode; the
-// diagnostic should name the actual cause.
 // TestGenerateProtoDirNotExist pins the user-facing error when --proto_path
 // points at a directory that doesn't exist. The pre-fix error leaked the
 // underlying `lstat` syscall name (wiresmith-d2x): "building import mapping:
@@ -717,8 +711,11 @@ func TestGenerateProtoDirNotExist(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected error for nonexistent --proto_path, got nil")
 	}
+	if !strings.Contains(err.Error(), "--proto_path") {
+		t.Errorf("error should name the --proto_path flag explicitly, got: %v", err)
+	}
 	if !strings.Contains(err.Error(), missing) {
-		t.Errorf("error should name the offending --proto_path %q, got: %v", missing, err)
+		t.Errorf("error should name the offending path %q, got: %v", missing, err)
 	}
 	if !strings.Contains(err.Error(), "does not exist") {
 		t.Errorf("error should say 'does not exist', got: %v", err)
@@ -749,8 +746,11 @@ func TestGenerateProtoDirIsFile(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected error when --proto_path is a regular file, got nil")
 	}
+	if !strings.Contains(err.Error(), "--proto_path") {
+		t.Errorf("error should name the --proto_path flag explicitly, got: %v", err)
+	}
 	if !strings.Contains(err.Error(), notADir) {
-		t.Errorf("error should name the offending --proto_path %q, got: %v", notADir, err)
+		t.Errorf("error should name the offending path %q, got: %v", notADir, err)
 	}
 	if !strings.Contains(err.Error(), "not a directory") {
 		t.Errorf("error should say 'not a directory', got: %v", err)
@@ -760,6 +760,12 @@ func TestGenerateProtoDirIsFile(t *testing.T) {
 	}
 }
 
+// TestGenerateFilesRejectsNonexistent verifies that a positional path
+// pointing at a file that does not exist produces a "no such file or
+// directory"-style error, not the misleading "is not under --proto_path"
+// error that fires when the file exists outside the walked tree. A typo
+// in a positional arg is by far the most common failure mode; the
+// diagnostic should name the actual cause.
 func TestGenerateFilesRejectsNonexistent(t *testing.T) {
 	protoDir := t.TempDir()
 	writeProto(t, protoDir, "in.proto", `
