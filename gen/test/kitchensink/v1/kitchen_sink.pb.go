@@ -4449,9 +4449,24 @@ func (m *AllRepeatedScalars) unmarshal(dAtA []byte, depth int) error {
 					m.FieldInt32 = make([]int32, 0, elementCount)
 				}
 				for len(data) > 0 {
-					v, vn := protowire.ConsumeVarint(data)
-					if vn < 0 {
-						return fmt.Errorf("invalid packed varint")
+					var v uint64
+					var vn int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if vn >= len(data) {
+							return io.ErrUnexpectedEOF
+						}
+						b := data[vn]
+						vn++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 					m.FieldInt32 = append(m.FieldInt32, int32(v))
 					data = data[vn:]
@@ -4531,9 +4546,24 @@ func (m *AllRepeatedScalars) unmarshal(dAtA []byte, depth int) error {
 					m.FieldInt64 = make([]int64, 0, elementCount)
 				}
 				for len(data) > 0 {
-					v, vn := protowire.ConsumeVarint(data)
-					if vn < 0 {
-						return fmt.Errorf("invalid packed varint")
+					var v uint64
+					var vn int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if vn >= len(data) {
+							return io.ErrUnexpectedEOF
+						}
+						b := data[vn]
+						vn++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 					m.FieldInt64 = append(m.FieldInt64, int64(v))
 					data = data[vn:]
@@ -4613,9 +4643,24 @@ func (m *AllRepeatedScalars) unmarshal(dAtA []byte, depth int) error {
 					m.FieldUint32 = make([]uint32, 0, elementCount)
 				}
 				for len(data) > 0 {
-					v, vn := protowire.ConsumeVarint(data)
-					if vn < 0 {
-						return fmt.Errorf("invalid packed varint")
+					var v uint64
+					var vn int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if vn >= len(data) {
+							return io.ErrUnexpectedEOF
+						}
+						b := data[vn]
+						vn++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 					m.FieldUint32 = append(m.FieldUint32, uint32(v))
 					data = data[vn:]
@@ -4695,9 +4740,24 @@ func (m *AllRepeatedScalars) unmarshal(dAtA []byte, depth int) error {
 					m.FieldUint64 = make([]uint64, 0, elementCount)
 				}
 				for len(data) > 0 {
-					v, vn := protowire.ConsumeVarint(data)
-					if vn < 0 {
-						return fmt.Errorf("invalid packed varint")
+					var v uint64
+					var vn int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if vn >= len(data) {
+							return io.ErrUnexpectedEOF
+						}
+						b := data[vn]
+						vn++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 					m.FieldUint64 = append(m.FieldUint64, v)
 					data = data[vn:]
@@ -4777,9 +4837,24 @@ func (m *AllRepeatedScalars) unmarshal(dAtA []byte, depth int) error {
 					m.FieldSint32 = make([]int32, 0, elementCount)
 				}
 				for len(data) > 0 {
-					v, vn := protowire.ConsumeVarint(data)
-					if vn < 0 {
-						return fmt.Errorf("invalid packed varint")
+					var v uint64
+					var vn int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if vn >= len(data) {
+							return io.ErrUnexpectedEOF
+						}
+						b := data[vn]
+						vn++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 					m.FieldSint32 = append(m.FieldSint32, int32(uint32(v)>>1)^int32(uint32(v))<<31>>31)
 					data = data[vn:]
@@ -4859,9 +4934,24 @@ func (m *AllRepeatedScalars) unmarshal(dAtA []byte, depth int) error {
 					m.FieldSint64 = make([]int64, 0, elementCount)
 				}
 				for len(data) > 0 {
-					v, vn := protowire.ConsumeVarint(data)
-					if vn < 0 {
-						return fmt.Errorf("invalid packed varint")
+					var v uint64
+					var vn int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if vn >= len(data) {
+							return io.ErrUnexpectedEOF
+						}
+						b := data[vn]
+						vn++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 					m.FieldSint64 = append(m.FieldSint64, int64(v>>1)^int64(v)<<63>>63)
 					data = data[vn:]
@@ -5187,9 +5277,24 @@ func (m *AllRepeatedScalars) unmarshal(dAtA []byte, depth int) error {
 					m.FieldBool = make([]bool, 0, elementCount)
 				}
 				for len(data) > 0 {
-					v, vn := protowire.ConsumeVarint(data)
-					if vn < 0 {
-						return fmt.Errorf("invalid packed varint")
+					var v uint64
+					var vn int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if vn >= len(data) {
+							return io.ErrUnexpectedEOF
+						}
+						b := data[vn]
+						vn++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 					m.FieldBool = append(m.FieldBool, v != 0)
 					data = data[vn:]
@@ -6872,9 +6977,24 @@ func (m *WithEnum) unmarshal(dAtA []byte, depth int) error {
 					m.Colors = make([]Color, 0, elementCount)
 				}
 				for len(data) > 0 {
-					v, vn := protowire.ConsumeVarint(data)
-					if vn < 0 {
-						return fmt.Errorf("invalid packed varint")
+					var v uint64
+					var vn int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if vn >= len(data) {
+							return io.ErrUnexpectedEOF
+						}
+						b := data[vn]
+						vn++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 					m.Colors = append(m.Colors, Color(v))
 					data = data[vn:]
@@ -7187,9 +7307,24 @@ func (m *OnlyRepeated) unmarshal(dAtA []byte, depth int) error {
 					m.Values = make([]int64, 0, elementCount)
 				}
 				for len(data) > 0 {
-					v, vn := protowire.ConsumeVarint(data)
-					if vn < 0 {
-						return fmt.Errorf("invalid packed varint")
+					var v uint64
+					var vn int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if vn >= len(data) {
+							return io.ErrUnexpectedEOF
+						}
+						b := data[vn]
+						vn++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 					m.Values = append(m.Values, int64(v))
 					data = data[vn:]

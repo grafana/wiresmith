@@ -151,9 +151,10 @@ func (r *RepeatedField) emitPackedUnmarshal(e Emitter, access string, ctx FieldC
 
 	// Inline length decode for the packed data envelope.
 	emitConsumeBytesLenAt(e, "\t\t\t\t")
+
 	e.Writef("\t\t\t\tdata := dAtA[iNdEx:postIndex]\n")
 
-	// Pre-allocate with exact capacity
+	// Pre-allocate with exact capacity.
 	switch r.Inner.FixedSize() {
 	case 8:
 		e.Writef("\t\t\t\tif elementCount := len(data) / 8; elementCount != 0 && len(%s) == 0 {\n", access)
@@ -179,20 +180,34 @@ func (r *RepeatedField) emitPackedUnmarshal(e Emitter, access string, ctx FieldC
 		e.Writef("\t\t\t\t}\n")
 	}
 
-	// Decode loop (uses protowire on bounded data slice)
+	// Decode loop. Fixed-width elements stay on protowire — protowire's
+	// ConsumeFixed{32,64} inlines into the caller (cost 68, comfortably
+	// under the budget) and the resulting hot loop is already as tight as
+	// hand-written code. Switching to a `binary.LittleEndian.Uint{32,64}`
+	// + len(data)>=N shape measured 8% slower on 64-element packed runs
+	// (Apple M4 Pro), so we don't touch fixed-width here.
+	//
+	// Varints, on the other hand, can't be inlined — `ConsumeVarint` is
+	// far above the inline budget — so the function-call boundary shows
+	// up as ~30% on the same micro. We inline a shift loop directly,
+	// bounding by len(data) so element decodes can't read past the packed
+	// payload boundary (would otherwise consume bytes from the next field).
 	e.Writef("\t\t\t\tfor len(data) > 0 {\n")
 	if r.Inner.IsFixed64() {
 		e.Writef("\t\t\t\t\tv, vn := protowire.ConsumeFixed64(data)\n")
 		e.Writef("\t\t\t\t\tif vn < 0 {\n\t\t\t\t\t\treturn fmt.Errorf(\"invalid packed fixed64\")\n\t\t\t\t\t}\n")
+		e.Writef("\t\t\t\t\t%s = append(%s, %s)\n", access, access, r.Inner.CastExpr("v", ctx))
+		e.Writef("\t\t\t\t\tdata = data[vn:]\n")
 	} else if r.Inner.IsFixed32() {
 		e.Writef("\t\t\t\t\tv, vn := protowire.ConsumeFixed32(data)\n")
 		e.Writef("\t\t\t\t\tif vn < 0 {\n\t\t\t\t\t\treturn fmt.Errorf(\"invalid packed fixed32\")\n\t\t\t\t\t}\n")
+		e.Writef("\t\t\t\t\t%s = append(%s, %s)\n", access, access, r.Inner.CastExpr("v", ctx))
+		e.Writef("\t\t\t\t\tdata = data[vn:]\n")
 	} else {
-		e.Writef("\t\t\t\t\tv, vn := protowire.ConsumeVarint(data)\n")
-		e.Writef("\t\t\t\t\tif vn < 0 {\n\t\t\t\t\t\treturn fmt.Errorf(\"invalid packed varint\")\n\t\t\t\t\t}\n")
+		emitConsumeVarintFromSlice(e, "\t\t\t\t\t", "data", "vn")
+		e.Writef("\t\t\t\t\t%s = append(%s, %s)\n", access, access, r.Inner.CastExpr("v", ctx))
+		e.Writef("\t\t\t\t\tdata = data[vn:]\n")
 	}
-	e.Writef("\t\t\t\t\t%s = append(%s, %s)\n", access, access, r.Inner.CastExpr("v", ctx))
-	e.Writef("\t\t\t\t\tdata = data[vn:]\n")
 	e.Writef("\t\t\t\t}\n")
 	e.Writef("\t\t\t\tiNdEx = postIndex\n")
 

@@ -600,9 +600,24 @@ func (m *WithNestedEnum) unmarshal(dAtA []byte, depth int) error {
 					m.Priorities = make([]WithNestedEnum_Priority, 0, elementCount)
 				}
 				for len(data) > 0 {
-					v, vn := protowire.ConsumeVarint(data)
-					if vn < 0 {
-						return fmt.Errorf("invalid packed varint")
+					var v uint64
+					var vn int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if vn >= len(data) {
+							return io.ErrUnexpectedEOF
+						}
+						b := data[vn]
+						vn++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 					m.Priorities = append(m.Priorities, WithNestedEnum_Priority(v))
 					data = data[vn:]
@@ -936,9 +951,24 @@ func (m *EnumContainer) unmarshal(dAtA []byte, depth int) error {
 					m.RepeatedAliased = make([]AliasedPriority, 0, elementCount)
 				}
 				for len(data) > 0 {
-					v, vn := protowire.ConsumeVarint(data)
-					if vn < 0 {
-						return fmt.Errorf("invalid packed varint")
+					var v uint64
+					var vn int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return fmt.Errorf("proto: integer overflow")
+						}
+						if vn >= len(data) {
+							return io.ErrUnexpectedEOF
+						}
+						b := data[vn]
+						vn++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							if shift == 63 && b > 1 {
+								return fmt.Errorf("proto: varint overflow")
+							}
+							break
+						}
 					}
 					m.RepeatedAliased = append(m.RepeatedAliased, AliasedPriority(v))
 					data = data[vn:]
