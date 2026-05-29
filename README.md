@@ -14,6 +14,8 @@ wiresmith takes a different approach: **value-type structs with generated marsha
 
 ## Benchmarks
 
+_As of 2026-05-22 ([`fffc26c`](https://github.com/grafana/wiresmith/commit/fffc26c))._ Reproduce locally with `make bench-compare`.
+
 On a full trace payload (100 spans, Apple M4 Pro, 10 iterations), wiresmith marshals in **6.4 us/op** (vs 7.7 us for vtproto/gogoproto and 46.2 us for the official runtime) and unmarshals in **33.4 us/op** (vs ~36–39 us for vtproto/gogoproto and 70.1 us for the official runtime). Unmarshal also uses 30–40% less memory than the alternatives.
 
 See [docs/comparison.md](docs/comparison.md) for the full per-benchmark tables, the feature matrix, and the methodology.
