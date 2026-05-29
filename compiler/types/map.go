@@ -124,7 +124,15 @@ func (m *MapField) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
 		if m.ValCtx.IsSamePackage {
 			e.Writef("\t\t\t\tif err := existing.unmarshal(mapValueBytes, depth+1); err != nil {\n\t\t\t\t\treturn err\n\t\t\t\t}\n")
 		} else {
-			e.Writef("\t\t\t\tif err := existing.Unmarshal(mapValueBytes); err != nil {\n\t\t\t\t\treturn err\n\t\t\t\t}\n")
+			// Cross-package merge: thread depth through UnmarshalWithDepth.
+			// Calling the public Unmarshal here would reset depth at the
+			// boundary, re-opening the SEC-5 hole that the rest of the
+			// codegen closes for cross-package message access (and which
+			// MessageType.EmitMapEntryUnmarshal closes for the *initial*
+			// map-entry decode). An attacker who can place duplicate keys
+			// on the wire could otherwise get a fresh depth budget per
+			// merge and ping-pong indefinitely. See wiresmith-1c0.
+			e.Writef("\t\t\t\tif err := existing.UnmarshalWithDepth(mapValueBytes, depth+1); err != nil {\n\t\t\t\t\treturn err\n\t\t\t\t}\n")
 		}
 		e.Writef("\t\t\t\t%s[mapkey] = existing\n", access)
 		e.Writef("\t\t\t} else if !ok {\n")

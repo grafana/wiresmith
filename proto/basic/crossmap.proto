@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package basic.crossmap.v1;
+
+option go_package = "wiresmith/gen/basic/crossmap/v1";
+
+import "basic/recursive/v1/recursive.proto";
+
+// CrossMapOuter exercises the cross-package map<K, Msg> code paths in the
+// generator. The value type lives in basic.recursive.v1, so the emitted
+// merge branch must route through UnmarshalWithDepth (not the
+// depth-resetting public Unmarshal) to keep the SEC-5 recursion guard
+// intact across duplicate-key wire entries. See wiresmith-1c0.
+message CrossMapOuter {
+  map<string, basic.recursive.v1.LinkedList> entries = 1;
+}

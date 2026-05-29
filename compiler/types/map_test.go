@@ -112,14 +112,12 @@ func TestMapField_EmitUnmarshal_MergePresentNotLen(t *testing.T) {
 // package-local `existing.unmarshal()` helper, so we also assert that
 // private form is absent.
 //
-// Intentionally NOT pinning the specific public call form (`.Unmarshal()` vs
-// `.UnmarshalWithDepth(..., depth+1)`). Today the emit uses the public
-// depth-resetting `Unmarshal`, which is the SEC-5 regression tracked by
-// wiresmith-1c0; once that fix lands, the call must become
-// `UnmarshalWithDepth`. An assertion that pinned today's form would turn CI
-// into a guard against the fix, so we leave the exact symbol unchecked here
-// and let the integration-level depth-tracking test in
-// compiler/generator/generator_test.go own that invariant.
+// Cross-package map-value merge must thread the recursion-depth counter
+// through `UnmarshalWithDepth(..., depth+1)`. The public `Unmarshal(b)`
+// entry resets depth to zero at the package boundary, which would re-open
+// the SEC-5 hole the rest of the codegen closes — an attacker who can put
+// duplicate map keys on the wire would get a fresh depth budget for every
+// merge. Pinned after wiresmith-1c0 landed the fix.
 func TestMapField_EmitUnmarshal_CrossPackageMessageMerge(t *testing.T) {
 	e := &captureEmitter{}
 	mf := &MapField{
@@ -143,6 +141,12 @@ func TestMapField_EmitUnmarshal_CrossPackageMessageMerge(t *testing.T) {
 	// must NOT reach for it.
 	if strings.Contains(got, "existing.unmarshal(") {
 		t.Errorf("Cross-package: private unmarshal() is not accessible:\n%s", got)
+	}
+	if !strings.Contains(got, "existing.UnmarshalWithDepth(mapValueBytes, depth+1)") {
+		t.Errorf("Cross-package merge must thread depth via existing.UnmarshalWithDepth(mapValueBytes, depth+1):\n%s", got)
+	}
+	if strings.Contains(got, "existing.Unmarshal(mapValueBytes)") {
+		t.Errorf("Cross-package merge must NOT use depth-resetting existing.Unmarshal(mapValueBytes):\n%s", got)
 	}
 }
 
