@@ -155,6 +155,34 @@ For wiresmith specifically:
 
 **When this could become viable:** if the Go inliner gains the ability to apply non-literalized rewrites for multi-statement bodies at statement-level call sites (i.e. expand the body inline as a labeled block instead of refusing). Tracking issue: <https://github.com/golang/go/issues/32816> (the original `//go:fix inline` proposal). Until then, wiresmith's "emit the loop directly" approach in `compiler/types/type.go:114-196` and `compiler/generator/emit_unmarshal.go` is the only way to keep these paths inlined.
 
+### Unrolled per-byte varint decoder (protobuf-go style)
+
+**Idea:** Replace the 10-iteration `for { ... }` varint decoder in `compiler/types/type.go::emitConsumeVarintAt` and the multi-byte fallback in `emitConsumeBytesLenAt` with a flat 10-branch unrolled body modelled on `google.golang.org/protobuf/encoding/protowire.ConsumeVarint`. Each byte position becomes its own `if iNdEx >= l … b := dAtA[iNdEx]; iNdEx++; v += uint64(b) << shift; if b < 0x80 { break }; v -= 0x80 << shift` block, written as a single-iteration `for { … }` so each per-byte termination uses `break` without goto labels. Hypothesis (per wiresmith-kgq): the per-iteration `shift >= 64` guard and the in-loop terminator check cost ~1% geomean / +7.7% on `UnmarshalMap_Ours`; unrolling moves the overflow guard to a single branch (byte 9 only) and lets the CPU branch-predict the dominant single-byte fast path.
+
+**Why it doesn't work in practice:** Empirically the change is a wash to a slight regression on the OTel macros, *including the benchmark the bead specifically expected to win* (Maps). Measured on an Apple M4 Pro, count=20 benchstat with paired baseline (`bd-wiresmith-kgq-unrolled-varint`):
+
+| Bench                          | Δ          | p     |
+|--------------------------------|-----------:|------:|
+| `UnmarshalMap_Ours`            | **+2.17%** | 0.000 |
+| `UnmarshalSummary_Ours`        | +0.79%     | 0.000 |
+| `UnmarshalSingleSpan_Ours`     | −1.39%     | 0.000 |
+| `UnmarshalLogs_Ours`           | −0.51%     | 0.004 |
+| `UnmarshalProfiles_Ours`       | −1.32%     | 0.000 |
+| `UnmarshalTraces/Histogram/Gauge/Sum/ExpHistogram_Ours` | flat (p ≥ 0.09) | — |
+| **geomean**                    | **+0.05%** | — |
+
+Generated `.pb.go` lines grow by **~70%** (47,906 → 81,396 across all wiresmith-owned packages); the linked bench binary grows by **~1.4%** (13.12 MiB → 13.30 MiB). Allocations and B/op are unchanged on every macro.
+
+Why the hypothesis fails:
+
+- `EmitConsumeTagAt` and `emitConsumeBytesLenAt` already peel the single-byte fast path (most OTel tags use field numbers 1–15 and most lengths are < 128). The fallback varint loop is *cold*, so unrolling it touches code that's rarely on the executed path. The single-byte unrolled form is no shorter than one iteration of the old generic loop — both pay a bound check, a load, a terminator check, and a store on the dominant 0..127 case.
+- The extra ~30 lines of dead-path code per call site pushes other functions out of the i-cache. With wiresmith generating tens of varint sites per OTel proto, the cumulative i-cache pressure measurably regresses the densest unmarshal paths — Maps in particular, which has many small varints back-to-back and benefits most from i-cache density.
+- The Go SSA backend already does a competent job on the loop form post-inline: the loop body is hoisted to a basic block per iteration after escape analysis and BCE, and the `shift >= 64` guard is branch-predicted false through every legitimate varint.
+
+**When this could become viable:** if the Go compiler stops branch-predicting the `shift >= 64` guard cheaply (e.g. a future cost-model change), or if a future micro-arch makes branch-target buffer pressure dominate i-cache pressure, the calculus could flip. The unrolled approach also pairs better with `//go:fix inline`-style rewriting (see above) if that ever materialises, since each per-byte block is an expression-shaped chunk. Until then, keep the loop form.
+
+The matching prototype lives in branch `bd-wiresmith-kgq-unrolled-varint` (left unmerged); see PR linked from wiresmith-kgq for the full benchstat run.
+
 <!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:7510c1e2 -->
 ## Beads Issue Tracker
 
