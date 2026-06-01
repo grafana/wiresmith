@@ -343,14 +343,17 @@ func TestCompare_SortStability(t *testing.T) {
 
 	sort.Slice(items, func(i, j int) bool { return items[i].Compare(items[j]) < 0 })
 
-	want := []struct{ i32, s string }{
-		{"1", "a"},
-		{"1", "b"},
-		{"2", "b"},
-		{"3", "c"},
+	want := []struct {
+		i32 int32
+		s   string
+	}{
+		{1, "a"},
+		{1, "b"},
+		{2, "b"},
+		{3, "c"},
 	}
 	for i, w := range want {
-		assert.Equal(t, w.s, items[i].FieldString, "row %d", i)
-		_ = w.i32 // hush unused-field linter
+		assert.Equal(t, w.i32, items[i].FieldInt32, "row %d FieldInt32", i)
+		assert.Equal(t, w.s, items[i].FieldString, "row %d FieldString", i)
 	}
 }
