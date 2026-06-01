@@ -131,6 +131,15 @@ func (f fixed32Base) EmitEqual(e Emitter, indent, lhs, rhs string) {
 	scalarNotEqualGuard(e, indent, f.equalCast(lhs), f.equalCast(rhs))
 }
 
+// EmitCompare emits a bit-exact ordered comparison via equalCast. For Float
+// that routes both sides through math.Float32bits so NaN payloads order
+// stably and the marshal-preserving -0.0 vs +0.0 distinction is reflected
+// in the ordering (uint32(0x80000000) > uint32(0)). Fixed/sfixed keep
+// natural unsigned/signed `<` semantics.
+func (f fixed32Base) EmitCompare(e Emitter, indent, lhs, rhs string) {
+	orderedScalarCompareGuard(e, indent, f.equalCast(lhs), f.equalCast(rhs))
+}
+
 // Fixed32Type is the Type for protoreflect.Fixed32Kind.
 var Fixed32Type = &fixed32Base{
 	putExpr: "%s",

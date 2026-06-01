@@ -1,0 +1,99 @@
+// Fixtures for the generated Compare() method. Each message exercises a
+// different shape (scalars in ascending tag, repeated, map, oneof,
+// optional, nested, pointer) so test/basic/compare_test.go can pin down
+// ordering rules per shape without dragging in the OTel protos.
+syntax = "proto3";
+
+package basic.compare.v1;
+
+import "wiresmith/options.proto";
+
+option go_package = "wiresmith/gen/basic/compare/v1";
+// File-level opt-in: every message in this file gets a Compare method.
+// Mirrors gogoproto.compare_all at the file scope; equivalent to setting
+// (wiresmith.options.compare) = true on each message individually.
+option (wiresmith.options.compare_all) = true;
+
+enum Color {
+  COLOR_UNSPECIFIED = 0;
+  COLOR_RED = 1;
+  COLOR_GREEN = 2;
+  COLOR_BLUE = 3;
+}
+
+// Every supported scalar kind, plus an enum. Field order matches tag
+// order — and the tags walk every wire type in turn so any Compare
+// emitter that wires up a wrong cast will surface here, not in the
+// macros that consume Compare downstream.
+message AllScalars {
+  double   field_double   = 1;
+  float    field_float    = 2;
+  int32    field_int32    = 3;
+  int64    field_int64    = 4;
+  uint32   field_uint32   = 5;
+  uint64   field_uint64   = 6;
+  sint32   field_sint32   = 7;
+  sint64   field_sint64   = 8;
+  fixed32  field_fixed32  = 9;
+  fixed64  field_fixed64  = 10;
+  sfixed32 field_sfixed32 = 11;
+  sfixed64 field_sfixed64 = 12;
+  bool     field_bool     = 13;
+  string   field_string   = 14;
+  bytes    field_bytes    = 15;
+  Color    field_enum     = 16;
+}
+
+// Tag-ascending ordering check: declaration order intentionally puts the
+// higher-tag field first so a generator that walks fields in declaration
+// order would emit them in (high_tag, low_tag) and the "tag-1 dominates"
+// test would catch it.
+message OutOfOrderTags {
+  int32 second = 2;
+  int32 first  = 1;
+  int32 third  = 3;
+}
+
+message OptionalScalars {
+  optional int32  field_int32  = 1;
+  optional string field_string = 2;
+  optional bytes  field_bytes  = 3;
+  optional double field_double = 4;
+}
+
+message Inner {
+  int32 value = 1;
+}
+
+message WithMessage {
+  Inner inner = 1;
+  string name = 2;
+}
+
+message WithPointerMessage {
+  Inner inner = 1 [(wiresmith.options.pointer) = true];
+}
+
+message Repeated {
+  repeated int32  ints   = 1;
+  repeated string strs   = 2;
+  repeated Inner  inners = 3;
+  repeated bytes  blobs  = 4;
+}
+
+message WithMap {
+  map<string, string> m_string_string = 1;
+  map<int32, string>  m_int32_string  = 2;
+  map<string, Inner>  m_string_inner  = 3;
+  map<bool, string>   m_bool_string   = 4;
+}
+
+message WithOneof {
+  oneof value {
+    int32  int_val   = 1;
+    string str_val   = 2;
+    bytes  bytes_val = 3;
+    Inner  msg_val   = 4;
+  }
+  string after = 5;
+}

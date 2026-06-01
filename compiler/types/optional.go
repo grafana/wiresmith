@@ -83,3 +83,43 @@ func (o *OptionalField) EmitEqual(e Emitter, indent, lhs, rhs string) {
 	e.Writef("%s\tif *%s != *%s {\n%s\t\treturn false\n%s\t}\n", indent, lhs, rhs, indent, indent)
 	e.Writef("%s}\n", indent)
 }
+
+// EmitCompare mirrors EmitEqual's three-shape dispatch:
+//   - Bytes ([]byte already nullable): nil-pair ordering (nil < non-nil),
+//     then delegate to BytesType.EmitCompare which uses bytes.Compare.
+//   - Message (*Msg): nil-pair ordering, then delegate to the nil-safe
+//     Compare method (the inner method already accepts a nil receiver).
+//   - Scalar (*T): nil-pair ordering, then dereference and compare.
+//
+// "nil < non-nil" matches gogo's convention and the bead's nil-safety rule
+// (`nil.Compare(non-nil) == -1`).
+func (o *OptionalField) EmitCompare(e Emitter, indent, lhs, rhs string) {
+	if _, isBytes := o.Inner.(*BytesType); isBytes {
+		emitNilPairOrdering(e, indent, lhs, rhs)
+		o.Inner.EmitCompare(e, indent, lhs, rhs)
+		return
+	}
+	if _, isMsg := o.Inner.(*MessageType); isMsg {
+		emitNilPairOrdering(e, indent, lhs, rhs)
+		e.Writef("%sif %s != nil {\n", indent, lhs)
+		o.Inner.EmitCompare(e, indent+"\t", lhs, rhs)
+		e.Writef("%s}\n", indent)
+		return
+	}
+	// Scalar optional: nil < non-nil; identical-pointer shortcut elided
+	// because the cost of dereferencing is the same as the pointer-compare
+	// branch and the codegen is simpler.
+	emitNilPairOrdering(e, indent, lhs, rhs)
+	e.Writef("%sif %s != nil {\n", indent, lhs)
+	o.Inner.EmitCompare(e, indent+"\t", "*"+lhs, "*"+rhs)
+	e.Writef("%s}\n", indent)
+}
+
+// emitNilPairOrdering writes the standard nil/non-nil 3-way ordering: both
+// nil falls through, lhs nil returns -1, rhs nil returns +1. Used by every
+// pointer-shaped composite (Optional, Pointer, RepeatedPointer per-element).
+func emitNilPairOrdering(e Emitter, indent, lhs, rhs string) {
+	e.Writef("%sif (%s == nil) != (%s == nil) {\n", indent, lhs, rhs)
+	e.Writef("%s\tif %s == nil {\n%s\t\treturn -1\n%s\t}\n", indent, lhs, indent, indent)
+	e.Writef("%s\treturn 1\n%s}\n", indent, indent)
+}

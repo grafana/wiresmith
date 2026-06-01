@@ -1,6 +1,6 @@
 # Custom proto extensions
 
-wiresmith exposes a single custom `.proto` file with field-level options that influence the generated Go shape without changing the wire format. The on-wire layout always matches stock proto3 — switching the option on or off does not break binary compatibility with peers using other libraries.
+wiresmith exposes a single custom `.proto` file with field-, message-, and file-level options that influence the generated Go shape or surface area without changing the wire format. The on-wire layout always matches stock proto3 — switching any option on or off does not break binary compatibility with peers using other libraries.
 
 ## `wiresmith/options.proto`
 
@@ -76,3 +76,52 @@ message PointerHolder {
 ```
 
 The option is local to a field; mixing pointer and value shapes within the same message is supported and exercised by this fixture.
+
+## `(wiresmith.options.compare)` / `(wiresmith.options.compare_all)`
+
+The compare options opt messages into a generated `Compare(other interface{}) int` method, the wiresmith equivalent of gogoproto's `compare` / `compare_all`. Returns -1/0/+1 like `bytes.Compare`, with the standard gogo nil/wrong-type preamble (`nil.Compare(nil) == 0`, `nil.Compare(non-nil) == -1`, `m.Compare("wrong type") == 1`).
+
+```proto
+// Per-message opt-in.
+message Job {
+  option (wiresmith.options.compare) = true;
+  string id = 1;
+  int64  priority = 2;
+}
+
+// Or, for entire files, the file-level switch.
+option (wiresmith.options.compare_all) = true;
+```
+
+### Ordering rules
+
+Fields walk in ascending wire-tag order so the relation is stable against declaration-order edits that don't change the tags.
+
+| Shape                       | Comparison                                                                                        |
+|-----------------------------|---------------------------------------------------------------------------------------------------|
+| `int*` / `uint*` / `sint*`  | Go `<` on the numeric value.                                                                      |
+| `bool`                      | `false < true`.                                                                                   |
+| `float` / `double`          | Bit-exact via `math.Float{32,64}bits` — matches the bit-exact Equal contract (NaN/-0.0 distinct). |
+| `fixed*` / `sfixed*`        | Natural unsigned/signed `<`.                                                                      |
+| `enum`                      | Underlying integer value.                                                                         |
+| `string`                    | Go's lexicographic `<`.                                                                           |
+| `bytes`                     | `bytes.Compare`.                                                                                  |
+| `repeated T`                | Shorter slice sorts first; otherwise element-wise.                                                |
+| `map<K, V>`                 | Shorter map sorts first; otherwise sorted-key order, key-then-value at each position.             |
+| Nested `message`            | Recursive nil-safe `Compare` on the value.                                                        |
+| `(wiresmith.options.pointer)` message | `nil` sorts before any non-nil, then recursive `Compare`.                               |
+| `optional` scalar           | `nil` sorts before any non-nil, then dereferenced compare.                                        |
+| `optional bytes` / `*Msg`   | Same nil-pair ordering, then `bytes.Compare` or recursive `Compare`.                              |
+| `oneof`                     | Unset sorts before any set; otherwise variant declaration index, then payload at the same variant. |
+
+### Closure over message-field references
+
+When a Compare-enabled message references another message through a singular, repeated, map-value, or oneof-variant field, the inner message also receives a Compare method automatically — the generator computes the transitive closure once at codegen time. This means you only need to flip the option on the "root" of a message subtree; nothing inside cascades a compile error.
+
+### Why opt-in (rather than always-emit)
+
+Always emitting Compare on every message added ~9% to OTel hot-path microbenchmarks (Marshal/Unmarshal/Size) via icache pressure on the linked binary, even though Compare itself was never called on those paths. Opt-in keeps the cost zero for callers who don't need ordering. See [`compiler/generator/option_compare.go`](../compiler/generator/option_compare.go) for the resolution + closure pass.
+
+### Worked example
+
+[`proto/basic/compare.proto`](../proto/basic/compare.proto) exercises every supported shape; the matching tests are in [`test/basic/compare_test.go`](../test/basic/compare_test.go).

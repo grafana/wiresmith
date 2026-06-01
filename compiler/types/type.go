@@ -19,6 +19,14 @@ type FieldType interface {
 	// form; for scalars it emits `lhs != rhs`. `indent` is the prefix
 	// applied to every emitted line, matching the EmitValueSize style.
 	EmitEqual(e Emitter, indent, lhs, rhs string)
+	// EmitCompare emits a comparison block that returns -1 or +1 from the
+	// enclosing Compare method when lhs and rhs differ. Falls through (no
+	// return emitted) when the values compare equal so the next field can
+	// continue. Float kinds emit bit-exact comparisons via math.Float*bits
+	// to match Equal's NaN/-0.0 contract. Map composites sort keys before
+	// element-wise comparison; oneof composites compare by variant index
+	// first, then payload.
+	EmitCompare(e Emitter, indent, lhs, rhs string)
 	RequiredImports() []string
 }
 
@@ -80,6 +88,18 @@ func ScalarZeroLiteral(kind protoreflect.Kind) string {
 // given indent. Shared by every Type whose Go form is `==`-comparable.
 func scalarNotEqualGuard(e Emitter, indent, lhs, rhs string) {
 	e.Writef("%sif %s != %s {\n%s\treturn false\n%s}\n", indent, lhs, rhs, indent, indent)
+}
+
+// orderedScalarCompareGuard emits a -1/+1 comparison guard at the given
+// indent for any Go-`<`-comparable scalar (all integers, both floats, and
+// strings). Float kinds pass through math.Float*bits so the comparison is
+// bit-exact and a wrapper expression like math.Float64bits(%s) is what
+// reaches the operator — matching the marshal path and Equal's contract
+// (see fixed32.go / fixed64.go).
+func orderedScalarCompareGuard(e Emitter, indent, lhs, rhs string) {
+	e.Writef("%sif %s != %s {\n", indent, lhs, rhs)
+	e.Writef("%s\tif %s < %s {\n%s\t\treturn -1\n%s\t}\n", indent, lhs, rhs, indent, indent)
+	e.Writef("%s\treturn 1\n%s}\n", indent, indent)
 }
 
 // Emitter provides code-emission primitives. Implemented by FileGenerator.

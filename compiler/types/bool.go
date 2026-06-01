@@ -73,6 +73,15 @@ func (BoolType) EmitEqual(e Emitter, indent, lhs, rhs string) {
 	scalarNotEqualGuard(e, indent, lhs, rhs)
 }
 
+// EmitCompare orders false < true so the comparison is total and matches
+// gogo's bool Compare. Go does not support `<` on bool, so the predicate
+// "lhs is the smaller side" must be spelled out as `!lhs && rhs`.
+func (BoolType) EmitCompare(e Emitter, indent, lhs, rhs string) {
+	e.Writef("%sif %s != %s {\n", indent, lhs, rhs)
+	e.Writef("%s\tif !%s && %s {\n%s\t\treturn -1\n%s\t}\n", indent, lhs, rhs, indent, indent)
+	e.Writef("%s\treturn 1\n%s}\n", indent, indent)
+}
+
 func init() {
 	register(protoreflect.BoolKind, &BoolType{})
 }

@@ -24,3 +24,31 @@ extend google.protobuf.FieldOptions {
   // validation list.
   optional bool pointer = 50030;
 }
+
+extend google.protobuf.MessageOptions {
+  // compare = true emits a nil-safe `Compare(other interface{}) int`
+  // method on the message. Fields are walked in ascending wire-tag order;
+  // the result follows bytes.Compare semantics (-1/0/+1). Float fields
+  // are compared bit-exact (math.Float{32,64}bits), matching the Equal
+  // contract.
+  //
+  // This is the wiresmith equivalent of gogoproto.compare. It is opt-in
+  // because emitting Compare on every message adds ~9% to OTel hot-path
+  // microbenchmarks via icache pressure on the linked binary even though
+  // Compare itself is never called on those paths.
+  //
+  // Cross-message recursion: if message M has the option and contains a
+  // field of message type N, N must also have the option (either on the
+  // message or via the file-level compare_all). The generator validates
+  // this and reports a clear error otherwise.
+  optional bool compare = 50031;
+}
+
+extend google.protobuf.FileOptions {
+  // compare_all = true treats every message in the file as if it had
+  // [(wiresmith.options.compare) = true] set individually. Use this when
+  // an entire file is shared with a consumer that needs Compare (Tempo's
+  // scheduler, for example) so individual messages don't need to be
+  // annotated one at a time.
+  optional bool compare_all = 50032;
+}

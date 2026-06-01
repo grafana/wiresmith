@@ -170,10 +170,26 @@ func (fg *FileGenerator) goFieldType(fd protoreflect.FieldDescriptor) string {
 // visible in exactly one place so future option-driven shape changes have a
 // clear home.
 func (fg *FileGenerator) fieldType(fd protoreflect.FieldDescriptor) types.FieldType {
+	if fd.IsMap() {
+		// MapField needs the Go-side key/value type names for emitters that
+		// build typed locals (e.g. Compare's sorted-key slices). ForField
+		// returns one with only Key/Val populated, which is enough for size
+		// and the Equal len-check but not for Compare. Populating it here
+		// keeps emit_compare from needing its own map-construction path.
+		return &types.MapField{
+			Key:       types.Get(fd.MapKey().Kind()),
+			Val:       types.Get(fd.MapValue().Kind()),
+			MapType:   fg.imports.goType(fd),
+			KeyGoType: fg.imports.goSingularType(fd.MapKey()),
+			ValGoType: fg.imports.goSingularType(fd.MapValue()),
+			KeyCtx:    fg.fieldContext(fd.MapKey()),
+			ValCtx:    fg.fieldContext(fd.MapValue()),
+		}
+	}
 	if !fg.hasPointerOption(fd) {
 		return types.ForField(fd)
 	}
-	if fd.IsMap() || isRealOneof(fd) || fd.HasOptionalKeyword() || fd.Kind() != protoreflect.MessageKind {
+	if isRealOneof(fd) || fd.HasOptionalKeyword() || fd.Kind() != protoreflect.MessageKind {
 		// Validation should have rejected these; fall back so the generator
 		// degrades gracefully if validation is ever bypassed (e.g. from a
 		// future test that constructs descriptors directly).

@@ -80,9 +80,12 @@ borderline cases.
 
 See [docs/design.md](docs/design.md) for the canonical list of design decisions and the deliberate limitations they imply (no unknown-field preservation, no deterministic marshaling, no field-level reflection, etc.). Update that file when a design decision changes; this section intentionally stays a pointer to avoid two sources of truth.
 
-## Custom field options
+## Custom proto options
 
-wiresmith ships one custom field option, `(wiresmith.options.pointer)`, defined in `compiler/generator/embed/wiresmith/options.proto` and served from the canonical import path `wiresmith/options.proto` (embedded in the compiler, no vendoring required). Setting it to `true` switches a singular message field from `T` to `*T` and a repeated message field from `[]T` to `[]*T`; on-wire format is unchanged. It is rejected on scalar, enum, bytes, string, map, oneof, and proto3-`optional` fields — see [docs/extensions.md](docs/extensions.md) for the full rules and a worked example.
+wiresmith ships custom options defined in `compiler/generator/embed/wiresmith/options.proto` and served from the canonical import path `wiresmith/options.proto` (embedded in the compiler, no vendoring required). On-wire format is unchanged regardless of which options are set. See [docs/extensions.md](docs/extensions.md) for the full rules.
+
+- **Field-level `(wiresmith.options.pointer) = true`** — switches a singular message field from `T` to `*T` and a repeated message field from `[]T` to `[]*T`. Rejected on scalar, enum, bytes, string, map, oneof, and proto3-`optional` fields.
+- **Message-level `(wiresmith.options.compare) = true` / file-level `(wiresmith.options.compare_all) = true`** — opt the message (or every message in the file) into a generated `Compare(other) int` method, gogoproto-compatible. The generator extends the closure across message-typed field references so referenced inner messages also get Compare automatically. Opt-in because always-emit added ~9% to OTel Marshal/Unmarshal/Size hot paths via icache pressure.
 
 ## Supported proto3 features
 

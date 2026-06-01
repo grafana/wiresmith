@@ -66,6 +66,19 @@ type Generator struct {
 	// because the embedded `wiresmith/options.proto` is always part of the
 	// input set.
 	pointerExt protoreflect.FieldDescriptor
+
+	// compareExt / compareAllExt are the linked extension descriptors for the
+	// message-level `(wiresmith.options.compare)` and the file-level
+	// `(wiresmith.options.compare_all)` options. Always non-nil after a
+	// successful Compile.
+	compareExt    protoreflect.FieldDescriptor
+	compareAllExt protoreflect.FieldDescriptor
+
+	// compareSet holds the full names of messages that should receive a
+	// generated Compare method, computed once by computeCompareSet as the
+	// closure over direct opt-ins and their message-typed field references.
+	// Per-file emit consults it via shouldEmitCompare.
+	compareSet map[string]bool
 }
 
 // FileGenerator collects emitted code for one proto source file. It owns
@@ -117,6 +130,21 @@ type FileGenerator struct {
 	// the parent Generator. Plumbed through so the per-field option lookup
 	// doesn't have to reach back up to the Generator.
 	pointerExt protoreflect.FieldDescriptor
+
+	// compareSet is the message-FullName allowlist for Compare emission,
+	// copied from the parent Generator. Per-message emit consults it via
+	// shouldEmitCompare.
+	compareSet map[string]bool
+}
+
+// shouldEmitCompare reports whether the message should receive a generated
+// Compare method. Driven by the closure computed in
+// Generator.computeCompareSet — a message is in the set if it (a) carries
+// `(wiresmith.options.compare) = true`, (b) lives in a file with
+// `(wiresmith.options.compare_all) = true`, or (c) is reachable through
+// message-typed fields from a message in (a) or (b).
+func (fg *FileGenerator) shouldEmitCompare(md protoreflect.MessageDescriptor) bool {
+	return fg.compareSet[string(md.FullName())]
 }
 
 // Emitter interface implementation for FileGenerator.
@@ -223,6 +251,10 @@ func (g *Generator) Generate(ctx context.Context) error {
 	if err := g.resolvePointerExtension(results); err != nil {
 		return err
 	}
+	if err := g.resolveCompareExtensions(results); err != nil {
+		return err
+	}
+	g.computeCompareSet(results)
 	if err := g.validatePointerOptions(results); err != nil {
 		return err
 	}
@@ -493,6 +525,7 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 		reflectBody:    &bytes.Buffer{},
 		fileVarName:    sanitizeFileVarName(fd.Path()),
 		pointerExt:     g.pointerExt,
+		compareSet:     g.compareSet,
 	}
 
 	// Main file: hot paths and the user-facing API. These emitters write to
@@ -507,6 +540,7 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 	fg.emitAllMarshalMethods(fd)
 	fg.emitAllUnmarshalMethods(fd)
 	fg.emitAllEqualMethods(fd)
+	fg.emitAllCompareMethods(fd)
 
 	// Companion file: reflection/registration glue. These emitters write to
 	// fg.reflectBody / fg.reflectImports. The two passes below MUST iterate
