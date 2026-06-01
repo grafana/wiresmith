@@ -136,7 +136,16 @@ func (f fixed32Base) EmitEqual(e Emitter, indent, lhs, rhs string) {
 // stably and the marshal-preserving -0.0 vs +0.0 distinction is reflected
 // in the ordering (uint32(0x80000000) > uint32(0)). Fixed/sfixed keep
 // natural unsigned/signed `<` semantics.
+//
+// "math" is added lazily here rather than through RequiredImports because
+// the _compare.pb.go file is its own compilation unit — eagerly pulling
+// in the full RequiredImports list (which also includes "encoding/binary"
+// for the Marshal path) would leave Compare's import block with unused
+// entries that Go would reject.
 func (f fixed32Base) EmitCompare(e Emitter, indent, lhs, rhs string) {
+	if f.equalCastExpr != "" {
+		e.AddImport("math", "")
+	}
 	orderedScalarCompareGuard(e, indent, f.equalCast(lhs), f.equalCast(rhs))
 }
 

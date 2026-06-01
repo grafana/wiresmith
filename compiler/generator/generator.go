@@ -66,19 +66,6 @@ type Generator struct {
 	// because the embedded `wiresmith/options.proto` is always part of the
 	// input set.
 	pointerExt protoreflect.FieldDescriptor
-
-	// compareExt / compareAllExt are the linked extension descriptors for the
-	// message-level `(wiresmith.options.compare)` and the file-level
-	// `(wiresmith.options.compare_all)` options. Always non-nil after a
-	// successful Compile.
-	compareExt    protoreflect.FieldDescriptor
-	compareAllExt protoreflect.FieldDescriptor
-
-	// compareSet holds the full names of messages that should receive a
-	// generated Compare method, computed once by computeCompareSet as the
-	// closure over direct opt-ins and their message-typed field references.
-	// Per-file emit consults it via shouldEmitCompare.
-	compareSet map[string]bool
 }
 
 // FileGenerator collects emitted code for one proto source file. It owns
@@ -131,20 +118,20 @@ type FileGenerator struct {
 	// doesn't have to reach back up to the Generator.
 	pointerExt protoreflect.FieldDescriptor
 
-	// compareSet is the message-FullName allowlist for Compare emission,
-	// copied from the parent Generator. Per-message emit consults it via
-	// shouldEmitCompare.
-	compareSet map[string]bool
-}
-
-// shouldEmitCompare reports whether the message should receive a generated
-// Compare method. Driven by the closure computed in
-// Generator.computeCompareSet — a message is in the set if it (a) carries
-// `(wiresmith.options.compare) = true`, (b) lives in a file with
-// `(wiresmith.options.compare_all) = true`, or (c) is reachable through
-// message-typed fields from a message in (a) or (b).
-func (fg *FileGenerator) shouldEmitCompare(md protoreflect.MessageDescriptor) bool {
-	return fg.compareSet[string(md.FullName())]
+	// compareBody / compareImports hold a second companion `_compare.pb.go`
+	// file: just the per-message Compare(other interface{}) int methods.
+	//
+	// Why split? Compare is never called on the marshal/unmarshal/size hot
+	// path, but emitting it next to the hot functions in the main `.pb.go`
+	// pushes them onto different cache sets and produced a measured +9%
+	// geomean regression on OTel benchmarks (UnmarshalMap +14%,
+	// MarshalSingleSpan +13%) — same icache-pressure failure mode as the
+	// reflectBody split documented above. Keeping Compare in its own
+	// compilation unit gives the linker freedom to place the cold half
+	// away from the hot half and restores baseline throughput. We pay for
+	// it once, and callers don't have to opt in.
+	compareImports *ImportTracker
+	compareBody    *bytes.Buffer
 }
 
 // Emitter interface implementation for FileGenerator.
@@ -159,6 +146,26 @@ func (fg *FileGenerator) ReverseTag(indent string, num protowire.Number, wt prot
 
 func (fg *FileGenerator) AddImport(path, alias string) {
 	fg.imports.addImport(path, alias)
+}
+
+// compareEmitter wraps a FileGenerator so Type.EmitCompare / FieldType.EmitCompare
+// implementations route their Writef calls into fg.compareBody and their
+// AddImport calls into fg.compareImports without each call site having to
+// remember which buffer it should be targeting. ReverseTag panics because
+// Compare never emits marshal bytes; a stray call is a generator bug worth
+// catching loudly.
+type compareEmitter struct{ fg *FileGenerator }
+
+func (ce *compareEmitter) Writef(format string, args ...any) {
+	fmt.Fprintf(ce.fg.compareBody, format, args...)
+}
+
+func (ce *compareEmitter) ReverseTag(indent string, num protowire.Number, wt protowire.Type) {
+	panic("compareEmitter.ReverseTag: Compare emission must not call ReverseTag")
+}
+
+func (ce *compareEmitter) AddImport(path, alias string) {
+	ce.fg.compareImports.addImport(path, alias)
 }
 
 // fieldContext builds a FieldContext from a field descriptor.
@@ -251,10 +258,6 @@ func (g *Generator) Generate(ctx context.Context) error {
 	if err := g.resolvePointerExtension(results); err != nil {
 		return err
 	}
-	if err := g.resolveCompareExtensions(results); err != nil {
-		return err
-	}
-	g.computeCompareSet(results)
 	if err := g.validatePointerOptions(results); err != nil {
 		return err
 	}
@@ -281,16 +284,17 @@ func (g *Generator) Generate(ctx context.Context) error {
 	// internal schemas and empty protos that emit no output, so they can't
 	// clobber a neighbour).
 	//
-	// Each proto emits two outputs (the main .pb.go and the companion
-	// _reflect.pb.go), so an input like foo_reflect.proto would generate
-	// foo_reflect.pb.go that collides with foo.proto's reflect companion.
-	// Check both paths against the same map.
-	outputs := make(map[string]string, 2*len(results))
+	// Each proto emits up to three outputs (the main .pb.go, the companion
+	// _reflect.pb.go, and the companion _compare.pb.go), so an input like
+	// foo_reflect.proto or foo_compare.proto would generate a file that
+	// collides with foo.proto's companion. Check all three paths against the
+	// same map.
+	outputs := make(map[string]string, 3*len(results))
 	for _, fd := range results {
 		if !g.shouldEmit(fd) {
 			continue
 		}
-		for _, outPath := range []string{g.outputPathFor(fd), g.outputReflectPathFor(fd)} {
+		for _, outPath := range []string{g.outputPathFor(fd), g.outputReflectPathFor(fd), g.outputComparePathFor(fd)} {
 			if prev, exists := outputs[outPath]; exists {
 				return fmt.Errorf("output collision at %s: %q and %q both write to this path (proto package %q)",
 					outPath, prev, fd.Path(), fd.Package())
@@ -523,9 +527,10 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 		body:           &bytes.Buffer{},
 		reflectImports: newImportTracker(g.Module, string(fd.Package()), g.dests),
 		reflectBody:    &bytes.Buffer{},
+		compareImports: newImportTracker(g.Module, string(fd.Package()), g.dests),
+		compareBody:    &bytes.Buffer{},
 		fileVarName:    sanitizeFileVarName(fd.Path()),
 		pointerExt:     g.pointerExt,
-		compareSet:     g.compareSet,
 	}
 
 	// Main file: hot paths and the user-facing API. These emitters write to
@@ -564,14 +569,30 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 	// Write the companion _reflect.pb.go file. Skip if the proto declared no
 	// messages and no enums — there's nothing to register and emitting a file
 	// with just a package clause would be misleading.
-	if fg.reflectBody.Len() == 0 {
+	if fg.reflectBody.Len() > 0 {
+		var reflOut bytes.Buffer
+		fg.emitHeader(&reflOut, fg.reflectImports)
+		fg.emitReflectFileBanner(&reflOut)
+		reflOut.Write(fg.reflectBody.Bytes())
+		if err := g.writeFormatted(g.outputReflectPathFor(fd), reflOut.Bytes(), fd.Path()); err != nil {
+			return err
+		}
+	}
+
+	// Write the companion _compare.pb.go file. Same split rationale as
+	// _reflect.pb.go: Compare is a cold method but emitting it next to the
+	// hot Marshal/Unmarshal in the main file shifts hot code onto different
+	// cache sets (measured: +9% geomean on OTel hot paths). Skip when the
+	// proto declared no messages — Compare is per-message so an enum-only
+	// or empty file has nothing to emit.
+	if fg.compareBody.Len() == 0 {
 		return nil
 	}
-	var reflOut bytes.Buffer
-	fg.emitHeader(&reflOut, fg.reflectImports)
-	fg.emitReflectFileBanner(&reflOut)
-	reflOut.Write(fg.reflectBody.Bytes())
-	return g.writeFormatted(g.outputReflectPathFor(fd), reflOut.Bytes(), fd.Path())
+	var cmpOut bytes.Buffer
+	fg.emitHeader(&cmpOut, fg.compareImports)
+	fg.emitCompareFileBanner(&cmpOut)
+	cmpOut.Write(fg.compareBody.Bytes())
+	return g.writeFormatted(g.outputComparePathFor(fd), cmpOut.Bytes(), fd.Path())
 }
 
 // writeFormatted gofmt-formats src and writes it to outPath. If gofmt fails
@@ -596,6 +617,14 @@ func (g *Generator) writeFormatted(outPath string, src []byte, sourceProto strin
 // `<name>_<flavor>.pb.go`.
 func (g *Generator) outputReflectPathFor(fd protoreflect.FileDescriptor) string {
 	base := strings.TrimSuffix(filepath.Base(fd.Path()), ".proto") + "_reflect.pb.go"
+	return filepath.Join(g.OutDir, sourceRelDir(fd.Path()), base)
+}
+
+// outputComparePathFor returns the path for the third companion file,
+// `<name>_compare.pb.go`, which carries the per-message Compare methods.
+// Same source-relative directory as the main and reflect files.
+func (g *Generator) outputComparePathFor(fd protoreflect.FileDescriptor) string {
+	base := strings.TrimSuffix(filepath.Base(fd.Path()), ".proto") + "_compare.pb.go"
 	return filepath.Join(g.OutDir, sourceRelDir(fd.Path()), base)
 }
 
@@ -677,6 +706,33 @@ func (fg *FileGenerator) emitReflectFileBanner(out *bytes.Buffer) {
 	fmt.Fprintf(out, "// See compiler/generator/emit_registration.go for the full rationale\n")
 	fmt.Fprintf(out, "// and the benchmark methodology. DO NOT inline this file's contents\n")
 	fmt.Fprintf(out, "// back into the main .pb.go without re-measuring.\n\n")
+}
+
+// emitCompareFileBanner is the parallel of emitReflectFileBanner for the
+// per-message Compare methods. Same icache-pressure rationale: Compare is
+// cold (never called from Marshal/Unmarshal/Size), so emitting it next to
+// the hot path was measured to cost ~9% geomean on OTel hot benchmarks
+// even though the hot code itself didn't change a byte. Splitting it into
+// its own compilation unit lets the linker keep the cold half away from
+// the hot half.
+func (fg *FileGenerator) emitCompareFileBanner(out *bytes.Buffer) {
+	fmt.Fprintf(out, "// Per-message Compare() methods for %s.\n", fg.fd.Path())
+	fmt.Fprintf(out, "//\n")
+	fmt.Fprintf(out, "// Compare returns -1/0/+1 like bytes.Compare with the gogoproto.compare\n")
+	fmt.Fprintf(out, "// nil/wrong-type preamble. Always emitted on every message; callers that\n")
+	fmt.Fprintf(out, "// don't use it can rely on Go's dead-code elimination to drop the body.\n")
+	fmt.Fprintf(out, "//\n")
+	fmt.Fprintf(out, "// Why a separate file? Compare is never called from Marshal/Unmarshal/Size,\n")
+	fmt.Fprintf(out, "// but emitting it next to those hot functions in the main .pb.go pushed\n")
+	fmt.Fprintf(out, "// them onto different cache sets and produced a measured ~9%% geomean\n")
+	fmt.Fprintf(out, "// regression on OTel benchmarks (UnmarshalMap +14%%, MarshalSingleSpan +13%%)\n")
+	fmt.Fprintf(out, "// purely from icache / iTLB / BTB pressure. Splitting Compare into its own\n")
+	fmt.Fprintf(out, "// compilation unit gives the linker freedom to place the cold half away\n")
+	fmt.Fprintf(out, "// from the hot half — same trick the _reflect.pb.go split uses.\n")
+	fmt.Fprintf(out, "//\n")
+	fmt.Fprintf(out, "// See compiler/generator/emit_compare.go for the full rationale and the\n")
+	fmt.Fprintf(out, "// benchmark methodology. DO NOT inline this file's contents back into\n")
+	fmt.Fprintf(out, "// the main .pb.go without re-measuring.\n\n")
 }
 
 func (fg *FileGenerator) emitAllEnums(fd protoreflect.FileDescriptor) {

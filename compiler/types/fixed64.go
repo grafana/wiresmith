@@ -134,8 +134,13 @@ func (f fixed64Base) EmitEqual(e Emitter, indent, lhs, rhs string) {
 
 // EmitCompare emits a bit-exact ordered comparison via equalCast. For Double
 // that routes both sides through math.Float64bits so NaN payloads order
-// stably; fixed/sfixed keep natural unsigned/signed `<` semantics.
+// stably; fixed/sfixed keep natural unsigned/signed `<` semantics. "math"
+// is added lazily here (parallel to fixed32Base.EmitCompare) so the
+// _compare.pb.go file doesn't pick up Marshal-only imports it never uses.
 func (f fixed64Base) EmitCompare(e Emitter, indent, lhs, rhs string) {
+	if f.equalCastExpr != "" {
+		e.AddImport("math", "")
+	}
 	orderedScalarCompareGuard(e, indent, f.equalCast(lhs), f.equalCast(rhs))
 }
 

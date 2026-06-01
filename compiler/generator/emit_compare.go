@@ -10,44 +10,43 @@ import (
 )
 
 // emitAllCompareMethods emits `Compare(that interface{}) int` on every
-// message in fd that the Generator's compareSet has flagged. The set is
-// the closure over direct opt-ins via `(wiresmith.options.compare)` /
-// `(wiresmith.options.compare_all)` and the messages they reach through
-// message-typed fields. Compare returns -1/0/+1 like bytes.Compare and
-// is the gogo-equivalent of `(gogoproto.compare) = true`.
+// message in fd. Compare returns -1/0/+1 like bytes.Compare with the
+// gogoproto-compatible nil/wrong-type preamble.
 //
-// Opt-in is required because always-emit added ~9% to OTel hot-path
-// benchmarks via icache pressure on the linked binary even though
-// Compare itself is never called on those paths. Users who don't need
-// Compare pay nothing.
+// All writes are routed through a compareEmitter so the methods land in
+// `<name>_compare.pb.go` rather than the main file. The reason is icache
+// pressure: emitting Compare next to the hot Marshal/Unmarshal in a single
+// .pb.go was measured to add ~9% geomean to OTel hot benchmarks even
+// though Compare itself is never called there. The split is the same
+// trick the reflect companion uses; see generator.go's emitCompareFileBanner
+// for the in-artifact rationale.
 func (fg *FileGenerator) emitAllCompareMethods(fd protoreflect.FileDescriptor) {
+	ce := &compareEmitter{fg: fg}
 	forEachMessage(fd, func(md protoreflect.MessageDescriptor) {
-		if !fg.shouldEmitCompare(md) {
-			return
-		}
-		fg.emitCompare(md)
+		fg.emitCompare(ce, md)
 	})
 }
 
-// emitCompare emits the Compare method for one message. The nil-handling
-// preamble matches gogo's pattern verbatim so callers that depend on
-// `nil.Compare(non-nil) == -1` / `non-nil.Compare(nil) == 1` /
+// emitCompare emits the Compare method for one message into ce. The
+// nil-handling preamble matches gogo's pattern verbatim so callers that
+// depend on `nil.Compare(non-nil) == -1` / `non-nil.Compare(nil) == 1` /
 // `nil.Compare(nil) == 0` / `m.Compare("wrong type") == 1` keep their
 // existing expectations. Fields walk in ascending wire tag (not
 // declaration order) so the per-field ordering is stable against proto
 // file reorderings that don't change the wire format.
-func (fg *FileGenerator) emitCompare(md protoreflect.MessageDescriptor) {
+func (fg *FileGenerator) emitCompare(ce *compareEmitter, md protoreflect.MessageDescriptor) {
 	name := goMessageTypeName(md)
+	out := fg.compareBody
 
-	fmt.Fprintf(fg.body, "func (this *%s) Compare(that interface{}) int {\n", name)
-	fmt.Fprintf(fg.body, "\tif that == nil {\n\t\tif this == nil {\n\t\t\treturn 0\n\t\t}\n\t\treturn 1\n\t}\n\n")
+	fmt.Fprintf(out, "func (this *%s) Compare(that interface{}) int {\n", name)
+	fmt.Fprintf(out, "\tif that == nil {\n\t\tif this == nil {\n\t\t\treturn 0\n\t\t}\n\t\treturn 1\n\t}\n\n")
 
-	fmt.Fprintf(fg.body, "\tthat1, ok := that.(*%s)\n", name)
-	fmt.Fprintf(fg.body, "\tif !ok {\n")
-	fmt.Fprintf(fg.body, "\t\tthat2, ok := that.(%s)\n", name)
-	fmt.Fprintf(fg.body, "\t\tif ok {\n\t\t\tthat1 = &that2\n\t\t} else {\n\t\t\treturn 1\n\t\t}\n")
-	fmt.Fprintf(fg.body, "\t}\n")
-	fmt.Fprintf(fg.body, "\tif that1 == nil {\n\t\tif this == nil {\n\t\t\treturn 0\n\t\t}\n\t\treturn 1\n\t} else if this == nil {\n\t\treturn -1\n\t}\n")
+	fmt.Fprintf(out, "\tthat1, ok := that.(*%s)\n", name)
+	fmt.Fprintf(out, "\tif !ok {\n")
+	fmt.Fprintf(out, "\t\tthat2, ok := that.(%s)\n", name)
+	fmt.Fprintf(out, "\t\tif ok {\n\t\t\tthat1 = &that2\n\t\t} else {\n\t\t\treturn 1\n\t\t}\n")
+	fmt.Fprintf(out, "\t}\n")
+	fmt.Fprintf(out, "\tif that1 == nil {\n\t\tif this == nil {\n\t\t\treturn 0\n\t\t}\n\t\treturn 1\n\t} else if this == nil {\n\t\treturn -1\n\t}\n")
 
 	seenOneofs := map[string]bool{}
 	for _, fd := range sortedByTag(md) {
@@ -56,18 +55,18 @@ func (fg *FileGenerator) emitCompare(md protoreflect.MessageDescriptor) {
 			ooName := string(oo.Name())
 			if !seenOneofs[ooName] {
 				seenOneofs[ooName] = true
-				fg.emitOneofCompare(md, oo)
+				fg.emitOneofCompare(ce, md, oo)
 			}
 			continue
 		}
 
 		goName := snakeToPascal(string(fd.Name()))
 		ft := fg.fieldType(fd)
-		ft.EmitCompare(fg, "\t", "this."+goName, "that1."+goName)
+		ft.EmitCompare(ce, "\t", "this."+goName, "that1."+goName)
 	}
 
-	fmt.Fprintf(fg.body, "\treturn 0\n")
-	fmt.Fprintf(fg.body, "}\n\n")
+	fmt.Fprintf(out, "\treturn 0\n")
+	fmt.Fprintf(out, "}\n\n")
 }
 
 // sortedByTag returns the message's fields in ascending wire-tag order.
@@ -100,47 +99,49 @@ func sortedByTag(md protoreflect.MessageDescriptor) []protoreflect.FieldDescript
 // EmitCompare implementations don't reference both sides (defensive — all
 // current ones do, but a future scalar-less variant would otherwise
 // produce "declared and not used").
-func (fg *FileGenerator) emitOneofCompare(md protoreflect.MessageDescriptor, oo protoreflect.OneofDescriptor) {
+func (fg *FileGenerator) emitOneofCompare(ce *compareEmitter, md protoreflect.MessageDescriptor, oo protoreflect.OneofDescriptor) {
 	goName := snakeToPascal(string(oo.Name()))
 	lhs := "this." + goName
 	rhs := "that1." + goName
+	out := fg.compareBody
 
-	fmt.Fprintf(fg.body, "\t{\n")
-	fmt.Fprintf(fg.body, "\t\tthisIdx := -1\n")
-	fmt.Fprintf(fg.body, "\t\tswitch %s.(type) {\n", lhs)
+	fmt.Fprintf(out, "\t{\n")
+	fmt.Fprintf(out, "\t\tthisIdx := -1\n")
+	fmt.Fprintf(out, "\t\tswitch %s.(type) {\n", lhs)
 	for i := 0; i < oo.Fields().Len(); i++ {
 		fd := oo.Fields().Get(i)
 		variantType := oneofVariantName(md, fd)
-		fmt.Fprintf(fg.body, "\t\tcase *%s:\n\t\t\tthisIdx = %d\n", variantType, i)
+		fmt.Fprintf(out, "\t\tcase *%s:\n\t\t\tthisIdx = %d\n", variantType, i)
 	}
-	fmt.Fprintf(fg.body, "\t\t}\n")
+	fmt.Fprintf(out, "\t\t}\n")
 
-	fmt.Fprintf(fg.body, "\t\tthatIdx := -1\n")
-	fmt.Fprintf(fg.body, "\t\tswitch %s.(type) {\n", rhs)
+	fmt.Fprintf(out, "\t\tthatIdx := -1\n")
+	fmt.Fprintf(out, "\t\tswitch %s.(type) {\n", rhs)
 	for i := 0; i < oo.Fields().Len(); i++ {
 		fd := oo.Fields().Get(i)
 		variantType := oneofVariantName(md, fd)
-		fmt.Fprintf(fg.body, "\t\tcase *%s:\n\t\t\tthatIdx = %d\n", variantType, i)
+		fmt.Fprintf(out, "\t\tcase *%s:\n\t\t\tthatIdx = %d\n", variantType, i)
 	}
-	fmt.Fprintf(fg.body, "\t\t}\n")
+	fmt.Fprintf(out, "\t\t}\n")
 
-	fmt.Fprintf(fg.body, "\t\tif thisIdx != thatIdx {\n")
-	fmt.Fprintf(fg.body, "\t\t\tif thisIdx < thatIdx {\n\t\t\t\treturn -1\n\t\t\t}\n")
-	fmt.Fprintf(fg.body, "\t\t\treturn 1\n\t\t}\n")
+	fmt.Fprintf(out, "\t\tif thisIdx != thatIdx {\n")
+	fmt.Fprintf(out, "\t\t\tif thisIdx < thatIdx {\n\t\t\t\treturn -1\n\t\t\t}\n")
+	fmt.Fprintf(out, "\t\t\treturn 1\n\t\t}\n")
 
-	fmt.Fprintf(fg.body, "\t\tif thisIdx != -1 {\n")
-	fmt.Fprintf(fg.body, "\t\t\tswitch v := %s.(type) {\n", lhs)
+	fmt.Fprintf(out, "\t\tif thisIdx != -1 {\n")
+	fmt.Fprintf(out, "\t\t\tswitch v := %s.(type) {\n", lhs)
 	for i := 0; i < oo.Fields().Len(); i++ {
 		fd := oo.Fields().Get(i)
 		variantType := oneofVariantName(md, fd)
 		fieldName := snakeToPascal(string(fd.Name()))
 
-		fmt.Fprintf(fg.body, "\t\t\tcase *%s:\n", variantType)
-		fmt.Fprintf(fg.body, "\t\t\t\tv2 := %s.(*%s)\n", rhs, variantType)
-		fmt.Fprintf(fg.body, "\t\t\t\t_ = v2\n")
-		types.Get(fd.Kind()).EmitCompare(fg, "\t\t\t\t", "v."+fieldName, "v2."+fieldName)
+		fmt.Fprintf(out, "\t\t\tcase *%s:\n", variantType)
+		fmt.Fprintf(out, "\t\t\t\tv2 := %s.(*%s)\n", rhs, variantType)
+		fmt.Fprintf(out, "\t\t\t\t_ = v2\n")
+		inner := types.Get(fd.Kind())
+		inner.EmitCompare(ce, "\t\t\t\t", "v."+fieldName, "v2."+fieldName)
 	}
-	fmt.Fprintf(fg.body, "\t\t\t}\n")
-	fmt.Fprintf(fg.body, "\t\t}\n")
-	fmt.Fprintf(fg.body, "\t}\n")
+	fmt.Fprintf(out, "\t\t\t}\n")
+	fmt.Fprintf(out, "\t\t}\n")
+	fmt.Fprintf(out, "\t}\n")
 }
