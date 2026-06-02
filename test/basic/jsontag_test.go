@@ -26,7 +26,7 @@ func TestJsonTag_StructTags(t *testing.T) {
 		{"Head", "headLeaf"},                       // message field override
 		{"Sizes", "sizeList"},                      // repeated scalar override
 		{"Counters", "counterMap"},                 // map field override
-		{"InternalOnly", ""},                       // empty-string override (opt-out)
+		{"InternalOnly", "-"},                      // `-` override: encoding/json skips this field
 	}
 	for _, tc := range cases {
 		t.Run(tc.field, func(t *testing.T) {

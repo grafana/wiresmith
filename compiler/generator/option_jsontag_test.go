@@ -31,10 +31,11 @@ message M {
 	}
 }
 
-// TestJsontagOption_AcceptsEmpty pins that the empty-string override is a
-// valid explicit value (matches gogoproto.jsontag = "" semantics — opts the
-// field out of JSON serialization). A regression here would cause the bench's
-// own integration fixture to fail to generate.
+// TestJsontagOption_AcceptsEmpty pins that the empty-string override is
+// accepted by the validator (matching gogoproto.jsontag = "" verbatim
+// passthrough — note encoding/json treats json:"" as "no tag given", so it is
+// *not* an opt-out; use "-" for that). A regression here would cause any
+// fixture relying on the empty value to fail to generate.
 func TestJsontagOption_AcceptsEmpty(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";

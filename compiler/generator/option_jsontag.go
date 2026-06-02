@@ -38,8 +38,8 @@ func (g *Generator) resolveJsontagExtension(results linker.Files) error {
 
 // jsontagOverride returns the user-supplied `json:"..."` tag value for fd, plus
 // a boolean indicating whether the option was set at all. The empty string is
-// a legal explicit value (matches gogoproto.jsontag semantics — used to opt out
-// of JSON serialization), so callers must rely on the boolean, not the string.
+// a legal explicit value (verbatim passthrough — matches gogoproto.jsontag),
+// so callers must rely on the boolean, not the string.
 func (fg *FileGenerator) jsontagOverride(fd protoreflect.FieldDescriptor) (string, bool) {
 	return jsontagOverride(fg.jsontagExt, fd)
 }

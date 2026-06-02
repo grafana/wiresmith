@@ -22,8 +22,8 @@ type Leaf struct {
 // JsonTagHolder exercises (wiresmith.options.jsontag) across the field kinds
 // the bead's acceptance criteria call out: scalar, message, repeated scalar,
 // and map. A second scalar without the option is the control showing the
-// option is local to the annotated field. The empty-string override
-// (matching gogoproto.jsontag = "") opts a field out of JSON serialization.
+// option is local to the annotated field. The `"-"` override opts a field
+// out of JSON serialization (encoding/json skips fields tagged json:"-").
 type JsonTagHolder struct {
 	// Custom name (matches Tempo's `blockID` HTTP API contract).
 	BlockId string `protobuf:"bytes,1,opt,name=block_id,json=blockId,proto3" json:"blockID"`
@@ -37,9 +37,9 @@ type JsonTagHolder struct {
 	Sizes []int32 `protobuf:"varint,5,rep,packed,name=sizes,proto3" json:"sizeList"`
 	// Map field override.
 	Counters map[string]int64 `protobuf:"bytes,6,rep,name=counters,proto3" json:"counterMap" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
-	// Empty-string override: opts the field out of JSON serialization, matching
-	// gogoproto.jsontag = "" semantics.
-	InternalOnly string `protobuf:"bytes,7,opt,name=internal_only,json=internalOnly,proto3" json:""`
+	// `"-"` override: encoding/json skips fields whose json tag is "-", so this
+	// field is omitted from JSON output entirely.
+	InternalOnly string `protobuf:"bytes,7,opt,name=internal_only,json=internalOnly,proto3" json:"-"`
 
 	fieldsPresent [1]uint64
 }

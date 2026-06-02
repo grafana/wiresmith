@@ -15,8 +15,8 @@ message Leaf {
 // JsonTagHolder exercises (wiresmith.options.jsontag) across the field kinds
 // the bead's acceptance criteria call out: scalar, message, repeated scalar,
 // and map. A second scalar without the option is the control showing the
-// option is local to the annotated field. The empty-string override
-// (matching gogoproto.jsontag = "") opts a field out of JSON serialization.
+// option is local to the annotated field. The `"-"` override opts a field
+// out of JSON serialization (encoding/json skips fields tagged json:"-").
 message JsonTagHolder {
   // Custom name (matches Tempo's `blockID` HTTP API contract).
   string block_id = 1 [(wiresmith.options.jsontag) = "blockID"];
@@ -36,7 +36,7 @@ message JsonTagHolder {
   // Map field override.
   map<string, int64> counters = 6 [(wiresmith.options.jsontag) = "counterMap"];
 
-  // Empty-string override: opts the field out of JSON serialization, matching
-  // gogoproto.jsontag = "" semantics.
-  string internal_only = 7 [(wiresmith.options.jsontag) = ""];
+  // `"-"` override: encoding/json skips fields whose json tag is "-", so this
+  // field is omitted from JSON output entirely.
+  string internal_only = 7 [(wiresmith.options.jsontag) = "-"];
 }

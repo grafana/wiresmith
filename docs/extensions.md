@@ -95,7 +95,7 @@ type BlockMeta struct {
 }
 ```
 
-The supplied value is used **verbatim** — `,omitempty` is not appended for you, matching `gogoproto.jsontag` semantics. An explicit `""` opts the field out of JSON serialization (`json:""`).
+The supplied value is used **verbatim** — `,omitempty` is not appended for you, matching `gogoproto.jsontag` semantics. To opt a field out of JSON serialization, use `"-"` (which produces `json:"-"`, the `encoding/json` opt-out idiom); an empty string would emit `json:""`, which `encoding/json` treats as "no tag given" and is *not* an opt-out.
 
 ### Where it applies
 
@@ -109,4 +109,4 @@ The validation source of truth is `validateJsontagOptions` in `compiler/generato
 
 ### Worked example
 
-[`proto/basic/jsontag.proto`](../proto/basic/jsontag.proto) exercises the option across scalar, message, repeated, map, and the empty-string opt-out, with an unannotated field as the control showing the default `json:"<proto_name>,omitempty"` shape is unaffected.
+[`proto/basic/jsontag.proto`](../proto/basic/jsontag.proto) exercises the option across scalar, message, repeated, map, and the `"-"` opt-out, with an unannotated field as the control showing the default `json:"<proto_name>,omitempty"` shape is unaffected.
