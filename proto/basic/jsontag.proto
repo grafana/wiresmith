@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package basic.jsontag.v1;
+
+option go_package = "wiresmith/gen/basic/jsontag/v1";
+
+import "wiresmith/options.proto";
+
+// Leaf is the inner message referenced by JsonTagHolder.
+message Leaf {
+  int64  id   = 1;
+  string name = 2;
+}
+
+// JsonTagHolder exercises (wiresmith.options.jsontag) across the field kinds
+// the bead's acceptance criteria call out: scalar, message, repeated scalar,
+// map, and oneof variant. A second scalar without the option is the control
+// showing the option is local to the annotated field. The `"-"` override opts
+// a field out of JSON serialization (encoding/json skips fields tagged
+// json:"-").
+message JsonTagHolder {
+  // Custom name (matches Tempo's `blockID` HTTP API contract).
+  string block_id = 1 [(wiresmith.options.jsontag) = "blockID"];
+
+  // Control: no option, keeps the default `json:"plain_name,omitempty"`.
+  string plain_name = 2;
+
+  // Override with explicit ,omitempty preserved by the caller.
+  uint64 total_objects = 3 [(wiresmith.options.jsontag) = "totalObjects,omitempty"];
+
+  // Message field override.
+  Leaf head = 4 [(wiresmith.options.jsontag) = "headLeaf"];
+
+  // Repeated scalar override.
+  repeated int32 sizes = 5 [(wiresmith.options.jsontag) = "sizeList"];
+
+  // Map field override.
+  map<string, int64> counters = 6 [(wiresmith.options.jsontag) = "counterMap"];
+
+  // `"-"` override: encoding/json skips fields whose json tag is "-", so this
+  // field is omitted from JSON output entirely.
+  string internal_only = 7 [(wiresmith.options.jsontag) = "-"];
+
+  // Oneof with one annotated variant and one control variant. The annotated
+  // variant's wrapper-struct field carries `json:"sourceID"`; the unannotated
+  // variant keeps the default `json:"raw_source,omitempty"`. Pins the
+  // emit_oneof.go call site that consults fg.fieldTag.
+  oneof source {
+    string source_id  = 8 [(wiresmith.options.jsontag) = "sourceID"];
+    bytes  raw_source = 9;
+  }
+}

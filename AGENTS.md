@@ -82,7 +82,12 @@ See [docs/design.md](docs/design.md) for the canonical list of design decisions 
 
 ## Custom field options
 
-wiresmith ships one custom field option, `(wiresmith.options.pointer)`, defined in `compiler/generator/embed/wiresmith/options.proto` and served from the canonical import path `wiresmith/options.proto` (embedded in the compiler, no vendoring required). Setting it to `true` switches a singular message field from `T` to `*T` and a repeated message field from `[]T` to `[]*T`; on-wire format is unchanged. It is rejected on scalar, enum, bytes, string, map, oneof, and proto3-`optional` fields — see [docs/extensions.md](docs/extensions.md) for the full rules and a worked example.
+wiresmith ships custom field options in `compiler/generator/embed/wiresmith/options.proto`, served from the canonical import path `wiresmith/options.proto` (embedded in the compiler, no vendoring required). On-wire format is unaffected by any of them — they only change the generated Go shape.
+
+- `(wiresmith.options.pointer) = true` — switches a singular message field from `T` to `*T` and a repeated message field from `[]T` to `[]*T`. Rejected on scalar, enum, bytes, string, map, oneof, and proto3-`optional` fields.
+- `(wiresmith.options.jsontag) = "..."` — overrides the `json:"..."` struct tag verbatim (no `,omitempty` appended); applies to every field kind.
+
+See [docs/extensions.md](docs/extensions.md) for the full rules and worked examples.
 
 ## Generated Compare() method
 

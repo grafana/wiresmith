@@ -32,8 +32,20 @@ func wireTypeName(kind protoreflect.Kind) string {
 	}
 }
 
+// jsonStructTag returns the value to emit inside `json:"..."` for fd. The
+// default is the proto field name plus `,omitempty`; when
+// `(wiresmith.options.jsontag)` is set, the supplied value is used verbatim
+// (no `,omitempty` is appended — callers include it themselves if they want
+// it, matching gogoproto.jsontag semantics).
+func (fg *FileGenerator) jsonStructTag(fd protoreflect.FieldDescriptor) string {
+	if v, ok := fg.jsontagOverride(fd); ok {
+		return v
+	}
+	return string(fd.Name()) + ",omitempty"
+}
+
 // fieldTag returns the full backtick-enclosed struct tag for a field.
-func fieldTag(fd protoreflect.FieldDescriptor) string {
+func (fg *FileGenerator) fieldTag(fd protoreflect.FieldDescriptor) string {
 	parts := []string{
 		wireTypeName(fd.Kind()),
 		fmt.Sprintf("%d", fd.Number()),
@@ -66,14 +78,13 @@ func fieldTag(fd protoreflect.FieldDescriptor) string {
 		parts = append(parts, "oneof")
 	}
 
-	protoName := string(fd.Name())
 	return fmt.Sprintf("`protobuf:%q json:%q`",
 		strings.Join(parts, ","),
-		protoName+",omitempty")
+		fg.jsonStructTag(fd))
 }
 
 // mapFieldTag returns the struct tag for a map field, including protobuf_key and protobuf_val.
-func mapFieldTag(fd protoreflect.FieldDescriptor) string {
+func (fg *FileGenerator) mapFieldTag(fd protoreflect.FieldDescriptor) string {
 	// Main protobuf tag (maps are length-delimited, rep)
 	parts := []string{
 		"bytes",
@@ -99,10 +110,9 @@ func mapFieldTag(fd protoreflect.FieldDescriptor) string {
 		valTag += ",enum=" + string(valFd.Enum().FullName())
 	}
 
-	protoName := string(fd.Name())
 	return fmt.Sprintf("`protobuf:%q json:%q protobuf_key:%q protobuf_val:%q`",
 		strings.Join(parts, ","),
-		protoName+",omitempty",
+		fg.jsonStructTag(fd),
 		keyTag,
 		valTag)
 }
