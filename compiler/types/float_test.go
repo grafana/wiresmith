@@ -1,6 +1,7 @@
 package types
 
 import (
+	"slices"
 	"strings"
 	"testing"
 
@@ -71,6 +72,13 @@ func TestFloat_EmitEqual_BitExact(t *testing.T) {
 	want := "\tif math.Float32bits(a) != math.Float32bits(b) {\n\t\treturn false\n\t}\n"
 	if got := e.buf.String(); got != want {
 		t.Errorf("EmitEqual:\n got: %q\nwant: %q", got, want)
+	}
+	// The Equal body names math.Float32bits, so the math import must be
+	// registered with the emitter — the companion _equal.pb.go file does
+	// not share imports with the main .pb.go and would fail to compile
+	// without this lazy registration.
+	if !slices.Contains(e.imports, "math") {
+		t.Errorf("EmitEqual must register the math import; got %v", e.imports)
 	}
 }
 
