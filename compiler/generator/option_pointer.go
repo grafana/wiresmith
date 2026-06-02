@@ -263,13 +263,17 @@ func (fg *FileGenerator) customtypeFieldType(fd protoreflect.FieldDescriptor) (t
 	if fd.IsMap() || fd.IsList() || fd.HasOptionalKeyword() || isRealOneof(fd) {
 		return nil, false
 	}
-	importPath, typeName, err := parseCustomtypeValue(v)
+	importPath, _, err := parseCustomtypeValue(v)
 	if err != nil {
 		return nil, false
 	}
-	resolved := typeName
+	// Register the import so the companion `customtypeGoFieldType` (used for
+	// the struct field declaration) and the marshal/unmarshal emitters reach
+	// the user's package via the same alias. Side-effect-only on the
+	// ImportTracker; the resolved identifier is consumed at the struct-field
+	// emit site, not stored on CustomType.
 	if importPath != "" {
-		resolved = fg.customtypeAlias(importPath) + "." + typeName
+		fg.customtypeAlias(importPath)
 	}
-	return &types.CustomType{GoType: resolved}, true
+	return &types.CustomType{}, true
 }

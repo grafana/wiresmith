@@ -4,7 +4,6 @@
 package v1
 
 import (
-	"bytes"
 	"fmt"
 	"google.golang.org/protobuf/encoding/protowire"
 	"io"
@@ -506,38 +505,4 @@ func (m *CustomTypeHolder) unmarshal(dAtA []byte, depth int) error {
 		return io.ErrUnexpectedEOF
 	}
 	return nil
-}
-
-func (this *CustomTypeHolder) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*CustomTypeHolder)
-	if !ok {
-		that2, ok := that.(CustomTypeHolder)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if !this.Labels.EqualWiresmith(that1.Labels) {
-		return false
-	}
-	if !this.TenantId.EqualWiresmith(that1.TenantId) {
-		return false
-	}
-	if !bytes.Equal(this.PlainBytes, that1.PlainBytes) {
-		return false
-	}
-	if this.PlainString != that1.PlainString {
-		return false
-	}
-	return true
 }

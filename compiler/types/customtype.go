@@ -15,14 +15,11 @@ import (
 // compiler/generator/option_customtype.go enforces that. The wire format the
 // custom type writes is whatever it likes; the proto wrapper is fixed
 // length-delimited (tag + varint length + payload).
-type CustomType struct {
-	// GoType is the field type as it appears in generated code, including
-	// any package alias resolved by the ImportTracker (e.g. "labels.LabelPairs"
-	// or "MyLocalType" for same-package). Populated by the FileGenerator
-	// during fieldType() dispatch — keeping the resolved form here means
-	// emit_size / emit_marshal don't have to thread it through the call.
-	GoType string
-}
+//
+// The type has no fields — every emitter takes the resolved Go type name via
+// the `access` argument supplied by the FileGenerator at the call site, so
+// CustomType itself doesn't need to cache anything.
+type CustomType struct{}
 
 // RequiredImports declares "fmt" because EmitMarshal asserts the user's
 // MarshalWiresmith returned exactly SizeWiresmith() bytes via fmt.Errorf.

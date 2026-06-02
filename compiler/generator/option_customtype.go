@@ -85,6 +85,14 @@ func parseCustomtypeValue(value string) (importPath, typeName string, err error)
 	}
 	lastDot := strings.LastIndex(packageAndType, ".")
 	if lastDot < 0 {
+		// A slash in the input means the user wrote an import path. Without
+		// a trailing ".TypeName" we'd otherwise silently swallow the path
+		// and treat the basename as a same-package type — turning a typo
+		// like "github.com/foo/bar" into "bar" with no import. Require the
+		// dot in this case so the malformed value is rejected explicitly.
+		if lastSlash >= 0 {
+			return "", "", fmt.Errorf("value %q: import path is missing a \".TypeName\" suffix (use \"path/to/pkg.TypeName\" for an external type, or drop the path for a same-package type)", value)
+		}
 		if err := validateGoIdentifier(packageAndType); err != nil {
 			return "", "", err
 		}

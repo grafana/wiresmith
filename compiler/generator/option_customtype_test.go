@@ -126,6 +126,11 @@ func TestParseCustomtypeValue(t *testing.T) {
 		// error would lose the source of the typo.
 		{in: "github.com/foo/bar-baz.Type", wantErr: true, errSubstr: "package alias derived from import path"},
 		{in: "github.com/foo/123x.Type", wantErr: true, errSubstr: "package alias derived from import path"},
+		// A slashed value with no ".TypeName" suffix mustn't silently fall
+		// back to same-package "bar" — that would convert an import-path
+		// typo into a "local type does not exist" compile error far from
+		// the source. Reject explicitly.
+		{in: "github.com/foo/bar", wantErr: true, errSubstr: "missing a \".TypeName\" suffix"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.in, func(t *testing.T) {
