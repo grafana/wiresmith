@@ -125,7 +125,9 @@ func newEchoHarness(t *testing.T) (servicepb.EchoClient, *grpc.Server) {
 	require.NoError(t, err)
 
 	t.Cleanup(func() {
-		conn.Close()
+		if err := conn.Close(); err != nil {
+			t.Logf("grpc client Close: %v", err)
+		}
 		srv.Stop()
 	})
 	return servicepb.NewEchoClient(conn), srv
