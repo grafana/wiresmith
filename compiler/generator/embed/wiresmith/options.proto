@@ -36,4 +36,21 @@ extend google.protobuf.FieldOptions {
   // rejected because they would terminate the surrounding raw-string
   // struct tag. See compiler/generator/option_jsontag.go.
   optional string jsontag = 50031;
+
+  // customtype replaces the generated Go field type with a user-supplied
+  // type that owns its own wire encoding.
+  //
+  //   bytes  label_pairs = 1 [(wiresmith.options.customtype) = "github.com/foo/bar.LabelPairs"];
+  //   //  ->  LabelPairs bar.LabelPairs `protobuf:"..."`
+  //
+  // The user's type must implement the wiresmith CustomMarshaler interface
+  // (SizeWiresmith / MarshalWiresmith / UnmarshalWiresmith / EqualWiresmith).
+  // Wire format is unchanged — the field still occupies the same field number
+  // and is encoded length-delimited.
+  //
+  // v1 scope: only valid on singular `bytes` and `string` fields (no map,
+  // oneof, repeated, optional, or message fields). The value is formatted as
+  // "import/path.TypeName" — the import is registered automatically, no
+  // vendoring required from the user.
+  optional string customtype = 50032;
 }

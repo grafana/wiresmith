@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package basic.customtype.v1;
+
+option go_package = "wiresmith/gen/basic/customtype/v1";
+
+import "wiresmith/options.proto";
+
+// CustomTypeHolder exercises (wiresmith.options.customtype) on the two field
+// kinds the v1 scope covers: bytes and string. A control field of each kind
+// without the option demonstrates that the swap is local.
+//
+// LabelPairs and TenantID live in wiresmith/test/customtypes and implement
+// the wiresmith CustomMarshaler shape (Size/Marshal/Unmarshal/Equal). The
+// wire format is unchanged from a plain bytes/string field.
+message CustomTypeHolder {
+  bytes  labels      = 1 [(wiresmith.options.customtype) = "wiresmith/test/customtypes.LabelPairs"];
+  string tenant_id   = 2 [(wiresmith.options.customtype) = "wiresmith/test/customtypes.TenantID"];
+
+  // Controls: stock bytes / string shapes prove the option only swaps the
+  // annotated fields, not the rest of the message.
+  bytes  plain_bytes  = 3;
+  string plain_string = 4;
+}

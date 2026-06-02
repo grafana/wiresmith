@@ -2,6 +2,7 @@ package generator
 
 import (
 	"fmt"
+	"path"
 	"wiresmith/compiler/types"
 
 	"github.com/bufbuild/protocompile/linker"
@@ -150,6 +151,9 @@ func walkFields(fd protoreflect.FileDescriptor, fn func(protoreflect.FieldDescri
 // yields the emit behavior. They both gate on the same hasPointerOption
 // predicate so they stay consistent.
 func (fg *FileGenerator) goFieldType(fd protoreflect.FieldDescriptor) string {
+	if goType, ok := fg.customtypeGoFieldType(fd); ok {
+		return goType
+	}
 	if !fg.hasPointerOption(fd) || fd.Kind() != protoreflect.MessageKind {
 		return fg.imports.goType(fd)
 	}
@@ -158,6 +162,41 @@ func (fg *FileGenerator) goFieldType(fd protoreflect.FieldDescriptor) string {
 		return "[]" + pointed
 	}
 	return pointed
+}
+
+// customtypeGoFieldType resolves `(wiresmith.options.customtype)` to the Go
+// type expression for the struct-field declaration and registers the
+// supporting import. Returns ok=false when the option is absent or invalid;
+// validateCustomtypeOptions has already rejected malformed values at this
+// point so the parse-error path is purely defensive.
+func (fg *FileGenerator) customtypeGoFieldType(fd protoreflect.FieldDescriptor) (string, bool) {
+	v, ok := fg.customtypeValue(fd)
+	if !ok {
+		return "", false
+	}
+	importPath, typeName, err := parseCustomtypeValue(v)
+	if err != nil {
+		return "", false
+	}
+	if importPath == "" {
+		return typeName, true
+	}
+	alias := fg.customtypeAlias(importPath)
+	return alias + "." + typeName, true
+}
+
+// customtypeAlias registers importPath with the ImportTracker (no explicit
+// alias) and returns the identifier the generated code should use to qualify
+// the user's type. addImport returns the empty string for unaliased imports,
+// so we fall back to path.Base — the same identifier Go binds to an
+// unaliased import at compile time. The lookup is idempotent on the
+// ImportTracker side, so calling it from both goFieldType and fieldType for
+// the same field is harmless.
+func (fg *FileGenerator) customtypeAlias(importPath string) string {
+	if alias := fg.imports.addImport(importPath, ""); alias != "" {
+		return alias
+	}
+	return path.Base(importPath)
 }
 
 // fieldType returns the FieldType composite for a field, with one twist over
@@ -170,6 +209,9 @@ func (fg *FileGenerator) goFieldType(fd protoreflect.FieldDescriptor) string {
 // visible in exactly one place so future option-driven shape changes have a
 // clear home.
 func (fg *FileGenerator) fieldType(fd protoreflect.FieldDescriptor) types.FieldType {
+	if ft, ok := fg.customtypeFieldType(fd); ok {
+		return ft
+	}
 	if fd.IsMap() {
 		// MapField needs the Go-side key/value type names for emitters that
 		// build typed locals (e.g. Compare's sorted-key slices). ForField
@@ -200,4 +242,34 @@ func (fg *FileGenerator) fieldType(fd protoreflect.FieldDescriptor) types.FieldT
 		return &types.RepeatedPointer{Inner: inner}
 	}
 	return &types.PointerField{Inner: inner}
+}
+
+// customtypeFieldType returns a CustomType FieldType when the field is
+// annotated with `(wiresmith.options.customtype)`. The same import-path
+// resolution as customtypeGoFieldType happens here so the struct-field
+// declaration and the marshal/unmarshal emission stay consistent.
+//
+// Restricts to singular bytes/string in v1 — validation has already rejected
+// other kinds at this point, so the guard is defensive against direct
+// descriptor construction in tests.
+func (fg *FileGenerator) customtypeFieldType(fd protoreflect.FieldDescriptor) (types.FieldType, bool) {
+	v, ok := fg.customtypeValue(fd)
+	if !ok {
+		return nil, false
+	}
+	if fd.Kind() != protoreflect.BytesKind && fd.Kind() != protoreflect.StringKind {
+		return nil, false
+	}
+	if fd.IsMap() || fd.IsList() || fd.HasOptionalKeyword() || isRealOneof(fd) {
+		return nil, false
+	}
+	importPath, typeName, err := parseCustomtypeValue(v)
+	if err != nil {
+		return nil, false
+	}
+	resolved := typeName
+	if importPath != "" {
+		resolved = fg.customtypeAlias(importPath) + "." + typeName
+	}
+	return &types.CustomType{GoType: resolved}, true
 }

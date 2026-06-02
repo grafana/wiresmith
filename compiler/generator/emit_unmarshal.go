@@ -351,6 +351,16 @@ func (fg *FileGenerator) emitFieldUnmarshal(md protoreflect.MessageDescriptor, f
 		return
 	}
 
+	// Singular bytes/string with `(wiresmith.options.customtype)` routes
+	// through the same FieldType the size/marshal/equal phases use. The
+	// other emit phases already go through fg.fieldType; the singular
+	// scalar path here historically bypassed it to skip a polymorphic call,
+	// so customtype needs a dedicated branch.
+	if ft, ok := fg.customtypeFieldType(fd); ok {
+		ft.EmitUnmarshal(fg, access, ctx)
+		return
+	}
+
 	types.AddTypeImports(fg, t)
 	t.EmitUnmarshal(fg, access, ctx)
 }

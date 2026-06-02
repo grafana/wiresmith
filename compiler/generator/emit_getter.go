@@ -84,6 +84,17 @@ func (fg *FileGenerator) emitGetters(md protoreflect.MessageDescriptor) {
 			continue
 		}
 
+		// `(wiresmith.options.customtype)` swaps the field type for a
+		// user-supplied Go type whose zero literal we don't know — use a
+		// `var zero T` declaration so the getter works for any kind shape
+		// (named primitive alias, struct, pointer wrapper, …).
+		if ctType, ok := fg.customtypeGoFieldType(fd); ok {
+			fmt.Fprintf(fg.body, "func (m *%s) Get%s() %s {\n", name, goName, ctType)
+			fmt.Fprintf(fg.body, "\tif m != nil {\n\t\treturn m.%s\n\t}\n", goName)
+			fmt.Fprintf(fg.body, "\tvar zero %s\n\treturn zero\n}\n\n", ctType)
+			continue
+		}
+
 		// Scalar fields: nil-safe return.
 		goType := fg.imports.goSingularType(fd)
 		fmt.Fprintf(fg.body, "func (m *%s) Get%s() %s {\n", name, goName, goType)
