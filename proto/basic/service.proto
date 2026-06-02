@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package basic.service.v1;
+
+option go_package = "wiresmith/gen/basic/service/v1";
+
+// Payload mixes scalar (varint + length-delimited), repeated, map, oneof,
+// enum, and nested-message field shapes so the gRPC round-trip exercises
+// the wiresmith fast-path Marshal/Unmarshal through the protobuf codec
+// rather than a trivial empty-message envelope.
+message Payload {
+  string id = 1;
+  int64 sequence = 2;
+  repeated bytes chunks = 3;
+  map<string, string> labels = 4;
+  oneof kind {
+    string text = 5;
+    int64 number = 6;
+  }
+  Nested nested = 7;
+  Status status = 8;
+
+  enum Status {
+    STATUS_UNKNOWN = 0;
+    STATUS_OK = 1;
+    STATUS_ERROR = 2;
+  }
+}
+
+message Nested {
+  string name = 1;
+  double value = 2;
+}
+
+service Echo {
+  // Server echoes the payload back unchanged.
+  rpc Unary(Payload) returns (Payload);
+
+  // Server folds sequences from a client-side stream and replies once.
+  rpc ClientStream(stream Payload) returns (Payload);
+
+  // Server emits N copies of the payload, each with a bumped sequence.
+  rpc ServerStream(Payload) returns (stream Payload);
+
+  // Server echoes each received payload back on the same bidi stream.
+  rpc BidiStream(stream Payload) returns (stream Payload);
+}

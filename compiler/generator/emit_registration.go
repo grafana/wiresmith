@@ -376,6 +376,13 @@ func serializeFileDescriptor(fd protoreflect.FileDescriptor) []byte {
 	fdp := protodesc.ToFileDescriptorProto(fd)
 	fdp.SourceCodeInfo = nil
 	fdp.Dependency = filterOutDep(fdp.Dependency, embeddedOptionsPath)
+	// wiresmith does not emit gRPC service stubs and registers the file with
+	// NumServices: 0. Leaving Service entries in the embedded raw descriptor
+	// would make protoimpl.checkDecls panic with "mismatching cardinality" at
+	// init time. Stripping them lets protos that mix wiresmith-generated
+	// messages with services (consumed by external generators like
+	// protoc-gen-go-grpc) compile cleanly while wiresmith stays scope-pure.
+	fdp.Service = nil
 	b, err := proto.MarshalOptions{Deterministic: true}.Marshal(fdp)
 	if err != nil {
 		panic(fmt.Sprintf("marshaling file descriptor for %s: %v", fd.Path(), err))
