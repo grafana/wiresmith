@@ -23,7 +23,7 @@ func (fg *FileGenerator) emitStruct(md protoreflect.MessageDescriptor) {
 			if c := leadingComment(fd); c != "" {
 				fg.body.WriteString(indentComment(c))
 			}
-			goName := snakeToPascal(string(fd.Name()))
+			goName := fg.goFieldName(fd)
 			goType := fg.imports.goType(fd)
 			fmt.Fprintf(fg.body, "\t%s %s %s\n", goName, goType, fg.mapFieldTag(fd))
 			continue
@@ -46,7 +46,7 @@ func (fg *FileGenerator) emitStruct(md protoreflect.MessageDescriptor) {
 		if c := leadingComment(fd); c != "" {
 			fg.body.WriteString(indentComment(c))
 		}
-		goName := snakeToPascal(string(fd.Name()))
+		goName := fg.goFieldName(fd)
 		goType := fg.goFieldType(fd)
 		fmt.Fprintf(fg.body, "\t%s %s %s\n", goName, goType, fg.fieldTag(fd))
 	}

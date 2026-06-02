@@ -19,7 +19,7 @@ func (fg *FileGenerator) emitOneof(md protoreflect.MessageDescriptor, oo protore
 	for i := 0; i < oo.Fields().Len(); i++ {
 		fd := oo.Fields().Get(i)
 		variantName := oneofVariantName(md, fd)
-		fieldName := snakeToPascal(string(fd.Name()))
+		fieldName := fg.goFieldName(fd)
 		fieldType := fg.imports.goSingularType(fd)
 
 		fmt.Fprintf(fg.body, "type %s struct {\n", variantName)

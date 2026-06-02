@@ -46,7 +46,7 @@ func (fg *FileGenerator) emitSize(md protoreflect.MessageDescriptor) {
 // with presence bitmap. Adds tag + 1 byte (varint 0) when the field was
 // present but the nested message is empty.
 func (fg *FileGenerator) emitMessageSizeWithPresence(fd protoreflect.FieldDescriptor, bitIndex int) {
-	goName := snakeToPascal(string(fd.Name()))
+	goName := fg.goFieldName(fd)
 	access := "m." + goName
 	tagSize := protowire.SizeTag(protowire.Number(fd.Number()))
 
@@ -57,7 +57,7 @@ func (fg *FileGenerator) emitMessageSizeWithPresence(fd protoreflect.FieldDescri
 }
 
 func (fg *FileGenerator) emitFieldSize(fd protoreflect.FieldDescriptor) {
-	goName := snakeToPascal(string(fd.Name()))
+	goName := fg.goFieldName(fd)
 	access := "m." + goName
 	tagSize := protowire.SizeTag(protowire.Number(fd.Number()))
 
@@ -73,7 +73,7 @@ func (fg *FileGenerator) emitOneofSize(md protoreflect.MessageDescriptor, oo pro
 	for i := 0; i < oo.Fields().Len(); i++ {
 		fd := oo.Fields().Get(i)
 		variantName := oneofVariantName(md, fd)
-		fieldName := snakeToPascal(string(fd.Name()))
+		fieldName := fg.goFieldName(fd)
 		tagSize := protowire.SizeTag(protowire.Number(fd.Number()))
 		access := "v." + fieldName
 

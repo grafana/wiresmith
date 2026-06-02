@@ -30,7 +30,7 @@ func (fg *FileGenerator) emitGetters(md protoreflect.MessageDescriptor) {
 			continue
 		}
 
-		goName := snakeToPascal(string(fd.Name()))
+		goName := fg.goFieldName(fd)
 
 		if fd.IsMap() {
 			goType := fg.imports.goType(fd)
@@ -118,7 +118,7 @@ func (fg *FileGenerator) emitOneofVariantGetter(md protoreflect.MessageDescripto
 	name := goMessageTypeName(md)
 	oo := fd.ContainingOneof()
 	ooGoName := snakeToPascal(string(oo.Name()))
-	fieldGoName := snakeToPascal(string(fd.Name()))
+	fieldGoName := fg.goFieldName(fd)
 	variantType := oneofVariantName(md, fd)
 
 	// Message variants return a pointer into the variant struct so callers

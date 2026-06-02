@@ -175,7 +175,7 @@ func (fg *FileGenerator) emitPreScan(md protoreflect.MessageDescriptor) {
 	// at len(payload)/2 elements.
 	fmt.Fprintf(fg.body, "\t\tpreCapMax := l / 2\n")
 	for _, fd := range fields {
-		goName := snakeToPascal(string(fd.Name()))
+		goName := fg.goFieldName(fd)
 		// goFieldType respects (wiresmith.options.pointer) so a repeated
 		// pointer-message field pre-allocates as `[]*Msg` rather than `[]Msg`.
 		goType := fg.goFieldType(fd)
@@ -262,7 +262,7 @@ func (fg *FileGenerator) emitUnmarshal(md protoreflect.MessageDescriptor) {
 }
 
 func (fg *FileGenerator) emitFieldUnmarshal(md protoreflect.MessageDescriptor, fd protoreflect.FieldDescriptor) {
-	goName := snakeToPascal(string(fd.Name()))
+	goName := fg.goFieldName(fd)
 	kind := fd.Kind()
 	access := "m." + goName
 
@@ -317,7 +317,7 @@ func (fg *FileGenerator) emitFieldUnmarshal(md protoreflect.MessageDescriptor, f
 			Inner:       t,
 			OneofName:   snakeToPascal(string(oo.Name())),
 			VariantName: oneofVariantName(md, fd),
-			FieldName:   snakeToPascal(string(fd.Name())),
+			FieldName:   fg.goFieldName(fd),
 		}
 		of.EmitUnmarshal(fg, "m."+of.OneofName, ctx)
 		return

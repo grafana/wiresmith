@@ -171,3 +171,39 @@ Customtype-on-message is fundamentally different plumbing (the user type owns th
 ### Worked example
 
 [`proto/basic/customtype.proto`](../proto/basic/customtype.proto) annotates a bytes and a string field with customtypes defined in [`test/customtypes/customtypes.go`](../test/customtypes/customtypes.go), with unannotated controls of each kind to demonstrate the swap is local to the annotated field.
+
+## `(wiresmith.options.customname) = "Identifier"`
+
+The customname option overrides the Go identifier the generator picks for the field. By default the proto field `block_id` becomes `BlockId` (initialism mangled); with customname it can be `BlockID` (or any other valid exported Go identifier).
+
+```proto
+message BlockMeta {
+  string block_id = 1 [(wiresmith.options.customname) = "BlockID"];
+}
+```
+
+```go
+type BlockMeta struct {
+    BlockID string `protobuf:"..." json:"block_id,omitempty"`
+}
+
+func (m *BlockMeta) GetBlockID() string { ... }
+func (m *BlockMeta) HasBlockID() bool   { ... }
+```
+
+The rename reaches every consumer the generator emits: struct field declaration, `Get<Name>()` and `Has<Name>()` accessors, marshal/unmarshal access expressions, `Equal()` comparisons, and the field inside a oneof variant's wrapper struct. The wire format is unchanged.
+
+### Scope of the rename
+
+- **Renamed:** the struct field, every `Get*` / `Has*` accessor, and (for oneof variants) the wrapper-struct field.
+- **NOT renamed:** the oneof variant wrapper *type* (e.g. `Foo_BlockId` stays anchored to the proto field name even when the variant carries `(wiresmith.options.customname) = "BlockID"`). The wrapper type is the schema-visible Go identity; the user-facing API is the accessor methods, which do follow the override.
+
+### Validation
+
+Values must be valid **exported** Go identifiers — the first character must be an uppercase letter and the rest must be letters, digits, or underscores. A lowercase-first or punctuation-bearing value is rejected at codegen time with a clear diagnostic.
+
+The validation source of truth is `customnameOptionRejection` in `compiler/generator/option_customname.go`.
+
+### Worked example
+
+[`proto/basic/customname.proto`](../proto/basic/customname.proto) exercises the option across scalar, message, repeated, and oneof-variant fields, with an unannotated control showing that default `snake_to_PascalCase` conversion still applies elsewhere.

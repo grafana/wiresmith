@@ -87,6 +87,7 @@ wiresmith ships custom field options in `compiler/generator/embed/wiresmith/opti
 - `(wiresmith.options.pointer) = true` — switches a singular message field from `T` to `*T` and a repeated message field from `[]T` to `[]*T`. Rejected on scalar, enum, bytes, string, map, oneof, and proto3-`optional` fields.
 - `(wiresmith.options.jsontag) = "..."` — overrides the `json:"..."` struct tag verbatim (no `,omitempty` appended); applies to every field kind.
 - `(wiresmith.options.customtype) = "import/path.TypeName"` — replaces the Go field type with a user-supplied type that owns its wire encoding (must satisfy `SizeWiresmith/MarshalWiresmith/UnmarshalWiresmith/EqualWiresmith/CompareWiresmith`). v1 scope is singular `bytes` and `string` fields.
+- `(wiresmith.options.customname) = "Identifier"` — overrides the Go field name and every derived accessor (`Get*`, `Has*`, oneof wrapper field). Useful for preserving initialisms (`BlockID` instead of `BlockId`). Applies to every field kind.
 
 See [docs/extensions.md](docs/extensions.md) for the full rules and worked examples.
 

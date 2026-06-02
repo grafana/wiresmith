@@ -60,7 +60,7 @@ func (fg *FileGenerator) emitCompare(ce *compareEmitter, md protoreflect.Message
 			continue
 		}
 
-		goName := snakeToPascal(string(fd.Name()))
+		goName := fg.goFieldName(fd)
 		ft := fg.fieldType(fd)
 		ft.EmitCompare(ce, "\t", "this."+goName, "that1."+goName)
 	}
@@ -133,7 +133,7 @@ func (fg *FileGenerator) emitOneofCompare(ce *compareEmitter, md protoreflect.Me
 	for i := 0; i < oo.Fields().Len(); i++ {
 		fd := oo.Fields().Get(i)
 		variantType := oneofVariantName(md, fd)
-		fieldName := snakeToPascal(string(fd.Name()))
+		fieldName := fg.goFieldName(fd)
 
 		fmt.Fprintf(out, "\t\t\tcase *%s:\n", variantType)
 		fmt.Fprintf(out, "\t\t\t\tv2 := %s.(*%s)\n", rhs, variantType)
