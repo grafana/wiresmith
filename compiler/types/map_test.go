@@ -84,9 +84,9 @@ func TestMapField_EmitUnmarshal_MessageValueReplaces(t *testing.T) {
 	mf := &MapField{
 		Key:       StringType{},
 		Val:       &MessageType{},
-		MapType:   "map[string]*Resource",
+		MapType:   "map[string]Resource",
 		KeyGoType: "string",
-		ValGoType: "*Resource",
+		ValGoType: "Resource",
 		ValCtx:    FieldContext{MessageType: "Resource", IsSamePackage: true},
 	}
 	mf.EmitUnmarshal(e, "m.M", FieldContext{})
@@ -118,9 +118,9 @@ func TestMapField_EmitUnmarshal_CrossPackageMessageReplaces(t *testing.T) {
 	mf := &MapField{
 		Key:       StringType{},
 		Val:       &MessageType{},
-		MapType:   "map[string]*external.Resource",
+		MapType:   "map[string]external.Resource",
 		KeyGoType: "string",
-		ValGoType: "*external.Resource",
+		ValGoType: "external.Resource",
 		ValCtx:    FieldContext{MessageType: "external.Resource", IsSamePackage: false},
 	}
 	mf.EmitUnmarshal(e, "m.M", FieldContext{})
