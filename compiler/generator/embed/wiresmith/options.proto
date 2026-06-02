@@ -23,4 +23,17 @@ extend google.protobuf.FieldOptions {
   // pointer). See compiler/generator/option_pointer.go for the full
   // validation list.
   optional bool pointer = 50030;
+
+  // jsontag replaces the default `json:"..."` struct tag value on the
+  // generated Go field. The value is taken verbatim — including any
+  // `,omitempty` — so callers can match an existing JSON wire contract.
+  //
+  //   string block_id = 1 [(wiresmith.options.jsontag) = "blockID"];
+  //   //  ->  BlockId string `protobuf:"..." json:"blockID"`
+  //
+  // The on-wire protobuf format is unchanged. Valid on every field kind
+  // (scalar, message, repeated, map, oneof variant). Backticks are
+  // rejected because they would terminate the surrounding raw-string
+  // struct tag. See compiler/generator/option_jsontag.go.
+  optional string jsontag = 50031;
 }

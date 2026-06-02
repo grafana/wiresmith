@@ -25,7 +25,7 @@ func (fg *FileGenerator) emitStruct(md protoreflect.MessageDescriptor) {
 			}
 			goName := snakeToPascal(string(fd.Name()))
 			goType := fg.imports.goType(fd)
-			fmt.Fprintf(fg.body, "\t%s %s %s\n", goName, goType, mapFieldTag(fd))
+			fmt.Fprintf(fg.body, "\t%s %s %s\n", goName, goType, fg.mapFieldTag(fd))
 			continue
 		}
 
@@ -48,7 +48,7 @@ func (fg *FileGenerator) emitStruct(md protoreflect.MessageDescriptor) {
 		}
 		goName := snakeToPascal(string(fd.Name()))
 		goType := fg.goFieldType(fd)
-		fmt.Fprintf(fg.body, "\t%s %s %s\n", goName, goType, fieldTag(fd))
+		fmt.Fprintf(fg.body, "\t%s %s %s\n", goName, goType, fg.fieldTag(fd))
 	}
 
 	if words := fg.presenceBitmapWords(md); words > 0 {

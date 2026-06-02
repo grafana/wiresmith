@@ -84,7 +84,7 @@ func newFixtureGeneratorWith(t *testing.T, fd protoreflect.FileDescriptor, allFi
 			pkgName:    "testv1",
 		},
 	}
-	var pointerExt protoreflect.FieldDescriptor
+	var pointerExt, jsontagExt protoreflect.FieldDescriptor
 	for _, f := range allFiles {
 		if f.Path() != embeddedOptionsPath {
 			continue
@@ -92,8 +92,11 @@ func newFixtureGeneratorWith(t *testing.T, fd protoreflect.FileDescriptor, allFi
 		exts := f.Extensions()
 		for i := 0; i < exts.Len(); i++ {
 			x := exts.Get(i)
-			if string(x.FullName()) == pointerExtensionName {
+			switch string(x.FullName()) {
+			case pointerExtensionName:
 				pointerExt = x
+			case jsontagExtensionName:
+				jsontagExt = x
 			}
 		}
 	}
@@ -106,6 +109,7 @@ func newFixtureGeneratorWith(t *testing.T, fd protoreflect.FileDescriptor, allFi
 		reflectBody:    &bytes.Buffer{},
 		fileVarName:    sanitizeFileVarName(fd.Path()),
 		pointerExt:     pointerExt,
+		jsontagExt:     jsontagExt,
 	}
 }
 

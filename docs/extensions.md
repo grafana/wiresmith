@@ -76,3 +76,37 @@ message PointerHolder {
 ```
 
 The option is local to a field; mixing pointer and value shapes within the same message is supported and exercised by this fixture.
+
+## `(wiresmith.options.jsontag) = "..."`
+
+The jsontag option overrides the `json:"..."` value of the generated Go struct tag. The wire format is unaffected; the option only changes the JSON-side contract a caller sees through `encoding/json`. Use it when the proto field name diverges from an existing JSON schema you have to honor (e.g. `block_id` on the wire vs. `blockID` in an HTTP API).
+
+```proto
+message BlockMeta {
+  string block_id      = 1 [(wiresmith.options.jsontag) = "blockID"];
+  uint64 total_objects = 2 [(wiresmith.options.jsontag) = "totalObjects,omitempty"];
+}
+```
+
+```go
+type BlockMeta struct {
+    BlockId      string `protobuf:"bytes,1,opt,..." json:"blockID"`
+    TotalObjects uint64 `protobuf:"varint,2,opt,..." json:"totalObjects,omitempty"`
+}
+```
+
+The supplied value is used **verbatim** — `,omitempty` is not appended for you, matching `gogoproto.jsontag` semantics. An explicit `""` opts the field out of JSON serialization (`json:""`).
+
+### Where it applies
+
+Allowed on every field kind: scalar, message, repeated, map, and oneof variant.
+
+Rejected (reported as a single combined compile-time error from `validateJsontagOptions`):
+
+- Values containing a backtick. Error: `(wiresmith.options.jsontag) must not contain backticks (would terminate the struct tag)`. Quotes inside the value are safe because tag emission escapes them through `%q`.
+
+The validation source of truth is `validateJsontagOptions` in `compiler/generator/option_jsontag.go`.
+
+### Worked example
+
+[`proto/basic/jsontag.proto`](../proto/basic/jsontag.proto) exercises the option across scalar, message, repeated, map, and the empty-string opt-out, with an unannotated field as the control showing the default `json:"<proto_name>,omitempty"` shape is unaffected.
