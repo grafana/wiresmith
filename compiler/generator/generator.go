@@ -111,8 +111,8 @@ type FileGenerator struct {
 	// per-message Equal() methods. Equal is never called from
 	// Marshal/Unmarshal/Size, so moving it out of the main .pb.go follows the
 	// same icache/iTLB-locality rationale as the reflect split — see the
-	// long comment on reflectBody above and the benchmark numbers in
-	// emit_equal.go's banner.
+	// long comment on reflectBody above and the benchmark numbers in the
+	// banner emitted by emitEqualFileBanner below.
 	equalImports *ImportTracker
 	equalBody    *bytes.Buffer
 
