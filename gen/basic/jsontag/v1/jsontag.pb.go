@@ -11,6 +11,22 @@ import (
 	"wiresmith/gen/protohelpers"
 )
 
+type JsonTagHolder_Source interface {
+	isJsonTagHolder_Source()
+}
+
+type JsonTagHolder_SourceId struct {
+	SourceId string `protobuf:"bytes,8,opt,name=source_id,json=sourceId,proto3,oneof" json:"sourceID"`
+}
+
+func (*JsonTagHolder_SourceId) isJsonTagHolder_Source() {}
+
+type JsonTagHolder_RawSource struct {
+	RawSource []byte `protobuf:"bytes,9,opt,name=raw_source,json=rawSource,proto3,oneof" json:"raw_source,omitempty"`
+}
+
+func (*JsonTagHolder_RawSource) isJsonTagHolder_Source() {}
+
 // Leaf is the inner message referenced by JsonTagHolder.
 type Leaf struct {
 	Id   int64  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -21,9 +37,10 @@ type Leaf struct {
 
 // JsonTagHolder exercises (wiresmith.options.jsontag) across the field kinds
 // the bead's acceptance criteria call out: scalar, message, repeated scalar,
-// and map. A second scalar without the option is the control showing the
-// option is local to the annotated field. The `"-"` override opts a field
-// out of JSON serialization (encoding/json skips fields tagged json:"-").
+// map, and oneof variant. A second scalar without the option is the control
+// showing the option is local to the annotated field. The `"-"` override opts
+// a field out of JSON serialization (encoding/json skips fields tagged
+// json:"-").
 type JsonTagHolder struct {
 	// Custom name (matches Tempo's `blockID` HTTP API contract).
 	BlockId string `protobuf:"bytes,1,opt,name=block_id,json=blockId,proto3" json:"blockID"`
@@ -40,6 +57,11 @@ type JsonTagHolder struct {
 	// `"-"` override: encoding/json skips fields whose json tag is "-", so this
 	// field is omitted from JSON output entirely.
 	InternalOnly string `protobuf:"bytes,7,opt,name=internal_only,json=internalOnly,proto3" json:"-"`
+	// Oneof with one annotated variant and one control variant. The annotated
+	// variant's wrapper-struct field carries `json:"sourceID"`; the unannotated
+	// variant keeps the default `json:"raw_source,omitempty"`. Pins the
+	// emit_oneof.go call site that consults fg.fieldTag.
+	Source JsonTagHolder_Source `protobuf_oneof:"source"`
 
 	fieldsPresent [1]uint64
 }
@@ -184,6 +206,27 @@ func (m *JsonTagHolder) GetInternalOnly() string {
 	return ""
 }
 
+func (m *JsonTagHolder) GetSource() JsonTagHolder_Source {
+	if m != nil {
+		return m.Source
+	}
+	return nil
+}
+
+func (m *JsonTagHolder) GetSourceId() string {
+	if x, ok := m.GetSource().(*JsonTagHolder_SourceId); ok {
+		return x.SourceId
+	}
+	return ""
+}
+
+func (m *JsonTagHolder) GetRawSource() []byte {
+	if x, ok := m.GetSource().(*JsonTagHolder_RawSource); ok {
+		return x.RawSource
+	}
+	return nil
+}
+
 func (m *Leaf) Size() int {
 	if m == nil {
 		return 0
@@ -235,6 +278,14 @@ func (m *JsonTagHolder) Size() int {
 	}
 	if len(m.InternalOnly) > 0 {
 		n += 1 + protowire.SizeVarint(uint64(len(m.InternalOnly))) + len(m.InternalOnly)
+	}
+	switch v := m.Source.(type) {
+	case *JsonTagHolder_SourceId:
+		l := len(v.SourceId)
+		n += 1 + protowire.SizeVarint(uint64(l)) + l
+	case *JsonTagHolder_RawSource:
+		l := len(v.RawSource)
+		n += 1 + protowire.SizeVarint(uint64(l)) + l
 	}
 	return n
 }
@@ -312,6 +363,20 @@ func (m *JsonTagHolder) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		return 0, nil
 	}
 	i := len(dAtA)
+	switch v := m.Source.(type) {
+	case *JsonTagHolder_RawSource:
+		i -= len(v.RawSource)
+		copy(dAtA[i:], v.RawSource)
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(v.RawSource)))
+		i--
+		dAtA[i] = 0x4a
+	case *JsonTagHolder_SourceId:
+		i -= len(v.SourceId)
+		copy(dAtA[i:], v.SourceId)
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(v.SourceId)))
+		i--
+		dAtA[i] = 0x42
+	}
 	if len(m.InternalOnly) > 0 {
 		i -= len(m.InternalOnly)
 		copy(dAtA[i:], m.InternalOnly)
@@ -1157,6 +1222,96 @@ func (m *JsonTagHolder) unmarshal(dAtA []byte, depth int) error {
 			m.InternalOnly = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 			m.fieldsPresent[0] |= 1 << 4
+		case 8: // source_id
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				if err != nil {
+					return err
+				}
+				iNdEx += n
+				continue
+			}
+			var byteLen uint64
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
+				iNdEx++
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
+				}
+			}
+			if byteLen > uint64(math.MaxInt) {
+				return io.ErrUnexpectedEOF
+			}
+			intByteLen := int(byteLen)
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Source = &JsonTagHolder_SourceId{SourceId: string(dAtA[iNdEx:postIndex])}
+			iNdEx = postIndex
+		case 9: // raw_source
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				if err != nil {
+					return err
+				}
+				iNdEx += n
+				continue
+			}
+			var byteLen uint64
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
+				iNdEx++
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
+				}
+			}
+			if byteLen > uint64(math.MaxInt) {
+				return io.ErrUnexpectedEOF
+			}
+			intByteLen := int(byteLen)
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Source = &JsonTagHolder_RawSource{RawSource: append([]byte(nil), dAtA[iNdEx:postIndex]...)}
+			iNdEx = postIndex
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
@@ -1169,89 +1324,4 @@ func (m *JsonTagHolder) unmarshal(dAtA []byte, depth int) error {
 		return io.ErrUnexpectedEOF
 	}
 	return nil
-}
-
-func (this *Leaf) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*Leaf)
-	if !ok {
-		that2, ok := that.(Leaf)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.Id != that1.Id {
-		return false
-	}
-	if this.Name != that1.Name {
-		return false
-	}
-	return true
-}
-
-func (this *JsonTagHolder) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*JsonTagHolder)
-	if !ok {
-		that2, ok := that.(JsonTagHolder)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.BlockId != that1.BlockId {
-		return false
-	}
-	if this.PlainName != that1.PlainName {
-		return false
-	}
-	if this.TotalObjects != that1.TotalObjects {
-		return false
-	}
-	if !this.Head.Equal(that1.Head) {
-		return false
-	}
-	if len(this.Sizes) != len(that1.Sizes) {
-		return false
-	}
-	for i := range this.Sizes {
-		if this.Sizes[i] != that1.Sizes[i] {
-			return false
-		}
-	}
-	if len(this.Counters) != len(that1.Counters) {
-		return false
-	}
-	for k, v := range this.Counters {
-		v2, ok := that1.Counters[k]
-		if !ok {
-			return false
-		}
-		if v != v2 {
-			return false
-		}
-	}
-	if this.InternalOnly != that1.InternalOnly {
-		return false
-	}
-	return true
 }

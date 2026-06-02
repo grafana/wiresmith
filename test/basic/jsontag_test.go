@@ -62,3 +62,25 @@ func TestJsonTag_ControlFieldDefault(t *testing.T) {
 	assert.Equal(t, "plain_name,omitempty", f.Tag.Get("json"),
 		"default jsontag must remain `<proto_name>,omitempty` for unannotated fields")
 }
+
+// TestJsonTag_OneofVariants pins jsontag behavior on oneof variant wrapper
+// structs. emit_oneof.go consults FileGenerator.fieldTag the same way
+// emit_struct.go does, so the annotated variant gets `json:"sourceID"` and
+// the control variant keeps the default `<proto_name>,omitempty` shape.
+func TestJsonTag_OneofVariants(t *testing.T) {
+	cases := []struct {
+		wrapperType reflect.Type
+		field       string
+		want        string
+	}{
+		{reflect.TypeFor[jt.JsonTagHolder_SourceId](), "SourceId", "sourceID"},
+		{reflect.TypeFor[jt.JsonTagHolder_RawSource](), "RawSource", "raw_source,omitempty"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.field, func(t *testing.T) {
+			f, ok := tc.wrapperType.FieldByName(tc.field)
+			require.True(t, ok, "field %s not found on %s", tc.field, tc.wrapperType)
+			assert.Equal(t, tc.want, f.Tag.Get("json"))
+		})
+	}
+}
