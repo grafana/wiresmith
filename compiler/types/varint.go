@@ -85,3 +85,7 @@ func (varintBase) ZeroLiteral() string { return "0" }
 func (varintBase) EmitEqual(e Emitter, indent, lhs, rhs string) {
 	scalarNotEqualGuard(e, indent, lhs, rhs)
 }
+
+func (varintBase) EmitCompare(e Emitter, indent, lhs, rhs string) {
+	orderedScalarCompareGuard(e, indent, lhs, rhs)
+}

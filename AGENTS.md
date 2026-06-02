@@ -84,6 +84,10 @@ See [docs/design.md](docs/design.md) for the canonical list of design decisions 
 
 wiresmith ships one custom field option, `(wiresmith.options.pointer)`, defined in `compiler/generator/embed/wiresmith/options.proto` and served from the canonical import path `wiresmith/options.proto` (embedded in the compiler, no vendoring required). Setting it to `true` switches a singular message field from `T` to `*T` and a repeated message field from `[]T` to `[]*T`; on-wire format is unchanged. It is rejected on scalar, enum, bytes, string, map, oneof, and proto3-`optional` fields — see [docs/extensions.md](docs/extensions.md) for the full rules and a worked example.
 
+## Generated Compare() method
+
+Every generated message receives a `Compare(other interface{}) int` method (-1/0/+1 like `bytes.Compare`, gogoproto-compatible nil/wrong-type preamble). Fields walk in ascending wire-tag order; floats compare bit-exact via `math.Float{32,64}bits`; maps sort their keys for a total order; oneof variants compare by declaration index then payload. The methods are emitted into a sibling `<name>_compare.pb.go` rather than the main `.pb.go` — emitting Compare next to the hot Marshal/Unmarshal in one file pushed the hot functions onto different cache sets and produced a measured +9% geomean regression on OTel hot benchmarks (UnmarshalMap +14%, MarshalSingleSpan +13%), the same icache-pressure failure mode the `_reflect.pb.go` split handles. See `compiler/generator/emit_compare.go` and the banner at the top of any `_compare.pb.go`.
+
 ## Supported proto3 features
 
 Messages, nested messages, enums (top-level and nested), oneof, optional, repeated (packed + non-packed), maps, reserved fields, cross-file imports, fully-qualified type references. Scalar types: string, bool, int32, int64, uint32, uint64, sint32, sint64, float, double, bytes, fixed32, fixed64, sfixed32, sfixed64. Map keys: all scalar types except float/double/bytes. Map values: all scalars, enums, messages.

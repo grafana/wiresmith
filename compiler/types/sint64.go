@@ -82,6 +82,10 @@ func (Sint64Type) EmitEqual(e Emitter, indent, lhs, rhs string) {
 	scalarNotEqualGuard(e, indent, lhs, rhs)
 }
 
+func (Sint64Type) EmitCompare(e Emitter, indent, lhs, rhs string) {
+	orderedScalarCompareGuard(e, indent, lhs, rhs)
+}
+
 func init() {
 	register(protoreflect.Sint64Kind, &Sint64Type{})
 }

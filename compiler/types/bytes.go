@@ -88,6 +88,15 @@ func (BytesType) EmitEqual(e Emitter, indent, lhs, rhs string) {
 	e.Writef("%sif !bytes.Equal(%s, %s) {\n%s\treturn false\n%s}\n", indent, lhs, rhs, indent, indent)
 }
 
+// EmitCompare delegates to bytes.Compare which returns -1/0/+1 — the
+// non-zero branch is propagated through the enclosing Compare method. The
+// "nil == empty" contract from EmitEqual carries over: bytes.Compare(nil,
+// []byte{}) is 0, matching Equal's behavior for non-optional bytes fields.
+func (BytesType) EmitCompare(e Emitter, indent, lhs, rhs string) {
+	e.AddImport("bytes", "")
+	e.Writef("%sif c := bytes.Compare(%s, %s); c != 0 {\n%s\treturn c\n%s}\n", indent, lhs, rhs, indent, indent)
+}
+
 func init() {
 	register(protoreflect.BytesKind, &BytesType{})
 }

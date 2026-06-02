@@ -54,6 +54,19 @@ func (r *RepeatedPointer) EmitEqual(e Emitter, indent, lhs, rhs string) {
 	e.Writef("%s}\n", indent)
 }
 
+// EmitCompare emits a length-ordered comparison followed by per-element
+// nil-pair ordering and nil-guarded deep Compare. Shorter slice sorts
+// first, matching gogo and RepeatedField's convention.
+func (r *RepeatedPointer) EmitCompare(e Emitter, indent, lhs, rhs string) {
+	emitLenOrderingGuard(e, indent, lhs, rhs)
+	e.Writef("%sfor i := range %s {\n", indent, lhs)
+	emitNilPairOrdering(e, indent+"\t", lhs+"[i]", rhs+"[i]")
+	e.Writef("%s\tif %s[i] != nil {\n", indent, lhs)
+	r.Inner.EmitCompare(e, indent+"\t\t", lhs+"[i]", rhs+"[i]")
+	e.Writef("%s\t}\n", indent)
+	e.Writef("%s}\n", indent)
+}
+
 func (r *RepeatedPointer) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
 	r.Inner.EmitConsume(e)
 	if ctx.MessageType == "" {

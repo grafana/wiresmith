@@ -53,3 +53,13 @@ func (p *PointerField) EmitEqual(e Emitter, indent, lhs, rhs string) {
 	e.Writef("%sif (%s == nil) != (%s == nil) {\n%s\treturn false\n%s}\n", indent, lhs, rhs, indent, indent)
 	e.Writef("%sif %s != nil && !%s.Equal(%s) {\n%s\treturn false\n%s}\n", indent, lhs, lhs, rhs, indent, indent)
 }
+
+// EmitCompare orders nil < non-nil, then delegates to the receiver's
+// nil-safe Compare method. Mirrors the optional-message branch — same
+// pointer shape, same dispatch.
+func (p *PointerField) EmitCompare(e Emitter, indent, lhs, rhs string) {
+	emitNilPairOrdering(e, indent, lhs, rhs)
+	e.Writef("%sif %s != nil {\n", indent, lhs)
+	p.Inner.EmitCompare(e, indent+"\t", lhs, rhs)
+	e.Writef("%s}\n", indent)
+}

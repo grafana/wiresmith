@@ -97,6 +97,14 @@ func (MessageType) EmitEqual(e Emitter, indent, lhs, rhs string) {
 	e.Writef("%sif !%s.Equal(%s) {\n%s\treturn false\n%s}\n", indent, lhs, rhs, indent, indent)
 }
 
+// EmitCompare delegates to the receiver's nil-safe Compare method. Works
+// for value-form fields (Go auto-addresses to call the pointer-receiver
+// Compare). For pointer-form fields, PointerField/OptionalField wrap this
+// with their own nil-pair guard before delegating.
+func (MessageType) EmitCompare(e Emitter, indent, lhs, rhs string) {
+	e.Writef("%sif c := %s.Compare(%s); c != 0 {\n%s\treturn c\n%s}\n", indent, lhs, rhs, indent, indent)
+}
+
 func init() {
 	register(protoreflect.MessageKind, &MessageType{})
 }

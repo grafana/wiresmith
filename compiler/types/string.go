@@ -80,6 +80,12 @@ func (StringType) EmitEqual(e Emitter, indent, lhs, rhs string) {
 	scalarNotEqualGuard(e, indent, lhs, rhs)
 }
 
+// EmitCompare emits Go's lexicographic `<` comparison directly — strings in
+// Go are compared byte-wise, identical to gogo's strings.Compare result.
+func (StringType) EmitCompare(e Emitter, indent, lhs, rhs string) {
+	orderedScalarCompareGuard(e, indent, lhs, rhs)
+}
+
 func init() {
 	register(protoreflect.StringKind, &StringType{})
 }

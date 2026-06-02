@@ -126,6 +126,25 @@ func (r *RepeatedField) EmitEqual(e Emitter, indent, lhs, rhs string) {
 	e.Writef("%s}\n", indent)
 }
 
+// EmitCompare emits a length-ordered comparison and an element-wise loop
+// that delegates to Inner.EmitCompare — shorter slice sorts first, then
+// the first differing element decides ordering. Matches gogo's repeated
+// Compare convention.
+func (r *RepeatedField) EmitCompare(e Emitter, indent, lhs, rhs string) {
+	emitLenOrderingGuard(e, indent, lhs, rhs)
+	e.Writef("%sfor i := range %s {\n", indent, lhs)
+	r.Inner.EmitCompare(e, indent+"\t", lhs+"[i]", rhs+"[i]")
+	e.Writef("%s}\n", indent)
+}
+
+// emitLenOrderingGuard writes the standard "compare lengths, shorter
+// sorts first" prelude shared by repeated and map Compare emitters.
+func emitLenOrderingGuard(e Emitter, indent, lhs, rhs string) {
+	e.Writef("%sif len(%s) != len(%s) {\n", indent, lhs, rhs)
+	e.Writef("%s\tif len(%s) < len(%s) {\n%s\t\treturn -1\n%s\t}\n", indent, lhs, rhs, indent, indent)
+	e.Writef("%s\treturn 1\n%s}\n", indent, indent)
+}
+
 func (r *RepeatedField) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
 	if r.Inner.IsPackable() {
 		r.emitPackedUnmarshal(e, access, ctx)

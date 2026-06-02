@@ -156,6 +156,45 @@ func (m *MapField) EmitEqual(e Emitter, indent, lhs, rhs string) {
 	e.Writef("%s}\n", indent)
 }
 
+// EmitCompare gives maps a total ordering by walking both sides in sorted
+// key order:
+//
+//  1. Length wins (shorter sorts first).
+//  2. Build sorted key slices for both lhs and rhs.
+//  3. At each position compare the keys first — if they differ, that's the
+//     ordering (the side with the earlier-sorting key sorts first).
+//  4. If the keys match, compare the corresponding values.
+//
+// Wrapped in `{ ... }` so the `ks1`/`ks2`/`v1`/`v2` locals don't collide
+// with anything in the enclosing Compare body or a sibling map field. Map
+// values are extracted into locals because map-indexed expressions aren't
+// addressable, so a pointer-receiver `.Compare` on a message-by-value
+// would otherwise refuse to compile.
+func (m *MapField) EmitCompare(e Emitter, indent, lhs, rhs string) {
+	emitLenOrderingGuard(e, indent, lhs, rhs)
+	e.AddImport("sort", "")
+	lessFn := "func(i, j int) bool { return ks%s[i] < ks%s[j] }"
+	if _, isBool := m.Key.(*BoolType); isBool {
+		// Go forbids `<` on bool; emit the equivalent ordering (false < true)
+		// as `!a && b` so map<bool, V> still gets a total order.
+		lessFn = "func(i, j int) bool { return !ks%s[i] && ks%s[j] }"
+	}
+	e.Writef("%s{\n", indent)
+	e.Writef("%s\tks1 := make([]%s, 0, len(%s))\n", indent, m.KeyGoType, lhs)
+	e.Writef("%s\tfor k := range %s {\n%s\t\tks1 = append(ks1, k)\n%s\t}\n", indent, lhs, indent, indent)
+	e.Writef("%s\tsort.Slice(ks1, "+lessFn+")\n", indent, "1", "1")
+	e.Writef("%s\tks2 := make([]%s, 0, len(%s))\n", indent, m.KeyGoType, rhs)
+	e.Writef("%s\tfor k := range %s {\n%s\t\tks2 = append(ks2, k)\n%s\t}\n", indent, rhs, indent, indent)
+	e.Writef("%s\tsort.Slice(ks2, "+lessFn+")\n", indent, "2", "2")
+	e.Writef("%s\tfor i := range ks1 {\n", indent)
+	m.Key.EmitCompare(e, indent+"\t\t", "ks1[i]", "ks2[i]")
+	e.Writef("%s\t\tv1 := %s[ks1[i]]\n", indent, lhs)
+	e.Writef("%s\t\tv2 := %s[ks2[i]]\n", indent, rhs)
+	m.Val.EmitCompare(e, indent+"\t\t", "v1", "v2")
+	e.Writef("%s\t}\n", indent)
+	e.Writef("%s}\n", indent)
+}
+
 // emitMapEntryWireTypeCheck emits a wire type guard for a map entry field.
 // Uses entryWire (from inline tag decode) and skipValue (index-based skip).
 func emitMapEntryWireTypeCheck(e Emitter, wt string) {
