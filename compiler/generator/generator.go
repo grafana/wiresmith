@@ -311,12 +311,12 @@ func (g *Generator) Generate(ctx context.Context) error {
 	// internal schemas and empty protos that emit no output, so they can't
 	// clobber a neighbour).
 	//
-	// Each proto emits up to three outputs (the main .pb.go, the companion
-	// _reflect.pb.go, and the companion _compare.pb.go), so an input like
-	// foo_reflect.proto or foo_compare.proto would generate a file that
-	// collides with foo.proto's companion. Check all three paths against the
-	// same map.
-	outputs := make(map[string]string, 3*len(results))
+	// Each proto emits up to four outputs (the main .pb.go and the companion
+	// _reflect.pb.go, _compare.pb.go, and _equal.pb.go), so an input like
+	// foo_reflect.proto / foo_compare.proto / foo_equal.proto would generate
+	// a file that collides with foo.proto's companion. Check all four paths
+	// against the same map.
+	outputs := make(map[string]string, 4*len(results))
 	for _, fd := range results {
 		if !g.shouldEmit(fd) {
 			continue
@@ -562,8 +562,13 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 		pointerExt:     g.pointerExt,
 	}
 
-	// Main file: hot paths and the user-facing API. These emitters write to
-	// fg.body / fg.imports.
+	// Hot-path emitters target the main .pb.go: structs, oneof variants,
+	// Reset/Has/Get/Size/Marshal/Unmarshal all write to fg.body / fg.imports.
+	// emitAllEqualMethods and emitAllCompareMethods are intentionally driven
+	// from this same pass, but route their output into fg.equalBody /
+	// fg.compareBody (via equalEmitter / compareEmitter) so Equal and Compare
+	// land in their own companion files for the same icache/iTLB rationale as
+	// the reflect split — see the FileGenerator field comments for details.
 	fg.emitAllEnums(fd)
 	fg.emitAllOneofs(fd)
 	fg.emitAllStructs(fd)
