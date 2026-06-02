@@ -107,6 +107,15 @@ type FileGenerator struct {
 	reflectImports *ImportTracker
 	reflectBody    *bytes.Buffer
 
+	// equalBody / equalImports hold the companion `_equal.pb.go` file:
+	// per-message Equal() methods. Equal is never called from
+	// Marshal/Unmarshal/Size, so moving it out of the main .pb.go follows the
+	// same icache/iTLB-locality rationale as the reflect split — see the
+	// long comment on reflectBody above and the benchmark numbers in the
+	// header comment of emit_equal.go.
+	equalImports *ImportTracker
+	equalBody    *bytes.Buffer
+
 	// fileVarName is a sanitized proto file path used as prefix for
 	// file-level variables (descriptor, MessageInfo/EnumInfo arrays).
 	fileVarName   string
@@ -166,6 +175,24 @@ func (ce *compareEmitter) ReverseTag(indent string, num protowire.Number, wt pro
 
 func (ce *compareEmitter) AddImport(path, alias string) {
 	ce.fg.compareImports.addImport(path, alias)
+}
+
+// equalEmitter wraps a FileGenerator so that types.EmitEqual callbacks route
+// their writes and import registrations into the companion `_equal.pb.go`
+// file instead of the main .pb.go. Equal paths never emit wire tags, so
+// ReverseTag is unreachable and panics if anything ever reaches it.
+type equalEmitter struct{ fg *FileGenerator }
+
+func (e equalEmitter) Writef(format string, args ...any) {
+	fmt.Fprintf(e.fg.equalBody, format, args...)
+}
+
+func (e equalEmitter) AddImport(path, alias string) {
+	e.fg.equalImports.addImport(path, alias)
+}
+
+func (e equalEmitter) ReverseTag(indent string, num protowire.Number, wt protowire.Type) {
+	panic("equalEmitter.ReverseTag: Equal must not emit wire tags")
 }
 
 // fieldContext builds a FieldContext from a field descriptor.
@@ -284,17 +311,17 @@ func (g *Generator) Generate(ctx context.Context) error {
 	// internal schemas and empty protos that emit no output, so they can't
 	// clobber a neighbour).
 	//
-	// Each proto emits up to three outputs (the main .pb.go, the companion
-	// _reflect.pb.go, and the companion _compare.pb.go), so an input like
-	// foo_reflect.proto or foo_compare.proto would generate a file that
-	// collides with foo.proto's companion. Check all three paths against the
-	// same map.
-	outputs := make(map[string]string, 3*len(results))
+	// Each proto emits up to four outputs (the main .pb.go and the companion
+	// _reflect.pb.go, _compare.pb.go, and _equal.pb.go), so an input like
+	// foo_reflect.proto / foo_compare.proto / foo_equal.proto would generate
+	// a file that collides with foo.proto's companion. Check all four paths
+	// against the same map.
+	outputs := make(map[string]string, 4*len(results))
 	for _, fd := range results {
 		if !g.shouldEmit(fd) {
 			continue
 		}
-		for _, outPath := range []string{g.outputPathFor(fd), g.outputReflectPathFor(fd), g.outputComparePathFor(fd)} {
+		for _, outPath := range []string{g.outputPathFor(fd), g.outputReflectPathFor(fd), g.outputComparePathFor(fd), g.outputEqualPathFor(fd)} {
 			if prev, exists := outputs[outPath]; exists {
 				return fmt.Errorf("output collision at %s: %q and %q both write to this path (proto package %q)",
 					outPath, prev, fd.Path(), fd.Package())
@@ -529,12 +556,19 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 		reflectBody:    &bytes.Buffer{},
 		compareImports: newImportTracker(g.Module, string(fd.Package()), g.dests),
 		compareBody:    &bytes.Buffer{},
+		equalImports:   newImportTracker(g.Module, string(fd.Package()), g.dests),
+		equalBody:      &bytes.Buffer{},
 		fileVarName:    sanitizeFileVarName(fd.Path()),
 		pointerExt:     g.pointerExt,
 	}
 
-	// Main file: hot paths and the user-facing API. These emitters write to
-	// fg.body / fg.imports.
+	// Hot-path emitters target the main .pb.go: structs, oneof variants,
+	// Reset/Has/Get/Size/Marshal/Unmarshal all write to fg.body / fg.imports.
+	// emitAllEqualMethods and emitAllCompareMethods are intentionally driven
+	// from this same pass, but route their output into fg.equalBody /
+	// fg.compareBody (via equalEmitter / compareEmitter) so Equal and Compare
+	// land in their own companion files for the same icache/iTLB rationale as
+	// the reflect split — see the FileGenerator field comments for details.
 	fg.emitAllEnums(fd)
 	fg.emitAllOneofs(fd)
 	fg.emitAllStructs(fd)
@@ -585,14 +619,26 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 	// cache sets (measured: +9% geomean on OTel hot paths). Skip when the
 	// proto declared no messages — Compare is per-message so an enum-only
 	// or empty file has nothing to emit.
-	if fg.compareBody.Len() == 0 {
+	if fg.compareBody.Len() > 0 {
+		var cmpOut bytes.Buffer
+		fg.emitHeader(&cmpOut, fg.compareImports)
+		fg.emitCompareFileBanner(&cmpOut)
+		cmpOut.Write(fg.compareBody.Bytes())
+		if err := g.writeFormatted(g.outputComparePathFor(fd), cmpOut.Bytes(), fd.Path()); err != nil {
+			return err
+		}
+	}
+
+	// Write the companion _equal.pb.go file. Skip if no messages contributed
+	// an Equal method (file with only enums, or filtered to none).
+	if fg.equalBody.Len() == 0 {
 		return nil
 	}
-	var cmpOut bytes.Buffer
-	fg.emitHeader(&cmpOut, fg.compareImports)
-	fg.emitCompareFileBanner(&cmpOut)
-	cmpOut.Write(fg.compareBody.Bytes())
-	return g.writeFormatted(g.outputComparePathFor(fd), cmpOut.Bytes(), fd.Path())
+	var eqOut bytes.Buffer
+	fg.emitHeader(&eqOut, fg.equalImports)
+	fg.emitEqualFileBanner(&eqOut)
+	eqOut.Write(fg.equalBody.Bytes())
+	return g.writeFormatted(g.outputEqualPathFor(fd), eqOut.Bytes(), fd.Path())
 }
 
 // writeFormatted gofmt-formats src and writes it to outPath. If gofmt fails
@@ -625,6 +671,14 @@ func (g *Generator) outputReflectPathFor(fd protoreflect.FileDescriptor) string 
 // Same source-relative directory as the main and reflect files.
 func (g *Generator) outputComparePathFor(fd protoreflect.FileDescriptor) string {
 	base := strings.TrimSuffix(filepath.Base(fd.Path()), ".proto") + "_compare.pb.go"
+	return filepath.Join(g.OutDir, sourceRelDir(fd.Path()), base)
+}
+
+// outputEqualPathFor returns the path for the companion `_equal.pb.go` file
+// that holds per-message Equal() methods, split out for the same icache /
+// iTLB locality reasons as `_reflect.pb.go`.
+func (g *Generator) outputEqualPathFor(fd protoreflect.FileDescriptor) string {
+	base := strings.TrimSuffix(filepath.Base(fd.Path()), ".proto") + "_equal.pb.go"
 	return filepath.Join(g.OutDir, sourceRelDir(fd.Path()), base)
 }
 
@@ -733,6 +787,25 @@ func (fg *FileGenerator) emitCompareFileBanner(out *bytes.Buffer) {
 	fmt.Fprintf(out, "// See compiler/generator/emit_compare.go for the full rationale and the\n")
 	fmt.Fprintf(out, "// benchmark methodology. DO NOT inline this file's contents back into\n")
 	fmt.Fprintf(out, "// the main .pb.go without re-measuring.\n\n")
+}
+
+// emitEqualFileBanner writes a comment block at the top of every
+// `_equal.pb.go` file explaining what's here, why it isn't appended to the
+// main `.pb.go`, and what to do if a future maintainer wants to undo the
+// split. Mirrors emitReflectFileBanner — same rationale, smaller surface.
+func (fg *FileGenerator) emitEqualFileBanner(out *bytes.Buffer) {
+	fmt.Fprintf(out, "// Per-message Equal() methods for %s.\n", fg.fd.Path())
+	fmt.Fprintf(out, "//\n")
+	fmt.Fprintf(out, "// Equal is never called from Marshal / Unmarshal / Size on the hot path;\n")
+	fmt.Fprintf(out, "// emitting it next to those methods in the same compilation unit shifts\n")
+	fmt.Fprintf(out, "// the hot functions onto different cache lines / iTLB pages in the linked\n")
+	fmt.Fprintf(out, "// binary without buying anything for the (uncommon) Equal callers.\n")
+	fmt.Fprintf(out, "//\n")
+	fmt.Fprintf(out, "// Splitting Equal out into its own .o gives the linker freedom to place\n")
+	fmt.Fprintf(out, "// it away from the hot paths, mirroring the reflect/registration split\n")
+	fmt.Fprintf(out, "// documented in the companion _reflect.pb.go banner and in\n")
+	fmt.Fprintf(out, "// compiler/generator/emit_registration.go. DO NOT inline this file's\n")
+	fmt.Fprintf(out, "// contents back into the main .pb.go without re-measuring.\n\n")
 }
 
 func (fg *FileGenerator) emitAllEnums(fd protoreflect.FileDescriptor) {

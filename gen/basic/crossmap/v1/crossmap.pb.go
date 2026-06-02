@@ -470,37 +470,3 @@ func (m *CrossMapOuter) unmarshal(dAtA []byte, depth int) error {
 	}
 	return nil
 }
-
-func (this *CrossMapOuter) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*CrossMapOuter)
-	if !ok {
-		that2, ok := that.(CrossMapOuter)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if len(this.Entries) != len(that1.Entries) {
-		return false
-	}
-	for k, v := range this.Entries {
-		v2, ok := that1.Entries[k]
-		if !ok {
-			return false
-		}
-		if !v.Equal(v2) {
-			return false
-		}
-	}
-	return true
-}

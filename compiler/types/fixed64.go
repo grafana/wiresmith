@@ -129,6 +129,13 @@ func (f fixed64Base) equalCast(access string) string {
 }
 
 func (f fixed64Base) EmitEqual(e Emitter, indent, lhs, rhs string) {
+	if f.equalCastExpr != "" {
+		// The only registered fixed64Base with an equalCastExpr is Double,
+		// whose cast names math.Float64bits. Register the import here so the
+		// companion _equal.pb.go file (which doesn't share imports with the
+		// main .pb.go) compiles.
+		e.AddImport("math", "")
+	}
 	scalarNotEqualGuard(e, indent, f.equalCast(lhs), f.equalCast(rhs))
 }
 

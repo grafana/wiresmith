@@ -349,8 +349,10 @@ message Bar { Foo foo = 1; }`)
 	wantFiles := []string{
 		filepath.Join("example", "v1", "common.pb.go"),
 		filepath.Join("example", "v1", "common_reflect.pb.go"),
+		filepath.Join("example", "v1", "common_equal.pb.go"),
 		filepath.Join("example", "v1", "types.pb.go"),
 		filepath.Join("example", "v1", "types_reflect.pb.go"),
+		filepath.Join("example", "v1", "types_equal.pb.go"),
 	}
 	for _, rel := range wantFiles {
 		if _, err := os.Stat(filepath.Join(outDir, rel)); err != nil {
