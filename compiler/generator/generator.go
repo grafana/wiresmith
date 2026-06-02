@@ -112,7 +112,7 @@ type FileGenerator struct {
 	// Marshal/Unmarshal/Size, so moving it out of the main .pb.go follows the
 	// same icache/iTLB-locality rationale as the reflect split — see the
 	// long comment on reflectBody above and the benchmark numbers in the
-	// banner emitted by emitEqualFileBanner below.
+	// header comment of emit_equal.go.
 	equalImports *ImportTracker
 	equalBody    *bytes.Buffer
 

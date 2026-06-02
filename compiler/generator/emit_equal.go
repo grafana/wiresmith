@@ -8,6 +8,28 @@ import (
 	"wiresmith/compiler/types"
 )
 
+// Equal() methods are emitted into the companion `_equal.pb.go` file, not
+// into the main `.pb.go`. Same icache/iTLB rationale as the reflect/registration
+// split documented in emit_registration.go: Equal is cold, the marshal hot
+// path is hot, and co-locating them in one compilation unit shifts the hot
+// code onto different cache lines for no benefit. Wiresmith-6ci measured on
+// Apple M4 Pro, count=20, benchtime=1s, serial (baseline = Equal still in
+// main file):
+//
+//	UnmarshalSingleSpan_Ours -6.23% (p=0.000)
+//	MarshalProfiles_Ours     -5.45% (p=0.000)
+//	UnmarshalLogs_Ours       -5.13% (p=0.000)
+//	MarshalSingleSpan_Ours   -4.40% (p=0.000)
+//	UnmarshalHistogram_Ours  -4.38% (p=0.000)
+//	MarshalMap_Ours          -3.76% (p=0.000)
+//	UnmarshalTraces_Ours     -3.73% (p=0.000)
+//	(geomean across hot Marshal/Unmarshal benches: -1.75%, alloc unchanged)
+//
+// Smaller regressions in the noise: MarshalSummary +0.92%, UnmarshalProfiles
+// +0.73%. Size_Ours benches (which Equal can't touch) also moved by -1.5% to
+// -3.3% — that's the noise floor from generic code-layout shift after
+// removing Equal from the main .pb.go; the largest hot-path gains exceed it
+// comfortably. Keep this split unless someone re-measures.
 func (fg *FileGenerator) emitAllEqualMethods(fd protoreflect.FileDescriptor) {
 	forEachMessage(fd, fg.emitEqual)
 }
