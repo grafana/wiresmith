@@ -129,7 +129,10 @@ type LabelSet struct {
 }
 ```
 
-The import is registered automatically — users don't need to vendor anything beyond their own type.
+The import is registered automatically — users don't need to vendor anything beyond their own type. The value accepts two shapes:
+
+- `"import/path.TypeName"` — fully qualified; the generator pulls in the import and qualifies the type with the path's base name (`bar.TypeName` for `github.com/foo/bar.TypeName`). The path base must be a valid Go identifier and must match the imported package's `package` declaration.
+- `"TypeName"` — same-package shorthand for types defined in the same Go package as the generated file (no import is emitted).
 
 ### The CustomMarshaler interface
 

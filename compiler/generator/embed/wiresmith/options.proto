@@ -50,7 +50,8 @@ extend google.protobuf.FieldOptions {
   //
   // v1 scope: only valid on singular `bytes` and `string` fields (no map,
   // oneof, repeated, optional, or message fields). The value is formatted as
-  // "import/path.TypeName" — the import is registered automatically, no
-  // vendoring required from the user.
+  // either "import/path.TypeName" (the import is registered automatically,
+  // no vendoring required from the user) or just "TypeName" when the
+  // user-supplied type lives in the same Go package as the generated code.
   optional string customtype = 50032;
 }

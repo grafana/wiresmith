@@ -98,6 +98,17 @@ func parseCustomtypeValue(value string) (importPath, typeName string, err error)
 	if err := validateGoIdentifier(typeName); err != nil {
 		return "", "", err
 	}
+	// The package's path base is used verbatim as the Go identifier in
+	// generated code (it's what an unaliased `import "..."` binds to), so
+	// it must itself be a valid Go identifier — `github.com/foo/bar-baz`
+	// would otherwise emit `bar-baz.Type` and fail to compile. We only
+	// reject obvious "won't compile" cases; mismatches between path base
+	// and the package's `package` declaration are out of scope (callers
+	// whose directory name differs from their package name should rename
+	// the directory).
+	if err := validateGoIdentifier(pkgPart); err != nil {
+		return "", "", fmt.Errorf("value %q: package alias derived from import path: %v", value, err)
+	}
 	importPath = pathPrefix + pkgPart
 	return importPath, typeName, nil
 }

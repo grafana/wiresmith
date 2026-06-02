@@ -168,8 +168,12 @@ func (m *CustomTypeHolder) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	}
 	if s := m.TenantId.SizeWiresmith(); s > 0 {
 		i -= s
-		if _, err := m.TenantId.MarshalWiresmith(dAtA[i : i+s]); err != nil {
+		n, err := m.TenantId.MarshalWiresmith(dAtA[i : i+s])
+		if err != nil {
 			return 0, err
+		}
+		if n != s {
+			return 0, fmt.Errorf("m.TenantId.MarshalWiresmith returned %d bytes, expected %d", n, s)
 		}
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(s))
 		i--
@@ -177,8 +181,12 @@ func (m *CustomTypeHolder) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	}
 	if s := m.Labels.SizeWiresmith(); s > 0 {
 		i -= s
-		if _, err := m.Labels.MarshalWiresmith(dAtA[i : i+s]); err != nil {
+		n, err := m.Labels.MarshalWiresmith(dAtA[i : i+s])
+		if err != nil {
 			return 0, err
+		}
+		if n != s {
+			return 0, fmt.Errorf("m.Labels.MarshalWiresmith returned %d bytes, expected %d", n, s)
 		}
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(s))
 		i--

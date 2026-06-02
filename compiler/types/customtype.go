@@ -24,7 +24,12 @@ type CustomType struct {
 	GoType string
 }
 
-func (c *CustomType) RequiredImports() []string { return nil }
+// RequiredImports declares "fmt" because EmitMarshal asserts the user's
+// MarshalWiresmith returned exactly SizeWiresmith() bytes via fmt.Errorf.
+// Other generated paths (Stringer, unmarshal error wrapping) usually pull
+// fmt in already, but declaring it here keeps the import sound for any
+// future file where customtype is the only fmt user.
+func (c *CustomType) RequiredImports() []string { return []string{"fmt"} }
 
 // EmitSize emits the proto-wrapper size accumulator. The customtype's
 // SizeWiresmith() is called once and reused for the conditional and the size
@@ -42,11 +47,22 @@ func (c *CustomType) EmitSize(e Emitter, access string, tagSize int) {
 // then prepends the varint length and the field tag. The two-call pattern
 // (Size then Marshal) matches gogo's MarshalTo/Size shape but with
 // wiresmith-specific method names to make the contract unambiguous.
+//
+// We assert MarshalWiresmith wrote exactly SizeWiresmith() bytes. A short
+// write would leave uninitialised tail bytes inside the length-delimited
+// payload (the slice was carved out of the reverse-write scratch buffer,
+// which is reused across messages), producing a corrupt wire payload
+// without any error from the user's implementation. The check turns that
+// silent corruption into a marshal-time error.
 func (c *CustomType) EmitMarshal(e Emitter, access string, num protowire.Number) {
 	e.Writef("\tif s := %s.SizeWiresmith(); s > 0 {\n", access)
 	e.Writef("\t\ti -= s\n")
-	e.Writef("\t\tif _, err := %s.MarshalWiresmith(dAtA[i : i+s]); err != nil {\n", access)
+	e.Writef("\t\tn, err := %s.MarshalWiresmith(dAtA[i : i+s])\n", access)
+	e.Writef("\t\tif err != nil {\n")
 	e.Writef("\t\t\treturn 0, err\n")
+	e.Writef("\t\t}\n")
+	e.Writef("\t\tif n != s {\n")
+	e.Writef("\t\t\treturn 0, fmt.Errorf(\"%s.MarshalWiresmith returned %%d bytes, expected %%d\", n, s)\n", access)
 	e.Writef("\t\t}\n")
 	e.Writef("\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(s))\n")
 	e.ReverseTag("\t\t", num, protowire.BytesType)

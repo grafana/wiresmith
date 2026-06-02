@@ -121,6 +121,11 @@ func TestParseCustomtypeValue(t *testing.T) {
 		{in: ".LabelAdapter", wantErr: true, errSubstr: "package segment is empty"},
 		{in: "", wantErr: true, errSubstr: "must not be empty"},
 		{in: "github.com/foo/bar.1Bad", wantErr: true, errSubstr: "must start with a letter"},
+		// Path base names that aren't valid Go identifiers must be rejected
+		// up front — leaving them to surface as a generated-file compile
+		// error would lose the source of the typo.
+		{in: "github.com/foo/bar-baz.Type", wantErr: true, errSubstr: "package alias derived from import path"},
+		{in: "github.com/foo/123x.Type", wantErr: true, errSubstr: "package alias derived from import path"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.in, func(t *testing.T) {
