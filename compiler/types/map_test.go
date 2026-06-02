@@ -73,86 +73,73 @@ func TestMapField_EmitMarshal_ValueBeforeKey(t *testing.T) {
 	}
 }
 
-// Map<K, Msg> merge semantics: if a duplicate key arrives, merge into the
-// existing message — but only when the value field was actually present on
-// the wire. An empty-but-present message (length 0) must trigger the merge
-// branch; an absent value must preserve the prior entry. The trigger is
-// `mapValueBytes != nil`, NOT `len(mapValueBytes) > 0` (which would skip
-// empty-but-present values). See CLAUDE.md → "Map field correctness".
-func TestMapField_EmitUnmarshal_MergePresentNotLen(t *testing.T) {
+// proto3 map duplicate-key semantics are REPLACE / last-write-wins:
+// EmitUnmarshal must finish each map entry by overwriting `m[mapkey]`
+// unconditionally — no `mapValueBytes` capture, no `existing` merge call.
+// wiresmith-05d backs out the prior merge branch (originally added to
+// implement "merge on duplicate key", which protobuf-go and proto3 spec
+// disagree with) and the mapValueStart machinery that fed it.
+func TestMapField_EmitUnmarshal_MessageValueReplaces(t *testing.T) {
 	e := &captureEmitter{}
 	mf := &MapField{
 		Key:       StringType{},
 		Val:       &MessageType{},
-		MapType:   "map[string]*Resource",
+		MapType:   "map[string]Resource",
 		KeyGoType: "string",
-		ValGoType: "*Resource",
+		ValGoType: "Resource",
 		ValCtx:    FieldContext{MessageType: "Resource", IsSamePackage: true},
 	}
 	mf.EmitUnmarshal(e, "m.M", FieldContext{})
 	got := e.buf.String()
 
-	// Merge predicate must use nil-check, not length.
-	if !strings.Contains(got, "ok && mapValueBytes != nil") {
-		t.Errorf("EmitUnmarshal must trigger merge on `mapValueBytes != nil` (not len>0):\n%s", got)
+	if !strings.Contains(got, "m.M[mapkey] = mapvalue") {
+		t.Errorf("EmitUnmarshal must finish each entry with `m.M[mapkey] = mapvalue` (REPLACE):\n%s", got)
 	}
-	if strings.Contains(got, "len(mapValueBytes)") {
-		t.Errorf("EmitUnmarshal must NOT gate merge on len(mapValueBytes) — empty-but-present must merge:\n%s", got)
+	if strings.Contains(got, "mapValueBytes") {
+		t.Errorf("EmitUnmarshal must not emit mapValueBytes — merge is gone:\n%s", got)
 	}
-	// Absent-value fallback uses `else if !ok` to insert the zero-value
-	// entry (or, when key existed and value absent, preserve original).
-	if !strings.Contains(got, "} else if !ok {") {
-		t.Errorf("EmitUnmarshal missing absent-key/preserve-on-absent-value fallback:\n%s", got)
+	if strings.Contains(got, "existing.unmarshal(") || strings.Contains(got, "existing.Unmarshal(") || strings.Contains(got, "existing.UnmarshalWithDepth(") {
+		t.Errorf("EmitUnmarshal must not emit any `existing.*marshal*` merge call — merge is gone:\n%s", got)
+	}
+	if strings.Contains(got, "} else if !ok {") {
+		t.Errorf("EmitUnmarshal must not branch on existing key — REPLACE is unconditional:\n%s", got)
 	}
 }
 
-// Cross-package companion to TestMapField_EmitUnmarshal_MergePresentNotLen:
-// the merge predicate must stay nil-based regardless of whether the value
-// message lives in the same package. Cross-package emit cannot reach the
-// package-local `existing.unmarshal()` helper, so we also assert that
-// private form is absent.
-//
-// Cross-package map-value merge must thread the recursion-depth counter
-// through `UnmarshalWithDepth(..., depth+1)`. The public `Unmarshal(b)`
-// entry resets depth to zero at the package boundary, which would re-open
-// the SEC-5 hole the rest of the codegen closes — an attacker who can put
-// duplicate map keys on the wire would get a fresh depth budget for every
-// merge. Pinned after wiresmith-1c0 landed the fix.
-func TestMapField_EmitUnmarshal_CrossPackageMessageMerge(t *testing.T) {
+// Cross-package map<K, Msg> companion. Same REPLACE assertion: no
+// `existing` merge call (even the depth-threading
+// `existing.UnmarshalWithDepth(mapValueBytes, depth+1)` form added in
+// wiresmith-1c0). The depth-threading still lives in the *initial* value
+// decode at `MessageType.EmitMapEntryUnmarshal` — that's what
+// `TestMessageType_EmitMapEntryUnmarshal_CrossPackageThreadsDepth` (in
+// message_test.go) pins; this test owns the post-loop side.
+func TestMapField_EmitUnmarshal_CrossPackageMessageReplaces(t *testing.T) {
 	e := &captureEmitter{}
 	mf := &MapField{
 		Key:       StringType{},
 		Val:       &MessageType{},
-		MapType:   "map[string]*external.Resource",
+		MapType:   "map[string]external.Resource",
 		KeyGoType: "string",
-		ValGoType: "*external.Resource",
+		ValGoType: "external.Resource",
 		ValCtx:    FieldContext{MessageType: "external.Resource", IsSamePackage: false},
 	}
 	mf.EmitUnmarshal(e, "m.M", FieldContext{})
 	got := e.buf.String()
 
-	if !strings.Contains(got, "ok && mapValueBytes != nil") {
-		t.Errorf("Cross-package merge must trigger on `mapValueBytes != nil`:\n%s", got)
+	if !strings.Contains(got, "m.M[mapkey] = mapvalue") {
+		t.Errorf("EmitUnmarshal must finish each entry with `m.M[mapkey] = mapvalue`:\n%s", got)
 	}
-	if strings.Contains(got, "len(mapValueBytes)") {
-		t.Errorf("Cross-package merge must NOT gate on len(mapValueBytes):\n%s", got)
+	if strings.Contains(got, "mapValueBytes") {
+		t.Errorf("EmitUnmarshal must not emit mapValueBytes — merge is gone:\n%s", got)
 	}
-	// Private `existing.unmarshal()` is package-local; cross-package emit
-	// must NOT reach for it.
-	if strings.Contains(got, "existing.unmarshal(") {
-		t.Errorf("Cross-package: private unmarshal() is not accessible:\n%s", got)
-	}
-	if !strings.Contains(got, "existing.UnmarshalWithDepth(mapValueBytes, depth+1)") {
-		t.Errorf("Cross-package merge must thread depth via existing.UnmarshalWithDepth(mapValueBytes, depth+1):\n%s", got)
-	}
-	if strings.Contains(got, "existing.Unmarshal(mapValueBytes)") {
-		t.Errorf("Cross-package merge must NOT use depth-resetting existing.Unmarshal(mapValueBytes):\n%s", got)
+	if strings.Contains(got, "existing.UnmarshalWithDepth(") || strings.Contains(got, "existing.Unmarshal(") {
+		t.Errorf("EmitUnmarshal must not emit any `existing.*` merge call:\n%s", got)
 	}
 }
 
-// Non-message map values take a simpler path (no merge): just write the
-// decoded value into the map. The `mapValueBytes` machinery must NOT appear.
-func TestMapField_EmitUnmarshal_ScalarValueNoMergeBlock(t *testing.T) {
+// Non-message (scalar) map values share the same shape: unconditional
+// `m[mapkey] = mapvalue` post-loop, no mapValueBytes/merge machinery.
+func TestMapField_EmitUnmarshal_ScalarValueAssigns(t *testing.T) {
 	e := &captureEmitter{}
 	mf := &MapField{
 		Key:       StringType{},
@@ -165,7 +152,7 @@ func TestMapField_EmitUnmarshal_ScalarValueNoMergeBlock(t *testing.T) {
 	got := e.buf.String()
 
 	if strings.Contains(got, "mapValueBytes") {
-		t.Errorf("Scalar-valued map must not emit mapValueBytes (no merge):\n%s", got)
+		t.Errorf("Scalar-valued map must not emit mapValueBytes:\n%s", got)
 	}
 	if !strings.Contains(got, "m.M[mapkey] = mapvalue") {
 		t.Errorf("Scalar-valued map must assign mapvalue directly:\n%s", got)

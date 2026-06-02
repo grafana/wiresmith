@@ -35,7 +35,7 @@ Tests transplanted from upstream vtprotobuf and gogoproto test suites. The goal 
 
 The official `conformance_test_runner` (C++) run against a Go testee that uses wiresmith-generated code. Lives behind Docker so the C++ binary does not need to be built locally — see [`test/conformance/AGENTS.md`](../test/conformance/AGENTS.md) for the setup. Run via `make conformance`.
 
-Current status: **699 passing, 3 expected failures** (2 from unknown-field preservation, 1 from cross-entry map duplicate-key MERGE-vs-REPLACE divergence — the latter has a follow-up bead and is documented in `test/conformance/failure_list.txt`; the first two are intentional, see [design.md](design.md#limitations)). The runner fails fast if the failure list contains entries that now pass; update `test/conformance/failure_list.txt` by removing any line the runner flags as "is in the failure list, but test succeeded".
+Current status: **700 passing, 2 expected failures** (both from unknown-field preservation — intentional, see [design.md](design.md#limitations)). The runner fails fast if the failure list contains entries that now pass; update `test/conformance/failure_list.txt` by removing any line the runner flags as "is in the failure list, but test succeeded".
 
 ### `test/field_survival_test.go`
 

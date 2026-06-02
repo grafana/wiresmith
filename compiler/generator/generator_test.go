@@ -1064,42 +1064,59 @@ message Outer { map<string, depthmap.leaf.v1.Leaf> entries = 1; }`)
 	}
 }
 
-// TestGenerateCrossPackageMapDuplicateKeyMergeThreadsDepth pins the
-// duplicate-key merge branch of the same SEC-5 fix.
-// TestGenerateCrossPackageMapValueThreadsDepth above covers the *initial*
-// decode of a `map<K, Msg>` entry (MessageType.EmitMapEntryUnmarshal). The
-// MERGE branch in MapField.EmitUnmarshal — taken when the same key appears
-// twice in the wire — is a separate emit site (compiler/types/map.go:127)
-// and was missed by the original fix, so an attacker could repeatedly merge
-// into a single map slot and reset the recursion-depth counter on every
-// duplicate. This test fails on the pre-fix codegen.
-func TestGenerateCrossPackageMapDuplicateKeyMergeThreadsDepth(t *testing.T) {
+// TestGenerateCrossPackageMapDuplicateKeyReplaces pins the proto3
+// duplicate-key REPLACE / last-write-wins semantics at the generator
+// level. Prior to wiresmith-05d the codegen MERGED message values when
+// the same map key appeared more than once on the wire; that diverged
+// from the proto3 spec and from `google.golang.org/protobuf`'s
+// `consumeMapOfMessage` (which allocates a fresh value per entry and
+// SetMapIndex's it unconditionally). The visible symptom was the
+// `Required.Proto3.ProtobufInput.ValidDataMap.STRING.MESSAGE.MergeValue`
+// conformance test, exposed by the corecursive re-add in
+// wiresmith-sb1.
+//
+// The depth-threading the merge call used to do — closely related to
+// SEC-5 / wiresmith-1c0 — is now redundant: only the *initial* value
+// decode (via `MessageType.EmitMapEntryUnmarshal`) needs to thread
+// depth, and `TestGenerateCrossPackageMapValueThreadsDepth` above still
+// pins that.
+func TestGenerateCrossPackageMapDuplicateKeyReplaces(t *testing.T) {
 	protoDir := t.TempDir()
-	writeProto(t, protoDir, "depthmerge/leaf/v1/leaf.proto", `
+	writeProto(t, protoDir, "dupkey/leaf/v1/leaf.proto", `
 syntax = "proto3";
-package depthmerge.leaf.v1;
+package dupkey.leaf.v1;
 message Leaf { string s = 1; }`)
-	writeProto(t, protoDir, "depthmerge/outer/v1/outer.proto", `
+	writeProto(t, protoDir, "dupkey/outer/v1/outer.proto", `
 syntax = "proto3";
-package depthmerge.outer.v1;
-import "depthmerge/leaf/v1/leaf.proto";
-message Outer { map<string, depthmerge.leaf.v1.Leaf> entries = 1; }`)
+package dupkey.outer.v1;
+import "dupkey/leaf/v1/leaf.proto";
+message Outer { map<string, dupkey.leaf.v1.Leaf> entries = 1; }`)
 
 	outDir := testOutDir(t)
 	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)
 	}
-	outerSrc := mustReadFile(t, filepath.Join(outDir, "depthmerge", "outer", "v1", "outer.pb.go"))
+	outerSrc := mustReadFile(t, filepath.Join(outDir, "dupkey", "outer", "v1", "outer.pb.go"))
 
-	// The merge call site uses `existing.<...>(mapValueBytes, ...)`; pin it
-	// to the depth-threading form. The depth-resetting `existing.Unmarshal(
-	// mapValueBytes)` (without the depth arg) was the SEC-5 regression.
-	if !strings.Contains(outerSrc, "existing.UnmarshalWithDepth(mapValueBytes, depth+1)") {
-		t.Errorf("outer.pb.go duplicate-key merge must thread depth via existing.UnmarshalWithDepth(mapValueBytes, depth+1); pre-fix this site called the depth-resetting existing.Unmarshal(mapValueBytes). Full source:\n%s", outerSrc)
+	// REPLACE: the post-loop must unconditionally overwrite m[mapkey].
+	if !strings.Contains(outerSrc, "m.Entries[mapkey] = mapvalue") {
+		t.Errorf("outer.pb.go must end the map-entry block with `m.Entries[mapkey] = mapvalue` (REPLACE):\n%s", outerSrc)
 	}
-	if strings.Contains(outerSrc, "existing.Unmarshal(mapValueBytes)") {
-		t.Errorf("outer.pb.go duplicate-key merge must NOT call the depth-resetting existing.Unmarshal(mapValueBytes); full source:\n%s", outerSrc)
+	// All the merge-branch machinery must be gone: no mapValueBytes
+	// capture, no `existing.<unmarshal>` call (in any of its three
+	// historical forms), no nil-check branch.
+	if strings.Contains(outerSrc, "mapValueBytes") {
+		t.Errorf("outer.pb.go must not mention mapValueBytes — merge is gone (wiresmith-05d):\n%s", outerSrc)
+	}
+	for _, frag := range []string{
+		"existing.unmarshal(",
+		"existing.Unmarshal(",
+		"existing.UnmarshalWithDepth(",
+	} {
+		if strings.Contains(outerSrc, frag) {
+			t.Errorf("outer.pb.go must not contain `%s` — duplicate-key merge is gone (wiresmith-05d):\n%s", frag, outerSrc)
+		}
 	}
 }
 

@@ -234,3 +234,86 @@ func buildMapEntryVarintVarint(key, val uint64) []byte {
 	entry = protowire.AppendVarint(entry, val)
 	return entry
 }
+
+// TestMap_RawWire_DuplicateKey_MessageValue covers the message-valued
+// counterpart of TestMap_RawWire_DuplicateKey. proto3's "last-write-wins"
+// semantics for duplicate keys mean each entry REPLACES the previous one
+// — fields that appeared in the first wire entry but not the second must
+// NOT survive in the final map. wiresmith-05d backs out a prior merge
+// branch that would have surfaced fields from BOTH entries here.
+//
+// First entry: Inner{Data: "first", SignedVal: 111}
+// Second entry (same key): Inner{Raw: []byte{0xFF}, FixedVal: 222}
+// Expected after REPLACE: Inner{Raw: []byte{0xFF}, FixedVal: 222}
+//
+//	(no Data, no SignedVal — they belonged to the discarded first entry)
+//
+// MERGE behaviour, by contrast, would have ended with all four fields
+// populated. Conformance test
+// `Required.Proto3.ProtobufInput.ValidDataMap.STRING.MESSAGE.MergeValue`
+// exercises the same invariant against the upstream test corpus once the
+// failure-list entry it lives behind is pruned.
+func TestMap_RawWire_DuplicateKey_MessageValue(t *testing.T) {
+	first := buildInnerWire("first", 111, nil, 0)
+	second := buildInnerWire("", 0, []byte{0xFF}, 222)
+
+	entry1 := buildMapEntryStringMessage("k", first)
+	entry2 := buildMapEntryStringMessage("k", second)
+
+	// AllMaps field 16 = map<string, Inner>
+	var wire []byte
+	wire = protowire.AppendTag(wire, 16, protowire.BytesType)
+	wire = protowire.AppendBytes(wire, entry1)
+	wire = protowire.AppendTag(wire, 16, protowire.BytesType)
+	wire = protowire.AppendBytes(wire, entry2)
+
+	var msg ks.AllMaps
+	require.NoError(t, msg.Unmarshal(wire))
+
+	got, ok := msg.MapStringMessage["k"]
+	require.True(t, ok, "expected key 'k' in MapStringMessage")
+	assert.Equal(t, "", got.Data, "Data must come ONLY from the second entry (REPLACE)")
+	assert.Equal(t, int64(0), got.SignedVal, "SignedVal must come ONLY from the second entry (REPLACE)")
+	assert.Equal(t, []byte{0xFF}, got.Raw, "Raw must come from the second entry")
+	assert.Equal(t, int32(222), got.FixedVal, "FixedVal must come from the second entry")
+}
+
+// buildInnerWire builds a wire-format ks.Inner. Fields default to their
+// zero value; pass an empty / zero arg to skip that field on the wire.
+//
+//	Data      string = field 1 (bytes)
+//	Raw       []byte = field 2 (bytes)
+//	SignedVal int64  = field 3 (zigzag64)
+//	FixedVal  int32  = field 4 (fixed32)
+func buildInnerWire(data string, signedVal int64, raw []byte, fixedVal int32) []byte {
+	var b []byte
+	if data != "" {
+		b = protowire.AppendTag(b, 1, protowire.BytesType)
+		b = protowire.AppendString(b, data)
+	}
+	if raw != nil {
+		b = protowire.AppendTag(b, 2, protowire.BytesType)
+		b = protowire.AppendBytes(b, raw)
+	}
+	if signedVal != 0 {
+		b = protowire.AppendTag(b, 3, protowire.VarintType)
+		b = protowire.AppendVarint(b, protowire.EncodeZigZag(signedVal))
+	}
+	if fixedVal != 0 {
+		b = protowire.AppendTag(b, 4, protowire.Fixed32Type)
+		b = protowire.AppendFixed32(b, uint32(fixedVal))
+	}
+	return b
+}
+
+// buildMapEntryStringMessage builds a map entry with string key (field 1)
+// and an embedded message value (field 2). The message bytes are
+// length-prefixed.
+func buildMapEntryStringMessage(key string, msgBytes []byte) []byte {
+	var entry []byte
+	entry = protowire.AppendTag(entry, 1, protowire.BytesType)
+	entry = protowire.AppendString(entry, key)
+	entry = protowire.AppendTag(entry, 2, protowire.BytesType)
+	entry = protowire.AppendBytes(entry, msgBytes)
+	return entry
+}
