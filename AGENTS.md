@@ -96,7 +96,7 @@ Not supported (not needed for OTel protos): services/RPCs, extensions, well-know
 
 ## Conformance test status
 
-699 passing, 3 expected failures (2 unknown field preservation, 1 cross-entry map duplicate-key MERGE-vs-REPLACE divergence — see `test/conformance/failure_list.txt` for details and follow-up). Unknown fields are intentionally discarded for performance. Run with `make conformance`.
+700 passing, 2 expected failures (both from unknown field preservation — see `test/conformance/failure_list.txt`). Unknown fields are intentionally discarded for performance. Run with `make conformance`.
 
 **Updating the failure list:** The conformance runner errors when a failure list entry matches a now-passing test ("is in the failure list, but test succeeded"). After fixing conformance-related bugs, run conformance and remove entries that the runner flags:
 
