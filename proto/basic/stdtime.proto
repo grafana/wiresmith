@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package basic.stdtime.v1;
 
-option go_package = "wiresmith/gen/basic/stdtime/v1";
+option go_package = "github.com/grafana/wiresmith/gen/basic/stdtime/v1";
 
 import "wiresmith/options.proto";
 import "google/protobuf/timestamp.proto";

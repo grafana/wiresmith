@@ -10,7 +10,7 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	st "wiresmith/gen/basic/stdtime/v1"
+	st "github.com/grafana/wiresmith/gen/basic/stdtime/v1"
 )
 
 // TestStdtime_FieldTypeIsTimeTime pins the struct field type: the stdtime-

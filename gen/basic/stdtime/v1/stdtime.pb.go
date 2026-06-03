@@ -5,11 +5,11 @@ package v1
 
 import (
 	"fmt"
+	"github.com/grafana/wiresmith/protohelpers"
 	"google.golang.org/protobuf/encoding/protowire"
 	"io"
 	"math"
 	"time"
-	"wiresmith/gen/protohelpers"
 )
 
 // StdtimeHolder exercises (wiresmith.options.stdtime) on a singular

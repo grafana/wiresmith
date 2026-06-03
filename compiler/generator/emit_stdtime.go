@@ -53,7 +53,7 @@ func (fg *FileGenerator) emitStdtimeHelpers(fd protoreflect.FileDescriptor) {
 	fg.imports.addImport("io", "")
 	fg.imports.addImport("fmt", "")
 	fg.imports.addImport("google.golang.org/protobuf/encoding/protowire", "")
-	fg.imports.addImport(fg.module+"/gen/protohelpers", "")
+	fg.imports.addImport(protohelpersImport, "")
 
 	// sizeStdTime returns the inner Timestamp payload size (excluding the
 	// outer field tag and length prefix). Returns 0 for the Go zero value

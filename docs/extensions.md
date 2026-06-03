@@ -242,6 +242,8 @@ Go's zero `time.Time{}` (January 1, year 1 UTC — the only value for which `IsZ
 
 This matches `gogoproto.stdtime`'s contract and means **the Unix epoch is distinct from "unset"**: `time.Unix(0, 0).UTC()` is not the Go zero, so it marshals as an explicit empty Timestamp payload (`0x1a 0x00` — tag, length 0) and decodes back to the same instant. If you need to distinguish the literal year-1 zero from "no value", store presence alongside the time.
 
+Presence is carried entirely by `time.Time.IsZero()` — wiresmith does **not** emit a `Has<Name>()` accessor for stdtime fields (unlike most other singular non-oneof fields where presence rides on a bitmap). Callers check `m.GetCreated().IsZero()` instead of `m.HasCreated()`.
+
 ### UTC normalization
 
 Decoded times are always in UTC. UTC is the canonical Timestamp timezone in the proto spec; encoded `seconds + nanos` carry no zone information, so the decoder picks UTC to keep the round-trip independent of the writer's local zone. Code that needs a local zone after decode should call `.In(loc)` itself.
