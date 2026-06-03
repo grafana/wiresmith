@@ -5,10 +5,13 @@ go 1.26.3
 require (
 	github.com/bufbuild/protocompile v0.14.1
 	github.com/gogo/protobuf v1.3.2
-	github.com/planetscale/vtprotobuf v0.6.0
+	// Reads as a bump from v0.6.0; effective version is pinned back to
+	// v0.6.0 by the `replace` directive below. See its comment for why.
+	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10
 	github.com/stretchr/testify v1.11.1
 	go.opentelemetry.io/collector/pdata v1.59.0
 	go.opentelemetry.io/proto/otlp v1.10.0
+	google.golang.org/grpc v1.81.1
 	google.golang.org/protobuf v1.36.11
 )
 
@@ -22,6 +25,24 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	go.opentelemetry.io/collector/featuregate v1.59.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/sync v0.8.0 // indirect
+	golang.org/x/net v0.55.0 // indirect
+	golang.org/x/sync v0.20.0 // indirect
+	golang.org/x/sys v0.45.0 // indirect
+	golang.org/x/text v0.37.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260226221140-a57be14db171 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+// google.golang.org/grpc v1.81.1's go.mod transitively requires
+// vtprotobuf at a post-v0.6.0 pseudo-version. The only package wiresmith
+// uses from vtprotobuf is `protohelpers`, which had zero changes between
+// v0.6.0 and the pseudo-commit, so the effective runtime stays at v0.6.0
+// either way — but the require-line bump shows as unexplained churn in
+// the PR diff.
+//
+// We can't lower the require line itself: MVS rejects a require below
+// the transitively-required pseudo, and `go mod tidy` re-bumps it to
+// pseudo on every run. The `replace` below overrides the *effective*
+// version Go resolves at build time. Result: require = pseudo (MVS-
+// compliant), build = v0.6.0 (matches main).
+replace github.com/planetscale/vtprotobuf => github.com/planetscale/vtprotobuf v0.6.0

@@ -3,6 +3,9 @@ package generator
 import (
 	"strings"
 	"testing"
+
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/descriptorpb"
 )
 
 // TestEmitRegistration_EmptyFile pins the early-return: a proto with no
@@ -94,4 +97,36 @@ func extractBlock(t *testing.T, body, start, end string) string {
 		t.Fatalf("block end %q not found after %q", end, start)
 	}
 	return rest[:e+len(end)]
+}
+
+// TestSerializeFileDescriptor_StripsServices pins that the embedded raw
+// FileDescriptor bytes carry no Service entries. wiresmith always emits
+// NumServices: 0 in TypeBuilder; an embedded service entry would make
+// protoimpl.checkDecls panic with "mismatching cardinality" at init time,
+// which would block any proto file that mixes messages with services from
+// being consumed alongside an external service-stub generator like
+// protoc-gen-go-grpc.
+func TestSerializeFileDescriptor_StripsServices(t *testing.T) {
+	fd := compileProtoFixture(t, `
+syntax = "proto3";
+package test.v1;
+option go_package = "wiresmith/gen/test/v1";
+message Req { string id = 1; }
+message Resp { string id = 1; }
+service Svc {
+  rpc Unary(Req) returns (Resp);
+}
+`)
+	raw := serializeFileDescriptor(fd)
+	var got descriptorpb.FileDescriptorProto
+	if err := proto.Unmarshal(raw, &got); err != nil {
+		t.Fatalf("unmarshal serialized descriptor: %v", err)
+	}
+	if n := len(got.GetService()); n != 0 {
+		t.Errorf("serialized descriptor carries %d service entries, want 0", n)
+	}
+	// Sanity: messages survived the strip — only services are dropped.
+	if n := len(got.GetMessageType()); n != 2 {
+		t.Errorf("serialized descriptor carries %d messages, want 2 (Req, Resp)", n)
+	}
 }
