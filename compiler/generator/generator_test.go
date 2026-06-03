@@ -122,12 +122,12 @@ func TestGenerateMatchesCheckedIn(t *testing.T) {
 	// generator would honor that literally and produce a different file
 	// than the checked-in copy.
 	otelOverrides := map[string]string{
-		"opentelemetry/proto/common/v1/common.proto":                "wiresmith/gen/opentelemetry/proto/common/v1;commonv1",
-		"opentelemetry/proto/resource/v1/resource.proto":            "wiresmith/gen/opentelemetry/proto/resource/v1;resourcev1",
-		"opentelemetry/proto/metrics/v1/metrics.proto":              "wiresmith/gen/opentelemetry/proto/metrics/v1;metricsv1",
-		"opentelemetry/proto/trace/v1/trace.proto":                  "wiresmith/gen/opentelemetry/proto/trace/v1;tracev1",
-		"opentelemetry/proto/logs/v1/logs.proto":                    "wiresmith/gen/opentelemetry/proto/logs/v1;logsv1",
-		"opentelemetry/proto/profiles/v1development/profiles.proto": "wiresmith/gen/opentelemetry/proto/profiles/v1development;profilesv1development",
+		"opentelemetry/proto/common/v1/common.proto":                "github.com/grafana/wiresmith/gen/opentelemetry/proto/common/v1;commonv1",
+		"opentelemetry/proto/resource/v1/resource.proto":            "github.com/grafana/wiresmith/gen/opentelemetry/proto/resource/v1;resourcev1",
+		"opentelemetry/proto/metrics/v1/metrics.proto":              "github.com/grafana/wiresmith/gen/opentelemetry/proto/metrics/v1;metricsv1",
+		"opentelemetry/proto/trace/v1/trace.proto":                  "github.com/grafana/wiresmith/gen/opentelemetry/proto/trace/v1;tracev1",
+		"opentelemetry/proto/logs/v1/logs.proto":                    "github.com/grafana/wiresmith/gen/opentelemetry/proto/logs/v1;logsv1",
+		"opentelemetry/proto/profiles/v1development/profiles.proto": "github.com/grafana/wiresmith/gen/opentelemetry/proto/profiles/v1development;profilesv1development",
 	}
 
 	cases := []struct {
@@ -442,7 +442,7 @@ package alpha;`)
 	writeProto(t, protoDir, "real.proto", `
 syntax = "proto3";
 package beta;
-option go_package = "wiresmith/gen/alpha";
+option go_package = "github.com/grafana/wiresmith/gen/alpha";
 message Foo { string s = 1; }`)
 
 	outDir := testOutDir(t)

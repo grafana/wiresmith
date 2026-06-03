@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	ptr "wiresmith/gen/basic/pointer/v1"
+	ptr "github.com/grafana/wiresmith/gen/basic/pointer/v1"
 )
 
 func TestPointerHolder_RoundTrip(t *testing.T) {

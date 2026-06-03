@@ -5,11 +5,11 @@ package v1
 
 import (
 	"fmt"
+	recursivev1 "github.com/grafana/wiresmith/gen/basic/recursive/v1"
+	"github.com/grafana/wiresmith/protohelpers"
 	"google.golang.org/protobuf/encoding/protowire"
 	"io"
 	"math"
-	recursivev1 "wiresmith/gen/basic/recursive/v1"
-	"wiresmith/gen/protohelpers"
 )
 
 // CrossMapOuter exercises the cross-package map<K, Msg> code paths in the

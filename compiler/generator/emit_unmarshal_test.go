@@ -14,7 +14,7 @@ func TestEmitUnmarshal_WireTypeMismatchDispatch(t *testing.T) {
 	fg := newFixtureGenerator(t, compileProtoFixture(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 message Inner {}
 message M {
   string s = 1;   // wire type 2 (LEN)
@@ -43,7 +43,7 @@ func TestEmitUnmarshal_PreScanThreshold(t *testing.T) {
 	fg := newFixtureGenerator(t, compileProtoFixture(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 message Inner {}
 message M {
   repeated Inner xs = 1;
@@ -66,7 +66,7 @@ func TestEmitUnmarshal_PreScanOmittedWithoutCountableFields(t *testing.T) {
 	fg := newFixtureGenerator(t, compileProtoFixture(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 message M {
   int32 a = 1;
   string s = 2;
@@ -91,7 +91,7 @@ func TestEmitUnmarshal_FieldZeroRejected(t *testing.T) {
 	fg := newFixtureGenerator(t, compileProtoFixture(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 message M {
   int32 a = 1;
 }

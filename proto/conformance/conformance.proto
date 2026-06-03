@@ -13,7 +13,7 @@ syntax = "proto3";
 
 package conformance;
 
-option go_package = "wiresmith/test/conformance/internal/conformancepb";
+option go_package = "github.com/grafana/wiresmith/test/conformance/internal/conformancepb";
 
 option java_package = "com.google.protobuf.conformance";
 option objc_class_prefix = "Conformance";

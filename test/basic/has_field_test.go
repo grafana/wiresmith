@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/encoding/protowire"
 
-	ks "wiresmith/gen/test/kitchensink/v1"
+	ks "github.com/grafana/wiresmith/gen/test/kitchensink/v1"
 )
 
 func TestHasField_ScalarsAllSet(t *testing.T) {

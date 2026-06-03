@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	ks "wiresmith/gen/test/kitchensink/v1"
+	ks "github.com/grafana/wiresmith/gen/test/kitchensink/v1"
 )
 
 // --- Float bit-exact equality (CR-5) ---

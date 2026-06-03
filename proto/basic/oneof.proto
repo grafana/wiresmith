@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package basic.oneof.v1;
 
-option go_package = "wiresmith/gen/basic/oneof/v1";
+option go_package = "github.com/grafana/wiresmith/gen/basic/oneof/v1";
 
 enum Shape {
   SHAPE_UNSPECIFIED = 0;

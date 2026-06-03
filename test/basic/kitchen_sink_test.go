@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	ks "wiresmith/gen/test/kitchensink/v1"
+	ks "github.com/grafana/wiresmith/gen/test/kitchensink/v1"
 )
 
 // helper to run the standard marshal/unmarshal/re-marshal cycle.

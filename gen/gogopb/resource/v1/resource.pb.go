@@ -9,7 +9,7 @@ import (
 	io "io"
 	math "math"
 	math_bits "math/bits"
-	v1 "wiresmith/gen/gogopb/common/v1"
+	v1 "github.com/grafana/wiresmith/gen/gogopb/common/v1"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.

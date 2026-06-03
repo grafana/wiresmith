@@ -8,7 +8,7 @@ package basic.compare.v1;
 
 import "wiresmith/options.proto";
 
-option go_package = "wiresmith/gen/basic/compare/v1";
+option go_package = "github.com/grafana/wiresmith/gen/basic/compare/v1";
 
 enum Color {
   COLOR_UNSPECIFIED = 0;

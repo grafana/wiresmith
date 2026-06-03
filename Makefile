@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 
-MODULE := wiresmith
+MODULE := github.com/grafana/wiresmith
 
 ALL_PROTOS := \
 	opentelemetry/proto/common/v1/common.proto \
@@ -17,7 +17,7 @@ pkgsuffix = $(patsubst %/,%,$(patsubst opentelemetry/proto/%,%,$(dir $(1))))
 
 # Map proto import paths to Go packages for a given output prefix.
 # Usage: $(call mflags,gen/vtpb,go_opt)
-# Produces: --go_opt=Mcommon.proto=wiresmith/gen/vtpb/common/v1 --go_opt=M...
+# Produces: --go_opt=Mcommon.proto=github.com/grafana/wiresmith/gen/vtpb/common/v1 --go_opt=M...
 define mflags
 $(foreach p,$(ALL_PROTOS),--$(2)=M$(p)=$(MODULE)/$(1)/$(call pkgsuffix,$(p)))
 endef
@@ -56,7 +56,7 @@ test: ## Run correctness tests
 	GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn go test ./test/... -v
 
 coverage: ## Run tests with coverage report
-	GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn go test ./test/... ./compiler/... -coverpkg=./compiler/...,./gen/protohelpers/... -coverprofile=coverage.out
+	GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn go test ./test/... ./compiler/... -coverpkg=./compiler/...,./protohelpers/... -coverprofile=coverage.out
 	go tool cover -func=coverage.out
 	@echo ""
 	@echo "HTML report: go tool cover -html=coverage.out"
@@ -145,7 +145,7 @@ generate-ours: ## Regenerate all wiresmith + conformance code
 	@echo "==> Generating official proto bench code → gen/bench/official/"
 	protoc -I proto/basic \
 		--go_out=. --go_opt=module=$(MODULE) \
-		--go_opt=Mmaps.proto=wiresmith/gen/bench/official \
+		--go_opt=Mmaps.proto=github.com/grafana/wiresmith/gen/bench/official \
 		proto/basic/maps.proto
 
 generate-vtproto:
@@ -162,10 +162,10 @@ generate-vtproto:
 	@echo "==> Generating vtproto bench code → gen/bench/vtpb/"
 	protoc -I proto/basic \
 		--go_out=. --go_opt=module=$(MODULE) \
-		--go_opt=Mmaps.proto=wiresmith/gen/bench/vtpb \
+		--go_opt=Mmaps.proto=github.com/grafana/wiresmith/gen/bench/vtpb \
 		--go-vtproto_out=. --go-vtproto_opt=module=$(MODULE) \
 		--go-vtproto_opt=features=marshal+unmarshal+size \
-		--go-vtproto_opt=Mmaps.proto=wiresmith/gen/bench/vtpb \
+		--go-vtproto_opt=Mmaps.proto=github.com/grafana/wiresmith/gen/bench/vtpb \
 		proto/basic/maps.proto
 
 generate-gogoproto:

@@ -23,6 +23,14 @@ type importEntry struct {
 	requested   bool
 }
 
+// protohelpersImport is the canonical import path for wiresmith's runtime
+// helpers. Generated code references it verbatim; the package lives at
+// protohelpers/ in the wiresmith repo and is exported as part of the
+// public Go module. Hardcoded here so the --module flag (which controls
+// where generated proto packages land) cannot accidentally change the
+// helpers import path for downstream consumers.
+const protohelpersImport = "github.com/grafana/wiresmith/protohelpers"
+
 // reservedStdlibImports lists every import path the generated code might
 // pull in via the emit_*.go helpers. Pre-registering them keeps their
 // natural names out of the alias pool, so a proto with go_package like
@@ -40,6 +48,7 @@ var reservedStdlibImports = []string{
 	"strconv",
 	"unsafe",
 	"google.golang.org/protobuf/encoding/protowire",
+	protohelpersImport,
 }
 
 type ImportTracker struct {
@@ -59,10 +68,6 @@ func newImportTracker(module, selfPkg string, dests map[string]goDest) *ImportTr
 	for _, p := range reservedStdlibImports {
 		it.imports[p] = importEntry{naturalName: path.Base(p)}
 	}
-	// protohelpers is generated under the module, so we can't list it as
-	// a static path. Reserve it dynamically.
-	helpers := module + "/gen/protohelpers"
-	it.imports[helpers] = importEntry{naturalName: path.Base(helpers)}
 	return it
 }
 

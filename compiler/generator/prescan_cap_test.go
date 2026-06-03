@@ -24,7 +24,7 @@ func TestPreScanEmitsCapClamp(t *testing.T) {
 	const protoBody = `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 message Item {
   int32 id = 1;
 }

@@ -17,7 +17,7 @@ func TestEmitRegistration_EmptyFile(t *testing.T) {
 	fg := newFixtureGenerator(t, compileProtoFixture(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 `))
 	fg.emitRegistration(fg.fd)
 	if got := fg.reflectBody.String(); got != "" {
@@ -35,7 +35,7 @@ func TestEmitRegistration_OnlyEnums(t *testing.T) {
 	fg := newFixtureGenerator(t, compileProtoFixture(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 enum Color {
   COLOR_UNKNOWN = 0;
   COLOR_RED = 1;
@@ -58,7 +58,7 @@ func TestEmitRegistration_AllowAliasEnumDedup(t *testing.T) {
 	fg := newFixtureGenerator(t, compileProtoFixture(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 enum Status {
   option allow_alias = true;
   STATUS_UNKNOWN = 0;

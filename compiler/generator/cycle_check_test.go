@@ -31,7 +31,7 @@ func TestCycleCheck_SelfReferenceRejected(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 message Tree {
   Tree child = 1;
 }
@@ -48,7 +48,7 @@ func TestCycleCheck_MutualRecursionRejected(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 message A {
   B b = 1;
 }
@@ -69,7 +69,7 @@ func TestCycleCheck_LongerCycleRejected(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 message A { B b = 1; }
 message B { C c = 1; }
 message C { A a = 1; }
@@ -93,7 +93,7 @@ func TestCycleCheck_OptionalSelfReferenceAllowed(t *testing.T) {
 	if err := runGenerator(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 message LinkedList {
   int64 value = 1;
   optional LinkedList next = 2;
@@ -111,7 +111,7 @@ func TestCycleCheck_RepeatedSelfReferenceAllowed(t *testing.T) {
 	if err := runGenerator(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 message TreeNode {
   string label = 1;
   repeated TreeNode children = 2;
@@ -130,7 +130,7 @@ func TestCycleCheck_PointerOptionSelfReferenceAllowed(t *testing.T) {
 	if err := runGenerator(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 import "wiresmith/options.proto";
 message Node {
   int64 value = 1;
@@ -148,7 +148,7 @@ func TestCycleCheck_OneofSelfReferenceAllowed(t *testing.T) {
 	if err := runGenerator(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 message Box {
   oneof choice {
     Box inner = 1;
@@ -168,7 +168,7 @@ func TestCycleCheck_MapSelfReferenceAllowed(t *testing.T) {
 	if err := runGenerator(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 message Tree {
   string name = 1;
   map<string, Tree> children = 2;
@@ -186,7 +186,7 @@ func TestCycleCheck_NoCycleHonoursAcyclicReferences(t *testing.T) {
 	if err := runGenerator(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 message Inner { int32 x = 1; }
 message Outer { Inner i = 1; }
 `); err != nil {
@@ -203,7 +203,7 @@ func TestCycleCheck_OneEdgeBrokenAvoidsCycle(t *testing.T) {
 	if err := runGenerator(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 message A {
   optional B b = 1;
 }
@@ -223,7 +223,7 @@ func TestCycleCheck_DisjointCyclesAllReported(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 message Loop1 { Loop1 self = 1; }
 message Loop2 { Loop2 self = 1; }
 `)
@@ -245,7 +245,7 @@ func TestCycleCheck_NestedMessageSelfReferenceRejected(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 message Outer {
   message Inner {
     Inner child = 1;
@@ -266,7 +266,7 @@ func TestCycleCheck_OneofAndSelfTogether(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 message Tangle {
   oneof choice {
     Tangle inner = 1;

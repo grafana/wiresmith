@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/encoding/protowire"
 
-	rec "wiresmith/gen/basic/recursive/v1"
-	commonv1 "wiresmith/gen/opentelemetry/proto/common/v1"
+	rec "github.com/grafana/wiresmith/gen/basic/recursive/v1"
+	commonv1 "github.com/grafana/wiresmith/gen/opentelemetry/proto/common/v1"
 )
 
 // buildNestedAnyValueBytes constructs wire-format bytes for an AnyValue nested

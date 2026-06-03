@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	ks "wiresmith/gen/test/kitchensink/v1"
+	ks "github.com/grafana/wiresmith/gen/test/kitchensink/v1"
 )
 
 // Compile-time checks that ProtoMessage and Reset exist with correct signatures.

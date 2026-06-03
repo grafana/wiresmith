@@ -46,5 +46,5 @@ func (fg *FileGenerator) emitProtoReflect(md protoreflect.MessageDescriptor) {
 		fg.fileVarName, idx)
 	fmt.Fprintf(fg.reflectBody, "}\n\n")
 	fg.reflectImports.addImport("google.golang.org/protobuf/reflect/protoreflect", "")
-	fg.reflectImports.addImport(fg.module+"/gen/protohelpers", "")
+	fg.reflectImports.addImport(protohelpersImport, "")
 }

@@ -215,7 +215,7 @@ func (fg *FileGenerator) emitRegistration(fd protoreflect.FileDescriptor) {
 	fg.reflectImports.addImport("unsafe", "")
 	fg.reflectImports.addImport("google.golang.org/protobuf/reflect/protoreflect", "")
 	fg.reflectImports.addImport("google.golang.org/protobuf/runtime/protoimpl", "")
-	fg.reflectImports.addImport(fg.module+"/gen/protohelpers", "")
+	fg.reflectImports.addImport(protohelpersImport, "")
 }
 
 // emitGoTypesAndDepIdxs emits the two codegen-time slices that

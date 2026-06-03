@@ -4,13 +4,13 @@
 package metricsv1
 
 import (
+	"github.com/grafana/wiresmith/gen/opentelemetry/proto/common/v1"
+	"github.com/grafana/wiresmith/gen/opentelemetry/proto/resource/v1"
+	"github.com/grafana/wiresmith/protohelpers"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"reflect"
 	"unsafe"
-	"wiresmith/gen/opentelemetry/proto/common/v1"
-	"wiresmith/gen/opentelemetry/proto/resource/v1"
-	"wiresmith/gen/protohelpers"
 )
 
 // Reflection / registration glue for opentelemetry/proto/metrics/v1/metrics.proto.

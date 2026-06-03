@@ -6,7 +6,7 @@ import (
 
 	"google.golang.org/protobuf/reflect/protoreflect"
 
-	"wiresmith/compiler/types"
+	"github.com/grafana/wiresmith/compiler/types"
 )
 
 // emitAllCompareMethods emits `Compare(that interface{}) int` on every

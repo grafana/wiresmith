@@ -2,7 +2,7 @@ package generator
 
 import (
 	"fmt"
-	"wiresmith/compiler/types"
+	"github.com/grafana/wiresmith/compiler/types"
 
 	"github.com/bufbuild/protocompile/linker"
 	"google.golang.org/protobuf/proto"

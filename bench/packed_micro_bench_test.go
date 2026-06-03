@@ -6,7 +6,7 @@ import (
 
 	"google.golang.org/protobuf/encoding/protowire"
 
-	metricsv1 "wiresmith/gen/opentelemetry/proto/metrics/v1"
+	metricsv1 "github.com/grafana/wiresmith/gen/opentelemetry/proto/metrics/v1"
 )
 
 // Focused micro-benchmarks for packed-scalar unmarshal hot loops. These

@@ -10,8 +10,8 @@ import (
 	protohelpers "github.com/planetscale/vtprotobuf/protohelpers"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	io "io"
-	v11 "wiresmith/gen/vtpb/common/v1"
-	v1 "wiresmith/gen/vtpb/resource/v1"
+	v11 "github.com/grafana/wiresmith/gen/vtpb/common/v1"
+	v1 "github.com/grafana/wiresmith/gen/vtpb/resource/v1"
 )
 
 const (

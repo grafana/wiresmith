@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	numericv1 "wiresmith/gen/basic/numeric/v1"
+	numericv1 "github.com/grafana/wiresmith/gen/basic/numeric/v1"
 )
 
 // TestPreScanAbortsOnUnknownWireType is a regression test for SEC-2

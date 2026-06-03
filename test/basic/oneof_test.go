@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	oopb "wiresmith/gen/basic/oneof/v1"
+	oopb "github.com/grafana/wiresmith/gen/basic/oneof/v1"
 )
 
 func TestMultiOneof_BothSet(t *testing.T) {

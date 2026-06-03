@@ -6,11 +6,11 @@ package protobuf_test_messagesproto3
 import (
 	"encoding/binary"
 	"fmt"
+	"github.com/grafana/wiresmith/protohelpers"
 	"google.golang.org/protobuf/encoding/protowire"
 	"io"
 	"math"
 	"strconv"
-	"wiresmith/gen/protohelpers"
 )
 
 type ForeignEnum int32

@@ -4,11 +4,11 @@
 package protobuf_test_messagesproto3
 
 import (
+	"github.com/grafana/wiresmith/protohelpers"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"reflect"
 	"unsafe"
-	"wiresmith/gen/protohelpers"
 )
 
 // Reflection / registration glue for protobuf_test_messages/proto3/test_messages_proto3.proto.
