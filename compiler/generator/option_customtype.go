@@ -76,6 +76,13 @@ func parseCustomtypeValue(value string) (importPath, typeName string, err error)
 	if value == "" {
 		return "", "", fmt.Errorf("value must not be empty")
 	}
+	// Whitespace inside the value (including the path prefix that
+	// validateGoIdentifier doesn't see) would silently become part of the
+	// import path emitted into the generated file and break the build at
+	// `go build` time, far from the source of the typo. Reject it up front.
+	if strings.ContainsAny(value, " \t\r\n") {
+		return "", "", fmt.Errorf("value %q must not contain whitespace", value)
+	}
 	lastSlash := strings.LastIndex(value, "/")
 	pathPrefix := ""
 	packageAndType := value
@@ -106,14 +113,15 @@ func parseCustomtypeValue(value string) (importPath, typeName string, err error)
 	if err := validateGoIdentifier(typeName); err != nil {
 		return "", "", fmt.Errorf("type name %v", err)
 	}
-	// The package's path base is used verbatim as the Go identifier in
-	// generated code (it's what an unaliased `import "..."` binds to), so
-	// it must itself be a valid Go identifier — `github.com/foo/bar-baz`
-	// would otherwise emit `bar-baz.Type` and fail to compile. We only
-	// reject obvious "won't compile" cases; mismatches between path base
-	// and the package's `package` declaration are out of scope (callers
-	// whose directory name differs from their package name should rename
-	// the directory).
+	// pkgPart becomes the *seed* for the import alias the generator emits
+	// (ImportTracker.addExplicitAliasImport runs it through uniqueAlias to
+	// disambiguate against other imports). The alias is always spelled out
+	// in the generated import block, so the upstream package's declared
+	// `package` name can differ from pkgPart without breaking the build —
+	// but pkgPart itself must still be a valid Go identifier, since it
+	// (or a numeric-suffixed variant) appears verbatim as the qualifier in
+	// generated code. A path base like `github.com/foo/bar-baz` would
+	// otherwise emit `bar-baz.Type` and fail to compile.
 	if err := validateGoIdentifier(pkgPart); err != nil {
 		return "", "", fmt.Errorf("value %q: package alias derived from import path: %v", value, err)
 	}

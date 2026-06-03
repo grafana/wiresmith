@@ -131,6 +131,12 @@ func TestParseCustomtypeValue(t *testing.T) {
 		// typo into a "local type does not exist" compile error far from
 		// the source. Reject explicitly.
 		{in: "github.com/foo/bar", wantErr: true, errSubstr: "missing a \".TypeName\" suffix"},
+		// Whitespace anywhere in the value (in the path prefix in
+		// particular — validateGoIdentifier doesn't see it) would survive
+		// into the emitted import statement and fail at `go build`. Reject
+		// at parse time so the error points at the source.
+		{in: "github.com/ foo/bar.Type", wantErr: true, errSubstr: "must not contain whitespace"},
+		{in: "github.com/foo/bar.Type\n", wantErr: true, errSubstr: "must not contain whitespace"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.in, func(t *testing.T) {
