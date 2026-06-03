@@ -52,18 +52,20 @@ var reservedStdlibImports = []string{
 }
 
 type ImportTracker struct {
-	module  string
-	selfPkg string
-	dests   map[string]goDest // proto pkg -> resolved Go destination
-	imports map[string]importEntry
+	module      string
+	selfPkg     string
+	dests       map[string]goDest // proto pkg -> resolved Go destination
+	destsByPath map[string]goDest // fd.Path() -> goDest, for cross-file lookups
+	imports     map[string]importEntry
 }
 
-func newImportTracker(module, selfPkg string, dests map[string]goDest) *ImportTracker {
+func newImportTracker(module, selfPkg string, dests, destsByPath map[string]goDest) *ImportTracker {
 	it := &ImportTracker{
-		module:  module,
-		selfPkg: selfPkg,
-		dests:   dests,
-		imports: make(map[string]importEntry),
+		module:      module,
+		selfPkg:     selfPkg,
+		dests:       dests,
+		destsByPath: destsByPath,
+		imports:     make(map[string]importEntry),
 	}
 	for _, p := range reservedStdlibImports {
 		it.imports[p] = importEntry{naturalName: path.Base(p)}
@@ -119,8 +121,30 @@ func (it *ImportTracker) resolvePkgName(protoPkg string) string {
 }
 
 func (it *ImportTracker) addProtoImport(protoPkg string) string {
+	return it.addProtoImportFor(protoPkg, "")
+}
+
+// addProtoImportFor registers the import for a cross-package proto reference,
+// preferring the per-file destination map when fdPath is supplied. The
+// per-file lookup is what disambiguates `google.protobuf` references that
+// span multiple Go destinations (descriptorpb, timestamppb, durationpb …)
+// — without it, the first proto package sighting in computeDests would
+// shadow every later one.
+//
+// fdPath="" preserves the legacy "lookup by proto package only" behavior
+// for call sites that don't have a FileDescriptor in hand (test code, or
+// callers that intentionally want the per-protoPkg fallback).
+func (it *ImportTracker) addProtoImportFor(protoPkg, fdPath string) string {
 	selfName := it.resolvePkgName(it.selfPkg)
-	dest := it.dests[protoPkg]
+	var dest goDest
+	if fdPath != "" {
+		if d, ok := it.destsByPath[fdPath]; ok {
+			dest = d
+		}
+	}
+	if dest == (goDest{}) {
+		dest = it.dests[protoPkg]
+	}
 
 	// Prefer the destination's declared pkgName as the local alias so the
 	// generated code reads naturally. On collision (with our own pkg name
@@ -254,21 +278,23 @@ func (it *ImportTracker) goOptionalType(fd protoreflect.FieldDescriptor) string 
 }
 
 func (it *ImportTracker) goMessageType(md protoreflect.MessageDescriptor) string {
-	msgPkg := string(md.ParentFile().Package())
+	parent := md.ParentFile()
+	msgPkg := string(parent.Package())
 	typeName := goMessageTypeName(md)
 	if msgPkg == it.selfPkg {
 		return typeName
 	}
-	alias := it.addProtoImport(msgPkg)
+	alias := it.addProtoImportFor(msgPkg, parent.Path())
 	return alias + "." + typeName
 }
 
 func (it *ImportTracker) goEnumType(ed protoreflect.EnumDescriptor) string {
-	enumPkg := string(ed.ParentFile().Package())
+	parent := ed.ParentFile()
+	enumPkg := string(parent.Package())
 	typeName := goEnumTypeName(ed)
 	if enumPkg == it.selfPkg {
 		return typeName
 	}
-	alias := it.addProtoImport(enumPkg)
+	alias := it.addProtoImportFor(enumPkg, parent.Path())
 	return alias + "." + typeName
 }

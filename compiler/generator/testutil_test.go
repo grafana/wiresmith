@@ -84,7 +84,7 @@ func newFixtureGeneratorWith(t *testing.T, fd protoreflect.FileDescriptor, allFi
 			pkgName:    "testv1",
 		},
 	}
-	var pointerExt, jsontagExt, customnameExt protoreflect.FieldDescriptor
+	var pointerExt, jsontagExt, customnameExt, customtypeExt, stdtimeExt protoreflect.FieldDescriptor
 	for _, f := range allFiles {
 		if f.Path() != embeddedOptionsPath {
 			continue
@@ -99,20 +99,26 @@ func newFixtureGeneratorWith(t *testing.T, fd protoreflect.FileDescriptor, allFi
 				jsontagExt = x
 			case customnameExtensionName:
 				customnameExt = x
+			case customtypeExtensionName:
+				customtypeExt = x
+			case stdtimeExtensionName:
+				stdtimeExt = x
 			}
 		}
 	}
 	return &FileGenerator{
 		fd:             fd,
 		module:         "wiresmith",
-		imports:        newImportTracker("wiresmith", pkg, dests),
+		imports:        newImportTracker("wiresmith", pkg, dests, nil),
 		body:           &bytes.Buffer{},
-		reflectImports: newImportTracker("wiresmith", pkg, dests),
+		reflectImports: newImportTracker("wiresmith", pkg, dests, nil),
 		reflectBody:    &bytes.Buffer{},
 		fileVarName:    sanitizeFileVarName(fd.Path()),
 		pointerExt:     pointerExt,
 		jsontagExt:     jsontagExt,
 		customnameExt:  customnameExt,
+		customtypeExt:  customtypeExt,
+		stdtimeExt:     stdtimeExt,
 	}
 }
 

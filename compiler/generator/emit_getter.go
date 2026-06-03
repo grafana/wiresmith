@@ -65,6 +65,19 @@ func (fg *FileGenerator) emitGetters(md protoreflect.MessageDescriptor) {
 			continue
 		}
 
+		// `(wiresmith.options.stdtime) = true` on a singular Timestamp field
+		// produces a `time.Time` Go field, so the getter returns the value
+		// directly with the standard nil-receiver guard. fieldsForPresence
+		// excludes stdtime fields (Go's `time.Time{}` is the presence sentinel),
+		// so the bitmap path is bypassed here even though the field is
+		// MessageKind on the wire.
+		if stdType, ok := fg.stdtimeGoFieldType(fd); ok {
+			fmt.Fprintf(fg.body, "func (m *%s) Get%s() %s {\n", name, goName, stdType)
+			fmt.Fprintf(fg.body, "\tif m != nil {\n\t\treturn m.%s\n\t}\n", goName)
+			fmt.Fprintf(fg.body, "\treturn %s{}\n}\n\n", stdType)
+			continue
+		}
+
 		// Message value-type fields: return pointer, nil when bitmap says absent.
 		// Currently the bitmap entry always exists here (same filter predicate
 		// as fieldsForPresence), but we keep the fallback so the getter

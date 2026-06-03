@@ -361,6 +361,15 @@ func (fg *FileGenerator) emitFieldUnmarshal(md protoreflect.MessageDescriptor, f
 		return
 	}
 
+	// Singular Timestamp with `(wiresmith.options.stdtime) = true` swaps the
+	// message-kind path for an inline Timestamp envelope decode into a
+	// `time.Time`. Same single-FieldType dispatch as customtype above.
+	if ft, ok := fg.stdtimeFieldType(fd); ok {
+		types.AddTypeImports(fg, ft)
+		ft.EmitUnmarshal(fg, access, ctx)
+		return
+	}
+
 	types.AddTypeImports(fg, t)
 	t.EmitUnmarshal(fg, access, ctx)
 }

@@ -55,6 +55,16 @@ type Generator struct {
 	// package they want, not which file declared it).
 	dests map[string]goDest
 
+	// destsByPath maps a fd.Path() to its resolved Go destination. Used by
+	// cross-file lookups that route through a MessageDescriptor (and so know
+	// the parent file), so a proto package that spreads across multiple Go
+	// packages (canonically `google.protobuf` → descriptorpb, timestamppb,
+	// durationpb, …) still resolves to the correct destination per
+	// referenced type. Same goDest values as `dests` for protos that map
+	// 1:1 onto a single Go package; the two maps diverge only at well-known
+	// boundaries.
+	destsByPath map[string]goDest
+
 	// emitFilter is the set of fd.Path() values to emit, derived from Files
 	// at the start of Generate. Nil means "emit every shouldGenerateFile
 	// candidate" (the empty-Files default).
@@ -82,6 +92,12 @@ type Generator struct {
 	// `(wiresmith.options.customname)`. Resolved alongside pointerExt and
 	// consulted by goFieldName to swap in user-supplied Go identifiers.
 	customnameExt protoreflect.FieldDescriptor
+
+	// stdtimeExt is the linked extension descriptor for
+	// `(wiresmith.options.stdtime)`. Resolved alongside pointerExt; consulted
+	// by fieldType()/goFieldType() to swap a `google.protobuf.Timestamp`
+	// message field for a stdlib `time.Time` value.
+	stdtimeExt protoreflect.FieldDescriptor
 }
 
 // FileGenerator collects emitted code for one proto source file. It owns
@@ -155,6 +171,10 @@ type FileGenerator struct {
 	// plumbed through from the parent Generator alongside pointerExt.
 	customnameExt protoreflect.FieldDescriptor
 
+	// stdtimeExt is the cached stdtime-option extension descriptor, plumbed
+	// through from the parent Generator alongside pointerExt.
+	stdtimeExt protoreflect.FieldDescriptor
+
 	// compareBody / compareImports hold a second companion `_compare.pb.go`
 	// file: just the per-message Compare(other interface{}) int methods.
 	//
@@ -224,12 +244,17 @@ func (e equalEmitter) ReverseTag(indent string, num protowire.Number, wt protowi
 }
 
 // fieldContext builds a FieldContext from a field descriptor.
+//
+// Stdtime fields are special-cased: they have MessageKind on the wire but
+// the Go field is a stdlib `time.Time`, so we skip the MessageType lookup
+// (which would register a timestamppb import the main `.pb.go` never uses
+// — the stdtime emit path doesn't reach for `ctx.MessageType`).
 func (fg *FileGenerator) fieldContext(fd protoreflect.FieldDescriptor) types.FieldContext {
 	ctx := types.FieldContext{}
 	if fd.Kind() == protoreflect.EnumKind {
 		ctx.EnumType = fg.imports.goEnumType(fd.Enum())
 	}
-	if fd.Kind() == protoreflect.MessageKind {
+	if fd.Kind() == protoreflect.MessageKind && !fg.hasStdtimeOption(fd) {
 		ctx.MessageType = fg.imports.goSingularType(fd)
 		msgPkg := string(fd.Message().ParentFile().Package())
 		ctx.IsSamePackage = (msgPkg == fg.imports.selfPkg)
@@ -332,6 +357,12 @@ func (g *Generator) Generate(ctx context.Context) error {
 		return err
 	}
 	if err := g.validateCustomnameOptions(results); err != nil {
+		return err
+	}
+	if err := g.resolveStdtimeExtension(results); err != nil {
+		return err
+	}
+	if err := g.validateStdtimeOptions(results); err != nil {
 		return err
 	}
 	if err := g.validateNoValueCycles(results); err != nil {
@@ -442,6 +473,14 @@ func (g *Generator) outputPathFor(fd protoreflect.FileDescriptor) string {
 // malformed value can only produce a malformed import-path string in the
 // generated file — which fails loudly at `go build` with a clear error.
 // This matches protoc-gen-go.
+//
+// Only `results` (files explicitly in the compile set) feed this map.
+// Well-known proto files share the proto package `google.protobuf` across
+// several distinct Go destinations (descriptor.proto → descriptorpb,
+// timestamp.proto → timestamppb, etc.); enforcing the one-go_package-per-
+// proto-package rule on those would reject every user proto that imports
+// more than one well-known. Transitive imports get their dest resolved
+// directly from their own FileDescriptor in computeDests instead.
 func (g *Generator) collectGoPackages(results linker.Files) error {
 	g.goPackages = make(map[string]string)
 
@@ -478,6 +517,33 @@ func (g *Generator) collectGoPackages(results linker.Files) error {
 		}
 	}
 	return nil
+}
+
+// walkReachableFiles returns every FileDescriptor transitively reachable
+// from `roots` via fd.Imports(). The returned slice preserves first-seen
+// order and never includes a descriptor twice. Used by computeDests to pick
+// up well-known imports (e.g. google/protobuf/timestamp.proto) that
+// protocompile resolves via WithStandardImports but doesn't include in the
+// top-level results slice.
+func walkReachableFiles(roots linker.Files) []protoreflect.FileDescriptor {
+	seen := make(map[string]struct{})
+	var out []protoreflect.FileDescriptor
+	var visit func(fd protoreflect.FileDescriptor)
+	visit = func(fd protoreflect.FileDescriptor) {
+		if _, ok := seen[fd.Path()]; ok {
+			return
+		}
+		seen[fd.Path()] = struct{}{}
+		out = append(out, fd)
+		imps := fd.Imports()
+		for i := 0; i < imps.Len(); i++ {
+			visit(imps.Get(i).FileDescriptor)
+		}
+	}
+	for _, fd := range roots {
+		visit(fd)
+	}
+	return out
 }
 
 // validateOutDir rejects --out values that would produce broken import paths
@@ -527,24 +593,55 @@ func (g *Generator) validateOutDir() error {
 // source-relative directory; Go's directory-equals-package rule would
 // later reject the disagreement, but flagging it here gives the user a
 // clearer error referencing both .proto files.
+//
+// The walk follows transitive `import` statements (via walkReachableFiles)
+// so well-known proto files served by `protocompile.WithStandardImports`
+// land in `g.dests` even though they aren't in `results`. Such files use
+// their own go_package option directly (not the shared `g.goPackages`
+// table) because google.protobuf's well-known files share one proto
+// package across many distinct Go destinations.
 func (g *Generator) computeDests(results linker.Files) error {
 	g.dests = make(map[string]goDest)
+	g.destsByPath = make(map[string]goDest)
 	type sighting struct{ relDir, path string }
 	seen := make(map[string]sighting)
-	// Two files with the same go_package — or one with go_package and another
-	// whose default destination shadows it — would land in the same Go import
-	// path while sitting in different source-relative directories. Go's "one
-	// directory, one import path" rule rejects this at build time; we surface
-	// it earlier with both endpoints named.
 	importOwner := make(map[string]string)
+
+	// inResults marks each file we'll consider an emit candidate. Transitive
+	// imports brought in by WithStandardImports are not in this set; they
+	// still need destinations resolved (for the reflect file's goTypes), but
+	// they take a separate path that uses each file's own go_package
+	// directly — the shared g.goPackages table mis-shadows well-known files
+	// that map one proto package to many Go packages.
+	inResults := make(map[string]bool, len(results))
 	for _, fd := range results {
+		inResults[fd.Path()] = true
+	}
+
+	for _, fd := range walkReachableFiles(results) {
+		protoPkg := string(fd.Package())
+		if isInternalSchemaFile(fd) {
+			continue
+		}
+		if !inResults[fd.Path()] {
+			dest := destForReachable(fd)
+			g.destsByPath[fd.Path()] = dest
+			// Same-file references resolve through `dests` by proto pkg;
+			// keep the first sighting so a multi-file well-known proto
+			// package (e.g. google.protobuf) gets *some* fallback when no
+			// file descriptor is available (e.g. enum constants stripped
+			// of source info).
+			if _, ok := g.dests[protoPkg]; !ok {
+				g.dests[protoPkg] = dest
+			}
+			continue
+		}
 		// Skip files that will not produce output: they neither claim a Go
 		// directory on disk nor reserve an import path, so they cannot
 		// collide with anything.
 		if !g.shouldEmit(fd) {
 			continue
 		}
-		protoPkg := string(fd.Package())
 		relDir := sourceRelDir(fd.Path())
 		if prev, ok := seen[protoPkg]; ok {
 			if prev.relDir != relDir {
@@ -561,8 +658,30 @@ func (g *Generator) computeDests(results linker.Files) error {
 		}
 		importOwner[dest.importPath] = protoPkg
 		g.dests[protoPkg] = dest
+		g.destsByPath[fd.Path()] = dest
 	}
 	return nil
+}
+
+// destForReachable returns the Go destination for a transitively-imported
+// file (one not in the emit set) using only the file's own go_package
+// option. Mirrors destFor but bypasses the shared g.goPackages table to
+// avoid mis-resolving well-known files that share a proto package.
+//
+// Returns the parsed go_package directly. A file without go_package falls
+// back to the proto-package-derived defaults — never the right answer for
+// well-known types, but no worse than the previous behavior (the unaliased
+// import would have resolved to an empty path either way).
+func destForReachable(fd protoreflect.FileDescriptor) goDest {
+	relDir := sourceRelDir(fd.Path())
+	protoPkg := string(fd.Package())
+	importPath := relDir
+	pkgName := goPackageName(protoPkg)
+	opts, _ := fd.Options().(*descriptorpb.FileOptions)
+	if goPkg := opts.GetGoPackage(); goPkg != "" {
+		importPath, pkgName = parseGoPackage(goPkg)
+	}
+	return goDest{importPath: importPath, relDir: relDir, pkgName: pkgName}
 }
 
 // validateDestinations rejects the case where two distinct proto packages
@@ -596,19 +715,20 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 	fg := &FileGenerator{
 		fd:             fd,
 		module:         g.Module,
-		imports:        newImportTracker(g.Module, string(fd.Package()), g.dests),
+		imports:        newImportTracker(g.Module, string(fd.Package()), g.dests, g.destsByPath),
 		body:           &bytes.Buffer{},
-		reflectImports: newImportTracker(g.Module, string(fd.Package()), g.dests),
+		reflectImports: newImportTracker(g.Module, string(fd.Package()), g.dests, g.destsByPath),
 		reflectBody:    &bytes.Buffer{},
-		compareImports: newImportTracker(g.Module, string(fd.Package()), g.dests),
+		compareImports: newImportTracker(g.Module, string(fd.Package()), g.dests, g.destsByPath),
 		compareBody:    &bytes.Buffer{},
-		equalImports:   newImportTracker(g.Module, string(fd.Package()), g.dests),
+		equalImports:   newImportTracker(g.Module, string(fd.Package()), g.dests, g.destsByPath),
 		equalBody:      &bytes.Buffer{},
 		fileVarName:    sanitizeFileVarName(fd.Path()),
 		pointerExt:     g.pointerExt,
 		jsontagExt:     g.jsontagExt,
 		customtypeExt:  g.customtypeExt,
 		customnameExt:  g.customnameExt,
+		stdtimeExt:     g.stdtimeExt,
 	}
 
 	// Hot-path emitters target the main .pb.go: structs, oneof variants,
@@ -916,6 +1036,10 @@ func (fg *FileGenerator) emitAllUnmarshalMethods(fd protoreflect.FileDescriptor)
 	// Emit the max recursion depth constant and skip helpers once per file.
 	fmt.Fprintf(fg.body, "const maxUnmarshalDepth = 10000\n\n")
 	fg.emitSkipValueHelper()
+	// stdtime helpers depend on skipValue (above) and are referenced by the
+	// emitFieldUnmarshal stdtime branch. Emit them here so all three live in
+	// the same file alongside their helper.
+	fg.emitStdtimeHelpers(fd)
 	forEachMessage(fd, fg.emitUnmarshal)
 }
 

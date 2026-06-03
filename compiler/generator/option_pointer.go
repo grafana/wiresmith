@@ -150,6 +150,9 @@ func walkFields(fd protoreflect.FileDescriptor, fn func(protoreflect.FieldDescri
 // yields the emit behavior. They both gate on the same hasPointerOption
 // predicate so they stay consistent.
 func (fg *FileGenerator) goFieldType(fd protoreflect.FieldDescriptor) string {
+	if goType, ok := fg.stdtimeGoFieldType(fd); ok {
+		return goType
+	}
 	if goType, ok := fg.customtypeGoFieldType(fd); ok {
 		return goType
 	}
@@ -161,6 +164,29 @@ func (fg *FileGenerator) goFieldType(fd protoreflect.FieldDescriptor) string {
 		return "[]" + pointed
 	}
 	return pointed
+}
+
+// stdtimeGoFieldType resolves `(wiresmith.options.stdtime) = true` to the Go
+// type expression for the struct-field declaration ("time.Time"), registering
+// the supporting import. Returns ok=false for fields without the option;
+// validateStdtimeOptions has already rejected malformed placements at this
+// point so the kind/shape guards are defensive against direct descriptor
+// construction in tests.
+func (fg *FileGenerator) stdtimeGoFieldType(fd protoreflect.FieldDescriptor) (string, bool) {
+	if !fg.hasStdtimeOption(fd) {
+		return "", false
+	}
+	if fd.Kind() != protoreflect.MessageKind {
+		return "", false
+	}
+	if string(fd.Message().FullName()) != timestampMessageFullName {
+		return "", false
+	}
+	if fd.IsMap() || fd.IsList() || fd.HasOptionalKeyword() || isRealOneof(fd) {
+		return "", false
+	}
+	fg.imports.addImport("time", "")
+	return "time.Time", true
 }
 
 // customtypeGoFieldType resolves `(wiresmith.options.customtype)` to the Go
@@ -207,6 +233,9 @@ func (fg *FileGenerator) customtypeAlias(importPath string) string {
 // visible in exactly one place so future option-driven shape changes have a
 // clear home.
 func (fg *FileGenerator) fieldType(fd protoreflect.FieldDescriptor) types.FieldType {
+	if ft, ok := fg.stdtimeFieldType(fd); ok {
+		return ft
+	}
 	if ft, ok := fg.customtypeFieldType(fd); ok {
 		return ft
 	}
@@ -240,6 +269,35 @@ func (fg *FileGenerator) fieldType(fd protoreflect.FieldDescriptor) types.FieldT
 		return &types.RepeatedPointer{Inner: inner}
 	}
 	return &types.PointerField{Inner: inner}
+}
+
+// stdtimeFieldType returns a StdtimeType FieldType when the field is
+// annotated with `(wiresmith.options.stdtime)` AND the field is a singular
+// google.protobuf.Timestamp. The validation pass has already rejected every
+// other placement, so the kind/shape guards here are defensive — they let
+// tests that construct descriptors directly degrade to the default emit
+// path instead of producing broken `time.Time` code on a non-Timestamp
+// field.
+//
+// The "time" import is registered here in the same idempotent shape as
+// stdtimeGoFieldType — the struct-field declaration and the
+// Size/Marshal/Unmarshal emitters need the same import set, and registering
+// from both sides covers the cases where only one of the two paths runs.
+func (fg *FileGenerator) stdtimeFieldType(fd protoreflect.FieldDescriptor) (types.FieldType, bool) {
+	if !fg.hasStdtimeOption(fd) {
+		return nil, false
+	}
+	if fd.Kind() != protoreflect.MessageKind {
+		return nil, false
+	}
+	if string(fd.Message().FullName()) != timestampMessageFullName {
+		return nil, false
+	}
+	if fd.IsMap() || fd.IsList() || fd.HasOptionalKeyword() || isRealOneof(fd) {
+		return nil, false
+	}
+	fg.imports.addImport("time", "")
+	return &types.StdtimeType{}, true
 }
 
 // customtypeFieldType returns a CustomType FieldType when the field is

@@ -88,6 +88,7 @@ wiresmith ships custom field options in `compiler/generator/embed/wiresmith/opti
 - `(wiresmith.options.jsontag) = "..."` — overrides the `json:"..."` struct tag verbatim (no `,omitempty` appended); applies to every field kind.
 - `(wiresmith.options.customtype) = "import/path.TypeName"` — replaces the Go field type with a user-supplied type that owns its wire encoding (must satisfy `SizeWiresmith/MarshalWiresmith/UnmarshalWiresmith/EqualWiresmith/CompareWiresmith`). v1 scope is singular `bytes` and `string` fields.
 - `(wiresmith.options.customname) = "Identifier"` — overrides the Go field name and every derived accessor (`Get*`, `Has*`, oneof wrapper field). Useful for preserving initialisms (`BlockID` instead of `BlockId`). Applies to every field kind.
+- `(wiresmith.options.stdtime) = true` — swaps a singular `google.protobuf.Timestamp` field for a stdlib `time.Time`. Go zero `time.Time{}` is treated as "not set" (gogoproto-compatible); decoded times are normalised to UTC. v1 scope is singular only — repeated, optional, oneof, and pointer-option combinations are rejected.
 
 See [docs/extensions.md](docs/extensions.md) for the full rules and worked examples.
 
