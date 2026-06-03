@@ -94,7 +94,7 @@ func parseCustomtypeValue(value string) (importPath, typeName string, err error)
 			return "", "", fmt.Errorf("value %q: import path is missing a \".TypeName\" suffix (use \"path/to/pkg.TypeName\" for an external type, or drop the path for a same-package type)", value)
 		}
 		if err := validateGoIdentifier(packageAndType); err != nil {
-			return "", "", err
+			return "", "", fmt.Errorf("type name %v", err)
 		}
 		return "", packageAndType, nil
 	}
@@ -104,7 +104,7 @@ func parseCustomtypeValue(value string) (importPath, typeName string, err error)
 		return "", "", fmt.Errorf("value %q: package segment is empty (use \"path/to/pkg.TypeName\" or \"TypeName\" for same-package)", value)
 	}
 	if err := validateGoIdentifier(typeName); err != nil {
-		return "", "", err
+		return "", "", fmt.Errorf("type name %v", err)
 	}
 	// The package's path base is used verbatim as the Go identifier in
 	// generated code (it's what an unaliased `import "..."` binds to), so
@@ -121,24 +121,29 @@ func parseCustomtypeValue(value string) (importPath, typeName string, err error)
 	return importPath, typeName, nil
 }
 
-// validateGoIdentifier rejects values that wouldn't compile as a Go type name.
-// The check is intentionally narrow — it only catches obvious typos
-// (empty string, leading digit, embedded whitespace, reserved punctuation).
-// Anything subtler shows up as a Go compile error in the generated file,
-// which is a clearer signal than us trying to second-guess the user's intent.
+// validateGoIdentifier rejects values that wouldn't compile as a Go
+// identifier. The check is intentionally narrow — it only catches obvious
+// typos (empty string, leading digit, embedded whitespace, reserved
+// punctuation). Anything subtler shows up as a Go compile error in the
+// generated file, which is a clearer signal than us trying to second-guess
+// the user's intent.
+//
+// The returned error is role-neutral ("is empty", "%q must start with..."),
+// so callers wrap it with whatever role this identifier plays (`type name`,
+// `package alias`, etc.) for a message that reads cleanly in either context.
 func validateGoIdentifier(s string) error {
 	if s == "" {
-		return fmt.Errorf("type name is empty")
+		return fmt.Errorf("is empty")
 	}
 	for i, r := range s {
 		if i == 0 {
 			if !unicode.IsLetter(r) && r != '_' {
-				return fmt.Errorf("type name %q must start with a letter or underscore", s)
+				return fmt.Errorf("%q must start with a letter or underscore", s)
 			}
 			continue
 		}
 		if !unicode.IsLetter(r) && !unicode.IsDigit(r) && r != '_' {
-			return fmt.Errorf("type name %q contains invalid character %q", s, r)
+			return fmt.Errorf("%q contains invalid character %q", s, r)
 		}
 	}
 	return nil

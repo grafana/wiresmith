@@ -131,7 +131,7 @@ type LabelSet struct {
 
 The import is registered automatically — users don't need to vendor anything beyond their own type. The value accepts two shapes:
 
-- `"import/path.TypeName"` — fully qualified; the generator pulls in the import and qualifies the type with the path's base name (`bar.TypeName` for `github.com/foo/bar.TypeName`). The path base must be a valid Go identifier and must match the imported package's `package` declaration.
+- `"import/path.TypeName"` — fully qualified; the generator pulls in the import with an explicit alias derived from the path's base name (`bar` for `github.com/foo/bar`) and qualifies the type via that alias (`bar.TypeName`). The path base must be a valid Go identifier; it does *not* need to match the imported package's `package` declaration, so module major-version layouts (`.../foo/v2`) and packages whose directory name differs from their declared name are both supported. If two customtype paths share the same base name (or the base collides with another import in the same file), the second alias gets a numeric suffix (`bar1`, `bar2`, …) so the generated file always compiles.
 - `"TypeName"` — same-package shorthand for types defined in the same Go package as the generated file (no import is emitted).
 
 ### The CustomMarshaler interface

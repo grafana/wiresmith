@@ -9,7 +9,7 @@ import (
 	"io"
 	"math"
 	"wiresmith/gen/protohelpers"
-	"wiresmith/test/customtypes"
+	customtypes "wiresmith/test/customtypes"
 )
 
 // CustomTypeHolder exercises (wiresmith.options.customtype) on the two field

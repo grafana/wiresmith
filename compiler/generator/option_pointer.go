@@ -2,7 +2,6 @@ package generator
 
 import (
 	"fmt"
-	"path"
 	"wiresmith/compiler/types"
 
 	"github.com/bufbuild/protocompile/linker"
@@ -185,18 +184,17 @@ func (fg *FileGenerator) customtypeGoFieldType(fd protoreflect.FieldDescriptor) 
 	return alias + "." + typeName, true
 }
 
-// customtypeAlias registers importPath with the ImportTracker (no explicit
-// alias) and returns the identifier the generated code should use to qualify
-// the user's type. addImport returns the empty string for unaliased imports,
-// so we fall back to path.Base — the same identifier Go binds to an
-// unaliased import at compile time. The lookup is idempotent on the
-// ImportTracker side, so calling it from both goFieldType and fieldType for
-// the same field is harmless.
+// customtypeAlias registers importPath with the ImportTracker under a
+// collision-free, explicitly-spelled alias and returns it for use as the Go
+// qualifier in generated code. The explicit-alias form is required because
+// the option value gives us only the import path — not the package's `package`
+// declaration — so we cannot rely on `path.Base` matching the identifier Go
+// would bind to an unaliased import (it doesn't for module major-version
+// paths like `.../foo/v2`, or for packages whose directory name differs from
+// their declared name). The lookup is idempotent: calling it from both
+// goFieldType and fieldType for the same field is harmless.
 func (fg *FileGenerator) customtypeAlias(importPath string) string {
-	if alias := fg.imports.addImport(importPath, ""); alias != "" {
-		return alias
-	}
-	return path.Base(importPath)
+	return fg.imports.addExplicitAliasImport(importPath)
 }
 
 // fieldType returns the FieldType composite for a field, with one twist over
