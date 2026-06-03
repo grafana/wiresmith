@@ -2,19 +2,19 @@ package testutil
 
 import (
 	"maps"
-	enumv1 "wiresmith/gen/basic/enum/v1"
-	mapsv1 "wiresmith/gen/basic/maps/v1"
-	nestingv1 "wiresmith/gen/basic/nesting/v1"
-	numericv1 "wiresmith/gen/basic/numeric/v1"
-	oneofv1 "wiresmith/gen/basic/oneof/v1"
-	recursivev1 "wiresmith/gen/basic/recursive/v1"
-	commonv1 "wiresmith/gen/opentelemetry/proto/common/v1"
-	logsv1 "wiresmith/gen/opentelemetry/proto/logs/v1"
-	metricsv1 "wiresmith/gen/opentelemetry/proto/metrics/v1"
-	profilesv1 "wiresmith/gen/opentelemetry/proto/profiles/v1development"
-	resourcev1 "wiresmith/gen/opentelemetry/proto/resource/v1"
-	tracev1 "wiresmith/gen/opentelemetry/proto/trace/v1"
-	kitchensinkv1 "wiresmith/gen/test/kitchensink/v1"
+	enumv1 "github.com/grafana/wiresmith/gen/basic/enum/v1"
+	mapsv1 "github.com/grafana/wiresmith/gen/basic/maps/v1"
+	nestingv1 "github.com/grafana/wiresmith/gen/basic/nesting/v1"
+	numericv1 "github.com/grafana/wiresmith/gen/basic/numeric/v1"
+	oneofv1 "github.com/grafana/wiresmith/gen/basic/oneof/v1"
+	recursivev1 "github.com/grafana/wiresmith/gen/basic/recursive/v1"
+	commonv1 "github.com/grafana/wiresmith/gen/opentelemetry/proto/common/v1"
+	logsv1 "github.com/grafana/wiresmith/gen/opentelemetry/proto/logs/v1"
+	metricsv1 "github.com/grafana/wiresmith/gen/opentelemetry/proto/metrics/v1"
+	profilesv1 "github.com/grafana/wiresmith/gen/opentelemetry/proto/profiles/v1development"
+	resourcev1 "github.com/grafana/wiresmith/gen/opentelemetry/proto/resource/v1"
+	tracev1 "github.com/grafana/wiresmith/gen/opentelemetry/proto/trace/v1"
+	kitchensinkv1 "github.com/grafana/wiresmith/gen/test/kitchensink/v1"
 )
 
 // Message is implemented by all generated message types.

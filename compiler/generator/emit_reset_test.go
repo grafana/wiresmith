@@ -14,7 +14,7 @@ func TestEmitReset_NilGuard(t *testing.T) {
 	fg := newFixtureGenerator(t, compileProtoFixture(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 message M {
   int32 x = 1;
 }
@@ -40,7 +40,7 @@ func TestEmitReset_StringIsNilSafe(t *testing.T) {
 	fg := newFixtureGenerator(t, compileProtoFixture(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 message M {}
 `))
 	fg.emitReset(messageByName(t, fg.fd, "M"))
@@ -57,7 +57,7 @@ func TestEmitReset_EmitsProtoMessageMarker(t *testing.T) {
 	fg := newFixtureGenerator(t, compileProtoFixture(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 message Outer {
   message Inner {}
 }

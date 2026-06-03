@@ -5,7 +5,7 @@ import (
 
 	"google.golang.org/protobuf/reflect/protoreflect"
 
-	"wiresmith/compiler/types"
+	"github.com/grafana/wiresmith/compiler/types"
 )
 
 // Equal() methods are emitted into the companion `_equal.pb.go` file, not

@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	ct "wiresmith/gen/basic/customtype/v1"
-	"wiresmith/test/customtypes"
+	ct "github.com/grafana/wiresmith/gen/basic/customtype/v1"
+	"github.com/grafana/wiresmith/test/customtypes"
 )
 
 // TestCustomType_FieldTypesSwapped pins the struct field types — the

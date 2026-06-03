@@ -3,7 +3,7 @@ package generator
 import (
 	"fmt"
 	"sort"
-	"wiresmith/compiler/types"
+	"github.com/grafana/wiresmith/compiler/types"
 
 	"google.golang.org/protobuf/encoding/protowire"
 	"google.golang.org/protobuf/reflect/protoreflect"
@@ -11,7 +11,7 @@ import (
 
 func (fg *FileGenerator) emitMarshal(md protoreflect.MessageDescriptor) {
 	name := goMessageTypeName(md)
-	fg.imports.addImport(fg.module+"/gen/protohelpers", "")
+	fg.imports.addImport(protohelpersImport, "")
 
 	// Marshal allocates and returns the encoded bytes.
 	fmt.Fprintf(fg.body, "func (m *%s) Marshal() (dAtA []byte, err error) {\n", name)
@@ -99,7 +99,7 @@ func (fg *FileGenerator) emitMessageMarshalWithPresence(fd protoreflect.FieldDes
 	access := "m." + goName
 	num := protowire.Number(fd.Number())
 
-	fg.imports.addImport(fg.module+"/gen/protohelpers", "")
+	fg.imports.addImport(protohelpersImport, "")
 	fmt.Fprintf(fg.body, "\t{\n")
 	fmt.Fprintf(fg.body, "\t\tsize, err := %s.MarshalToSizedBuffer(dAtA[:i])\n", access)
 	fmt.Fprintf(fg.body, "\t\tif err != nil {\n\t\t\treturn 0, err\n\t\t}\n")

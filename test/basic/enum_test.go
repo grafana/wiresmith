@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	enumpb "wiresmith/gen/basic/enum/v1"
+	enumpb "github.com/grafana/wiresmith/gen/basic/enum/v1"
 )
 
 func TestAliasedPriority_NameValueMaps(t *testing.T) {

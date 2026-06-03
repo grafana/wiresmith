@@ -5,10 +5,10 @@ package v1
 
 import (
 	"fmt"
+	"github.com/grafana/wiresmith/protohelpers"
 	"google.golang.org/protobuf/encoding/protowire"
 	"io"
 	"math"
-	"wiresmith/gen/protohelpers"
 )
 
 // Self-referencing via optional (pointer) field.

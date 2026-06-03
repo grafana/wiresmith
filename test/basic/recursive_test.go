@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	rec "wiresmith/gen/basic/recursive/v1"
+	rec "github.com/grafana/wiresmith/gen/basic/recursive/v1"
 )
 
 func TestLinkedList_ThreeNodes(t *testing.T) {

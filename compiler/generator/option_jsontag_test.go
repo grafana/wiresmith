@@ -13,7 +13,7 @@ func TestJsontagOption_RejectsBacktick(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 import "wiresmith/options.proto";
 message M {
   string x = 1 [(wiresmith.options.jsontag) = "bad`+"`"+`tick"];
@@ -40,7 +40,7 @@ func TestJsontagOption_AcceptsEmpty(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 import "wiresmith/options.proto";
 message M {
   string x = 1 [(wiresmith.options.jsontag) = ""];

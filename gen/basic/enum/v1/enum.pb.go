@@ -5,11 +5,11 @@ package v1
 
 import (
 	"fmt"
+	"github.com/grafana/wiresmith/protohelpers"
 	"google.golang.org/protobuf/encoding/protowire"
 	"io"
 	"math"
 	"strconv"
-	"wiresmith/gen/protohelpers"
 )
 
 // allow_alias: multiple names for the same numeric value.

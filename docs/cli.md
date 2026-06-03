@@ -53,7 +53,7 @@ The Go import path of a generated file is resolved in this order, matching `prot
 
 The on-disk write location is always `<out>/<source-relative path>` regardless of which step above produced the import path, matching `paths=source_relative`. `-M` and `go_package` only influence the import-path string in the generated file, not where the file is written.
 
-`-M` is the documented escape hatch when a vendored `.proto` declares a `go_package` that doesn't match the consumer's tree — for example wiresmith's own OTel build, where the upstream `go_package = "go.opentelemetry.io/proto/otlp/..."` is overridden to `wiresmith/gen/opentelemetry/proto/...;...` so the generated imports resolve under the local module.
+`-M` is the documented escape hatch when a vendored `.proto` declares a `go_package` that doesn't match the consumer's tree — for example wiresmith's own OTel build, where the upstream `go_package = "go.opentelemetry.io/proto/otlp/..."` is overridden to `github.com/grafana/wiresmith/gen/opentelemetry/proto/...;...` so the generated imports resolve under the local module.
 
 ## Examples
 
@@ -62,8 +62,8 @@ Given a `.proto` tree like:
 ```
 proto/
   example/v1/
-    greeter.proto       # package example.v1; option go_package = "wiresmith/gen/example/v1";
-    notes.proto         # package example.v1; option go_package = "wiresmith/gen/example/v1";
+    greeter.proto       # package example.v1; option go_package = "github.com/grafana/wiresmith/gen/example/v1";
+    notes.proto         # package example.v1; option go_package = "github.com/grafana/wiresmith/gen/example/v1";
 ```
 
 walk-and-emit-everything mode:
@@ -73,7 +73,7 @@ walk-and-emit-everything mode:
 ```
 
 produces both `gen/example/v1/greeter.pb.go` and `gen/example/v1/notes.pb.go`,
-importable as `wiresmith/gen/example/v1`.
+importable as `github.com/grafana/wiresmith/gen/example/v1`.
 
 Scoped mode emits only the listed file(s) while keeping the import graph:
 

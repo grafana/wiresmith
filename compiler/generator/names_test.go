@@ -12,7 +12,7 @@ func TestParseGoPackage(t *testing.T) {
 	}{
 		{"path/to/pkg", "path/to/pkg", "pkg"},
 		{"path/to/pkg;mypkg", "path/to/pkg", "mypkg"},
-		{"wiresmith/gen/test/kitchensink/v1", "wiresmith/gen/test/kitchensink/v1", "v1"},
+		{"github.com/grafana/wiresmith/gen/test/kitchensink/v1", "github.com/grafana/wiresmith/gen/test/kitchensink/v1", "v1"},
 		{"go.opentelemetry.io/proto/otlp/common/v1", "go.opentelemetry.io/proto/otlp/common/v1", "v1"},
 		{"", "", ""},
 		// Empty semicolon name falls back to path.Base.
@@ -104,10 +104,10 @@ func TestJoinImport(t *testing.T) {
 func TestDestForPath(t *testing.T) {
 	goPackages := map[string]string{
 		// Under module/gen — same destination as the default.
-		"basic.maps.v1": "wiresmith/gen/basic/maps/v1",
+		"basic.maps.v1": "github.com/grafana/wiresmith/gen/basic/maps/v1",
 		// `;name` form lets the proto author pick a package name independent
 		// of the import path's basename.
-		"myapp.svc": "wiresmith/gen/myapp/svc;service",
+		"myapp.svc": "github.com/grafana/wiresmith/gen/myapp/svc;service",
 		// Honored under a non-gen outDir too — exercises the outDir-composes case.
 		"tempo.svc": "github.com/grafana/tempo/pkg/tempopb/svc",
 		// Outside module/gen — honored literally (no base gate).
@@ -117,7 +117,7 @@ func TestDestForPath(t *testing.T) {
 	}
 	overrides := map[string]string{
 		// Override beats go_package — matches protoc's M-flag precedence.
-		"opentelemetry/proto/common/v1/common.proto": "wiresmith/gen/opentelemetry/proto/common/v1",
+		"opentelemetry/proto/common/v1/common.proto": "github.com/grafana/wiresmith/gen/opentelemetry/proto/common/v1",
 		// Override supplies `;name` form for a file that has no go_package.
 		"no_pkg/no_pkg.proto": "example.com/redirect;chosen",
 	}
@@ -138,7 +138,7 @@ func TestDestForPath(t *testing.T) {
 			outDir:     "gen",
 			fdPath:     "basic/maps/v1/maps.proto",
 			protoPkg:   "basic.maps.v1",
-			wantImport: "wiresmith/gen/basic/maps/v1",
+			wantImport: "github.com/grafana/wiresmith/gen/basic/maps/v1",
 			wantRelDir: "basic/maps/v1",
 			wantPkg:    "v1",
 		},
@@ -148,7 +148,7 @@ func TestDestForPath(t *testing.T) {
 			outDir:     "gen",
 			fdPath:     "myapp/svc/svc.proto",
 			protoPkg:   "myapp.svc",
-			wantImport: "wiresmith/gen/myapp/svc",
+			wantImport: "github.com/grafana/wiresmith/gen/myapp/svc",
 			wantRelDir: "myapp/svc",
 			wantPkg:    "service",
 		},
@@ -178,7 +178,7 @@ func TestDestForPath(t *testing.T) {
 			outDir:     "gen",
 			fdPath:     "opentelemetry/proto/common/v1/common.proto",
 			protoPkg:   "opentelemetry.proto.common.v1",
-			wantImport: "wiresmith/gen/opentelemetry/proto/common/v1",
+			wantImport: "github.com/grafana/wiresmith/gen/opentelemetry/proto/common/v1",
 			wantRelDir: "opentelemetry/proto/common/v1",
 			wantPkg:    "v1",
 		},

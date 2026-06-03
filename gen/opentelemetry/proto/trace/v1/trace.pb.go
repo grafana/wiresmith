@@ -6,13 +6,13 @@ package tracev1
 import (
 	"encoding/binary"
 	"fmt"
+	"github.com/grafana/wiresmith/gen/opentelemetry/proto/common/v1"
+	"github.com/grafana/wiresmith/gen/opentelemetry/proto/resource/v1"
+	"github.com/grafana/wiresmith/protohelpers"
 	"google.golang.org/protobuf/encoding/protowire"
 	"io"
 	"math"
 	"strconv"
-	"wiresmith/gen/opentelemetry/proto/common/v1"
-	"wiresmith/gen/opentelemetry/proto/resource/v1"
-	"wiresmith/gen/protohelpers"
 )
 
 // SpanFlags represents constants used to interpret the

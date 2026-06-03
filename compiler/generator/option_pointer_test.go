@@ -54,7 +54,7 @@ func TestPointerOption_RejectsScalar(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 import "wiresmith/options.proto";
 message M {
   int32 x = 1 [(wiresmith.options.pointer) = true];
@@ -67,7 +67,7 @@ func TestPointerOption_RejectsOptional(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 import "wiresmith/options.proto";
 message Inner {}
 message M {
@@ -81,7 +81,7 @@ func TestPointerOption_RejectsOneofVariant(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 import "wiresmith/options.proto";
 message Inner {}
 message M {
@@ -98,7 +98,7 @@ func TestPointerOption_RejectsMap(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 import "wiresmith/options.proto";
 message Inner {}
 message M {
@@ -117,7 +117,7 @@ func TestPointerOption_AcceptsMessage(t *testing.T) {
 	const body = `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 import "wiresmith/options.proto";
 message Inner { int32 x = 1; }
 message Holder {
@@ -161,7 +161,7 @@ func TestPointerOption_UserFileSharingEmbeddedPackageStillEmits(t *testing.T) {
 	const body = `
 syntax = "proto3";
 package wiresmith.options;
-option go_package = "wiresmith/gen/wiresmith/options";
+option go_package = "github.com/grafana/wiresmith/gen/wiresmith/options";
 message UserMessage { int32 x = 1; }
 `
 	if err := os.WriteFile(filepath.Join(protoDir, "user.proto"), []byte(body), 0o644); err != nil {
@@ -198,7 +198,7 @@ func TestPointerOption_UserFileAtCanonicalEmbedPathErrors(t *testing.T) {
 	const body = `
 syntax = "proto3";
 package whatever;
-option go_package = "wiresmith/gen/whatever/v1";
+option go_package = "github.com/grafana/wiresmith/gen/whatever/v1";
 message M {}
 `
 	if err := os.WriteFile(filepath.Join(nested, "options.proto"), []byte(body), 0o644); err != nil {
@@ -226,7 +226,7 @@ func TestPointerOption_OptionsProtoDoesNotEmit(t *testing.T) {
 	const body = `
 syntax = "proto3";
 package solo;
-option go_package = "wiresmith/gen/solo/v1";
+option go_package = "github.com/grafana/wiresmith/gen/solo/v1";
 message M {}
 `
 	if err := os.WriteFile(filepath.Join(protoDir, "solo.proto"), []byte(body), 0o644); err != nil {

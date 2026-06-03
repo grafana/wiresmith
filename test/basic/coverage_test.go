@@ -7,12 +7,12 @@ import (
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/encoding/protowire"
 
-	commonv1 "wiresmith/gen/opentelemetry/proto/common/v1"
-	logsv1 "wiresmith/gen/opentelemetry/proto/logs/v1"
-	metricsv1 "wiresmith/gen/opentelemetry/proto/metrics/v1"
-	profilesv1 "wiresmith/gen/opentelemetry/proto/profiles/v1development"
-	resourcev1 "wiresmith/gen/opentelemetry/proto/resource/v1"
-	tracev1 "wiresmith/gen/opentelemetry/proto/trace/v1"
+	commonv1 "github.com/grafana/wiresmith/gen/opentelemetry/proto/common/v1"
+	logsv1 "github.com/grafana/wiresmith/gen/opentelemetry/proto/logs/v1"
+	metricsv1 "github.com/grafana/wiresmith/gen/opentelemetry/proto/metrics/v1"
+	profilesv1 "github.com/grafana/wiresmith/gen/opentelemetry/proto/profiles/v1development"
+	resourcev1 "github.com/grafana/wiresmith/gen/opentelemetry/proto/resource/v1"
+	tracev1 "github.com/grafana/wiresmith/gen/opentelemetry/proto/trace/v1"
 )
 
 // Compile-time interface assertions for oneof marker methods.

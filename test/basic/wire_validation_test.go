@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"wiresmith/test/testutil"
+	"github.com/grafana/wiresmith/test/testutil"
 )
 
 // SEC: Field number 0 must be rejected by every generated Unmarshal. The

@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	num "wiresmith/gen/basic/numeric/v1"
-	ks "wiresmith/gen/test/kitchensink/v1"
+	num "github.com/grafana/wiresmith/gen/basic/numeric/v1"
+	ks "github.com/grafana/wiresmith/gen/test/kitchensink/v1"
 )
 
 func TestUnpackedScalars_RoundTrip(t *testing.T) {

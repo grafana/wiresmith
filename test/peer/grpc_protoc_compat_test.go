@@ -6,7 +6,7 @@
 // because:
 //
 //  1. wiresmith messages register a protoimpl.MessageInfo fast-path Methods
-//     table (see gen/protohelpers/message.go::wiresmithMethods).
+//     table (see protohelpers/message.go::wiresmithMethods).
 //  2. google.golang.org/grpc/encoding/proto's codec calls proto.Marshal /
 //     proto.Unmarshal, which dispatches through that Methods table — no
 //     reflection slow-path on the gRPC hot path.
@@ -17,7 +17,7 @@
 //
 // These tests exercise all four streaming modes and a reflection sanity check;
 // any reflection-only field-level access through wiresmith's MessageReflect
-// would panic loudly (see gen/protohelpers/message.go::panicReflect).
+// would panic loudly (see protohelpers/message.go::panicReflect).
 package peer
 
 import (
@@ -35,7 +35,7 @@ import (
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/test/bufconn"
 
-	servicepb "wiresmith/gen/basic/service/v1"
+	servicepb "github.com/grafana/wiresmith/gen/basic/service/v1"
 )
 
 const bufSize = 1024 * 1024

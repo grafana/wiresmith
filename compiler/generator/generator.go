@@ -11,7 +11,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
-	"wiresmith/compiler/types"
+	"github.com/grafana/wiresmith/compiler/types"
 
 	"github.com/bufbuild/protocompile"
 	"github.com/bufbuild/protocompile/linker"

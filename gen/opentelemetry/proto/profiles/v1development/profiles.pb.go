@@ -6,12 +6,12 @@ package profilesv1development
 import (
 	"encoding/binary"
 	"fmt"
+	"github.com/grafana/wiresmith/gen/opentelemetry/proto/common/v1"
+	"github.com/grafana/wiresmith/gen/opentelemetry/proto/resource/v1"
+	"github.com/grafana/wiresmith/protohelpers"
 	"google.golang.org/protobuf/encoding/protowire"
 	"io"
 	"math"
-	"wiresmith/gen/opentelemetry/proto/common/v1"
-	"wiresmith/gen/opentelemetry/proto/resource/v1"
-	"wiresmith/gen/protohelpers"
 )
 
 // ProfilesDictionary represents the profiles data shared across the

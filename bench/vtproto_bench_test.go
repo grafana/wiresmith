@@ -5,10 +5,10 @@ import (
 
 	"google.golang.org/protobuf/proto"
 
-	vtlogs "wiresmith/gen/vtpb/logs/v1"
-	vtmetrics "wiresmith/gen/vtpb/metrics/v1"
-	vtprofiles "wiresmith/gen/vtpb/profiles/v1development"
-	vttrace "wiresmith/gen/vtpb/trace/v1"
+	vtlogs "github.com/grafana/wiresmith/gen/vtpb/logs/v1"
+	vtmetrics "github.com/grafana/wiresmith/gen/vtpb/metrics/v1"
+	vtprofiles "github.com/grafana/wiresmith/gen/vtpb/profiles/v1development"
+	vttrace "github.com/grafana/wiresmith/gen/vtpb/trace/v1"
 )
 
 // --- Marshal ---

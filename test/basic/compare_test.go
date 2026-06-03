@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	cmp "wiresmith/gen/basic/compare/v1"
+	cmp "github.com/grafana/wiresmith/gen/basic/compare/v1"
 )
 
 // Compare's contract is a total order with a -1/0/+1 result, matching the

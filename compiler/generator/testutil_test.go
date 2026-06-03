@@ -79,7 +79,7 @@ func newFixtureGeneratorWith(t *testing.T, fd protoreflect.FileDescriptor, allFi
 	pkg := string(fd.Package())
 	dests := map[string]goDest{
 		pkg: {
-			importPath: "wiresmith/gen/test/v1",
+			importPath: "github.com/grafana/wiresmith/gen/test/v1",
 			relDir:     "test/v1",
 			pkgName:    "testv1",
 		},

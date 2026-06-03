@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	nest "wiresmith/gen/basic/nesting/v1"
+	nest "github.com/grafana/wiresmith/gen/basic/nesting/v1"
 )
 
 func TestLevel0_FullDepth(t *testing.T) {

@@ -8,7 +8,7 @@ import (
 	"runtime/debug"
 	"strings"
 
-	"wiresmith/compiler/generator"
+	"github.com/grafana/wiresmith/compiler/generator"
 )
 
 // overridesFlag implements flag.Value for the repeatable `-M src=dest`
@@ -73,7 +73,7 @@ Flags:
 
 	protoDir := flag.String("proto_path", "proto", "directory containing .proto files")
 	outDir := flag.String("out", "gen", "output directory for generated Go files")
-	module := flag.String("module", "wiresmith", "Go module name")
+	module := flag.String("module", "github.com/grafana/wiresmith", "Go module name")
 	showVersion := flag.Bool("version", false, "print version and exit")
 	overrides := &overridesFlag{m: map[string]string{}}
 	flag.Var(overrides, "M",

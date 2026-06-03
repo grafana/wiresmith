@@ -26,7 +26,7 @@ import (
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
-	v1 "wiresmith/gen/vtpb/common/v1"
+	v1 "github.com/grafana/wiresmith/gen/vtpb/common/v1"
 )
 
 const (

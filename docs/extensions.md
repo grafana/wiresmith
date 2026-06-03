@@ -52,7 +52,7 @@ The validation source of truth is `pointerOptionRejection` in `compiler/generato
 syntax = "proto3";
 
 package basic.pointer.v1;
-option go_package = "wiresmith/gen/basic/pointer/v1";
+option go_package = "github.com/grafana/wiresmith/gen/basic/pointer/v1";
 
 import "wiresmith/options.proto";
 

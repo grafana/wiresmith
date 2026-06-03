@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package basic.enum.v1;
 
-option go_package = "wiresmith/gen/basic/enum/v1";
+option go_package = "github.com/grafana/wiresmith/gen/basic/enum/v1";
 
 // allow_alias: multiple names for the same numeric value.
 enum AliasedPriority {

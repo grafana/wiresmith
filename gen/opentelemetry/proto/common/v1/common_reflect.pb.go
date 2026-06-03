@@ -4,11 +4,11 @@
 package commonv1
 
 import (
+	"github.com/grafana/wiresmith/protohelpers"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"reflect"
 	"unsafe"
-	"wiresmith/gen/protohelpers"
 )
 
 // Reflection / registration glue for opentelemetry/proto/common/v1/common.proto.

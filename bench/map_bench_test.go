@@ -6,10 +6,10 @@ import (
 
 	"google.golang.org/protobuf/proto"
 
-	oursmaps "wiresmith/gen/basic/maps/v1"
-	gogomaps "wiresmith/gen/bench/gogopb"
-	officialmaps "wiresmith/gen/bench/official"
-	vtmaps "wiresmith/gen/bench/vtpb"
+	oursmaps "github.com/grafana/wiresmith/gen/basic/maps/v1"
+	gogomaps "github.com/grafana/wiresmith/gen/bench/gogopb"
+	officialmaps "github.com/grafana/wiresmith/gen/bench/official"
+	vtmaps "github.com/grafana/wiresmith/gen/bench/vtpb"
 )
 
 var mapBytes []byte

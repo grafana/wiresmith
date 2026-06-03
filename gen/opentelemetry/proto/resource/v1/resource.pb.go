@@ -5,11 +5,11 @@ package resourcev1
 
 import (
 	"fmt"
+	"github.com/grafana/wiresmith/gen/opentelemetry/proto/common/v1"
+	"github.com/grafana/wiresmith/protohelpers"
 	"google.golang.org/protobuf/encoding/protowire"
 	"io"
 	"math"
-	"wiresmith/gen/opentelemetry/proto/common/v1"
-	"wiresmith/gen/protohelpers"
 )
 
 // Resource information.

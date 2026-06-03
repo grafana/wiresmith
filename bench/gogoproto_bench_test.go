@@ -3,10 +3,10 @@ package bench
 import (
 	"testing"
 
-	gogologs "wiresmith/gen/gogopb/logs/v1"
-	gogometrics "wiresmith/gen/gogopb/metrics/v1"
-	gogoprofiles "wiresmith/gen/gogopb/profiles/v1development"
-	gogotrace "wiresmith/gen/gogopb/trace/v1"
+	gogologs "github.com/grafana/wiresmith/gen/gogopb/logs/v1"
+	gogometrics "github.com/grafana/wiresmith/gen/gogopb/metrics/v1"
+	gogoprofiles "github.com/grafana/wiresmith/gen/gogopb/profiles/v1development"
+	gogotrace "github.com/grafana/wiresmith/gen/gogopb/trace/v1"
 )
 
 // --- Marshal ---

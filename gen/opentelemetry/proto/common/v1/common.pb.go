@@ -6,10 +6,10 @@ package commonv1
 import (
 	"encoding/binary"
 	"fmt"
+	"github.com/grafana/wiresmith/protohelpers"
 	"google.golang.org/protobuf/encoding/protowire"
 	"io"
 	"math"
-	"wiresmith/gen/protohelpers"
 )
 
 type AnyValue_Value interface {

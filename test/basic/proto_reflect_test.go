@@ -5,8 +5,8 @@ import (
 
 	"google.golang.org/protobuf/proto"
 
-	commonv1 "wiresmith/gen/opentelemetry/proto/common/v1"
-	resourcev1 "wiresmith/gen/opentelemetry/proto/resource/v1"
+	commonv1 "github.com/grafana/wiresmith/gen/opentelemetry/proto/common/v1"
+	resourcev1 "github.com/grafana/wiresmith/gen/opentelemetry/proto/resource/v1"
 )
 
 // TestProtoReflectNewReturnsWrappedFresh verifies that ProtoReflect().New()

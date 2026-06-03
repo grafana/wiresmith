@@ -122,12 +122,12 @@ func TestGenerateMatchesCheckedIn(t *testing.T) {
 	// generator would honor that literally and produce a different file
 	// than the checked-in copy.
 	otelOverrides := map[string]string{
-		"opentelemetry/proto/common/v1/common.proto":                "wiresmith/gen/opentelemetry/proto/common/v1;commonv1",
-		"opentelemetry/proto/resource/v1/resource.proto":            "wiresmith/gen/opentelemetry/proto/resource/v1;resourcev1",
-		"opentelemetry/proto/metrics/v1/metrics.proto":              "wiresmith/gen/opentelemetry/proto/metrics/v1;metricsv1",
-		"opentelemetry/proto/trace/v1/trace.proto":                  "wiresmith/gen/opentelemetry/proto/trace/v1;tracev1",
-		"opentelemetry/proto/logs/v1/logs.proto":                    "wiresmith/gen/opentelemetry/proto/logs/v1;logsv1",
-		"opentelemetry/proto/profiles/v1development/profiles.proto": "wiresmith/gen/opentelemetry/proto/profiles/v1development;profilesv1development",
+		"opentelemetry/proto/common/v1/common.proto":                "github.com/grafana/wiresmith/gen/opentelemetry/proto/common/v1;commonv1",
+		"opentelemetry/proto/resource/v1/resource.proto":            "github.com/grafana/wiresmith/gen/opentelemetry/proto/resource/v1;resourcev1",
+		"opentelemetry/proto/metrics/v1/metrics.proto":              "github.com/grafana/wiresmith/gen/opentelemetry/proto/metrics/v1;metricsv1",
+		"opentelemetry/proto/trace/v1/trace.proto":                  "github.com/grafana/wiresmith/gen/opentelemetry/proto/trace/v1;tracev1",
+		"opentelemetry/proto/logs/v1/logs.proto":                    "github.com/grafana/wiresmith/gen/opentelemetry/proto/logs/v1;logsv1",
+		"opentelemetry/proto/profiles/v1development/profiles.proto": "github.com/grafana/wiresmith/gen/opentelemetry/proto/profiles/v1development;profilesv1development",
 	}
 
 	cases := []struct {
@@ -298,6 +298,43 @@ message Foo { string name = 1; }`)
 	}
 }
 
+// TestGenerateEnumsOnlyProto pins that an enums-only proto file (no
+// messages) does not leave an unused `protohelpers` import in its
+// generated `_reflect.pb.go`. ProtoReflect methods — the sole consumer
+// of protohelpers in the reflect file — are emitted per-message; for an
+// enums-only file there are no messages, so adding the import
+// unconditionally in emitRegistration would produce
+// "imported and not used: protohelpers" at `go build` time. The fix is
+// to let emit_protoreflect.go own the import (it's idempotent via
+// addImport's cache).
+func TestGenerateEnumsOnlyProto(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "enumsonly.proto", `
+syntax = "proto3";
+package enumsonly;
+enum Color {
+  COLOR_UNSPECIFIED = 0;
+  COLOR_RED = 1;
+  COLOR_GREEN = 2;
+  COLOR_BLUE = 3;
+}`)
+
+	outDir := testOutDir(t)
+	gen := &Generator{Module: "github.com/grafana/wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
+	}
+
+	reflectPath := filepath.Join(outDir, "enumsonly", "enumsonly_reflect.pb.go")
+	body, err := os.ReadFile(reflectPath)
+	if err != nil {
+		t.Fatalf("read reflect file: %v", err)
+	}
+	if strings.Contains(string(body), "protohelpers") {
+		t.Errorf("enums-only reflect file must not import protohelpers; would fail to build as unused import:\n%s", body)
+	}
+}
+
 // TestGenerateEmptyProtoDoesNotTriggerCollision verifies that an empty .proto
 // sharing (package + basename) with a non-empty proto in another directory
 // does not fail the output-collision preflight. The empty file writes nothing,
@@ -442,7 +479,7 @@ package alpha;`)
 	writeProto(t, protoDir, "real.proto", `
 syntax = "proto3";
 package beta;
-option go_package = "wiresmith/gen/alpha";
+option go_package = "github.com/grafana/wiresmith/gen/alpha";
 message Foo { string s = 1; }`)
 
 	outDir := testOutDir(t)
@@ -588,7 +625,7 @@ func TestGenerateFilesScopesEmission(t *testing.T) {
 syntax = "proto3";
 package scoped.a.v1;
 import "b/bar.proto";
-option go_package = "wiresmith/scoped/a";
+option go_package = "github.com/grafana/wiresmith/scoped/a";
 message Foo {
   string name = 1;
   scoped.b.v1.Bar bar = 2;
@@ -596,7 +633,7 @@ message Foo {
 	writeProto(t, protoDir, "b/bar.proto", `
 syntax = "proto3";
 package scoped.b.v1;
-option go_package = "wiresmith/scoped/b";
+option go_package = "github.com/grafana/wiresmith/scoped/b";
 message Bar { int32 n = 1; }`)
 
 	outDir := testOutDir(t)
@@ -627,12 +664,12 @@ func TestGenerateFilesEmptyEmitsAll(t *testing.T) {
 	writeProto(t, protoDir, "a/foo.proto", `
 syntax = "proto3";
 package scoped.a.v1;
-option go_package = "wiresmith/scoped/a";
+option go_package = "github.com/grafana/wiresmith/scoped/a";
 message Foo { string s = 1; }`)
 	writeProto(t, protoDir, "b/bar.proto", `
 syntax = "proto3";
 package scoped.b.v1;
-option go_package = "wiresmith/scoped/b";
+option go_package = "github.com/grafana/wiresmith/scoped/b";
 message Bar { int32 n = 1; }`)
 
 	outDir := testOutDir(t)
@@ -660,12 +697,12 @@ func TestGenerateFilesReuseClearsFilter(t *testing.T) {
 	writeProto(t, protoDir, "a/foo.proto", `
 syntax = "proto3";
 package scoped.a.v1;
-option go_package = "wiresmith/scoped/a";
+option go_package = "github.com/grafana/wiresmith/scoped/a";
 message Foo { string s = 1; }`)
 	writeProto(t, protoDir, "b/bar.proto", `
 syntax = "proto3";
 package scoped.b.v1;
-option go_package = "wiresmith/scoped/b";
+option go_package = "github.com/grafana/wiresmith/scoped/b";
 message Bar { int32 n = 1; }`)
 
 	gen := &Generator{
@@ -713,7 +750,7 @@ func TestGenerateFilesRejectsNonexistent(t *testing.T) {
 	writeProto(t, protoDir, "in.proto", `
 syntax = "proto3";
 package scoped.in;
-option go_package = "wiresmith/scoped/in";
+option go_package = "github.com/grafana/wiresmith/scoped/in";
 message In { string s = 1; }`)
 
 	missing := filepath.Join(protoDir, "doesnotexist.proto")
@@ -744,7 +781,7 @@ func TestGenerateFilesRejectsOutsideProtoPath(t *testing.T) {
 	writeProto(t, protoDir, "in.proto", `
 syntax = "proto3";
 package scoped.in;
-option go_package = "wiresmith/scoped/in";
+option go_package = "github.com/grafana/wiresmith/scoped/in";
 message In { string s = 1; }`)
 
 	outsideDir := t.TempDir()
@@ -960,7 +997,7 @@ func TestGenerateNestedLayout(t *testing.T) {
 		"syntax = \"proto3\";\npackage testpb.trace.v1;\nimport \"testpb/common/v1/common.proto\";\nmessage Span { testpb.common.v1.Resource resource = 1; }")
 
 	outDir := testOutDir(t)
-	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	gen := &Generator{Module: "github.com/grafana/wiresmith", OutDir: outDir, ProtoDir: protoDir}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate failed: %v", err)
 	}
@@ -988,7 +1025,7 @@ func TestGenerateNestedLayout(t *testing.T) {
 	if err != nil {
 		t.Fatalf("reading trace.pb.go: %v", err)
 	}
-	if !strings.Contains(string(traceContent), "wiresmith/gen/testpb/common/v1") {
+	if !strings.Contains(string(traceContent), "github.com/grafana/wiresmith/gen/testpb/common/v1") {
 		t.Errorf("trace.pb.go missing cross-package import to common/v1; content:\n%s", traceContent)
 	}
 }

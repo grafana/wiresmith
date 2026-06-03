@@ -33,7 +33,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 # Copy only what the testee binary needs so the cache invalidates precisely
 # when dependencies change, not on unrelated file edits.
-COPY gen/protohelpers/ gen/protohelpers/
+COPY protohelpers/ protohelpers/
 COPY gen/protobuf_test_messages/ gen/protobuf_test_messages/
 COPY test/conformance/internal/ test/conformance/internal/
 COPY test/conformance/testee/ test/conformance/testee/

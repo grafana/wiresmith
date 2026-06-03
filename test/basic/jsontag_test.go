@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	jt "wiresmith/gen/basic/jsontag/v1"
+	jt "github.com/grafana/wiresmith/gen/basic/jsontag/v1"
 )
 
 // TestJsonTag_StructTags asserts the generated `json:"..."` struct tag for

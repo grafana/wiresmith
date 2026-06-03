@@ -10,7 +10,7 @@ func TestEmitOneof_VariantInterfaceName(t *testing.T) {
 	fg := newFixtureGenerator(t, compileProtoFixture(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 message M {
   oneof choice {
     string s = 1;
@@ -37,7 +37,7 @@ func TestEmitOneof_PayloadSwitch(t *testing.T) {
 	fg := newFixtureGenerator(t, compileProtoFixture(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 message Inner {}
 message M {
   oneof choice {
@@ -69,7 +69,7 @@ func TestEmitOneof_SingleVariant(t *testing.T) {
 	fg := newFixtureGenerator(t, compileProtoFixture(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 message M {
   oneof only {
     int32 x = 1;
@@ -94,7 +94,7 @@ func TestEmitOneof_SyntheticIgnored(t *testing.T) {
 	fg := newFixtureGenerator(t, compileProtoFixture(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 message M {
   optional int32 maybe = 1;
 }

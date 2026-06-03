@@ -14,7 +14,7 @@ func TestEmitHas_NoPresenceFields(t *testing.T) {
 	fg := newFixtureGenerator(t, compileProtoFixture(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 message M {
   repeated int32 xs = 1;
   optional int32 maybe = 2;
@@ -41,7 +41,7 @@ func TestEmitHas_SinglePresenceField(t *testing.T) {
 	fg := newFixtureGenerator(t, compileProtoFixture(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 message Inner {}
 message M {
   Inner x = 1;
@@ -75,7 +75,7 @@ func TestEmitHas_BitmapWordCount_BoundaryAt65(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			var b strings.Builder
-			b.WriteString("syntax = \"proto3\";\npackage test.v1;\noption go_package = \"wiresmith/gen/test/v1\";\nmessage Inner {}\nmessage M {\n")
+			b.WriteString("syntax = \"proto3\";\npackage test.v1;\noption go_package = \"github.com/grafana/wiresmith/gen/test/v1\";\nmessage Inner {}\nmessage M {\n")
 			for i := 1; i <= tc.nFields; i++ {
 				fmt.Fprintf(&b, "  Inner f%d = %d;\n", i, i)
 			}
@@ -103,7 +103,7 @@ func TestEmitHas_PointerOptionExcluded(t *testing.T) {
 	files := compileAllFixture(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 import "wiresmith/options.proto";
 message Inner {}
 message M {
