@@ -16,7 +16,7 @@ Custom protobuf compiler that generates high-performance Go code from OpenTeleme
 - `gen/basic/` - Generated Go packages for basic type coverage protos
 - `gen/vtpb/` - vtproto-generated code for benchmark comparison
 - `gen/gogopb/` - gogoproto-generated code for benchmark comparison
-- `gen/protohelpers/` - Shared reverse-write encoding helpers (based on vtprotobuf's protohelpers, Apache 2.0)
+- `protohelpers/` - Shared reverse-write encoding helpers, checked-in source (based on vtprotobuf's protohelpers, Apache 2.0)
 - `test/` - All tests, organized by purpose:
   - `testutil/` - Shared test helpers (message interface, constructors)
   - `basic/` - Code-path exercise tests (roundtrip, equal, has_field, kitchen_sink, map, etc.)
