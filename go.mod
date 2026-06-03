@@ -30,3 +30,12 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260226221140-a57be14db171 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+// google.golang.org/grpc v1.81.1's go.mod transitively requires
+// vtprotobuf at a post-v0.6.0 pseudo-version. The only package wiresmith
+// uses from vtprotobuf is `protohelpers`, which has had zero changes
+// between v0.6.0 and the pseudo-commit, so MVS-resolving to the
+// pseudo-version is functionally a no-op for our benchmarks — but it
+// shows up as dependency churn in this PR. Pin to the tagged release so
+// the bump doesn't surface as scope creep.
+replace github.com/planetscale/vtprotobuf => github.com/planetscale/vtprotobuf v0.6.0
