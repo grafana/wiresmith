@@ -111,11 +111,16 @@ func newEchoHarness(t *testing.T) (servicepb.EchoClient, *grpc.Server) {
 	srv := grpc.NewServer()
 	servicepb.RegisterEchoServer(srv, echoServer{})
 	reflection.Register(srv)
+	// Serve returns once Stop / GracefulStop is called; that path commonly
+	// surfaces as grpc.ErrServerStopped, not a nil error (the previous
+	// comment claimed nil). Capture the result on a channel and consume it
+	// in t.Cleanup so the goroutine cannot outlive the test — calling
+	// t.Errorf from a goroutine that races past the test's completion
+	// would otherwise trigger "Log in goroutine after Test... has
+	// completed".
+	serveErr := make(chan error, 1)
 	go func() {
-		// Serve returns once Stop is called; the returned error is then nil.
-		if err := srv.Serve(lis); err != nil {
-			t.Errorf("grpc Serve: %v", err)
-		}
+		serveErr <- srv.Serve(lis)
 	}()
 
 	dial := func(context.Context, string) (net.Conn, error) { return lis.Dial() }
@@ -129,6 +134,9 @@ func newEchoHarness(t *testing.T) (servicepb.EchoClient, *grpc.Server) {
 			t.Logf("grpc client Close: %v", err)
 		}
 		srv.Stop()
+		if err := <-serveErr; err != nil && !errors.Is(err, grpc.ErrServerStopped) {
+			t.Errorf("grpc Serve: %v", err)
+		}
 	})
 	return servicepb.NewEchoClient(conn), srv
 }
@@ -244,8 +252,12 @@ func TestGRPCProtocCompat_ServiceInfo(t *testing.T) {
 	}
 	sort.Strings(names)
 
-	// Echo and the reflection service should both be present.
+	// The Echo service must be present (the whole point of this PR), and
+	// the gRPC reflection service must also be present (newEchoHarness
+	// installs it via reflection.Register). Asserting both keeps the
+	// listing honest if a future refactor drops one of them.
 	require.Contains(t, names, "basic.service.v1.Echo")
+	require.Contains(t, names, "grpc.reflection.v1.ServerReflection")
 
 	echo := info["basic.service.v1.Echo"]
 	methods := make([]string, 0, len(echo.Methods))

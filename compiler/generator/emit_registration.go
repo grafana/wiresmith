@@ -382,6 +382,23 @@ func serializeFileDescriptor(fd protoreflect.FileDescriptor) []byte {
 	// init time. Stripping them lets protos that mix wiresmith-generated
 	// messages with services (consumed by external generators like
 	// protoc-gen-go-grpc) compile cleanly while wiresmith stays scope-pure.
+	//
+	// Tradeoff: descriptor-based tooling that walks the *protoreflect*
+	// FileDescriptor returned by ProtoReflect().Descriptor().ParentFile()
+	// will see zero services for wiresmith-generated files. In particular,
+	// the grpc-go reflection service's FileContainingSymbol /
+	// FileByFilename flows resolve services by walking protoregistry-
+	// registered file descriptors — those calls will not surface the
+	// stripped services for a wiresmith-owned file. This is consistent
+	// with wiresmith's design (services are handled by protoc-gen-go-grpc,
+	// not us), and grpc reflection's standard service-listing path
+	// (`grpc.Server.GetServiceInfo`, used by `reflection.Register`) still
+	// works because it reads the live `grpc.ServiceDesc` registered by
+	// protoc-gen-go-grpc rather than the protoreflect descriptor. Emitting
+	// the correct NumServices / method input-output dep indices to keep
+	// services in the raw descriptor would require wiresmith to model
+	// service descriptors at codegen time and is deliberately out of
+	// scope; revisit if a concrete consumer needs the descriptor view.
 	fdp.Service = nil
 	b, err := proto.MarshalOptions{Deterministic: true}.Marshal(fdp)
 	if err != nil {

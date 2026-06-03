@@ -132,7 +132,7 @@ generate-ours: ## Regenerate all wiresmith + conformance code
 	@echo "==> Generating wiresmith code → gen/basic/"
 	$(WIRESMITH) --proto_path=proto/basic --out=gen --module=$(MODULE)
 	@echo "==> Generating gRPC stubs for proto/basic/service.proto → gen/basic/service/v1/"
-	@command -v protoc-gen-go-grpc >/dev/null 2>&1 || { echo "protoc-gen-go-grpc not found. Install with: go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest"; exit 1; }
+	@command -v protoc-gen-go-grpc >/dev/null 2>&1 || { echo "protoc-gen-go-grpc not found. Install with: go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.6.0"; exit 1; }
 	protoc -I proto/basic \
 		--go-grpc_out=. --go-grpc_opt=module=$(MODULE) \
 		proto/basic/service.proto
