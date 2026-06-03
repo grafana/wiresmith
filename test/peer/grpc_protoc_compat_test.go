@@ -68,7 +68,7 @@ func (echoServer) ClientStream(stream grpc.ClientStreamingServer[servicepb.Paylo
 }
 
 func (echoServer) ServerStream(in *servicepb.Payload, stream grpc.ServerStreamingServer[servicepb.Payload]) error {
-	for i := range int64(4) {
+	for i := int64(0); i < 4; i++ {
 		clone := *in
 		clone.Sequence = in.Sequence + i
 		if err := stream.Send(&clone); err != nil {
