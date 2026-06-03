@@ -112,30 +112,33 @@ func newEchoHarness(t *testing.T) (servicepb.EchoClient, *grpc.Server) {
 	servicepb.RegisterEchoServer(srv, echoServer{})
 	reflection.Register(srv)
 	// Serve returns once Stop / GracefulStop is called; that path commonly
-	// surfaces as grpc.ErrServerStopped, not a nil error (the previous
-	// comment claimed nil). Capture the result on a channel and consume it
-	// in t.Cleanup so the goroutine cannot outlive the test — calling
-	// t.Errorf from a goroutine that races past the test's completion
-	// would otherwise trigger "Log in goroutine after Test... has
-	// completed".
+	// surfaces as grpc.ErrServerStopped, not a nil error. Capture the
+	// result on a channel and consume it in t.Cleanup so the goroutine
+	// cannot outlive the test — calling t.Errorf from a goroutine that
+	// races past the test's completion would otherwise trigger "Log in
+	// goroutine after Test... has completed".
 	serveErr := make(chan error, 1)
 	go func() {
 		serveErr <- srv.Serve(lis)
 	}()
+	// Register server-side cleanup BEFORE the first require.NoError so
+	// the listener and Serve goroutine are still torn down if the
+	// client-construction step below fails and aborts the test.
+	t.Cleanup(func() {
+		srv.Stop()
+		if err := <-serveErr; err != nil && !errors.Is(err, grpc.ErrServerStopped) {
+			t.Errorf("grpc Serve: %v", err)
+		}
+	})
 
 	dial := func(context.Context, string) (net.Conn, error) { return lis.Dial() }
 	conn, err := grpc.NewClient("passthrough:///bufnet",
 		grpc.WithContextDialer(dial),
 		grpc.WithTransportCredentials(insecure.NewCredentials()))
 	require.NoError(t, err)
-
 	t.Cleanup(func() {
 		if err := conn.Close(); err != nil {
 			t.Logf("grpc client Close: %v", err)
-		}
-		srv.Stop()
-		if err := <-serveErr; err != nil && !errors.Is(err, grpc.ErrServerStopped) {
-			t.Errorf("grpc Serve: %v", err)
 		}
 	})
 	return servicepb.NewEchoClient(conn), srv
