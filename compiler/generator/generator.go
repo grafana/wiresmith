@@ -71,6 +71,12 @@ type Generator struct {
 	// `(wiresmith.options.jsontag)`. Resolved alongside pointerExt; consulted
 	// by tag emission to override the default `json:"..."` struct tag.
 	jsontagExt protoreflect.FieldDescriptor
+
+	// customtypeExt is the linked extension descriptor for
+	// `(wiresmith.options.customtype)`. Resolved alongside pointerExt and
+	// consulted by fieldType()/goFieldType() to swap in a user-supplied Go
+	// type for bytes/string fields.
+	customtypeExt protoreflect.FieldDescriptor
 }
 
 // FileGenerator collects emitted code for one proto source file. It owns
@@ -135,6 +141,10 @@ type FileGenerator struct {
 	// jsontagExt is the cached jsontag-option extension descriptor, plumbed
 	// through from the parent Generator alongside pointerExt.
 	jsontagExt protoreflect.FieldDescriptor
+
+	// customtypeExt is the cached customtype-option extension descriptor,
+	// plumbed through from the parent Generator alongside pointerExt.
+	customtypeExt protoreflect.FieldDescriptor
 
 	// compareBody / compareImports hold a second companion `_compare.pb.go`
 	// file: just the per-message Compare(other interface{}) int methods.
@@ -301,6 +311,12 @@ func (g *Generator) Generate(ctx context.Context) error {
 		return err
 	}
 	if err := g.validateJsontagOptions(results); err != nil {
+		return err
+	}
+	if err := g.resolveCustomtypeExtension(results); err != nil {
+		return err
+	}
+	if err := g.validateCustomtypeOptions(results); err != nil {
 		return err
 	}
 	if err := g.validateNoValueCycles(results); err != nil {
@@ -576,6 +592,7 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 		fileVarName:    sanitizeFileVarName(fd.Path()),
 		pointerExt:     g.pointerExt,
 		jsontagExt:     g.jsontagExt,
+		customtypeExt:  g.customtypeExt,
 	}
 
 	// Hot-path emitters target the main .pb.go: structs, oneof variants,

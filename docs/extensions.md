@@ -110,3 +110,64 @@ The validation source of truth is `validateJsontagOptions` in `compiler/generato
 ### Worked example
 
 [`proto/basic/jsontag.proto`](../proto/basic/jsontag.proto) exercises the option across scalar, message, repeated, map, and the `"-"` opt-out, with an unannotated field as the control showing the default `json:"<proto_name>,omitempty"` shape is unaffected.
+
+## `(wiresmith.options.customtype) = "import/path.TypeName"`
+
+The customtype option replaces the generated Go field type with a user-supplied type that owns its wire encoding. The on-wire layout is unchanged — the field still occupies the same number and is encoded length-delimited; only the Go-side representation differs.
+
+```proto
+message LabelSet {
+  bytes  pairs     = 1 [(wiresmith.options.customtype) = "github.com/myorg/pkg.LabelPairs"];
+  string tenant_id = 2 [(wiresmith.options.customtype) = "github.com/myorg/pkg.TenantID"];
+}
+```
+
+```go
+type LabelSet struct {
+    Pairs    pkg.LabelPairs `protobuf:"..."`
+    TenantId pkg.TenantID   `protobuf:"..."`
+}
+```
+
+The import is registered automatically — users don't need to vendor anything beyond their own type. The value accepts two shapes:
+
+- `"import/path.TypeName"` — fully qualified; the generator pulls in the import with an explicit alias derived from the path's base name (`bar` for `github.com/foo/bar`) and qualifies the type via that alias (`bar.TypeName`). The path base must be a valid Go identifier; it does *not* need to match the imported package's `package` declaration, so module major-version layouts (`.../foo/v2`) and packages whose directory name differs from their declared name are both supported. If two customtype paths share the same base name (or the base collides with another import in the same file), the second alias gets a numeric suffix (`bar1`, `bar2`, …) so the generated file always compiles.
+- `"TypeName"` — same-package shorthand for types defined in the same Go package as the generated file (no import is emitted).
+
+### The CustomMarshaler interface
+
+The user-supplied type must implement the wiresmith reverse-write shape:
+
+```go
+type CustomMarshaler interface {
+    SizeWiresmith() int
+    MarshalWiresmith(buf []byte) (int, error)
+    UnmarshalWiresmith(buf []byte) error
+    EqualWiresmith(other any) bool
+    CompareWiresmith(other any) int    // -1/0/+1 like bytes.Compare
+}
+```
+
+- `SizeWiresmith()` returns the encoded payload length (the wrapper supplies the tag + varint length around it). The generator skips the field entirely when this returns `0`, matching proto3 omit-default semantics on plain bytes/string.
+- `MarshalWiresmith(buf)` writes forward into `buf`, which is sized to exactly `SizeWiresmith()` bytes by the generator before the call. Reverse-write happens at the proto-envelope level; the customtype only sees a contiguous slice.
+- `UnmarshalWiresmith(buf)` is invoked with the exact payload bytes the decoder sliced out of the wire input. Pointer-receiver implementations are required for fields backed by struct types; value-aliased primitive types (e.g. `type T string`) can use the same shape via `*T`.
+- `EqualWiresmith(other any)` is consulted from the generated `Equal()` method. Implementations type-assert and return `false` on mismatch.
+- `CompareWiresmith(other any) int` is consulted from the generated `Compare()` method (added by #100). Returns -1/0/+1 like `bytes.Compare` / `strings.Compare`. Implementations type-assert and return a sentinel (commonly `-1`) on type mismatch so the wrapper's Compare stays total.
+
+The interface deliberately uses wiresmith-specific method names so a caller can't accidentally satisfy it with gogoproto's `Marshal()` / `Unmarshal()` shape — those have incompatible signatures.
+
+### Where it applies (v1)
+
+Allowed: singular `bytes` and `string` fields.
+
+Rejected (combined compile-time error from `validateCustomtypeOptions`):
+
+- Non-bytes/non-string scalars, enums, and message fields.
+- Map fields, oneof variants, repeated fields, and proto3 `optional` fields.
+- Malformed values: empty string, leading-digit type name, embedded whitespace, etc.
+
+Customtype-on-message is fundamentally different plumbing (the user type owns the entire submessage wire encoding) and is out of scope for v1.
+
+### Worked example
+
+[`proto/basic/customtype.proto`](../proto/basic/customtype.proto) annotates a bytes and a string field with customtypes defined in [`test/customtypes/customtypes.go`](../test/customtypes/customtypes.go), with unannotated controls of each kind to demonstrate the swap is local to the annotated field.

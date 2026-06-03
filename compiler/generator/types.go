@@ -74,6 +74,32 @@ func (it *ImportTracker) addImport(importPath, alias string) string {
 	return it.register(importPath, alias, path.Base(importPath))
 }
 
+// addExplicitAliasImport registers importPath with a collision-free explicit
+// alias derived from path.Base, and returns that alias for use as the Go
+// qualifier in generated code. Unlike addImport, the alias is always spelled
+// out in the emitted import block — for paths supplied by users (e.g.
+// (wiresmith.options.customtype)) we can't trust that the upstream package's
+// `package` declaration matches path.Base (think module major-version paths
+// like `.../foo/v2`, or any package whose directory name differs from its
+// declared name), so an unaliased import could bind a different identifier
+// than the generated code references.
+//
+// The empty naturalName triggers emit_header's "always spell out the alias"
+// branch (i.alias != i.natural), and effectiveName falls back to the alias
+// for aliasInUse comparisons against later imports.
+func (it *ImportTracker) addExplicitAliasImport(importPath string) string {
+	if e, ok := it.imports[importPath]; ok && e.requested {
+		return e.alias
+	}
+	selfName := it.resolvePkgName(it.selfPkg)
+	alias := it.uniqueAlias(path.Base(importPath), importPath, selfName)
+	it.imports[importPath] = importEntry{
+		alias:     alias,
+		requested: true,
+	}
+	return alias
+}
+
 func (it *ImportTracker) register(importPath, alias, naturalName string) string {
 	if e, ok := it.imports[importPath]; ok && e.requested {
 		return e.alias

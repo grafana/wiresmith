@@ -303,3 +303,51 @@ func TestAddImportIdempotent(t *testing.T) {
 		t.Errorf("expected 1 requested import, got %d", requested)
 	}
 }
+
+// TestAddExplicitAliasImport pins the customtype-import flow: the alias is
+// derived from path.Base, disambiguated against existing imports, and the
+// entry is emitted with an explicit alias (so an unaliased import binding to
+// the upstream package's declared name — which we don't know — can't shadow
+// the qualifier the generator wrote into the file).
+func TestAddExplicitAliasImport(t *testing.T) {
+	it := newImportTracker("mod", "self.pkg", nil)
+
+	// First registration: alias matches path.Base.
+	got := it.addExplicitAliasImport("example.com/foo/bar")
+	if got != "bar" {
+		t.Errorf("first: got %q, want %q", got, "bar")
+	}
+
+	// Same path: returns the cached alias.
+	got = it.addExplicitAliasImport("example.com/foo/bar")
+	if got != "bar" {
+		t.Errorf("idempotent: got %q, want %q", got, "bar")
+	}
+
+	// Different path with the same base: gets a numeric suffix so both
+	// qualifiers stay distinct in the generated file.
+	got = it.addExplicitAliasImport("example.com/other/bar")
+	if got != "bar1" {
+		t.Errorf("base collision: got %q, want %q", got, "bar1")
+	}
+
+	// Module major-version layout (`/v2`) is the motivating case: the
+	// upstream package's `package` declaration is usually `foo`, not `v2`,
+	// so an unaliased import would bind a different identifier than the
+	// generator writes. Explicit alias is required for the generated file
+	// to compile.
+	got = it.addExplicitAliasImport("example.com/foo/v2")
+	if got != "v2" {
+		t.Errorf("v2 layout: got %q, want %q", got, "v2")
+	}
+
+	// The entry must carry an explicit alias and an empty naturalName so
+	// emit_header keeps the alias spelled out (i.alias != i.natural).
+	e, ok := it.imports["example.com/foo/v2"]
+	if !ok {
+		t.Fatal("v2 entry missing")
+	}
+	if e.alias != "v2" || e.naturalName != "" || !e.requested {
+		t.Errorf("v2 entry: %+v, want {alias:v2 naturalName:\"\" requested:true}", e)
+	}
+}
