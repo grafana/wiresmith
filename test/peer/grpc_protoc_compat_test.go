@@ -131,7 +131,7 @@ func newEchoHarness(t *testing.T) (servicepb.EchoClient, *grpc.Server) {
 		}
 	})
 
-	dial := func(context.Context, string) (net.Conn, error) { return lis.Dial() }
+	dial := func(ctx context.Context, _ string) (net.Conn, error) { return lis.DialContext(ctx) }
 	conn, err := grpc.NewClient("passthrough:///bufnet",
 		grpc.WithContextDialer(dial),
 		grpc.WithTransportCredentials(insecure.NewCredentials()))
