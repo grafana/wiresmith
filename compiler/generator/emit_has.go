@@ -77,7 +77,7 @@ func presenceSet(bitIndex int) string {
 func (fg *FileGenerator) emitHasMethods(md protoreflect.MessageDescriptor) {
 	name := goMessageTypeName(md)
 	for _, pf := range fg.fieldsForPresence(md) {
-		goName := snakeToPascal(string(pf.fd.Name()))
+		goName := fg.goFieldName(pf.fd)
 		fmt.Fprintf(fg.body, "func (m *%s) Has%s() bool {\n", name, goName)
 		fmt.Fprintf(fg.body, "\tif m == nil {\n\t\treturn false\n\t}\n")
 		fmt.Fprintf(fg.body, "\treturn %s\n", presenceCheck(pf.bitIndex))

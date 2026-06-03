@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package basic.customname.v1;
+
+option go_package = "wiresmith/gen/basic/customname/v1";
+
+import "wiresmith/options.proto";
+
+// Leaf is referenced by the message-field cases below.
+message Leaf {
+  int64  id   = 1;
+  string name = 2;
+}
+
+// CustomNameHolder exercises (wiresmith.options.customname) across every
+// field kind the bead's acceptance criteria call out: scalar, message,
+// repeated, and oneof variant. An unannotated control field shows the
+// default snake_to_PascalCase conversion still applies elsewhere.
+message CustomNameHolder {
+  // Initialism preservation — the default conversion would produce
+  // `BlockId`, and Tempo's `BlockMeta.BlockID` callers need the upper-D.
+  string block_id = 1 [(wiresmith.options.customname) = "BlockID"];
+
+  // Message field override.
+  Leaf head_leaf = 2 [(wiresmith.options.customname) = "HeadLeaf"];
+
+  // Repeated scalar override.
+  repeated int32 byte_sizes = 3 [(wiresmith.options.customname) = "ByteSizes"];
+
+  // Oneof variant override — the wrapper type stays
+  // CustomNameHolder_TenantId (anchored to the schema), but the variant's
+  // field name and getter become `Tenant` / `GetTenant`.
+  oneof identity {
+    string tenant_id = 4 [(wiresmith.options.customname) = "Tenant"];
+    int64  numeric_id = 5;
+  }
+
+  // Control: no annotation, keeps the default `PlainField`.
+  string plain_field = 6;
+}

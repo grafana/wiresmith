@@ -56,4 +56,22 @@ extend google.protobuf.FieldOptions {
   // or just "TypeName" when the user-supplied type lives in the same Go
   // package as the generated code.
   optional string customtype = 50032;
+
+  // customname overrides the generated Go field name and all derived
+  // method names (Get<Name>, Has<Name>, oneof wrapper-struct field). Used
+  // to preserve initialisms like "ID" / "URL" that the default
+  // snake_case -> PascalCase conversion mangles to "Id" / "Url".
+  //
+  //   string block_id = 1 [(wiresmith.options.customname) = "BlockID"];
+  //   //  ->  BlockID string `protobuf:"..."`
+  //   //      func (m *Foo) GetBlockID() string { ... }
+  //
+  // Wire format is unchanged. The wrapper type name for oneof variants is
+  // NOT renamed — it stays Foo_<ProtoFieldName> so type identity is
+  // anchored to the schema, not the Go API surface.
+  //
+  // Applies to every field kind. Values must be valid exported Go
+  // identifiers (start with an uppercase letter). See
+  // compiler/generator/option_customname.go.
+  optional string customname = 50033;
 }

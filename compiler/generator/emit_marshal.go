@@ -73,7 +73,7 @@ func (fg *FileGenerator) emitMarshal(md protoreflect.MessageDescriptor) {
 }
 
 func (fg *FileGenerator) emitFieldMarshalReverse(fd protoreflect.FieldDescriptor) {
-	goName := snakeToPascal(string(fd.Name()))
+	goName := fg.goFieldName(fd)
 	access := "m." + goName
 	num := protowire.Number(fd.Number())
 
@@ -95,7 +95,7 @@ func (fg *FileGenerator) reverseTag(indent string, num protowire.Number, wt prot
 // is written normally; when it is empty but the bitmap says it was present on
 // the wire, a zero-length field (tag + varint 0) is emitted.
 func (fg *FileGenerator) emitMessageMarshalWithPresence(fd protoreflect.FieldDescriptor, bitIndex int) {
-	goName := snakeToPascal(string(fd.Name()))
+	goName := fg.goFieldName(fd)
 	access := "m." + goName
 	num := protowire.Number(fd.Number())
 
@@ -130,7 +130,7 @@ func (fg *FileGenerator) emitOneofMarshalReverse(md protoreflect.MessageDescript
 
 	for _, fd := range variants {
 		variantName := oneofVariantName(md, fd)
-		fieldName := snakeToPascal(string(fd.Name()))
+		fieldName := fg.goFieldName(fd)
 		access := "v." + fieldName
 		num := protowire.Number(fd.Number())
 
