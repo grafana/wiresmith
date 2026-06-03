@@ -23,7 +23,7 @@ func TestCustomnameOption_RejectsLowercaseFirst(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 import "wiresmith/options.proto";
 message M {
   string x = 1 [(wiresmith.options.customname) = "lowercase"];
@@ -36,7 +36,7 @@ func TestCustomnameOption_RejectsEmpty(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 import "wiresmith/options.proto";
 message M {
   string x = 1 [(wiresmith.options.customname) = ""];
@@ -49,7 +49,7 @@ func TestCustomnameOption_RejectsInvalidCharacter(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 import "wiresmith/options.proto";
 message M {
   string x = 1 [(wiresmith.options.customname) = "Bad-Name"];
@@ -62,7 +62,7 @@ func TestCustomnameOption_AcceptsValidIdentifier(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 import "wiresmith/options.proto";
 message M {
   string x = 1 [(wiresmith.options.customname) = "BlockID"];
@@ -83,7 +83,7 @@ func TestCustomnameOption_AcceptsNonASCIIUppercaseStart(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 import "wiresmith/options.proto";
 message M {
   string x = 1 [(wiresmith.options.customname) = "Σigma"];
@@ -102,7 +102,7 @@ func TestCustomnameOption_RejectsReservedMethodName(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 import "wiresmith/options.proto";
 message M {
   string x = 1 [(wiresmith.options.customname) = "Reset"];
@@ -119,7 +119,7 @@ func TestCustomnameOption_RejectsDuplicateGoName(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 import "wiresmith/options.proto";
 message M {
   string foo = 1;
@@ -135,7 +135,7 @@ func TestCustomnameOption_RejectsTwoCustomnameCollision(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 import "wiresmith/options.proto";
 message M {
   string a = 1 [(wiresmith.options.customname) = "Same"];
@@ -152,7 +152,7 @@ func TestCustomnameOption_AcceptsAllFieldKinds(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 import "wiresmith/options.proto";
 message Inner {}
 message M {

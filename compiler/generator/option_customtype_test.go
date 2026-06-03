@@ -25,7 +25,7 @@ func TestCustomtypeOption_RejectsInt32(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 import "wiresmith/options.proto";
 message M {
   int32 x = 1 [(wiresmith.options.customtype) = "example.com/foo.Bar"];
@@ -38,7 +38,7 @@ func TestCustomtypeOption_RejectsMessage(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 import "wiresmith/options.proto";
 message Inner {}
 message M {
@@ -52,7 +52,7 @@ func TestCustomtypeOption_RejectsRepeated(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 import "wiresmith/options.proto";
 message M {
   repeated bytes x = 1 [(wiresmith.options.customtype) = "example.com/foo.Bar"];
@@ -65,7 +65,7 @@ func TestCustomtypeOption_RejectsOneofVariant(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 import "wiresmith/options.proto";
 message M {
   oneof choice {
@@ -80,7 +80,7 @@ func TestCustomtypeOption_RejectsOptional(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 import "wiresmith/options.proto";
 message M {
   optional bytes x = 1 [(wiresmith.options.customtype) = "example.com/foo.Bar"];
@@ -93,7 +93,7 @@ func TestCustomtypeOption_RejectsMalformedValue(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 import "wiresmith/options.proto";
 message M {
   bytes x = 1 [(wiresmith.options.customtype) = "github.com/foo/bar."];

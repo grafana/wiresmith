@@ -211,11 +211,17 @@ func (fg *FileGenerator) emitRegistration(fd protoreflect.FileDescriptor) {
 	// Imports for reflect file. DROPPED vs the old descriptorpb path:
 	// google.golang.org/protobuf/proto, .../reflect/protodesc,
 	// .../reflect/protoregistry, .../types/descriptorpb. ADDED: "unsafe".
+	//
+	// protohelpers is NOT requested here even though the reflect file
+	// usually imports it: emit_protoreflect.go registers it per-message,
+	// and an enums-only file emits no ProtoReflect methods and therefore
+	// must not see protohelpers in its import block (would fail to
+	// compile as "imported and not used"). Letting the per-message
+	// emitter own the import keeps the two in sync automatically.
 	fg.reflectImports.addImport("reflect", "")
 	fg.reflectImports.addImport("unsafe", "")
 	fg.reflectImports.addImport("google.golang.org/protobuf/reflect/protoreflect", "")
 	fg.reflectImports.addImport("google.golang.org/protobuf/runtime/protoimpl", "")
-	fg.reflectImports.addImport(protohelpersImport, "")
 }
 
 // emitGoTypesAndDepIdxs emits the two codegen-time slices that

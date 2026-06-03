@@ -110,7 +110,7 @@ func TestSerializeFileDescriptor_StripsServices(t *testing.T) {
 	fd := compileProtoFixture(t, `
 syntax = "proto3";
 package test.v1;
-option go_package = "wiresmith/gen/test/v1";
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 message Req { string id = 1; }
 message Resp { string id = 1; }
 service Svc {

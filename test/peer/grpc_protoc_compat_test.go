@@ -35,7 +35,7 @@ import (
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/test/bufconn"
 
-	servicepb "wiresmith/gen/basic/service/v1"
+	servicepb "github.com/grafana/wiresmith/gen/basic/service/v1"
 )
 
 const bufSize = 1024 * 1024

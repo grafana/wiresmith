@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	cn "wiresmith/gen/basic/customname/v1"
+	cn "github.com/grafana/wiresmith/gen/basic/customname/v1"
 )
 
 // TestCustomName_StructFieldNames pins the Go-side field identifiers. The

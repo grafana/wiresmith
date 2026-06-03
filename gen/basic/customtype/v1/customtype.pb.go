@@ -5,18 +5,18 @@ package v1
 
 import (
 	"fmt"
+	"github.com/grafana/wiresmith/protohelpers"
+	customtypes "github.com/grafana/wiresmith/test/customtypes"
 	"google.golang.org/protobuf/encoding/protowire"
 	"io"
 	"math"
-	"wiresmith/gen/protohelpers"
-	customtypes "wiresmith/test/customtypes"
 )
 
 // CustomTypeHolder exercises (wiresmith.options.customtype) on the two field
 // kinds the v1 scope covers: bytes and string. A control field of each kind
 // without the option demonstrates that the swap is local.
 //
-// LabelPairs and TenantID live in wiresmith/test/customtypes and implement
+// LabelPairs and TenantID live in github.com/grafana/wiresmith/test/customtypes and implement
 // the wiresmith CustomMarshaler shape (Size/Marshal/Unmarshal/Equal). The
 // wire format is unchanged from a plain bytes/string field.
 type CustomTypeHolder struct {
