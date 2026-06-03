@@ -120,10 +120,6 @@ func (it *ImportTracker) resolvePkgName(protoPkg string) string {
 	return it.dests[protoPkg].pkgName
 }
 
-func (it *ImportTracker) addProtoImport(protoPkg string) string {
-	return it.addProtoImportFor(protoPkg, "")
-}
-
 // addProtoImportFor registers the import for a cross-package proto reference,
 // preferring the per-file destination map when fdPath is supplied. The
 // per-file lookup is what disambiguates `google.protobuf` references that
@@ -132,8 +128,10 @@ func (it *ImportTracker) addProtoImport(protoPkg string) string {
 // shadow every later one.
 //
 // fdPath="" preserves the legacy "lookup by proto package only" behavior
-// for call sites that don't have a FileDescriptor in hand (test code, or
-// callers that intentionally want the per-protoPkg fallback).
+// for call sites that don't have a FileDescriptor in hand. All callers
+// currently route through goMessageType / goEnumType, which both supply
+// fd.Path() — the empty-string branch is kept as a defensive fallback for
+// any future caller that constructs descriptors directly.
 func (it *ImportTracker) addProtoImportFor(protoPkg, fdPath string) string {
 	selfName := it.resolvePkgName(it.selfPkg)
 	var dest goDest

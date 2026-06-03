@@ -168,8 +168,8 @@ func TestStdtime_CrossLibraryWireFormat(t *testing.T) {
 // `roundTrip`'s Equal-vs-assert.Equal consistency check too.
 func TestStdtime_Equal(t *testing.T) {
 	a := &st.StdtimeHolder{Created: time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)}
-	// time.Unix(1735689600, 0) is January 1, 2025 UTC — same instant via
-	// different construction.
+	// time.Unix(1767225600, 0) is January 1, 2026 UTC — same instant as
+	// `a`, constructed via a different path so Equal must agree.
 	b := &st.StdtimeHolder{Created: time.Unix(1767225600, 0).UTC()}
 	assert.True(t, a.Equal(b))
 
