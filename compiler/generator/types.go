@@ -46,6 +46,7 @@ var reservedStdlibImports = []string{
 	"math",
 	"reflect",
 	"strconv",
+	"time",
 	"unsafe",
 	"google.golang.org/protobuf/encoding/protowire",
 	protohelpersImport,
@@ -133,7 +134,12 @@ func (it *ImportTracker) register(importPath, alias, naturalName string) string 
 // the downstream "imported and not used" / "undefined identifier"
 // compiler error surface where the bad reference is emitted.
 func (it *ImportTracker) addProtoImport(fdPath string) string {
-	dest := it.destinations[fdPath]
+	dest, ok := it.destinations[fdPath]
+	if !ok || dest.importPath == "" {
+		// Bail before register() — otherwise we'd insert an empty-key
+		// importEntry and emit a literal `import ""` block.
+		return ""
+	}
 
 	// Prefer the destination's declared pkgName as the local alias so the
 	// generated code reads naturally. On collision (with our own pkg name

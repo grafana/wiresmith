@@ -351,3 +351,26 @@ func TestAddExplicitAliasImport(t *testing.T) {
 		t.Errorf("v2 entry: %+v, want {alias:v2 naturalName:\"\" requested:true}", e)
 	}
 }
+
+// TestAddProtoImportMissingDestination pins the empty-alias contract on a
+// destinations miss: an unregistered fd.Path() lookup returns "" without
+// registering an `import ""` entry. Without the guard the zero-value
+// goDest would land in the imports map keyed by the empty importPath and
+// emitHeader would write a literal `import ""` block.
+func TestAddProtoImportMissingDestination(t *testing.T) {
+	it := newImportTracker("mod", goDest{pkgName: "selfName"}, map[string]goDest{
+		"known/known.proto": {importPath: "example.com/known", pkgName: "known", protoPkg: "k.v1"},
+	})
+
+	if got := it.addProtoImport("missing.proto"); got != "" {
+		t.Errorf("missing destination: got alias %q, want empty", got)
+	}
+	if _, registered := it.imports[""]; registered {
+		t.Error("missing destination must not register an empty-path import entry")
+	}
+
+	// Sanity: known destinations still go through the normal path.
+	if got := it.addProtoImport("known/known.proto"); got == "" {
+		t.Error("known destination must produce a non-empty alias")
+	}
+}
