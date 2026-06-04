@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package basic.stdtime.v1;
+
+option go_package = "github.com/grafana/wiresmith/gen/basic/stdtime/v1";
+
+import "wiresmith/options.proto";
+import "google/protobuf/timestamp.proto";
+
+// StdtimeHolder exercises (wiresmith.options.stdtime) on a singular
+// google.protobuf.Timestamp field. The annotated field is emitted as a
+// stdlib `time.Time`; the on-wire format is still the standard Timestamp
+// sub-message envelope.
+//
+// `name` and `version` are stock scalar controls — they prove the stdtime
+// substitution is local to the annotated field and that the surrounding
+// struct shape is unchanged.
+message StdtimeHolder {
+  string name    = 1;
+  uint64 version = 2;
+
+  // Generated Go: Created time.Time
+  google.protobuf.Timestamp created = 3 [(wiresmith.options.stdtime) = true];
+}

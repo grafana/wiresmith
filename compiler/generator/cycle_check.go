@@ -123,7 +123,7 @@ func (g *Generator) isValueRecursionEdge(fd protoreflect.FieldDescriptor) bool {
 	if fd.IsList() {
 		return false
 	}
-	if hasPointerOption(g.pointerExt, fd) {
+	if opt := findOption[*pointerOption](g.options); opt != nil && opt.Has(fd) {
 		return false
 	}
 	return true

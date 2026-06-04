@@ -74,4 +74,26 @@ extend google.protobuf.FieldOptions {
   // identifiers (start with an uppercase letter). See
   // compiler/generator/option_customname.go.
   optional string customname = 50033;
+
+  // stdtime = true emits a `google.protobuf.Timestamp` field as a stdlib
+  // `time.Time` value instead of a generated `*Timestamp` message:
+  //
+  //   google.protobuf.Timestamp created = 1 [(wiresmith.options.stdtime) = true];
+  //   //  -> Created time.Time `protobuf:"..."`
+  //
+  // The on-wire format is unchanged — the value is still encoded as a
+  // length-delimited Timestamp sub-message with int64 seconds (field 1) and
+  // int32 nanos (field 2). Decoded times are normalised to UTC because UTC is
+  // the canonical protobuf Timestamp timezone.
+  //
+  // Presence semantics follow gogoproto's stdtime: the Go zero `time.Time{}`
+  // (January 1, year 1 UTC) is treated as "not set" and skipped on marshal.
+  // The Unix epoch (1970-01-01, `time.Unix(0, 0).UTC()`) is *not* the same
+  // value as `time.Time{}` and round-trips as an explicit empty Timestamp
+  // payload.
+  //
+  // v1 scope: only valid on singular `google.protobuf.Timestamp` fields.
+  // Map, oneof, repeated, optional, and (wiresmith.options.pointer) are
+  // rejected — they need separate plumbing and are tracked in follow-up beads.
+  optional bool stdtime = 50034;
 }

@@ -6,63 +6,104 @@ import (
 	"unicode"
 
 	"github.com/bufbuild/protocompile/linker"
-	"google.golang.org/protobuf/proto"
+	"github.com/grafana/wiresmith/compiler/types"
 	"google.golang.org/protobuf/reflect/protoreflect"
-	"google.golang.org/protobuf/types/descriptorpb"
-	"google.golang.org/protobuf/types/dynamicpb"
 )
 
 // customtypeExtensionName is the fully qualified name of the customtype
 // extension defined in the embedded wiresmith/options.proto.
 const customtypeExtensionName = "wiresmith.options.customtype"
 
-// resolveCustomtypeExtension caches the linked extension descriptor on the
-// Generator. Mirrors resolvePointerExtension; runs once per Generate.
-func (g *Generator) resolveCustomtypeExtension(results linker.Files) error {
+// customtypeOption implements FieldOption for `(wiresmith.options.customtype)`.
+// The user-supplied "import/path.TypeName" string replaces the Go-side
+// field type with an opaque type that owns its wire encoding via the
+// Size/Marshal/Unmarshal/Equal/Compare-Wiresmith interface.
+type customtypeOption struct {
+	ext protoreflect.FieldDescriptor
+}
+
+func (*customtypeOption) Name() string                               { return customtypeExtensionName }
+func (o *customtypeOption) Resolve(ext protoreflect.FieldDescriptor) { o.ext = ext }
+
+// Value returns the raw `(wiresmith.options.customtype)` string for fd plus
+// a presence boolean. Empty string with `ok=true` is not a valid placement
+// and is rejected by Validate; callers below use the bool to skip the
+// option entirely when the field is unannotated.
+func (o *customtypeOption) Value(fd protoreflect.FieldDescriptor) (string, bool) {
+	return stringOption(o.ext, fd)
+}
+
+// Validate rejects invalid placements of customtype.
+//
+// v1 scope: only singular `bytes` and `string` fields. Map values, oneof
+// variants, repeated, optional, scalar non-bytes/string, message, and enum
+// fields are all rejected.
+func (o *customtypeOption) Validate(g *Generator, results linker.Files) error {
+	if o.ext == nil {
+		return nil
+	}
+	var errs []string
 	for _, fd := range results {
-		if fd.Path() != embeddedOptionsPath {
+		if isInternalSchemaFile(fd) {
 			continue
 		}
-		exts := fd.Extensions()
-		for i := 0; i < exts.Len(); i++ {
-			x := exts.Get(i)
-			if string(x.FullName()) == customtypeExtensionName {
-				g.customtypeExt = x
-				return nil
+		walkFields(fd, func(field protoreflect.FieldDescriptor) {
+			v, ok := o.Value(field)
+			if !ok {
+				return
 			}
-		}
+			if reason := customtypeOptionRejection(field, v); reason != "" {
+				errs = append(errs, fmt.Sprintf("%s: field %q: %s", fd.Path(), field.FullName(), reason))
+			}
+		})
 	}
-	return fmt.Errorf("internal error: extension %q not found in compiled results — wiresmith/options.proto missing or malformed", customtypeExtensionName)
+	return combinedOptionError(customtypeExtensionName, "placement", errs)
 }
 
-// customtypeValue returns the raw `(wiresmith.options.customtype)` string for
-// fd plus a presence boolean. Empty string with `ok=true` is not a valid
-// placement and is rejected by validateCustomtypeOptions; callers below use
-// the bool to skip the option entirely when the field is unannotated.
-func (fg *FileGenerator) customtypeValue(fd protoreflect.FieldDescriptor) (string, bool) {
-	return customtypeValue(fg.customtypeExt, fd)
+// FieldType returns a CustomType wrapper for valid customtype annotations.
+// Registers the user-supplied import (if any) under an explicit alias as a
+// side effect so the marshal/unmarshal emission and the struct-field
+// declaration reach the user's package via the same identifier.
+func (o *customtypeOption) FieldType(fg *FileGenerator, fd protoreflect.FieldDescriptor) (types.FieldType, bool) {
+	v, ok := o.Value(fd)
+	if !ok {
+		return nil, false
+	}
+	if fd.Kind() != protoreflect.BytesKind && fd.Kind() != protoreflect.StringKind {
+		return nil, false
+	}
+	if fd.IsMap() || fd.IsList() || fd.HasOptionalKeyword() || isRealOneof(fd) {
+		return nil, false
+	}
+	importPath, _, err := parseCustomtypeValue(v)
+	if err != nil {
+		return nil, false
+	}
+	if importPath != "" {
+		fg.imports.addExplicitAliasImport(importPath)
+	}
+	return &types.CustomType{}, true
 }
 
-func customtypeValue(ext protoreflect.FieldDescriptor, fd protoreflect.FieldDescriptor) (string, bool) {
-	if ext == nil {
+// GoFieldType resolves the customtype value to its Go type expression
+// (`alias.TypeName` for an external type, `TypeName` for a same-package
+// type) and registers the supporting import. Validate has rejected
+// malformed values at this point so the parse-error path is purely
+// defensive against direct descriptor construction in tests.
+func (o *customtypeOption) GoFieldType(fg *FileGenerator, fd protoreflect.FieldDescriptor) (string, bool) {
+	v, ok := o.Value(fd)
+	if !ok {
 		return "", false
 	}
-	opts, ok := fd.Options().(*descriptorpb.FieldOptions)
-	if !ok || opts == nil {
+	importPath, typeName, err := parseCustomtypeValue(v)
+	if err != nil {
 		return "", false
 	}
-	xd, ok := ext.(protoreflect.ExtensionTypeDescriptor)
-	var xt protoreflect.ExtensionType
-	if ok {
-		xt = xd.Type()
-	} else {
-		xt = dynamicpb.NewExtensionType(ext)
+	if importPath == "" {
+		return typeName, true
 	}
-	if !proto.HasExtension(opts, xt) {
-		return "", false
-	}
-	v, _ := proto.GetExtension(opts, xt).(string)
-	return v, true
+	alias := fg.imports.addExplicitAliasImport(importPath)
+	return alias + "." + typeName, true
 }
 
 // parseCustomtypeValue splits a value like "github.com/foo/bar.LabelAdapter"
@@ -155,43 +196,6 @@ func validateGoIdentifier(s string) error {
 		}
 	}
 	return nil
-}
-
-// validateCustomtypeOptions walks every field in every result file and
-// rejects invalid placements of `(wiresmith.options.customtype)`. Runs after
-// resolveCustomtypeExtension and before any emit pass.
-//
-// v1 scope: only singular `bytes` and `string` fields. Map values, oneof
-// variants, repeated, optional, scalar non-bytes/string, message, and enum
-// fields are all rejected. Same combined-error shape as
-// validatePointerOptions so one bad fixture lists every offending field.
-func (g *Generator) validateCustomtypeOptions(results linker.Files) error {
-	if g.customtypeExt == nil {
-		return nil
-	}
-	var errs []string
-	for _, fd := range results {
-		if isInternalSchemaFile(fd) {
-			continue
-		}
-		walkFields(fd, func(field protoreflect.FieldDescriptor) {
-			v, ok := customtypeValue(g.customtypeExt, field)
-			if !ok {
-				return
-			}
-			if reason := customtypeOptionRejection(field, v); reason != "" {
-				errs = append(errs, fmt.Sprintf("%s: field %q: %s", fd.Path(), field.FullName(), reason))
-			}
-		})
-	}
-	if len(errs) == 0 {
-		return nil
-	}
-	out := "invalid (wiresmith.options.customtype) placement:\n"
-	for _, e := range errs {
-		out += "  - " + e + "\n"
-	}
-	return fmt.Errorf("%s", out)
 }
 
 // customtypeOptionRejection returns a human-readable reason if the option is

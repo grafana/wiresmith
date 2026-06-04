@@ -5,78 +5,43 @@ import (
 	"unicode"
 
 	"github.com/bufbuild/protocompile/linker"
-	"google.golang.org/protobuf/proto"
+	"github.com/grafana/wiresmith/compiler/types"
 	"google.golang.org/protobuf/reflect/protoreflect"
-	"google.golang.org/protobuf/types/descriptorpb"
-	"google.golang.org/protobuf/types/dynamicpb"
 )
 
 // customnameExtensionName is the fully qualified name of the customname
 // extension defined in the embedded wiresmith/options.proto.
 const customnameExtensionName = "wiresmith.options.customname"
 
-// resolveCustomnameExtension caches the linked extension descriptor on the
-// Generator. Mirrors resolvePointerExtension.
-func (g *Generator) resolveCustomnameExtension(results linker.Files) error {
-	for _, fd := range results {
-		if fd.Path() != embeddedOptionsPath {
-			continue
-		}
-		exts := fd.Extensions()
-		for i := 0; i < exts.Len(); i++ {
-			x := exts.Get(i)
-			if string(x.FullName()) == customnameExtensionName {
-				g.customnameExt = x
-				return nil
-			}
-		}
-	}
-	return fmt.Errorf("internal error: extension %q not found in compiled results — wiresmith/options.proto missing or malformed", customnameExtensionName)
+// customnameOption implements FieldOption for `(wiresmith.options.customname)`.
+// The user-supplied identifier replaces the snake_to_pascal default for
+// the Go field name, the Get<Name> / Has<Name> accessors, the oneof
+// wrapper-struct slot, and every cross-reference in emit_*.go. The option
+// does not influence FieldType / GoFieldType — those keep delegating to
+// the default registry pass.
+type customnameOption struct {
+	ext protoreflect.FieldDescriptor
 }
 
-// customnameValue returns the user-supplied Go identifier for fd plus a
-// presence boolean. Validation has already rejected malformed values at
-// this point, so callers can use the string verbatim.
-func (fg *FileGenerator) customnameValue(fd protoreflect.FieldDescriptor) (string, bool) {
-	return customnameValue(fg.customnameExt, fd)
+func (*customnameOption) Name() string                               { return customnameExtensionName }
+func (o *customnameOption) Resolve(ext protoreflect.FieldDescriptor) { o.ext = ext }
+
+// Value returns the user-supplied Go identifier for fd plus a presence
+// boolean. Validation has already rejected malformed values at this
+// point, so callers can use the string verbatim.
+func (o *customnameOption) Value(fd protoreflect.FieldDescriptor) (string, bool) {
+	return stringOption(o.ext, fd)
 }
 
-func customnameValue(ext protoreflect.FieldDescriptor, fd protoreflect.FieldDescriptor) (string, bool) {
-	if ext == nil {
-		return "", false
-	}
-	opts, ok := fd.Options().(*descriptorpb.FieldOptions)
-	if !ok || opts == nil {
-		return "", false
-	}
-	xd, ok := ext.(protoreflect.ExtensionTypeDescriptor)
-	var xt protoreflect.ExtensionType
-	if ok {
-		xt = xd.Type()
-	} else {
-		xt = dynamicpb.NewExtensionType(ext)
-	}
-	if !proto.HasExtension(opts, xt) {
-		return "", false
-	}
-	v, _ := proto.GetExtension(opts, xt).(string)
-	return v, true
+// FieldType / GoFieldType always return false: customname affects naming,
+// not the field's Go-side type or wire encoding. Satisfies FieldOption so
+// the option can ride the same resolve+validate loop as the others.
+func (*customnameOption) FieldType(*FileGenerator, protoreflect.FieldDescriptor) (types.FieldType, bool) {
+	return nil, false
 }
 
-// goFieldName returns the identifier to use for the Go field, accessor
-// methods (Get<Name>, Has<Name>), oneof wrapper-struct field, and equality
-// comparisons. Replaces every `snakeToPascal(string(fd.Name()))` call site
-// — keeping the lookup in one place means a future renaming rule won't
-// have 17 places to remember.
-//
-// Falls back to the snake-to-PascalCase default when the field has no
-// customname annotation, matching protoc-gen-go's behavior for fields
-// without overrides.
-func (fg *FileGenerator) goFieldName(fd protoreflect.FieldDescriptor) string {
-	if v, ok := fg.customnameValue(fd); ok {
-		return v
-	}
-	return snakeToPascal(string(fd.Name()))
+func (*customnameOption) GoFieldType(*FileGenerator, protoreflect.FieldDescriptor) (string, bool) {
+	return "", false
 }
 
 // reservedCustomnameMethods enumerates the message-level methods the
@@ -104,14 +69,14 @@ var reservedCustomnameMethods = map[string]bool{
 	"Compare":              true,
 }
 
-// validateCustomnameOptions walks every message's fields and rejects
-// customname values that aren't legal exported Go identifiers, that
-// collide with always-generated methods, or that resolve to the same Go
-// name as another field in the same message. Each class of failure would
-// otherwise surface as a confusing `go build` error far from the .proto
-// source; catching it here points back at the offending field.
-func (g *Generator) validateCustomnameOptions(results linker.Files) error {
-	if g.customnameExt == nil {
+// Validate walks every message's fields and rejects customname values
+// that aren't legal exported Go identifiers, that collide with always-
+// generated methods, or that resolve to the same Go name as another field
+// in the same message. Each class of failure would otherwise surface as a
+// confusing `go build` error far from the .proto source; catching it here
+// points back at the offending field.
+func (o *customnameOption) Validate(g *Generator, results linker.Files) error {
+	if o.ext == nil {
 		return nil
 	}
 	var errs []string
@@ -133,10 +98,7 @@ func (g *Generator) validateCustomnameOptions(results linker.Files) error {
 				field := fields.Get(i)
 				if isRealOneof(field) {
 					ooName := snakeToPascal(string(field.ContainingOneof().Name()))
-					if seenOneofs[string(field.ContainingOneof().Name())] {
-						// Each oneof contributes one struct slot —
-						// account for it once across all variants.
-					} else {
+					if !seenOneofs[string(field.ContainingOneof().Name())] {
 						seenOneofs[string(field.ContainingOneof().Name())] = true
 						if prev, dup := usedNames[ooName]; dup {
 							errs = append(errs, fmt.Sprintf("%s: oneof %q: resolved Go name %q collides with %s in the same message", fd.Path(), field.ContainingOneof().FullName(), ooName, prev))
@@ -149,7 +111,7 @@ func (g *Generator) validateCustomnameOptions(results linker.Files) error {
 					// participate in the message-struct collision check —
 					// but it still has to pass syntactic + reserved-name
 					// validation).
-					if v, ok := customnameValue(g.customnameExt, field); ok {
+					if v, ok := o.Value(field); ok {
 						if reason := customnameOptionRejection(v); reason != "" {
 							errs = append(errs, fmt.Sprintf("%s: field %q: %s", fd.Path(), field.FullName(), reason))
 						}
@@ -157,7 +119,7 @@ func (g *Generator) validateCustomnameOptions(results linker.Files) error {
 					continue
 				}
 				resolved := snakeToPascal(string(field.Name()))
-				if v, ok := customnameValue(g.customnameExt, field); ok {
+				if v, ok := o.Value(field); ok {
 					if reason := customnameOptionRejection(v); reason != "" {
 						errs = append(errs, fmt.Sprintf("%s: field %q: %s", fd.Path(), field.FullName(), reason))
 						continue
@@ -172,14 +134,7 @@ func (g *Generator) validateCustomnameOptions(results linker.Files) error {
 			}
 		})
 	}
-	if len(errs) == 0 {
-		return nil
-	}
-	out := "invalid (wiresmith.options.customname) value:\n"
-	for _, e := range errs {
-		out += "  - " + e + "\n"
-	}
-	return fmt.Errorf("%s", out)
+	return combinedOptionError(customnameExtensionName, "value", errs)
 }
 
 // customnameOptionRejection returns a human-readable reason if value is not

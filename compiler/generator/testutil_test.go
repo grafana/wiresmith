@@ -76,15 +76,22 @@ func newFixtureGenerator(t *testing.T, fd protoreflect.FileDescriptor) *FileGene
 // Tests that exercise (wiresmith.options.pointer) MUST use this form.
 func newFixtureGeneratorWith(t *testing.T, fd protoreflect.FileDescriptor, allFiles linker.Files) *FileGenerator {
 	t.Helper()
-	pkg := string(fd.Package())
-	dests := map[string]goDest{
-		pkg: {
-			importPath: "github.com/grafana/wiresmith/gen/test/v1",
-			relDir:     "test/v1",
-			pkgName:    "testv1",
-		},
+	selfDest := goDest{
+		importPath: "github.com/grafana/wiresmith/gen/test/v1",
+		relDir:     "test/v1",
+		pkgName:    "testv1",
 	}
-	var pointerExt, jsontagExt, customnameExt protoreflect.FieldDescriptor
+	destinations := map[string]goDest{
+		fd.Path(): selfDest,
+	}
+	// Build a fresh registry per fixture so each test gets its own option
+	// state (mirrors what Generate does in the real pipeline). Resolve
+	// against the embedded options descriptor when allFiles includes it;
+	// tests that pass a nil allFiles get unbound options, which short-
+	// circuit Has / Value to false — matching the "extension not bound"
+	// shape of the pre-registry helpers.
+	options := newOptionRegistry()
+	var jsontagExt protoreflect.FieldDescriptor
 	for _, f := range allFiles {
 		if f.Path() != embeddedOptionsPath {
 			continue
@@ -92,27 +99,26 @@ func newFixtureGeneratorWith(t *testing.T, fd protoreflect.FileDescriptor, allFi
 		exts := f.Extensions()
 		for i := 0; i < exts.Len(); i++ {
 			x := exts.Get(i)
-			switch string(x.FullName()) {
-			case pointerExtensionName:
-				pointerExt = x
-			case jsontagExtensionName:
+			for _, opt := range options {
+				if opt.Name() == string(x.FullName()) {
+					opt.Resolve(x)
+				}
+			}
+			if string(x.FullName()) == jsontagExtensionName {
 				jsontagExt = x
-			case customnameExtensionName:
-				customnameExt = x
 			}
 		}
 	}
 	return &FileGenerator{
 		fd:             fd,
 		module:         "wiresmith",
-		imports:        newImportTracker("wiresmith", pkg, dests),
+		imports:        newImportTracker("wiresmith", selfDest, destinations),
 		body:           &bytes.Buffer{},
-		reflectImports: newImportTracker("wiresmith", pkg, dests),
+		reflectImports: newImportTracker("wiresmith", selfDest, destinations),
 		reflectBody:    &bytes.Buffer{},
 		fileVarName:    sanitizeFileVarName(fd.Path()),
-		pointerExt:     pointerExt,
+		options:        options,
 		jsontagExt:     jsontagExt,
-		customnameExt:  customnameExt,
 	}
 }
 

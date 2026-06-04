@@ -69,6 +69,12 @@ type goDest struct {
 	importPath string // full Go import path of the destination
 	relDir     string // path relative to OutDir
 	pkgName    string // declared `package` clause in the generated file
+
+	// protoPkg is the source `package` clause of the .proto file this
+	// destination was derived from. Carried alongside the Go-side fields
+	// so the import-alias collision fallback has a stable proto-pkg-
+	// derived alternative to try without re-reading the FileDescriptor.
+	protoPkg string
 }
 
 // destFor returns the canonical destination for fd. The on-disk directory is
@@ -110,7 +116,7 @@ func destForPath(module, outDir, fdPath, protoPkg string, goPackages, overrides 
 	} else if goPkg, ok := goPackages[protoPkg]; ok && goPkg != "" {
 		importPath, pkgName = parseGoPackage(goPkg)
 	}
-	return goDest{importPath: importPath, relDir: relDir, pkgName: pkgName}
+	return goDest{importPath: importPath, relDir: relDir, pkgName: pkgName, protoPkg: protoPkg}
 }
 
 // parseGoPackage parses a go_package option value. The proto3 format is

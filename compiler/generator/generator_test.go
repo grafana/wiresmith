@@ -653,6 +653,25 @@ message Bar { int32 n = 1; }`)
 	if _, err := os.Stat(filepath.Join(outDir, "b", "bar.pb.go")); !os.IsNotExist(err) {
 		t.Errorf("b/bar.pb.go must NOT be emitted (not in Files filter), got err=%v", err)
 	}
+
+	// foo.proto imports bar.proto's Bar message — even though bar.proto is
+	// excluded from emission, foo.pb.go's reference into it must resolve
+	// to a real qualified type, not an empty `.Bar` from an unregistered
+	// destination. Pin the emitted reference so a future regression in
+	// computeDests (skipping destination registration for filtered-out
+	// files) surfaces here instead of as a downstream go-vet failure.
+	foo, err := os.ReadFile(filepath.Join(outDir, "a", "foo.pb.go"))
+	if err != nil {
+		t.Fatalf("reading a/foo.pb.go: %v", err)
+	}
+	wantQualifier := "b.Bar"
+	if !strings.Contains(string(foo), wantQualifier) {
+		t.Errorf("a/foo.pb.go should reference Bar via the b package's import alias (expected %q)\n--- foo.pb.go ---\n%s", wantQualifier, foo)
+	}
+	wantImport := "github.com/grafana/wiresmith/scoped/b"
+	if !strings.Contains(string(foo), wantImport) {
+		t.Errorf("a/foo.pb.go should import %q\n--- foo.pb.go ---\n%s", wantImport, foo)
+	}
 }
 
 // TestGenerateFilesEmptyEmitsAll pins that an empty Files list is the same

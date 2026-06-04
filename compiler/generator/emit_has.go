@@ -33,6 +33,14 @@ func (fg *FileGenerator) fieldsForPresence(md protoreflect.MessageDescriptor) []
 		if fd.Kind() == protoreflect.MessageKind && fg.hasPointerOption(fd) {
 			continue
 		}
+		// `(wiresmith.options.stdtime)` swaps a Timestamp field for a value-
+		// type `time.Time`, where presence is `!t.IsZero()` rather than a
+		// separate bitmap bit (same role nil plays for pointer-option above).
+		// Skipping here keeps Size/Marshal/Unmarshal from emitting bitmap ops
+		// for a field whose presence semantics are carried by the value.
+		if fd.Kind() == protoreflect.MessageKind && fg.hasStdtimeOption(fd) {
+			continue
+		}
 		fields = append(fields, presenceField{fd: fd, bitIndex: len(fields)})
 	}
 	return fields

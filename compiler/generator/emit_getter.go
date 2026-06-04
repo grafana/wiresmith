@@ -2,6 +2,7 @@ package generator
 
 import (
 	"fmt"
+
 	"github.com/grafana/wiresmith/compiler/types"
 
 	"google.golang.org/protobuf/reflect/protoreflect"
@@ -62,6 +63,19 @@ func (fg *FileGenerator) emitGetters(md protoreflect.MessageDescriptor) {
 			fmt.Fprintf(fg.body, "func (m *%s) Get%s() *%s {\n", name, goName, msgType)
 			fmt.Fprintf(fg.body, "\tif m != nil {\n\t\treturn m.%s\n\t}\n", goName)
 			fmt.Fprintf(fg.body, "\treturn nil\n}\n\n")
+			continue
+		}
+
+		// `(wiresmith.options.stdtime) = true` on a singular Timestamp field
+		// produces a `time.Time` Go field, so the getter returns the value
+		// directly with the standard nil-receiver guard. fieldsForPresence
+		// excludes stdtime fields (Go's `time.Time{}` is the presence sentinel),
+		// so the bitmap path is bypassed here even though the field is
+		// MessageKind on the wire.
+		if stdType, ok := fg.stdtimeGoFieldType(fd); ok {
+			fmt.Fprintf(fg.body, "func (m *%s) Get%s() %s {\n", name, goName, stdType)
+			fmt.Fprintf(fg.body, "\tif m != nil {\n\t\treturn m.%s\n\t}\n", goName)
+			fmt.Fprintf(fg.body, "\treturn %s{}\n}\n\n", stdType)
 			continue
 		}
 

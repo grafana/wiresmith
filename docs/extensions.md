@@ -207,3 +207,61 @@ The validation source of truth is `customnameOptionRejection` in `compiler/gener
 ### Worked example
 
 [`proto/basic/customname.proto`](../proto/basic/customname.proto) exercises the option across scalar, message, repeated, and oneof-variant fields, with an unannotated control showing that default `snake_to_PascalCase` conversion still applies elsewhere.
+
+## `(wiresmith.options.stdtime) = true`
+
+The stdtime option swaps a `google.protobuf.Timestamp` field for a stdlib `time.Time` value. Wire format is unchanged — the value is still encoded as the standard Timestamp sub-message (int64 `seconds` field 1, int32 `nanos` field 2) so peers using any other proto library see the same bytes.
+
+```proto
+syntax = "proto3";
+package myapp.v1;
+
+import "wiresmith/options.proto";
+import "google/protobuf/timestamp.proto";
+
+message Snapshot {
+  string name    = 1;
+  uint64 version = 2;
+
+  // Generated Go: Created time.Time
+  google.protobuf.Timestamp created = 3 [(wiresmith.options.stdtime) = true];
+}
+```
+
+```go
+type Snapshot struct {
+    Name    string
+    Version uint64
+    Created time.Time `protobuf:"bytes,3,opt,name=created,proto3" json:"created,omitempty"`
+}
+```
+
+### Zero-value presence (gogoproto-compatible)
+
+Go's zero `time.Time{}` (January 1, year 1 UTC — the only value for which `IsZero()` returns true) is treated as "field not set". On marshal, no tag is emitted. On unmarshal, an absent tag leaves the field as the Go zero.
+
+This matches `gogoproto.stdtime`'s contract and means **the Unix epoch is distinct from "unset"**: `time.Unix(0, 0).UTC()` is not the Go zero, so it marshals as an explicit empty Timestamp payload (`0x1a 0x00` — tag, length 0) and decodes back to the same instant. If you need to distinguish the literal year-1 zero from "no value", store presence alongside the time.
+
+Presence is carried entirely by `time.Time.IsZero()` — wiresmith does **not** emit a `Has<Name>()` accessor for stdtime fields (unlike most other singular non-oneof fields where presence rides on a bitmap). Callers check `m.GetCreated().IsZero()` instead of `m.HasCreated()`.
+
+### UTC normalization
+
+Decoded times are always in UTC. UTC is the canonical Timestamp timezone in the proto spec; encoded `seconds + nanos` carry no zone information, so the decoder picks UTC to keep the round-trip independent of the writer's local zone. Code that needs a local zone after decode should call `.In(loc)` itself.
+
+### Where it applies (v1)
+
+Allowed: singular `google.protobuf.Timestamp` fields.
+
+Rejected (combined compile-time error from `validateStdtimeOptions`):
+
+- Non-Timestamp message fields, scalars, enums, and `bytes`/`string`. Error: `(wiresmith.options.stdtime) only applies to google.protobuf.Timestamp fields, got <kind-or-name>`.
+- Map, oneof, repeated, and proto3 `optional` fields. Filed as follow-up beads if a real Mimir / Tempo use case surfaces.
+- Combination with `(wiresmith.options.pointer)`. The two options produce conflicting Go shapes (`*time.Time` vs `time.Time`); the generator refuses to pick one for you.
+
+### Protoreflect compatibility caveat
+
+The generated `*_reflect.pb.go` still describes the field as `google.protobuf.Timestamp` (via the file descriptor's `rawDesc`) and references `google.golang.org/protobuf/types/known/timestamppb` for the goTypes table. The Go struct field is `time.Time`, so any code that introspects this field via `protoreflect.Message.Get`/`Set` or routes through google.golang.org/protobuf's reflection machinery will not see a normal `*Timestamp` slot — the field is opaque from protoreflect's perspective. Same trade-off `gogoproto.stdtime` makes; for Mimir/Tempo's marshal-focused usage this is fine, and for protoreflect-driven code the field should stay un-annotated.
+
+### Worked example
+
+[`proto/basic/stdtime.proto`](../proto/basic/stdtime.proto) annotates a Timestamp field next to stock scalar controls, and [`test/basic/stdtime_test.go`](../test/basic/stdtime_test.go) pins the round-trip / zero-presence / UTC-normalization / cross-library wire-format invariants documented above.

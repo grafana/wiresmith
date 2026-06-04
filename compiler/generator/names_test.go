@@ -239,7 +239,7 @@ func TestDestForPath(t *testing.T) {
 }
 
 func TestUniqueAlias(t *testing.T) {
-	it := newImportTracker("mod", "self.pkg", nil)
+	it := newImportTracker("mod", goDest{pkgName: "selfName"}, nil)
 	it.addImport("example.com/a/v1", "v1")
 	it.addImport("example.com/b/v1", "v1_other")
 
@@ -263,7 +263,7 @@ func TestUniqueAlias(t *testing.T) {
 }
 
 func TestAliasInUseEmpty(t *testing.T) {
-	it := newImportTracker("mod", "self.pkg", nil)
+	it := newImportTracker("mod", goDest{pkgName: "selfName"}, nil)
 	// Several imports registered with the "use natural name" sentinel (empty
 	// alias). aliasInUse must not treat them as a single occupied slot —
 	// otherwise the second empty-alias caller would falsely be told the
@@ -276,7 +276,7 @@ func TestAliasInUseEmpty(t *testing.T) {
 }
 
 func TestAddImportIdempotent(t *testing.T) {
-	it := newImportTracker("mod", "self.pkg", nil)
+	it := newImportTracker("mod", goDest{pkgName: "selfName"}, nil)
 
 	got := it.addImport("example.com/pkg/v1", "v1")
 	if got != "v1" {
@@ -310,7 +310,7 @@ func TestAddImportIdempotent(t *testing.T) {
 // the upstream package's declared name — which we don't know — can't shadow
 // the qualifier the generator wrote into the file).
 func TestAddExplicitAliasImport(t *testing.T) {
-	it := newImportTracker("mod", "self.pkg", nil)
+	it := newImportTracker("mod", goDest{pkgName: "selfName"}, nil)
 
 	// First registration: alias matches path.Base.
 	got := it.addExplicitAliasImport("example.com/foo/bar")
@@ -349,5 +349,28 @@ func TestAddExplicitAliasImport(t *testing.T) {
 	}
 	if e.alias != "v2" || e.naturalName != "" || !e.requested {
 		t.Errorf("v2 entry: %+v, want {alias:v2 naturalName:\"\" requested:true}", e)
+	}
+}
+
+// TestAddProtoImportMissingDestination pins the empty-alias contract on a
+// destinations miss: an unregistered fd.Path() lookup returns "" without
+// registering an `import ""` entry. Without the guard the zero-value
+// goDest would land in the imports map keyed by the empty importPath and
+// emitHeader would write a literal `import ""` block.
+func TestAddProtoImportMissingDestination(t *testing.T) {
+	it := newImportTracker("mod", goDest{pkgName: "selfName"}, map[string]goDest{
+		"known/known.proto": {importPath: "example.com/known", pkgName: "known", protoPkg: "k.v1"},
+	})
+
+	if got := it.addProtoImport("missing.proto"); got != "" {
+		t.Errorf("missing destination: got alias %q, want empty", got)
+	}
+	if _, registered := it.imports[""]; registered {
+		t.Error("missing destination must not register an empty-path import entry")
+	}
+
+	// Sanity: known destinations still go through the normal path.
+	if got := it.addProtoImport("known/known.proto"); got == "" {
+		t.Error("known destination must produce a non-empty alias")
 	}
 }
