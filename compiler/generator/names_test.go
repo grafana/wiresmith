@@ -239,7 +239,7 @@ func TestDestForPath(t *testing.T) {
 }
 
 func TestUniqueAlias(t *testing.T) {
-	it := newImportTracker("mod", "self.pkg", nil, nil)
+	it := newImportTracker("mod", goDest{pkgName: "selfName"}, nil)
 	it.addImport("example.com/a/v1", "v1")
 	it.addImport("example.com/b/v1", "v1_other")
 
@@ -263,7 +263,7 @@ func TestUniqueAlias(t *testing.T) {
 }
 
 func TestAliasInUseEmpty(t *testing.T) {
-	it := newImportTracker("mod", "self.pkg", nil, nil)
+	it := newImportTracker("mod", goDest{pkgName: "selfName"}, nil)
 	// Several imports registered with the "use natural name" sentinel (empty
 	// alias). aliasInUse must not treat them as a single occupied slot —
 	// otherwise the second empty-alias caller would falsely be told the
@@ -276,7 +276,7 @@ func TestAliasInUseEmpty(t *testing.T) {
 }
 
 func TestAddImportIdempotent(t *testing.T) {
-	it := newImportTracker("mod", "self.pkg", nil, nil)
+	it := newImportTracker("mod", goDest{pkgName: "selfName"}, nil)
 
 	got := it.addImport("example.com/pkg/v1", "v1")
 	if got != "v1" {
@@ -310,7 +310,7 @@ func TestAddImportIdempotent(t *testing.T) {
 // the upstream package's declared name — which we don't know — can't shadow
 // the qualifier the generator wrote into the file).
 func TestAddExplicitAliasImport(t *testing.T) {
-	it := newImportTracker("mod", "self.pkg", nil, nil)
+	it := newImportTracker("mod", goDest{pkgName: "selfName"}, nil)
 
 	// First registration: alias matches path.Base.
 	got := it.addExplicitAliasImport("example.com/foo/bar")

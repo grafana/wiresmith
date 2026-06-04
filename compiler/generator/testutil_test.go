@@ -76,13 +76,13 @@ func newFixtureGenerator(t *testing.T, fd protoreflect.FileDescriptor) *FileGene
 // Tests that exercise (wiresmith.options.pointer) MUST use this form.
 func newFixtureGeneratorWith(t *testing.T, fd protoreflect.FileDescriptor, allFiles linker.Files) *FileGenerator {
 	t.Helper()
-	pkg := string(fd.Package())
-	dests := map[string]goDest{
-		pkg: {
-			importPath: "github.com/grafana/wiresmith/gen/test/v1",
-			relDir:     "test/v1",
-			pkgName:    "testv1",
-		},
+	selfDest := goDest{
+		importPath: "github.com/grafana/wiresmith/gen/test/v1",
+		relDir:     "test/v1",
+		pkgName:    "testv1",
+	}
+	destinations := map[string]goDest{
+		fd.Path(): selfDest,
 	}
 	var pointerExt, jsontagExt, customnameExt, customtypeExt, stdtimeExt protoreflect.FieldDescriptor
 	for _, f := range allFiles {
@@ -109,9 +109,9 @@ func newFixtureGeneratorWith(t *testing.T, fd protoreflect.FileDescriptor, allFi
 	return &FileGenerator{
 		fd:             fd,
 		module:         "wiresmith",
-		imports:        newImportTracker("wiresmith", pkg, dests, nil),
+		imports:        newImportTracker("wiresmith", selfDest, destinations),
 		body:           &bytes.Buffer{},
-		reflectImports: newImportTracker("wiresmith", pkg, dests, nil),
+		reflectImports: newImportTracker("wiresmith", selfDest, destinations),
 		reflectBody:    &bytes.Buffer{},
 		fileVarName:    sanitizeFileVarName(fd.Path()),
 		pointerExt:     pointerExt,

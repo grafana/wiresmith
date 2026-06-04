@@ -52,20 +52,26 @@ var reservedStdlibImports = []string{
 }
 
 type ImportTracker struct {
-	module      string
-	selfPkg     string
-	dests       map[string]goDest // proto pkg -> resolved Go destination
-	destsByPath map[string]goDest // fd.Path() -> goDest, for cross-file lookups
-	imports     map[string]importEntry
+	module       string
+	selfDest     goDest
+	destinations map[string]goDest // fd.Path() -> resolved Go destination
+	imports      map[string]importEntry
 }
 
-func newImportTracker(module, selfPkg string, dests, destsByPath map[string]goDest) *ImportTracker {
+// newImportTracker constructs an ImportTracker for one output file.
+// selfDest is the destination of the file being emitted — its pkgName is
+// what the generated `package` clause should use and what we compare
+// against when deciding whether a cross-file type reference needs an
+// import qualifier. destinations is the project-wide fd.Path() →
+// destination map; cross-file lookups (goMessageType / goEnumType) read
+// from it directly, so the tracker shares the same map by reference for
+// every output file in the generator run.
+func newImportTracker(module string, selfDest goDest, destinations map[string]goDest) *ImportTracker {
 	it := &ImportTracker{
-		module:      module,
-		selfPkg:     selfPkg,
-		dests:       dests,
-		destsByPath: destsByPath,
-		imports:     make(map[string]importEntry),
+		module:       module,
+		selfDest:     selfDest,
+		destinations: destinations,
+		imports:      make(map[string]importEntry),
 	}
 	for _, p := range reservedStdlibImports {
 		it.imports[p] = importEntry{naturalName: path.Base(p)}
@@ -98,8 +104,7 @@ func (it *ImportTracker) addExplicitAliasImport(importPath string) string {
 	if e, ok := it.imports[importPath]; ok && e.requested {
 		return e.alias
 	}
-	selfName := it.resolvePkgName(it.selfPkg)
-	alias := it.uniqueAlias(path.Base(importPath), importPath, selfName)
+	alias := it.uniqueAlias(path.Base(importPath), importPath, it.selfDest.pkgName)
 	it.imports[importPath] = importEntry{
 		alias:     alias,
 		requested: true,
@@ -115,34 +120,20 @@ func (it *ImportTracker) register(importPath, alias, naturalName string) string 
 	return alias
 }
 
-// resolvePkgName returns the Go package name for protoPkg.
-func (it *ImportTracker) resolvePkgName(protoPkg string) string {
-	return it.dests[protoPkg].pkgName
-}
-
-// addProtoImportFor registers the import for a cross-package proto reference,
-// preferring the per-file destination map when fdPath is supplied. The
-// per-file lookup is what disambiguates `google.protobuf` references that
-// span multiple Go destinations (descriptorpb, timestamppb, durationpb …)
-// — without it, the first proto package sighting in computeDests would
-// shadow every later one.
+// addProtoImport registers the import for a cross-package proto reference.
+// fdPath is the importing file's Path() — it identifies the target's Go
+// destination unambiguously, including the well-known case where one proto
+// package (`google.protobuf`) spans multiple Go destinations (descriptorpb,
+// timestamppb, durationpb …).
 //
-// fdPath="" preserves the legacy "lookup by proto package only" behavior
-// for call sites that don't have a FileDescriptor in hand. All callers
-// currently route through goMessageType / goEnumType, which both supply
-// fd.Path() — the empty-string branch is kept as a defensive fallback for
-// any future caller that constructs descriptors directly.
-func (it *ImportTracker) addProtoImportFor(protoPkg, fdPath string) string {
-	selfName := it.resolvePkgName(it.selfPkg)
-	var dest goDest
-	if fdPath != "" {
-		if d, ok := it.destsByPath[fdPath]; ok {
-			dest = d
-		}
-	}
-	if dest == (goDest{}) {
-		dest = it.dests[protoPkg]
-	}
+// Callers all route through goMessageType / goEnumType, which both supply
+// the parent file's Path(). A miss in destinations means the file wasn't
+// reached during computeDests' walk — a generator bug rather than a
+// user-recoverable condition, so this returns the empty alias and lets
+// the downstream "imported and not used" / "undefined identifier"
+// compiler error surface where the bad reference is emitted.
+func (it *ImportTracker) addProtoImport(fdPath string) string {
+	dest := it.destinations[fdPath]
 
 	// Prefer the destination's declared pkgName as the local alias so the
 	// generated code reads naturally. On collision (with our own pkg name
@@ -150,8 +141,9 @@ func (it *ImportTracker) addProtoImportFor(protoPkg, fdPath string) string {
 	// alias; uniqueAlias then appends a numeric suffix if even that
 	// collides. Matches the protogen/gogoproto disambiguation scheme.
 	alias := dest.pkgName
+	selfName := it.selfDest.pkgName
 	if alias == selfName || it.aliasInUse(alias, dest.importPath) {
-		alias = goPackageName(protoPkg)
+		alias = goPackageName(dest.protoPkg)
 	}
 	alias = it.uniqueAlias(alias, dest.importPath, selfName)
 	return it.register(dest.importPath, alias, dest.pkgName)
@@ -277,22 +269,37 @@ func (it *ImportTracker) goOptionalType(fd protoreflect.FieldDescriptor) string 
 
 func (it *ImportTracker) goMessageType(md protoreflect.MessageDescriptor) string {
 	parent := md.ParentFile()
-	msgPkg := string(parent.Package())
 	typeName := goMessageTypeName(md)
-	if msgPkg == it.selfPkg {
+	if it.isSelfDest(parent.Path()) {
 		return typeName
 	}
-	alias := it.addProtoImportFor(msgPkg, parent.Path())
+	alias := it.addProtoImport(parent.Path())
 	return alias + "." + typeName
 }
 
 func (it *ImportTracker) goEnumType(ed protoreflect.EnumDescriptor) string {
 	parent := ed.ParentFile()
-	enumPkg := string(parent.Package())
 	typeName := goEnumTypeName(ed)
-	if enumPkg == it.selfPkg {
+	if it.isSelfDest(parent.Path()) {
 		return typeName
 	}
-	alias := it.addProtoImportFor(enumPkg, parent.Path())
+	alias := it.addProtoImport(parent.Path())
 	return alias + "." + typeName
+}
+
+// isSelfDest reports whether fdPath resolves to the same Go destination as
+// the tracker's own. Two .proto files declaring the same proto package land
+// in the same Go directory (enforced by validateDestinations) and therefore
+// the same import path — references between them don't need a qualifier.
+// Comparing destinations directly (rather than proto packages) keeps the
+// answer correct even when one proto package spans multiple Go destinations
+// (the well-known google.protobuf case) — references resolve to the type's
+// actual destination, not to whichever destination won the proto-package
+// tiebreaker.
+func (it *ImportTracker) isSelfDest(fdPath string) bool {
+	dest, ok := it.destinations[fdPath]
+	if !ok {
+		return false
+	}
+	return dest.importPath == it.selfDest.importPath
 }

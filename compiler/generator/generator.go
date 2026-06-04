@@ -48,23 +48,15 @@ type Generator struct {
 	// `option go_package`. Populated during Generate after compilation.
 	goPackages map[string]string
 
-	// dests maps a proto package name to its resolved Go destination. Built
-	// once, after collectGoPackages, by walking compiled files and feeding
-	// each first-seen one through destFor. ImportTracker reads from this map
-	// to resolve cross-package references; the lookup-by-protoPkg shape
-	// matches what cross-file imports need (they only know the proto
-	// package they want, not which file declared it).
-	dests map[string]goDest
-
-	// destsByPath maps a fd.Path() to its resolved Go destination. Used by
-	// cross-file lookups that route through a MessageDescriptor (and so know
-	// the parent file), so a proto package that spreads across multiple Go
-	// packages (canonically `google.protobuf` → descriptorpb, timestamppb,
-	// durationpb, …) still resolves to the correct destination per
-	// referenced type. Same goDest values as `dests` for protos that map
-	// 1:1 onto a single Go package; the two maps diverge only at well-known
-	// boundaries.
-	destsByPath map[string]goDest
+	// destinations maps fd.Path() to its resolved Go destination. Built
+	// once, after collectGoPackages, by walking compiled files (including
+	// transitively-imported well-known files) and feeding each through
+	// destFor / destForReachable. ImportTracker reads from this map to
+	// resolve cross-package references; keying by fd.Path() (rather than
+	// proto package) is what disambiguates the well-known case where one
+	// proto package (`google.protobuf`) spans multiple Go destinations
+	// — descriptorpb, timestamppb, durationpb — for distinct files.
+	destinations map[string]goDest
 
 	// emitFilter is the set of fd.Path() values to emit, derived from Files
 	// at the start of Generate. Nil means "emit every shouldGenerateFile
@@ -257,8 +249,7 @@ func (fg *FileGenerator) fieldContext(fd protoreflect.FieldDescriptor) types.Fie
 	}
 	if fd.Kind() == protoreflect.MessageKind && !fg.hasStdtimeOption(fd) {
 		ctx.MessageType = fg.imports.goSingularType(fd)
-		msgPkg := string(fd.Message().ParentFile().Package())
-		ctx.IsSamePackage = (msgPkg == fg.imports.selfPkg)
+		ctx.IsSamePackage = fg.imports.isSelfDest(fd.Message().ParentFile().Path())
 	}
 	return ctx
 }
@@ -584,82 +575,74 @@ func (g *Generator) validateOutDir() error {
 	return nil
 }
 
-// computeDests resolves each proto package's Go destination once and stores
-// the result keyed by proto package. Cross-file import resolution in
-// ImportTracker only knows the destination proto package (not which file
-// declared it), so keying the map by proto package is what makes the
-// lookup possible without re-running destFor at every emit site.
+// computeDests resolves each compiled file's Go destination once and stores
+// the result keyed by fd.Path(). Cross-file import resolution in
+// ImportTracker.goMessageType / goEnumType always has a parent
+// FileDescriptor in hand and uses the path key directly, which is what
+// disambiguates the well-known case where one proto package
+// (`google.protobuf`) spans multiple Go destinations.
 //
-// All files declaring the same proto package must live in the same
-// source-relative directory; Go's directory-equals-package rule would
-// later reject the disagreement, but flagging it here gives the user a
-// clearer error referencing both .proto files.
+// All files in `results` that declare the same proto package must live in
+// the same source-relative directory; Go's directory-equals-package rule
+// would later reject the disagreement, but flagging it here gives the user
+// a clearer error referencing both .proto files.
 //
 // The walk follows transitive `import` statements (via walkReachableFiles)
 // so well-known proto files served by `protocompile.WithStandardImports`
-// land in `g.dests` even though they aren't in `results`. Such files use
-// their own go_package option directly (not the shared `g.goPackages`
-// table) because google.protobuf's well-known files share one proto
-// package across many distinct Go destinations.
+// also land in the destinations map — emit_protoreflect's goTypes array
+// needs their Go imports resolved even though they themselves don't emit.
+// Transitively-imported files use destForReachable (each file's own
+// go_package option) instead of the shared g.goPackages table, because
+// google.protobuf's well-known files share one proto package across many
+// distinct Go destinations.
 func (g *Generator) computeDests(results linker.Files) error {
-	g.dests = make(map[string]goDest)
-	g.destsByPath = make(map[string]goDest)
+	g.destinations = make(map[string]goDest)
 	type sighting struct{ relDir, path string }
 	seen := make(map[string]sighting)
 	importOwner := make(map[string]string)
 
-	// inResults marks each file we'll consider an emit candidate. Transitive
-	// imports brought in by WithStandardImports are not in this set; they
-	// still need destinations resolved (for the reflect file's goTypes), but
-	// they take a separate path that uses each file's own go_package
-	// directly — the shared g.goPackages table mis-shadows well-known files
-	// that map one proto package to many Go packages.
+	// inResults marks each file we'll consider an emit candidate.
 	inResults := make(map[string]bool, len(results))
 	for _, fd := range results {
 		inResults[fd.Path()] = true
 	}
 
 	for _, fd := range walkReachableFiles(results) {
-		protoPkg := string(fd.Package())
 		if isInternalSchemaFile(fd) {
 			continue
 		}
 		if !inResults[fd.Path()] {
-			dest := destForReachable(fd)
-			g.destsByPath[fd.Path()] = dest
-			// Same-file references resolve through `dests` by proto pkg;
-			// keep the first sighting so a multi-file well-known proto
-			// package (e.g. google.protobuf) gets *some* fallback when no
-			// file descriptor is available (e.g. enum constants stripped
-			// of source info).
-			if _, ok := g.dests[protoPkg]; !ok {
-				g.dests[protoPkg] = dest
-			}
+			g.destinations[fd.Path()] = destForReachable(fd)
 			continue
 		}
 		// Skip files that will not produce output: they neither claim a Go
 		// directory on disk nor reserve an import path, so they cannot
-		// collide with anything.
+		// collide with anything. They also don't need a destination — no
+		// other file will reference into them.
 		if !g.shouldEmit(fd) {
 			continue
 		}
+		protoPkg := string(fd.Package())
 		relDir := sourceRelDir(fd.Path())
+		dest := g.destFor(fd)
 		if prev, ok := seen[protoPkg]; ok {
 			if prev.relDir != relDir {
 				return fmt.Errorf("proto package %q spans multiple source-relative directories: %s declares %q but %s declares %q",
 					protoPkg, prev.path, prev.relDir, fd.Path(), relDir)
 			}
+			// Same proto pkg, same dir — share the destination across all
+			// of the package's files so cross-file references inside the
+			// same Go package don't need a qualifier.
+			g.destinations[fd.Path()] = dest
 			continue
 		}
 		seen[protoPkg] = sighting{relDir: relDir, path: fd.Path()}
-		dest := g.destFor(fd)
 		if owner, exists := importOwner[dest.importPath]; exists && owner != protoPkg {
 			return fmt.Errorf("import path %q is claimed by both proto packages %q and %q (check go_package options)",
 				dest.importPath, owner, protoPkg)
 		}
 		importOwner[dest.importPath] = protoPkg
-		g.dests[protoPkg] = dest
-		g.destsByPath[fd.Path()] = dest
+		g.destinations[fd.Path()] = dest
 	}
 	return nil
 }
@@ -682,7 +665,7 @@ func destForReachable(fd protoreflect.FileDescriptor) goDest {
 	if goPkg := opts.GetGoPackage(); goPkg != "" {
 		importPath, pkgName = parseGoPackage(goPkg)
 	}
-	return goDest{importPath: importPath, relDir: relDir, pkgName: pkgName}
+	return goDest{importPath: importPath, relDir: relDir, pkgName: pkgName, protoPkg: protoPkg}
 }
 
 // validateDestinations rejects the case where two distinct proto packages
@@ -713,16 +696,17 @@ func (g *Generator) validateDestinations(results linker.Files) error {
 }
 
 func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
+	selfDest := g.destinations[fd.Path()]
 	fg := &FileGenerator{
 		fd:             fd,
 		module:         g.Module,
-		imports:        newImportTracker(g.Module, string(fd.Package()), g.dests, g.destsByPath),
+		imports:        newImportTracker(g.Module, selfDest, g.destinations),
 		body:           &bytes.Buffer{},
-		reflectImports: newImportTracker(g.Module, string(fd.Package()), g.dests, g.destsByPath),
+		reflectImports: newImportTracker(g.Module, selfDest, g.destinations),
 		reflectBody:    &bytes.Buffer{},
-		compareImports: newImportTracker(g.Module, string(fd.Package()), g.dests, g.destsByPath),
+		compareImports: newImportTracker(g.Module, selfDest, g.destinations),
 		compareBody:    &bytes.Buffer{},
-		equalImports:   newImportTracker(g.Module, string(fd.Package()), g.dests, g.destsByPath),
+		equalImports:   newImportTracker(g.Module, selfDest, g.destinations),
 		equalBody:      &bytes.Buffer{},
 		fileVarName:    sanitizeFileVarName(fd.Path()),
 		pointerExt:     g.pointerExt,
@@ -859,10 +843,9 @@ func (g *Generator) outputEqualPathFor(fd protoreflect.FileDescriptor) string {
 // compiler can't deduce that a `protoreflect` symbol used in foo_reflect.pb.go
 // satisfies the import in foo.pb.go.
 func (fg *FileGenerator) emitHeader(out *bytes.Buffer, tracker *ImportTracker) {
-	pkg := string(fg.fd.Package())
 	fmt.Fprintf(out, "// Code generated by wiresmith. DO NOT EDIT.\n")
 	fmt.Fprintf(out, "// source: %s\n\n", fg.fd.Path())
-	fmt.Fprintf(out, "package %s\n\n", tracker.resolvePkgName(pkg))
+	fmt.Fprintf(out, "package %s\n\n", tracker.selfDest.pkgName)
 
 	type imp struct {
 		path    string
