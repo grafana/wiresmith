@@ -585,11 +585,15 @@ func (g *Generator) computeDests(results linker.Files) error {
 			g.destinations[fd.Path()] = destForReachable(fd)
 			continue
 		}
-		// Skip files that will not produce output: they neither claim a Go
-		// directory on disk nor reserve an import path, so they cannot
-		// collide with anything. They also don't need a destination — no
-		// other file will reference into them.
+		// Files in results but excluded from emission (positional Files
+		// filter scoped the emit set, but the compile still linked the
+		// import dependencies) still need a destination registered so an
+		// emitted file's reference into them resolves to a real import
+		// path rather than the empty alias. They skip the conflict
+		// checks — those only matter for files that actually write
+		// output to disk.
 		if !g.shouldEmit(fd) {
+			g.destinations[fd.Path()] = g.destFor(fd)
 			continue
 		}
 		protoPkg := string(fd.Package())
