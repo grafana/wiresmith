@@ -90,7 +90,7 @@ func (m *StdtimeHolder) Size() int {
 		n += 1 + protowire.SizeVarint(uint64(m.Version))
 	}
 	if !m.Created.IsZero() {
-		inner := sizeStdTime(m.Created)
+		inner := protohelpers.SizeStdTime(m.Created)
 		n += 1 + protowire.SizeVarint(uint64(inner)) + inner
 	}
 	return n
@@ -127,7 +127,7 @@ func (m *StdtimeHolder) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if !m.Created.IsZero() {
 		start := i
-		i = encodeStdTime(dAtA, i, m.Created)
+		i = protohelpers.EncodeStdTime(dAtA, i, m.Created)
 		inner := start - i
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(inner))
 		i--
@@ -213,151 +213,6 @@ func skipValue(dAtA []byte, wireType int, fieldNum int32) (int, error) {
 		return 0, fmt.Errorf("unknown wire type %d", wireType)
 	}
 	return iNdEx, nil
-}
-
-// sizeStdTime returns the wire size of t encoded as a Timestamp
-// payload (the bytes inside the outer length-delimited header). Returns 0
-// for the Go zero time, which is treated as "not set" by the
-// (wiresmith.options.stdtime) contract.
-func sizeStdTime(t time.Time) int {
-	if t.IsZero() {
-		return 0
-	}
-	seconds := t.Unix()
-	nanos := int32(t.Nanosecond())
-	n := 0
-	if seconds != 0 {
-		n += 1 + protohelpers.SizeOfVarint(uint64(seconds))
-	}
-	if nanos != 0 {
-		n += 1 + protohelpers.SizeOfVarint(uint64(nanos))
-	}
-	return n
-}
-
-// encodeStdTime writes the Timestamp payload for t in reverse-write order
-// into dAtA, ending at offset. Caller must reserve sizeStdTime(t) bytes
-// before offset and must check t.IsZero() before invoking — encodeStdTime
-// does not gate the envelope itself.
-func encodeStdTime(dAtA []byte, offset int, t time.Time) int {
-	seconds := t.Unix()
-	nanos := int32(t.Nanosecond())
-	if nanos != 0 {
-		offset = protohelpers.EncodeVarint(dAtA, offset, uint64(nanos))
-		offset--
-		dAtA[offset] = 0x10
-	}
-	if seconds != 0 {
-		offset = protohelpers.EncodeVarint(dAtA, offset, uint64(seconds))
-		offset--
-		dAtA[offset] = 0x08
-	}
-	return offset
-}
-
-// decodeStdTime parses a Timestamp payload (the bytes inside the outer
-// length-delimited header) and returns the corresponding UTC time.Time.
-// Used by (wiresmith.options.stdtime) field unmarshalers.
-func decodeStdTime(dAtA []byte) (time.Time, error) {
-	var seconds int64
-	var nanos int32
-	iNdEx := 0
-	l := len(dAtA)
-	for iNdEx < l {
-		var wire uint64
-		if iNdEx < l && dAtA[iNdEx] < 0x80 {
-			wire = uint64(dAtA[iNdEx])
-			iNdEx++
-		} else {
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 35 {
-					return time.Time{}, fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return time.Time{}, io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				wire |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if fieldNum < 1 {
-			return time.Time{}, fmt.Errorf("proto: invalid field number")
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
-				if err != nil {
-					return time.Time{}, err
-				}
-				iNdEx += n
-				continue
-			}
-			var v uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return time.Time{}, fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return time.Time{}, io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				v |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return time.Time{}, fmt.Errorf("proto: varint overflow")
-					}
-					break
-				}
-			}
-			seconds = int64(v)
-		case 2:
-			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
-				if err != nil {
-					return time.Time{}, err
-				}
-				iNdEx += n
-				continue
-			}
-			var v uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return time.Time{}, fmt.Errorf("proto: integer overflow")
-				}
-				if iNdEx >= l {
-					return time.Time{}, io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				v |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					if shift == 63 && b > 1 {
-						return time.Time{}, fmt.Errorf("proto: varint overflow")
-					}
-					break
-				}
-			}
-			nanos = int32(v)
-		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
-			if err != nil {
-				return time.Time{}, err
-			}
-			iNdEx += n
-		}
-	}
-	if iNdEx > l {
-		return time.Time{}, io.ErrUnexpectedEOF
-	}
-	return time.Unix(seconds, int64(nanos)).UTC(), nil
 }
 
 func (m *StdtimeHolder) Unmarshal(b []byte) error {
@@ -522,7 +377,7 @@ func (m *StdtimeHolder) unmarshal(dAtA []byte, depth int) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			stdtimeVal, err := decodeStdTime(dAtA[iNdEx:postIndex])
+			stdtimeVal, err := protohelpers.DecodeStdTime(dAtA[iNdEx:postIndex])
 			if err != nil {
 				return err
 			}

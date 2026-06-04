@@ -19,45 +19,45 @@ import (
 // protobuf Timestamp; values constructed elsewhere are silently re-zoned by
 // the Unmarshal path so a round-trip never depends on the local zone.
 //
-// The Size/Marshal/Unmarshal call sites are slim and route into per-file
-// helpers (sizeStdTime, encodeStdTime, decodeStdTime) emitted once by the
-// generator when any stdtime field is present. Pushing the Timestamp envelope
-// logic out of every call site keeps the main `.pb.go` readable, avoids
-// duplicating the inner-tag decode loop across every stdtime field, and lets
-// the encoder hot path share branch state across users of the same package.
+// The Size/Marshal/Unmarshal call sites are slim and route into the
+// SizeStdTime / EncodeStdTime / DecodeStdTime helpers in protohelpers.
+// Centralising the Timestamp envelope logic in protohelpers keeps the
+// main `.pb.go` readable and removes the ~140 LOC of per-file helper
+// emission this code used to require.
 type StdtimeType struct{}
 
 // RequiredImports declares "time" (for time.Time access) at every stdtime
-// call site. The encoder/decoder helpers themselves pull in protohelpers /
-// io / fmt when the generator emits them, so the call sites don't need to
-// duplicate that registration.
+// call site. protohelpers is imported by the surrounding marshal/unmarshal
+// emit path (every wiresmith package already depends on it), so we don't
+// need to re-register it here.
 func (StdtimeType) RequiredImports() []string {
 	return []string{"time"}
 }
 
 // EmitSize emits the proto-wrapper size accumulator for a singular stdtime
-// field. The inner Timestamp payload size is computed by sizeStdTime; the
-// `!access.IsZero()` gate makes `time.Time{}` round-trip as "field absent",
-// matching the presence semantics documented on the option.
+// field. The inner Timestamp payload size is computed by
+// protohelpers.SizeStdTime; the `!access.IsZero()` gate makes `time.Time{}`
+// round-trip as "field absent", matching the presence semantics documented
+// on the option.
 func (StdtimeType) EmitSize(e Emitter, access string, tagSize int) {
 	e.Writef("\tif !%s.IsZero() {\n", access)
-	e.Writef("\t\tinner := sizeStdTime(%s)\n", access)
+	e.Writef("\t\tinner := protohelpers.SizeStdTime(%s)\n", access)
 	e.Writef("\t\tn += %d + protowire.SizeVarint(uint64(inner)) + inner\n", tagSize)
 	e.Writef("\t}\n")
 }
 
 // EmitMarshal writes the Timestamp envelope and its two inner fields via
-// the per-file encodeStdTime helper, then the outer length prefix and the
-// outer field tag. Skips the entire envelope when the Go value is the zero
+// protohelpers.EncodeStdTime, then the outer length prefix and the outer
+// field tag. Skips the entire envelope when the Go value is the zero
 // `time.Time{}`.
 //
 // `start := i` snapshots the reverse-write cursor so the post-encode size
-// can be recovered as `start - i` without recomputing sizeStdTime (which
+// can be recovered as `start - i` without recomputing SizeStdTime (which
 // would walk seconds/nanos a second time).
 func (StdtimeType) EmitMarshal(e Emitter, access string, num protowire.Number) {
 	e.Writef("\tif !%s.IsZero() {\n", access)
 	e.Writef("\t\tstart := i\n")
-	e.Writef("\t\ti = encodeStdTime(dAtA, i, %s)\n", access)
+	e.Writef("\t\ti = protohelpers.EncodeStdTime(dAtA, i, %s)\n", access)
 	e.Writef("\t\tinner := start - i\n")
 	e.Writef("\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(inner))\n")
 	e.ReverseTag("\t\t", num, protowire.BytesType)
@@ -65,12 +65,12 @@ func (StdtimeType) EmitMarshal(e Emitter, access string, num protowire.Number) {
 }
 
 // EmitUnmarshal consumes the outer length-delimited header, slices out the
-// payload, and hands it to decodeStdTime. The helper is responsible for
-// bounding inner-tag reads to the slice; the call site keeps the outer
-// iNdEx/dAtA/l invariants intact.
+// payload, and hands it to protohelpers.DecodeStdTime. The helper is
+// responsible for bounding inner-tag reads to the slice; the call site
+// keeps the outer iNdEx/dAtA/l invariants intact.
 func (StdtimeType) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
 	emitConsumeBytesLen(e)
-	e.Writef("\t\t\tstdtimeVal, err := decodeStdTime(dAtA[iNdEx:postIndex])\n")
+	e.Writef("\t\t\tstdtimeVal, err := protohelpers.DecodeStdTime(dAtA[iNdEx:postIndex])\n")
 	e.Writef("\t\t\tif err != nil {\n\t\t\t\treturn err\n\t\t\t}\n")
 	e.Writef("\t\t\t%s = stdtimeVal\n", access)
 	e.Writef("\t\t\tiNdEx = postIndex\n")

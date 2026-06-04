@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+
 	"github.com/grafana/wiresmith/compiler/types"
 
 	"github.com/bufbuild/protocompile"
@@ -1036,10 +1037,6 @@ func (fg *FileGenerator) emitAllUnmarshalMethods(fd protoreflect.FileDescriptor)
 	// Emit the max recursion depth constant and skip helpers once per file.
 	fmt.Fprintf(fg.body, "const maxUnmarshalDepth = 10000\n\n")
 	fg.emitSkipValueHelper()
-	// stdtime helpers depend on skipValue (above) and are referenced by the
-	// emitFieldUnmarshal stdtime branch. Emit them here so all three live in
-	// the same file alongside their helper.
-	fg.emitStdtimeHelpers(fd)
 	forEachMessage(fd, fg.emitUnmarshal)
 }
 
