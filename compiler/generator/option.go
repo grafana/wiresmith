@@ -274,17 +274,6 @@ func (fg *FileGenerator) hasStdtimeOption(fd protoreflect.FieldDescriptor) bool 
 	return opt.Has(fd)
 }
 
-// customtypeValue returns the raw `(wiresmith.options.customtype)` string
-// for fd plus a presence boolean. Thin wrapper over the registered
-// customtypeOption.
-func (fg *FileGenerator) customtypeValue(fd protoreflect.FieldDescriptor) (string, bool) {
-	opt := findOption[*customtypeOption](fg.options)
-	if opt == nil {
-		return "", false
-	}
-	return opt.Value(fd)
-}
-
 // stdtimeGoFieldType returns the Go-side struct-field type for an stdtime-
 // annotated field. Thin pass-through to the registered stdtimeOption; the
 // emit_getter / emit_struct call sites read more naturally as
@@ -327,12 +316,4 @@ func (fg *FileGenerator) customtypeFieldType(fd protoreflect.FieldDescriptor) (t
 		return nil, false
 	}
 	return opt.FieldType(fg, fd)
-}
-
-// customtypeAlias registers importPath with the ImportTracker under a
-// collision-free, explicitly-spelled alias and returns it for use as the
-// Go qualifier in generated code. Thin wrapper kept on FileGenerator so
-// emit_*.go call sites don't reach into the ImportTracker directly.
-func (fg *FileGenerator) customtypeAlias(importPath string) string {
-	return fg.imports.addExplicitAliasImport(importPath)
 }
