@@ -7,6 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/encoding/protowire"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -150,16 +151,21 @@ func TestStdtime_CrossLibraryWireFormat(t *testing.T) {
 	require.NoError(t, err)
 
 	// Field 3 envelope: tag byte 0x1a, then a varint length, then the
-	// payload. Locate the payload window via the length prefix.
+	// payload. Decode the length as a proper varint — Timestamp payloads
+	// stay <128 bytes today (so the length fits in one byte), but pinning
+	// on that would silently mis-parse a future schema that pushed the
+	// payload past the single-byte cap.
 	require.GreaterOrEqual(t, len(ours), 2)
 	require.Equal(t, byte(0x1a), ours[0])
-	payloadLen := int(ours[1])
-	require.Equal(t, len(ours), 2+payloadLen, "exactly one field, no trailing bytes")
+	payloadLen, n := protowire.ConsumeVarint(ours[1:])
+	require.Greater(t, n, 0, "malformed length varint at ours[1:]")
+	payloadStart := 1 + n
+	require.Equal(t, len(ours), payloadStart+int(payloadLen), "exactly one field, no trailing bytes")
 
 	// Official timestamppb.Marshal of the same instant.
 	wantPayload, err := proto.Marshal(timestamppb.New(instant))
 	require.NoError(t, err)
-	assert.Equal(t, wantPayload, ours[2:], "wire payload must match google.golang.org/protobuf")
+	assert.Equal(t, wantPayload, ours[payloadStart:], "wire payload must match google.golang.org/protobuf")
 }
 
 // TestStdtime_Equal pins that the generated Equal compares by instant — two
