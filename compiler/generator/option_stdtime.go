@@ -4,10 +4,8 @@ import (
 	"fmt"
 
 	"github.com/bufbuild/protocompile/linker"
-	"google.golang.org/protobuf/proto"
+	"github.com/grafana/wiresmith/compiler/types"
 	"google.golang.org/protobuf/reflect/protoreflect"
-	"google.golang.org/protobuf/types/descriptorpb"
-	"google.golang.org/protobuf/types/dynamicpb"
 )
 
 // stdtimeExtensionName is the fully qualified name of the stdtime extension
@@ -22,103 +20,104 @@ const stdtimeExtensionName = "wiresmith.options.stdtime"
 // a Go shape cannot opt in.
 const timestampMessageFullName = "google.protobuf.Timestamp"
 
-// resolveStdtimeExtension caches the linked stdtime extension descriptor on
-// the Generator. Same wiring as resolvePointerExtension; runs once per
-// Generate after Compile completes.
-func (g *Generator) resolveStdtimeExtension(results linker.Files) error {
-	for _, fd := range results {
-		if fd.Path() != embeddedOptionsPath {
-			continue
-		}
-		exts := fd.Extensions()
-		for i := 0; i < exts.Len(); i++ {
-			x := exts.Get(i)
-			if string(x.FullName()) == stdtimeExtensionName {
-				g.stdtimeExt = x
-				return nil
-			}
-		}
-	}
-	return fmt.Errorf("internal error: extension %q not found in compiled results — wiresmith/options.proto missing or malformed", stdtimeExtensionName)
+// stdtimeOption implements FieldOption for `(wiresmith.options.stdtime)`.
+// When set on a singular google.protobuf.Timestamp field the Go-side field
+// becomes a stdlib `time.Time`; on-wire format is unaffected.
+type stdtimeOption struct {
+	ext protoreflect.FieldDescriptor
 }
 
-// hasStdtimeOption reports whether the field is annotated with
-// `[(wiresmith.options.stdtime) = true]`. Safe to call on any field; returns
-// false when the option is absent, when the FieldOptions are nil, or when
-// the extension descriptor has not been resolved.
-func (fg *FileGenerator) hasStdtimeOption(fd protoreflect.FieldDescriptor) bool {
-	return hasStdtimeOption(fg.stdtimeExt, fd)
+func (*stdtimeOption) Name() string                               { return stdtimeExtensionName }
+func (o *stdtimeOption) Resolve(ext protoreflect.FieldDescriptor) { o.ext = ext }
+
+// Has reports whether the field is annotated with `[(wiresmith.options.stdtime) = true]`.
+func (o *stdtimeOption) Has(fd protoreflect.FieldDescriptor) bool {
+	return hasBoolOption(o.ext, fd)
 }
 
-func hasStdtimeOption(ext protoreflect.FieldDescriptor, fd protoreflect.FieldDescriptor) bool {
-	if ext == nil {
-		return false
-	}
-	opts, ok := fd.Options().(*descriptorpb.FieldOptions)
-	if !ok || opts == nil {
-		return false
-	}
-	xd, ok := ext.(protoreflect.ExtensionTypeDescriptor)
-	var xt protoreflect.ExtensionType
-	if ok {
-		xt = xd.Type()
-	} else {
-		xt = dynamicpb.NewExtensionType(ext)
-	}
-	if !proto.HasExtension(opts, xt) {
-		return false
-	}
-	v, _ := proto.GetExtension(opts, xt).(bool)
-	return v
-}
-
-// validateStdtimeOptions walks every field in every result file and rejects
-// invalid placements of `(wiresmith.options.stdtime)`. Runs after
-// resolveStdtimeExtension and before any emit pass.
+// Validate rejects invalid placements of stdtime.
 //
 // v1 scope: only singular `google.protobuf.Timestamp` message fields.
 // Map, oneof, repeated, proto3 `optional`, non-Timestamp messages, scalar
 // kinds, and the combination with `(wiresmith.options.pointer) = true` are
-// all rejected. Same combined-error shape as validatePointerOptions so one
-// bad fixture lists every offending field.
-func (g *Generator) validateStdtimeOptions(results linker.Files) error {
-	if g.stdtimeExt == nil {
+// all rejected. The pointer combo gets a dedicated message rather than the
+// fallback "not a Timestamp" — both options live on the same field but
+// produce conflicting Go shapes (`*time.Time` vs `time.Time`), and
+// silencing one would erase a user-meaningful intent.
+func (o *stdtimeOption) Validate(g *Generator, results linker.Files) error {
+	if o.ext == nil {
 		return nil
 	}
+	pointerOpt := findOption[*pointerOption](g.options)
 	var errs []string
 	for _, fd := range results {
 		if isInternalSchemaFile(fd) {
 			continue
 		}
 		walkFields(fd, func(field protoreflect.FieldDescriptor) {
-			if !hasStdtimeOption(g.stdtimeExt, field) {
+			if !o.Has(field) {
 				return
 			}
-			if reason := stdtimeOptionRejection(g.pointerExt, field); reason != "" {
+			if reason := stdtimeOptionRejection(pointerOpt, field); reason != "" {
 				errs = append(errs, fmt.Sprintf("%s: field %q: %s", fd.Path(), field.FullName(), reason))
 			}
 		})
 	}
-	if len(errs) == 0 {
-		return nil
+	return combinedOptionError(stdtimeExtensionName, "placement", errs)
+}
+
+// FieldType returns a StdtimeType wrapper when the field is annotated AND
+// is a singular google.protobuf.Timestamp. Registers the "time" import as
+// a side effect — same idempotent shape as GoFieldType, since the struct-
+// field declaration and the Size/Marshal/Unmarshal emitters need the same
+// import set and either path may run first.
+func (o *stdtimeOption) FieldType(fg *FileGenerator, fd protoreflect.FieldDescriptor) (types.FieldType, bool) {
+	if !o.applies(fd) {
+		return nil, false
 	}
-	out := "invalid (wiresmith.options.stdtime) placement:\n"
-	for _, e := range errs {
-		out += "  - " + e + "\n"
+	fg.imports.addImport("time", "")
+	return &types.StdtimeType{}, true
+}
+
+// GoFieldType returns "time.Time" for stdtime-annotated singular Timestamp
+// fields. validateStdtime has rejected every other placement, so the
+// kind/shape guards here are defensive against direct descriptor
+// construction in tests.
+func (o *stdtimeOption) GoFieldType(fg *FileGenerator, fd protoreflect.FieldDescriptor) (string, bool) {
+	if !o.applies(fd) {
+		return "", false
 	}
-	return fmt.Errorf("%s", out)
+	fg.imports.addImport("time", "")
+	return "time.Time", true
+}
+
+// applies merges the "annotated" and "shape is acceptable" checks shared
+// between FieldType and GoFieldType so a future shape rule lands in one
+// place rather than two.
+func (o *stdtimeOption) applies(fd protoreflect.FieldDescriptor) bool {
+	if !o.Has(fd) {
+		return false
+	}
+	if fd.Kind() != protoreflect.MessageKind {
+		return false
+	}
+	if string(fd.Message().FullName()) != timestampMessageFullName {
+		return false
+	}
+	if fd.IsMap() || fd.IsList() || fd.HasOptionalKeyword() || isRealOneof(fd) {
+		return false
+	}
+	return true
 }
 
 // stdtimeOptionRejection returns a human-readable reason if stdtime is not
 // allowed on this field, or "" if the placement is valid. Mirrors
 // pointerOptionRejection / customtypeOptionRejection.
 //
-// The pointer-option extension is threaded through so the combo with
-// (wiresmith.options.pointer) gets a dedicated, less surprising error message
-// than "not a Timestamp" — both options live on the same field but produce
-// conflicting Go shapes (`*time.Time` vs `time.Time`), and silencing one
-// would erase a user-meaningful intent.
-func stdtimeOptionRejection(pointerExt protoreflect.FieldDescriptor, fd protoreflect.FieldDescriptor) string {
+// pointerOpt is threaded through so the combo with
+// (wiresmith.options.pointer) gets a dedicated, less surprising error
+// message than "not a Timestamp" would.
+func stdtimeOptionRejection(pointerOpt *pointerOption, fd protoreflect.FieldDescriptor) string {
 	if fd.IsMap() {
 		return "(wiresmith.options.stdtime) is not supported on map fields"
 	}
@@ -131,7 +130,7 @@ func stdtimeOptionRejection(pointerExt protoreflect.FieldDescriptor, fd protoref
 	if fd.HasOptionalKeyword() {
 		return "(wiresmith.options.stdtime) is not supported on proto3 `optional` fields (v1 scope)"
 	}
-	if hasPointerOption(pointerExt, fd) {
+	if pointerOpt != nil && pointerOpt.Has(fd) {
 		return "(wiresmith.options.stdtime) cannot combine with (wiresmith.options.pointer) — pick one"
 	}
 	if fd.Kind() != protoreflect.MessageKind {

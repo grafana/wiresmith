@@ -63,34 +63,19 @@ type Generator struct {
 	// candidate" (the empty-Files default).
 	emitFilter map[string]bool
 
-	// pointerExt is the linked extension descriptor for
-	// `(wiresmith.options.pointer)`, resolved once after Compile and consulted
-	// by hasPointerOption. It is always non-nil after a successful Compile
-	// because the embedded `wiresmith/options.proto` is always part of the
-	// input set.
-	pointerExt protoreflect.FieldDescriptor
+	// options is the registered set of (wiresmith.options.*) custom field
+	// options. Initialised by newOptionRegistry on first Generate; the same
+	// slice is shared with every FileGenerator. Resolved once after Compile
+	// (each option binds its linked extension descriptor) then walked again
+	// to validate placements, then consulted per-field during emission to
+	// dispatch FieldType / GoFieldType overrides.
+	options []FieldOption
 
 	// jsontagExt is the linked extension descriptor for
-	// `(wiresmith.options.jsontag)`. Resolved alongside pointerExt; consulted
-	// by tag emission to override the default `json:"..."` struct tag.
+	// `(wiresmith.options.jsontag)`. jsontag doesn't influence FieldType /
+	// GoFieldType, so it sits outside the registry — its resolve+validate
+	// run as two inline calls in Generate.
 	jsontagExt protoreflect.FieldDescriptor
-
-	// customtypeExt is the linked extension descriptor for
-	// `(wiresmith.options.customtype)`. Resolved alongside pointerExt and
-	// consulted by fieldType()/goFieldType() to swap in a user-supplied Go
-	// type for bytes/string fields.
-	customtypeExt protoreflect.FieldDescriptor
-
-	// customnameExt is the linked extension descriptor for
-	// `(wiresmith.options.customname)`. Resolved alongside pointerExt and
-	// consulted by goFieldName to swap in user-supplied Go identifiers.
-	customnameExt protoreflect.FieldDescriptor
-
-	// stdtimeExt is the linked extension descriptor for
-	// `(wiresmith.options.stdtime)`. Resolved alongside pointerExt; consulted
-	// by fieldType()/goFieldType() to swap a `google.protobuf.Timestamp`
-	// message field for a stdlib `time.Time` value.
-	stdtimeExt protoreflect.FieldDescriptor
 }
 
 // FileGenerator collects emitted code for one proto source file. It owns
@@ -147,26 +132,17 @@ type FileGenerator struct {
 	nextMsgIndex  int
 	nextEnumIndex int
 
-	// pointerExt is the cached pointer-option extension descriptor copied from
-	// the parent Generator. Plumbed through so the per-field option lookup
-	// doesn't have to reach back up to the Generator.
-	pointerExt protoreflect.FieldDescriptor
+	// options is the shared field-option registry, copied by reference from
+	// the parent Generator. Each FileGenerator emit path (fieldType,
+	// goFieldType, the goFieldName / has*Option helpers) consults this
+	// slice rather than reaching back up to the Generator.
+	options []FieldOption
 
-	// jsontagExt is the cached jsontag-option extension descriptor, plumbed
-	// through from the parent Generator alongside pointerExt.
+	// jsontagExt is the cached jsontag-option extension descriptor. jsontag
+	// is the lone option still outside the registry (it has no FieldType /
+	// GoFieldType behavior), so the descriptor still rides through as a
+	// dedicated field rather than via the registry.
 	jsontagExt protoreflect.FieldDescriptor
-
-	// customtypeExt is the cached customtype-option extension descriptor,
-	// plumbed through from the parent Generator alongside pointerExt.
-	customtypeExt protoreflect.FieldDescriptor
-
-	// customnameExt is the cached customname-option extension descriptor,
-	// plumbed through from the parent Generator alongside pointerExt.
-	customnameExt protoreflect.FieldDescriptor
-
-	// stdtimeExt is the cached stdtime-option extension descriptor, plumbed
-	// through from the parent Generator alongside pointerExt.
-	stdtimeExt protoreflect.FieldDescriptor
 
 	// compareBody / compareImports hold a second companion `_compare.pb.go`
 	// file: just the per-message Compare(other interface{}) int methods.
@@ -247,7 +223,7 @@ func (fg *FileGenerator) fieldContext(fd protoreflect.FieldDescriptor) types.Fie
 	if fd.Kind() == protoreflect.EnumKind {
 		ctx.EnumType = fg.imports.goEnumType(fd.Enum())
 	}
-	if fd.Kind() == protoreflect.MessageKind && !fg.hasStdtimeOption(fd) {
+	if fd.Kind() == protoreflect.MessageKind && !fg.suppressMessageType(fd) {
 		ctx.MessageType = fg.imports.goSingularType(fd)
 		ctx.IsSamePackage = fg.imports.isSelfDest(fd.Message().ParentFile().Path())
 	}
@@ -327,34 +303,28 @@ func (g *Generator) Generate(ctx context.Context) error {
 		return fmt.Errorf("compiling protos: %w", err)
 	}
 
-	if err := g.resolvePointerExtension(results); err != nil {
-		return err
+	// Bind every registered FieldOption to its linked extension descriptor,
+	// then run their placement validators. Two passes (rather than one
+	// combined pass) so a Validate implementation can look up a peer
+	// option's descriptor — stdtime's Validate consults the pointer option
+	// to surface a clearer "stdtime cannot combine with pointer" error.
+	g.options = newOptionRegistry()
+	for _, opt := range g.options {
+		ext := findExtension(results, opt.Name())
+		if ext == nil {
+			return fmt.Errorf("internal error: extension %q not found in compiled results — wiresmith/options.proto missing or malformed", opt.Name())
+		}
+		opt.Resolve(ext)
 	}
-	if err := g.validatePointerOptions(results); err != nil {
-		return err
+	for _, opt := range g.options {
+		if err := opt.Validate(g, results); err != nil {
+			return err
+		}
 	}
 	if err := g.resolveJsontagExtension(results); err != nil {
 		return err
 	}
 	if err := g.validateJsontagOptions(results); err != nil {
-		return err
-	}
-	if err := g.resolveCustomtypeExtension(results); err != nil {
-		return err
-	}
-	if err := g.validateCustomtypeOptions(results); err != nil {
-		return err
-	}
-	if err := g.resolveCustomnameExtension(results); err != nil {
-		return err
-	}
-	if err := g.validateCustomnameOptions(results); err != nil {
-		return err
-	}
-	if err := g.resolveStdtimeExtension(results); err != nil {
-		return err
-	}
-	if err := g.validateStdtimeOptions(results); err != nil {
 		return err
 	}
 	if err := g.validateNoValueCycles(results); err != nil {
@@ -709,11 +679,8 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 		equalImports:   newImportTracker(g.Module, selfDest, g.destinations),
 		equalBody:      &bytes.Buffer{},
 		fileVarName:    sanitizeFileVarName(fd.Path()),
-		pointerExt:     g.pointerExt,
+		options:        g.options,
 		jsontagExt:     g.jsontagExt,
-		customtypeExt:  g.customtypeExt,
-		customnameExt:  g.customnameExt,
-		stdtimeExt:     g.stdtimeExt,
 	}
 
 	// Hot-path emitters target the main .pb.go: structs, oneof variants,
