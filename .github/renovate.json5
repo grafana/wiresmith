@@ -41,8 +41,9 @@
       ],
     },
     {
-      description: 'Fast-track Go updates',
-      matchDepNames: ['go'],
+      description: 'Fast-track Go updates (gomod + golang docker image)',
+      matchDepNames: ['go', 'golang'],
+      groupName: 'go-runtime',
       rangeStrategy: 'bump',
       minimumReleaseAge: '0 days',
     },
