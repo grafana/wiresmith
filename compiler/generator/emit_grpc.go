@@ -11,7 +11,8 @@ import (
 // emitGRPC writes the companion `<name>_grpc.pb.go` file for fd via the
 // vendored protoc-gen-go-grpc generator. Returns silently when fd
 // declares no services — the grpc bridge short-circuits the same case,
-// but checking up front avoids walking allFiles to build the dest map.
+// but checking up front avoids building the dest map for files where
+// the bridge would just throw it away.
 //
 // Unlike the other emitters in this package, emit_grpc does not write
 // into a FileGenerator buffer: the upstream generator owns its own

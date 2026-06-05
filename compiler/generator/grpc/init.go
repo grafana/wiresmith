@@ -18,8 +18,14 @@ package grpc
 
 const version = "1.6.0"
 
+// Distinct backing variables (rather than two pointers into one shared
+// bool) so a future override of one flag — e.g. an internal test that
+// flips requireUnimplemented to false — cannot accidentally toggle the
+// other.
 var (
-	defaultTrue          = true
-	requireUnimplemented = &defaultTrue
-	useGenericStreams    = &defaultTrue
+	defaultRequireUnimplemented = true
+	defaultUseGenericStreams    = true
+
+	requireUnimplemented = &defaultRequireUnimplemented
+	useGenericStreams    = &defaultUseGenericStreams
 )

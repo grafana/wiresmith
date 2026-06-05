@@ -82,14 +82,6 @@ type Generator struct {
 	// caller that hands placement to buf. Reset on every Generate call so a
 	// reused Generator can't carry a prior run's outputs into a new one.
 	outputs []GeneratedFile
-
-	// allFiles is the full set of linked .proto files for the current
-	// generation pass — the same slice generateFromFiles received as
-	// `results`. Stashed on the Generator so emit_grpc can hand protogen
-	// the FileDescriptorProtos for every file fd transitively imports
-	// without re-discovering them through fd.Imports(). Reset on every
-	// generateFromFiles call alongside outputs.
-	allFiles []protoreflect.FileDescriptor
 }
 
 // GeneratedFile is one output produced by the generator. Path is the
@@ -384,7 +376,6 @@ func (g *Generator) generateFromFiles(results []protoreflect.FileDescriptor, emi
 	// or outputs slice from a prior run into a new one.
 	g.emitFilter = emit
 	g.outputs = nil
-	g.allFiles = results
 
 	// Bind every registered FieldOption to its linked extension descriptor,
 	// then run their placement validators. Two passes (rather than one
