@@ -131,11 +131,10 @@ generate-ours: ## Regenerate all wiresmith + conformance code
 	$(WIRESMITH) --proto_path=proto/test --out=gen --module=$(MODULE)
 	@echo "==> Generating wiresmith code → gen/basic/"
 	$(WIRESMITH) --proto_path=proto/basic --out=gen --module=$(MODULE)
-	@echo "==> Generating gRPC stubs for proto/basic/service.proto → gen/basic/service/v1/"
-	@command -v protoc-gen-go-grpc >/dev/null 2>&1 || { echo "protoc-gen-go-grpc not found. Install with: go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.6.0"; exit 1; }
-	protoc -I proto/basic \
-		--go-grpc_out=. --go-grpc_opt=module=$(MODULE) \
-		proto/basic/service.proto
+	@# gen/basic/service/v1/service_grpc.pb.go is emitted by the wiresmith
+	@# CLI above via the vendored protoc-gen-go-grpc v1.6.0 generator (see
+	@# compiler/generator/grpc/). No separate protoc-gen-go-grpc invocation
+	@# is needed — adopters no longer have to install the standalone plugin.
 	@echo "==> Generating wiresmith conformance test messages → gen/protobuf_test_messages/"
 	$(WIRESMITH) --proto_path=proto/conformance --out=gen --module=$(MODULE) proto/conformance/test_messages_proto3.proto
 	@echo "==> Generating conformance protocol code → test/conformance/internal/conformancepb/"

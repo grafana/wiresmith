@@ -82,6 +82,14 @@ type Generator struct {
 	// caller that hands placement to buf. Reset on every Generate call so a
 	// reused Generator can't carry a prior run's outputs into a new one.
 	outputs []GeneratedFile
+
+	// allFiles is the full set of linked .proto files for the current
+	// generation pass — the same slice generateFromFiles received as
+	// `results`. Stashed on the Generator so emit_grpc can hand protogen
+	// the FileDescriptorProtos for every file fd transitively imports
+	// without re-discovering them through fd.Imports(). Reset on every
+	// generateFromFiles call alongside outputs.
+	allFiles []protoreflect.FileDescriptor
 }
 
 // GeneratedFile is one output produced by the generator. Path is the
@@ -376,6 +384,7 @@ func (g *Generator) generateFromFiles(results []protoreflect.FileDescriptor, emi
 	// or outputs slice from a prior run into a new one.
 	g.emitFilter = emit
 	g.outputs = nil
+	g.allFiles = results
 
 	// Bind every registered FieldOption to its linked extension descriptor,
 	// then run their placement validators. Two passes (rather than one
@@ -428,17 +437,18 @@ func (g *Generator) generateFromFiles(results []protoreflect.FileDescriptor, emi
 	// internal schemas and empty protos that emit no output, so they can't
 	// clobber a neighbour).
 	//
-	// Each proto emits up to four outputs (the main .pb.go and the companion
-	// _reflect.pb.go, _compare.pb.go, and _equal.pb.go), so an input like
-	// foo_reflect.proto / foo_compare.proto / foo_equal.proto would generate
-	// a file that collides with foo.proto's companion. Check all four paths
-	// against the same map.
-	outputs := make(map[string]string, 4*len(results))
+	// Each proto emits up to five outputs (the main .pb.go and the
+	// companion _reflect.pb.go, _compare.pb.go, _equal.pb.go, and — when
+	// the proto declares services — _grpc.pb.go), so an input like
+	// foo_reflect.proto / foo_compare.proto / foo_equal.proto / foo_grpc.proto
+	// would generate a file that collides with foo.proto's companion.
+	// Check all five paths against the same map.
+	outputs := make(map[string]string, 5*len(results))
 	for _, fd := range results {
 		if !g.shouldEmit(fd) {
 			continue
 		}
-		for _, outPath := range []string{g.outputPathFor(fd), g.outputReflectPathFor(fd), g.outputComparePathFor(fd), g.outputEqualPathFor(fd)} {
+		for _, outPath := range []string{g.outputPathFor(fd), g.outputReflectPathFor(fd), g.outputComparePathFor(fd), g.outputEqualPathFor(fd), g.outputGrpcPathFor(fd)} {
 			if prev, exists := outputs[outPath]; exists {
 				return nil, fmt.Errorf("output collision at %s: %q and %q both write to this path (proto package %q)",
 					outPath, prev, fd.Path(), fd.Package())
@@ -843,15 +853,18 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 
 	// Record the companion _equal.pb.go file. Skip if no messages contributed
 	// an Equal method (file with only enums, or filtered to none).
-	if fg.equalBody.Len() == 0 {
-		return nil
+	if fg.equalBody.Len() > 0 {
+		var eqOut bytes.Buffer
+		fg.emitHeader(&eqOut, fg.equalImports)
+		fg.emitEqualFileBanner(&eqOut)
+		eqOut.Write(fg.equalBody.Bytes())
+		g.writeFormatted(g.outputEqualPathFor(fd), eqOut.Bytes(), fd.Path())
 	}
-	var eqOut bytes.Buffer
-	fg.emitHeader(&eqOut, fg.equalImports)
-	fg.emitEqualFileBanner(&eqOut)
-	eqOut.Write(fg.equalBody.Bytes())
-	g.writeFormatted(g.outputEqualPathFor(fd), eqOut.Bytes(), fd.Path())
-	return nil
+
+	// Record the companion _grpc.pb.go file. Skip when fd declares no
+	// services — emitGRPC short-circuits the same case but checking
+	// inline keeps the order-of-files generated visible in this loop.
+	return g.emitGRPC(fd)
 }
 
 // writeFormatted gofmt-formats src and records it as one of this run's
@@ -892,6 +905,17 @@ func (g *Generator) outputComparePathFor(fd protoreflect.FileDescriptor) string 
 // iTLB locality reasons as `_reflect.pb.go`.
 func (g *Generator) outputEqualPathFor(fd protoreflect.FileDescriptor) string {
 	base := strings.TrimSuffix(filepath.Base(fd.Path()), ".proto") + "_equal.pb.go"
+	return filepath.Join(g.OutDir, sourceRelDir(fd.Path()), base)
+}
+
+// outputGrpcPathFor returns the path for the companion `_grpc.pb.go` file
+// that holds the gRPC client/server stubs emitted by the vendored
+// protoc-gen-go-grpc generator (compiler/generator/grpc). The path is
+// reserved unconditionally so collision detection can flag a hypothetical
+// `<name>_grpc.proto` even when fd itself has no services; the actual file
+// is only written when fd.Services().Len() > 0 (see emit_grpc.go).
+func (g *Generator) outputGrpcPathFor(fd protoreflect.FileDescriptor) string {
+	base := strings.TrimSuffix(filepath.Base(fd.Path()), ".proto") + "_grpc.pb.go"
 	return filepath.Join(g.OutDir, sourceRelDir(fd.Path()), base)
 }
 
