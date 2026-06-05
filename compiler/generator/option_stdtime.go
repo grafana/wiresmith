@@ -3,7 +3,6 @@ package generator
 import (
 	"fmt"
 
-	"github.com/bufbuild/protocompile/linker"
 	"github.com/grafana/wiresmith/compiler/types"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
@@ -44,7 +43,7 @@ func (o *stdtimeOption) Has(fd protoreflect.FieldDescriptor) bool {
 // fallback "not a Timestamp" — both options live on the same field but
 // produce conflicting Go shapes (`*time.Time` vs `time.Time`), and
 // silencing one would erase a user-meaningful intent.
-func (o *stdtimeOption) Validate(g *Generator, results linker.Files) error {
+func (o *stdtimeOption) Validate(g *Generator, results []protoreflect.FileDescriptor) error {
 	if o.ext == nil {
 		return nil
 	}

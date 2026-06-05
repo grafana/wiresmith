@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"unicode"
 
-	"github.com/bufbuild/protocompile/linker"
 	"github.com/grafana/wiresmith/compiler/types"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
@@ -75,7 +74,7 @@ var reservedCustomnameMethods = map[string]bool{
 // in the same message. Each class of failure would otherwise surface as a
 // confusing `go build` error far from the .proto source; catching it here
 // points back at the offending field.
-func (o *customnameOption) Validate(g *Generator, results linker.Files) error {
+func (o *customnameOption) Validate(g *Generator, results []protoreflect.FileDescriptor) error {
 	if o.ext == nil {
 		return nil
 	}

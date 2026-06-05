@@ -3,7 +3,6 @@ package generator
 import (
 	"fmt"
 
-	"github.com/bufbuild/protocompile/linker"
 	"github.com/grafana/wiresmith/compiler/types"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
@@ -42,7 +41,7 @@ type FieldOption interface {
 	// implementation returns a single combined error (one entry per
 	// offending field) prefixed by the extension name, matching the
 	// pre-registry per-option validation shape.
-	Validate(g *Generator, results linker.Files) error
+	Validate(g *Generator, results []protoreflect.FileDescriptor) error
 
 	// FieldType returns the types.FieldType override for `fd` if this
 	// option applies, else (nil, false). The dispatch loop in
@@ -75,7 +74,7 @@ func newOptionRegistry() []FieldOption {
 // matches name. The lookup matches the embedded options file by canonical
 // import path so a user file declaring the same proto package cannot
 // shadow it.
-func findExtension(results linker.Files, name string) protoreflect.FieldDescriptor {
+func findExtension(results []protoreflect.FileDescriptor, name string) protoreflect.FieldDescriptor {
 	for _, fd := range results {
 		if fd.Path() != embeddedOptionsPath {
 			continue

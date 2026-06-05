@@ -6,7 +6,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/bufbuild/protocompile/linker"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
@@ -31,7 +30,7 @@ type valueEdge struct {
 // Across-file recursion is detected too: the function walks every
 // non-internal file in results, so a cycle involving messages from two
 // proto packages is reported the same way as a same-file self-reference.
-func (g *Generator) validateNoValueCycles(results linker.Files) error {
+func (g *Generator) validateNoValueCycles(results []protoreflect.FileDescriptor) error {
 	mds := collectExternalMessages(results)
 	if len(mds) == 0 {
 		return nil
@@ -133,7 +132,7 @@ func (g *Generator) isValueRecursionEdge(fd protoreflect.FieldDescriptor) bool {
 // non-internal file in results. Internal schema files (the embedded
 // wiresmith/options.proto) are skipped so the cycle check only considers
 // user-facing types.
-func collectExternalMessages(results linker.Files) []protoreflect.MessageDescriptor {
+func collectExternalMessages(results []protoreflect.FileDescriptor) []protoreflect.MessageDescriptor {
 	var out []protoreflect.MessageDescriptor
 	seen := make(map[protoreflect.FullName]bool)
 	for _, fd := range results {

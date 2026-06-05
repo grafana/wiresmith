@@ -3,7 +3,6 @@ package generator
 import (
 	"fmt"
 
-	"github.com/bufbuild/protocompile/linker"
 	"github.com/grafana/wiresmith/compiler/types"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
@@ -37,7 +36,7 @@ func (o *pointerOption) Has(fd protoreflect.FieldDescriptor) bool {
 // Allowed: singular or repeated message fields.
 // Rejected: scalars/enums/bytes/strings, optional fields (redundant), oneof
 // variants (already interface-boxed), map fields (out of scope in v1).
-func (o *pointerOption) Validate(g *Generator, results linker.Files) error {
+func (o *pointerOption) Validate(g *Generator, results []protoreflect.FileDescriptor) error {
 	if o.ext == nil {
 		return nil
 	}
