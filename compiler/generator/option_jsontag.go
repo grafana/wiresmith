@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/bufbuild/protocompile/linker"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/descriptorpb"
@@ -19,7 +18,8 @@ const jsontagExtensionName = "wiresmith.options.jsontag"
 // descriptor among the linked files and caches it on the Generator. Mirrors
 // resolvePointerExtension — same lookup-by-canonical-path approach so a user
 // file declaring the same proto package cannot shadow the embedded definition.
-func (g *Generator) resolveJsontagExtension(results linker.Files) error {
+func (g *Generator) resolveJsontagExtension(results []protoreflect.FileDescriptor) error {
+	g.jsontagExt = nil
 	for _, fd := range results {
 		if fd.Path() != embeddedOptionsPath {
 			continue
@@ -33,7 +33,12 @@ func (g *Generator) resolveJsontagExtension(results linker.Files) error {
 			}
 		}
 	}
-	return fmt.Errorf("internal error: extension %q not found in compiled results — wiresmith/options.proto missing or malformed", jsontagExtensionName)
+	// Same rationale as the FieldOption loop in generateFromFiles: in
+	// plugin mode wiresmith/options.proto may legitimately not be part of
+	// the request, so a missing descriptor here means "no jsontag overrides
+	// in use" rather than an internal error. jsontagOverride already
+	// short-circuits on nil ext.
+	return nil
 }
 
 // jsontagOverride returns the user-supplied `json:"..."` tag value for fd, plus
@@ -73,7 +78,7 @@ func jsontagOverride(ext protoreflect.FieldDescriptor, fd protoreflect.FieldDesc
 // Backticks are the only character we reject: they would terminate the
 // raw-string struct tag emitted by fieldTag/mapFieldTag. Quotes inside the
 // value are safe because tag emission goes through %q, which escapes them.
-func (g *Generator) validateJsontagOptions(results linker.Files) error {
+func (g *Generator) validateJsontagOptions(results []protoreflect.FileDescriptor) error {
 	if g.jsontagExt == nil {
 		return nil
 	}

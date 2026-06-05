@@ -53,7 +53,7 @@ build: ## Build all packages
 	go build ./...
 
 test: ## Run correctness tests
-	GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn go test ./test/... -v
+	GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn go test ./test/... ./cmd/... -v
 
 coverage: ## Run tests with coverage report
 	GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn go test ./test/... ./compiler/... -coverpkg=./compiler/...,./protohelpers/... -coverprofile=coverage.out
