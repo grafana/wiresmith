@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 )
@@ -113,10 +114,15 @@ message Greeting {
 	// `go build` the generated package inside a throwaway module to catch
 	// any regression that produced parseable-but-uncompilable Go. The
 	// protohelpers package lives in this repo; wire it in as a replace so
-	// the synthetic module can import it without going through a proxy.
+	// the synthetic module can import it without going through a proxy. Pin
+	// the temp module's `go` directive to whatever the repo's own go.mod
+	// declares so the build runs under the same language version that
+	// `make build` would — a stale literal here once masked the difference
+	// between Go 1.24 and 1.26 toolchain semantics.
+	goVer := readGoModVersion(t, filepath.Join(repoRoot(t), "go.mod"))
 	modDir := filepath.Join(outDir, "pluginsmoke")
 	if err := os.WriteFile(filepath.Join(modDir, "go.mod"), []byte(
-		"module example.com/pluginsmoke\n\ngo 1.24\n\nrequire github.com/grafana/wiresmith v0.0.0-00010101000000-000000000000\n\nreplace github.com/grafana/wiresmith => "+repoRoot(t)+"\n",
+		"module example.com/pluginsmoke\n\ngo "+goVer+"\n\nrequire github.com/grafana/wiresmith v0.0.0-00010101000000-000000000000\n\nreplace github.com/grafana/wiresmith => "+repoRoot(t)+"\n",
 	), 0o644); err != nil {
 		t.Fatalf("write go.mod: %v", err)
 	}
@@ -136,6 +142,27 @@ message Greeting {
 		t.Fatalf("go build of generated package failed: %v\n%s", err, out)
 	}
 }
+
+// readGoModVersion returns the `go <ver>` directive from a go.mod file.
+// Used so the temp module the integration test writes tracks the same Go
+// language version the rest of the repo builds under.
+func readGoModVersion(t *testing.T, goModPath string) string {
+	t.Helper()
+	data, err := os.ReadFile(goModPath)
+	if err != nil {
+		t.Fatalf("read %s: %v", goModPath, err)
+	}
+	m := goDirectiveRE.FindStringSubmatch(string(data))
+	if m == nil {
+		t.Fatalf("no `go <version>` directive in %s", goModPath)
+	}
+	return m[1]
+}
+
+// goDirectiveRE captures the language version from a `go <ver>` directive
+// on its own line. Multiline mode matches the directive wherever it
+// appears in go.mod (always near the top in practice).
+var goDirectiveRE = regexp.MustCompile(`(?m)^go\s+(\S+)\s*$`)
 
 // repoRoot returns the absolute path to this repository's root by walking
 // up from the test binary's CWD until it finds go.mod. Computed lazily so

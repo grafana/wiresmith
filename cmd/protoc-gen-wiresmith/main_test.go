@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"flag"
 	"strings"
 	"testing"
 
@@ -15,6 +16,48 @@ import (
 	"google.golang.org/protobuf/types/descriptorpb"
 	"google.golang.org/protobuf/types/pluginpb"
 )
+
+// TestParamFuncMOverride locks in the protoc-style `M<source>=<dest>`
+// parsing. Earlier the M flag was registered as a flag.Var, which made
+// protogen's `name=value`-pair dispatch route `Mfoo/bar.proto=…` into
+// flags.Set("Mfoo/bar.proto", …) and fail (no flag of that name). Now
+// pluginOpts.paramFunc handles the M prefix directly. The semicolon-name
+// suffix that go_package accepts must pass through verbatim because the
+// generator's Overrides map preserves it as part of the destination.
+func TestParamFuncMOverride(t *testing.T) {
+	opts := pluginOpts{overrides: map[string]string{}}
+	flags := flag.NewFlagSet("test", flag.ContinueOnError)
+	flags.StringVar(&opts.module, "module", "", "")
+	f := opts.paramFunc(flags)
+
+	if err := f("Mfoo/bar.proto", "example.com/x"); err != nil {
+		t.Fatalf("M override: %v", err)
+	}
+	if got := opts.overrides["foo/bar.proto"]; got != "example.com/x" {
+		t.Errorf("override mismatch: got %q, want %q", got, "example.com/x")
+	}
+
+	if err := f("Mbaz.proto", "example.com/baz;baz"); err != nil {
+		t.Fatalf("M with ;name: %v", err)
+	}
+	if got := opts.overrides["baz.proto"]; got != "example.com/baz;baz" {
+		t.Errorf(`expected ";name" suffix preserved: got %q`, got)
+	}
+
+	if err := f("Mfoo/bar.proto", "another"); err == nil {
+		t.Fatal("expected duplicate M source to be rejected")
+	}
+	if err := f("M", "anything"); err == nil {
+		t.Fatal("expected empty-source M to be rejected")
+	}
+
+	if err := f("module", "ex/mod"); err != nil {
+		t.Fatalf("non-M flag set: %v", err)
+	}
+	if opts.module != "ex/mod" {
+		t.Errorf("module not propagated through paramFunc: got %q", opts.module)
+	}
+}
 
 // TestRunBasic drives the plugin's run() with a synthetic CodeGeneratorRequest
 // and checks the response carries the four generated files we expect for a

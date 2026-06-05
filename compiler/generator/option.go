@@ -30,11 +30,12 @@ type FieldOption interface {
 	Name() string
 
 	// Resolve binds the linked extension descriptor for this option.
-	// Called once per Generate after Compile. The descriptor is guaranteed
-	// non-nil — newOptionRegistry only invokes Resolve once findExtension
-	// has matched the name, so an internal-generator failure (the embed
-	// missing the extension) surfaces before any option-specific code
-	// runs.
+	// Called once per Generate after Compile. `ext` is nil when
+	// wiresmith/options.proto is not part of the compiled set — the common
+	// case in plugin mode, where the consumer's protoc/buf invocation
+	// hasn't been given the wiresmith schema. Implementations must store
+	// the value (including nil) and short-circuit subsequent Has* / Value*
+	// checks on a nil descriptor.
 	Resolve(ext protoreflect.FieldDescriptor)
 
 	// Validate walks `results` and rejects invalid placements. Each

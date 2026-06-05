@@ -28,42 +28,39 @@ import (
 // something meaningful.
 var version = ""
 
-// overridesFlag accumulates `-M source=dest[;name]` overrides exactly like
-// cmd/wiresmith. Kept as a literal copy rather than a shared package so a
-// future split into per-binary helpers doesn't require touching the
-// generator's import graph. The two stay in sync by code review.
-type overridesFlag struct{ m map[string]string }
-
-func (o *overridesFlag) String() string {
-	if o == nil || len(o.m) == 0 {
-		return ""
-	}
-	parts := make([]string, 0, len(o.m))
-	for k, v := range o.m {
-		parts = append(parts, k+"="+v)
-	}
-	return strings.Join(parts, ",")
-}
-
-func (o *overridesFlag) Set(v string) error {
-	i := strings.Index(v, "=")
-	if i <= 0 || i == len(v)-1 {
-		return fmt.Errorf("-M expects source=dest, got %q", v)
-	}
-	src, dest := v[:i], v[i+1:]
-	if _, dup := o.m[src]; dup {
-		return fmt.Errorf("-M source %q given more than once", src)
-	}
-	o.m[src] = dest
-	return nil
-}
-
 // pluginOpts collects the parsed plugin parameters. Materialised here
 // (rather than as closure-captured locals in main) so the inner Run can
 // be exercised from tests without going through stdin/stdout.
 type pluginOpts struct {
 	module    string
 	overrides map[string]string
+}
+
+// paramFunc parses one `--wiresmith_opt=<name>=<value>` pair. protogen
+// already split the pair on `=`, so values containing `=` (like
+// `go_package`-style `dest;name` suffixes) arrive intact.
+//
+// `M<source>=<dest>` import overrides take a special path: protoc / buf
+// users expect `Mfoo/bar.proto=example.com/x` to set source="foo/bar.proto"
+// → dest="example.com/x" — matching protoc-gen-go. Routing it through
+// flag.FlagSet would fail because protogen passes name=`Mfoo/bar.proto`
+// and there's no flag of that name. Matching the prefix here is simpler
+// than a one-off flag.Value implementation.
+func (o *pluginOpts) paramFunc(flags *flag.FlagSet) func(name, value string) error {
+	return func(name, value string) error {
+		if strings.HasPrefix(name, "M") {
+			src := strings.TrimPrefix(name, "M")
+			if src == "" {
+				return fmt.Errorf("-M requires a non-empty source key (got %q)", name+"="+value)
+			}
+			if _, dup := o.overrides[src]; dup {
+				return fmt.Errorf("-M source %q given more than once", src)
+			}
+			o.overrides[src] = value
+			return nil
+		}
+		return flags.Set(name, value)
+	}
 }
 
 func main() {
@@ -76,15 +73,12 @@ func main() {
 	}
 
 	opts := pluginOpts{overrides: map[string]string{}}
-	overrides := &overridesFlag{m: opts.overrides}
 
 	flags := flag.NewFlagSet("protoc-gen-wiresmith", flag.ContinueOnError)
 	flags.StringVar(&opts.module, "module", "",
 		`Go module path used as a fallback when a .proto file omits "option go_package".`)
-	flags.Var(overrides, "M",
-		`override Go import path for one .proto file (source=dest[;name]); repeatable, mirrors protoc's M flag`)
 
-	protogen.Options{ParamFunc: flags.Set}.Run(func(plugin *protogen.Plugin) error {
+	protogen.Options{ParamFunc: opts.paramFunc(flags)}.Run(func(plugin *protogen.Plugin) error {
 		// Tell protoc we understand proto3 `optional` fields — wiresmith
 		// emits Has*() and a presence bitmap for them. Without this flag
 		// protoc rejects any .proto in the request that uses proto3
