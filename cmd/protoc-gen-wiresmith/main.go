@@ -13,6 +13,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 	"runtime/debug"
 	"strings"
 
@@ -124,7 +125,13 @@ func run(plugin *protogen.Plugin, opts pluginOpts) error {
 	}
 
 	for _, o := range outputs {
-		gf := plugin.NewGeneratedFile(o.Path, "")
+		// CodeGeneratorResponse.File.name is specified as a forward-slash
+		// path regardless of host OS (it's a protobuf string, not a
+		// filesystem path), so a Windows wiresmith build mustn't leak
+		// backslashes from filepath.Join into the response. Convert here
+		// rather than in the generator so the CLI keeps using OS-native
+		// paths for os.WriteFile.
+		gf := plugin.NewGeneratedFile(filepath.ToSlash(o.Path), "")
 		if _, err := gf.Write(o.Content); err != nil {
 			return fmt.Errorf("writing %s: %w", o.Path, err)
 		}
