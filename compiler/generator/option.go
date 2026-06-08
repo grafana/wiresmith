@@ -280,20 +280,6 @@ func (fg *FileGenerator) hasStdtimeOption(fd protoreflect.FieldDescriptor) bool 
 	return opt.Has(fd)
 }
 
-// hasCustomtypeOption reports whether the field is annotated with
-// `(wiresmith.options.customtype)`. Used by emit_size / emit_marshal to
-// skip the default MessageKind branch — singular message customtype
-// fields surface via the user's CustomMarshaler methods, not via
-// MarshalToSizedBuffer/Size on a wiresmith-generated struct.
-func (fg *FileGenerator) hasCustomtypeOption(fd protoreflect.FieldDescriptor) bool {
-	opt := findOption[*customtypeOption](fg.options)
-	if opt == nil {
-		return false
-	}
-	_, ok := opt.Value(fd)
-	return ok
-}
-
 // stdtimeGoFieldType returns the Go-side struct-field type for an stdtime-
 // annotated field. Thin pass-through to the registered stdtimeOption; the
 // emit_getter / emit_struct call sites read more naturally as
