@@ -31,10 +31,13 @@ message M {
   int32 x = 1 [(wiresmith.options.customtype) = "example.com/foo.Bar"];
 }
 `)
-	expectInvalidCustomtype(t, err, "only applies to singular bytes or string fields")
+	expectInvalidCustomtype(t, err, "only applies to bytes, string, or message fields")
 }
 
-func TestCustomtypeOption_RejectsMessage(t *testing.T) {
+// TestCustomtypeOption_AcceptsSingularMessage pins that customtype is now
+// allowed on a singular message field — needed for the Mimir migration's
+// `LabelAdapter` over `Label` pattern.
+func TestCustomtypeOption_AcceptsSingularMessage(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
 package test.v1;
@@ -45,10 +48,16 @@ message M {
   Inner x = 1 [(wiresmith.options.customtype) = "example.com/foo.Bar"];
 }
 `)
-	expectInvalidCustomtype(t, err, "only applies to singular bytes or string fields")
+	if err != nil {
+		t.Fatalf("expected no error for singular message customtype, got: %v", err)
+	}
 }
 
-func TestCustomtypeOption_RejectsRepeated(t *testing.T) {
+// TestCustomtypeOption_AcceptsRepeatedBytes pins that customtype on
+// repeated bytes is allowed — the canonical "repeated UUID" pattern. Each
+// per-element envelope is length-delimited, identical contract to the
+// singular case but invoked in a loop.
+func TestCustomtypeOption_AcceptsRepeatedBytes(t *testing.T) {
 	err := runGenerator(t, `
 syntax = "proto3";
 package test.v1;
@@ -58,7 +67,49 @@ message M {
   repeated bytes x = 1 [(wiresmith.options.customtype) = "example.com/foo.Bar"];
 }
 `)
-	expectInvalidCustomtype(t, err, "not supported on repeated fields")
+	if err != nil {
+		t.Fatalf("expected no error for repeated bytes customtype, got: %v", err)
+	}
+}
+
+// TestCustomtypeOption_AcceptsRepeatedMessage pins that customtype on
+// repeated message is allowed — the canonical `repeated TimeSeries
+// [customtype = "PreallocTimeseries"]` Mimir pattern.
+func TestCustomtypeOption_AcceptsRepeatedMessage(t *testing.T) {
+	err := runGenerator(t, `
+syntax = "proto3";
+package test.v1;
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
+import "wiresmith/options.proto";
+message Inner {}
+message M {
+  repeated Inner x = 1 [(wiresmith.options.customtype) = "example.com/foo.Bar"];
+}
+`)
+	if err != nil {
+		t.Fatalf("expected no error for repeated message customtype, got: %v", err)
+	}
+}
+
+// TestCustomtypeOption_RejectsPointerCombo pins the customtype whitelist —
+// (pointer) is not on it, so attempting to combine the two surfaces a
+// clear placement error rather than letting the conflicting Go shapes
+// reach the emit phase.
+func TestCustomtypeOption_RejectsPointerCombo(t *testing.T) {
+	err := runGenerator(t, `
+syntax = "proto3";
+package test.v1;
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
+import "wiresmith/options.proto";
+message Inner {}
+message M {
+  Inner x = 1 [
+    (wiresmith.options.customtype) = "example.com/foo.Bar",
+    (wiresmith.options.pointer) = true
+  ];
+}
+`)
+	expectInvalidCustomtype(t, err, "wiresmith.options.pointer")
 }
 
 func TestCustomtypeOption_RejectsOneofVariant(t *testing.T) {

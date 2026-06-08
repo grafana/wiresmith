@@ -36,6 +36,9 @@ func (o *pointerOption) Has(fd protoreflect.FieldDescriptor) bool {
 // Allowed: singular or repeated message fields.
 // Rejected: scalars/enums/bytes/strings, optional fields (redundant), oneof
 // variants (already interface-boxed), map fields (out of scope in v1).
+// Cross-option incompatibility with `(wiresmith.options.customtype)` is
+// flagged from customtype.Validate so the rejection lives next to the
+// option that owns the conflicting Go shape.
 func (o *pointerOption) Validate(g *Generator, results []protoreflect.FileDescriptor) error {
 	if o.ext == nil {
 		return nil

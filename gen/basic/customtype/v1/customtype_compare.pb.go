@@ -67,3 +67,78 @@ func (this *CustomTypeHolder) Compare(that interface{}) int {
 	}
 	return 0
 }
+
+func (this *RepeatedCustomTypeHolder) Compare(that interface{}) int {
+	if that == nil {
+		if this == nil {
+			return 0
+		}
+		return 1
+	}
+
+	that1, ok := that.(*RepeatedCustomTypeHolder)
+	if !ok {
+		that2, ok := that.(RepeatedCustomTypeHolder)
+		if ok {
+			that1 = &that2
+		} else {
+			return 1
+		}
+	}
+	if that1 == nil {
+		if this == nil {
+			return 0
+		}
+		return 1
+	} else if this == nil {
+		return -1
+	}
+	if len(this.Ids) != len(that1.Ids) {
+		if len(this.Ids) < len(that1.Ids) {
+			return -1
+		}
+		return 1
+	}
+	for i := range this.Ids {
+		if c := this.Ids[i].CompareWiresmith(that1.Ids[i]); c != 0 {
+			return c
+		}
+	}
+	if len(this.Tags) != len(that1.Tags) {
+		if len(this.Tags) < len(that1.Tags) {
+			return -1
+		}
+		return 1
+	}
+	for i := range this.Tags {
+		if c := this.Tags[i].CompareWiresmith(that1.Tags[i]); c != 0 {
+			return c
+		}
+	}
+	if len(this.PlainIds) != len(that1.PlainIds) {
+		if len(this.PlainIds) < len(that1.PlainIds) {
+			return -1
+		}
+		return 1
+	}
+	for i := range this.PlainIds {
+		if c := bytes.Compare(this.PlainIds[i], that1.PlainIds[i]); c != 0 {
+			return c
+		}
+	}
+	if len(this.PlainTags) != len(that1.PlainTags) {
+		if len(this.PlainTags) < len(that1.PlainTags) {
+			return -1
+		}
+		return 1
+	}
+	for i := range this.PlainTags {
+		if this.PlainTags[i] != that1.PlainTags[i] {
+			if this.PlainTags[i] < that1.PlainTags[i] {
+				return -1
+			}
+			return 1
+		}
+	}
+	return 0
+}

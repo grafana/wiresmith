@@ -1,0 +1,121 @@
+package basic
+
+import (
+	"reflect"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	ct "github.com/grafana/wiresmith/gen/basic/customtype/v1"
+	"github.com/grafana/wiresmith/test/customtypes"
+)
+
+// TestRepeatedCustomType_FieldTypesSwapped pins the Go-side shape of the
+// repeated customtype-annotated fields. Each element surfaces as the user
+// type; controls stay as plain `[]byte` / `[]string`.
+func TestRepeatedCustomType_FieldTypesSwapped(t *testing.T) {
+	holderType := reflect.TypeFor[ct.RepeatedCustomTypeHolder]()
+	cases := []struct {
+		field    string
+		wantType string
+	}{
+		{"Ids", "[]customtypes.UUID"},
+		{"Tags", "[]customtypes.Tag"},
+		{"PlainIds", "[][]uint8"},
+		{"PlainTags", "[]string"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.field, func(t *testing.T) {
+			f, ok := holderType.FieldByName(tc.field)
+			require.True(t, ok)
+			assert.Equal(t, tc.wantType, f.Type.String())
+		})
+	}
+}
+
+// TestRepeatedCustomType_RoundTrip confirms wire format is unchanged for
+// the repeated bytes (UUID) and repeated string (Tag) customtype dispatch.
+// Each per-element envelope stays length-delimited; the user type owns the
+// payload bytes.
+func TestRepeatedCustomType_RoundTrip(t *testing.T) {
+	msg := &ct.RepeatedCustomTypeHolder{
+		Ids: []customtypes.UUID{
+			{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10},
+			{0xff, 0xee, 0xdd, 0xcc, 0xbb, 0xaa, 0x99, 0x88, 0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11, 0x00},
+		},
+		Tags:      []customtypes.Tag{"alpha", "beta", "gamma"},
+		PlainIds:  [][]byte{{0xde, 0xad}, {0xbe, 0xef}},
+		PlainTags: []string{"plain1", "plain2"},
+	}
+	roundTrip(t, msg)
+}
+
+// TestRepeatedCustomType_WireCompatWithControl confirms the wire bytes a
+// repeated customtype produces are byte-identical to the bytes a plain
+// repeated bytes/string field would produce for the same payload content.
+// Each UUID element is 16 bytes; each Tag is a length-prefixed string.
+func TestRepeatedCustomType_WireCompatWithControl(t *testing.T) {
+	// Single UUID, all-zero-byte payload that the SizeWiresmith==0 gate
+	// skips. We'd lose round-trip identity for the zero UUID otherwise —
+	// the test below uses a non-zero payload to keep wire bytes present.
+	id := customtypes.UUID{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10}
+
+	// Customtype path: Ids[0] via UUID; PlainIds unset.
+	a := &ct.RepeatedCustomTypeHolder{Ids: []customtypes.UUID{id}}
+	bA, err := a.Marshal()
+	require.NoError(t, err)
+
+	// Control path: PlainIds[0] with the same 16 payload bytes; Ids unset.
+	b := &ct.RepeatedCustomTypeHolder{PlainIds: [][]byte{id[:]}}
+	bB, err := b.Marshal()
+	require.NoError(t, err)
+
+	require.Len(t, bA, len(bB), "customtype and control wire byte counts must match for equivalent payload")
+	// Tag bytes differ by field number (1 vs 3). Strip the first byte and
+	// confirm length-prefix + payload bytes are identical between the two.
+	assert.Equal(t, bA[1:], bB[1:], "payload bytes after the tag must be identical between customtype and control")
+}
+
+// TestRepeatedCustomType_EmptyRoundTrip confirms an empty customtype slice
+// produces no wire bytes. Decoding such a payload leaves the slice nil.
+func TestRepeatedCustomType_EmptyRoundTrip(t *testing.T) {
+	msg := &ct.RepeatedCustomTypeHolder{}
+	b, err := msg.Marshal()
+	require.NoError(t, err)
+	assert.Empty(t, b, "empty holder must produce no wire bytes")
+
+	dst := &ct.RepeatedCustomTypeHolder{}
+	require.NoError(t, dst.Unmarshal(b))
+	assert.Nil(t, dst.Ids)
+	assert.Nil(t, dst.Tags)
+}
+
+// TestRepeatedCustomType_ZeroElementSkipped pins that an element whose
+// SizeWiresmith returns 0 (here, the all-zero UUID) is skipped on the
+// wire, mirroring proto3's "omit default" semantics for plain bytes.
+func TestRepeatedCustomType_ZeroElementSkipped(t *testing.T) {
+	msg := &ct.RepeatedCustomTypeHolder{
+		Ids: []customtypes.UUID{
+			{0x01}, // non-zero
+			{},     // zero — should be skipped
+			{0x02}, // non-zero
+		},
+	}
+	b, err := msg.Marshal()
+	require.NoError(t, err)
+
+	dst := &ct.RepeatedCustomTypeHolder{}
+	require.NoError(t, dst.Unmarshal(b))
+	require.Len(t, dst.Ids, 2, "zero-sized element must not appear on the wire")
+	assert.Equal(t, byte(0x01), dst.Ids[0][0])
+	assert.Equal(t, byte(0x02), dst.Ids[1][0])
+}
+
+// TestRepeatedCustomType_GetterOnNilReceiver pins the nil-safety contract
+// for the repeated customtype getter.
+func TestRepeatedCustomType_GetterOnNilReceiver(t *testing.T) {
+	var m *ct.RepeatedCustomTypeHolder
+	assert.Nil(t, m.GetIds())
+	assert.Nil(t, m.GetTags())
+}

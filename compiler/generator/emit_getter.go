@@ -79,6 +79,23 @@ func (fg *FileGenerator) emitGetters(md protoreflect.MessageDescriptor) {
 			continue
 		}
 
+		// `(wiresmith.options.customtype)` swaps the field type for a
+		// user-supplied Go type whose zero literal we don't know — use a
+		// `var zero T` declaration so the getter works for any kind shape
+		// (named primitive alias, struct, pointer wrapper, …).
+		//
+		// Customtype is matched before the plain MessageKind branch below
+		// because a customtype-annotated message field surfaces as a
+		// value-typed `T` rather than `*Msg`; the MessageKind branch would
+		// otherwise emit `*Msg` and break compilation against the swapped
+		// struct field.
+		if ctType, ok := fg.customtypeGoFieldType(fd); ok {
+			fmt.Fprintf(fg.body, "func (m *%s) Get%s() %s {\n", name, goName, ctType)
+			fmt.Fprintf(fg.body, "\tif m != nil {\n\t\treturn m.%s\n\t}\n", goName)
+			fmt.Fprintf(fg.body, "\tvar zero %s\n\treturn zero\n}\n\n", ctType)
+			continue
+		}
+
 		// Message value-type fields: return pointer, nil when bitmap says absent.
 		// Currently the bitmap entry always exists here (same filter predicate
 		// as fieldsForPresence), but we keep the fallback so the getter
@@ -95,17 +112,6 @@ func (fg *FileGenerator) emitGetters(md protoreflect.MessageDescriptor) {
 			}
 			fmt.Fprintf(fg.body, "\t\treturn &m.%s\n\t}\n", goName)
 			fmt.Fprintf(fg.body, "\treturn nil\n}\n\n")
-			continue
-		}
-
-		// `(wiresmith.options.customtype)` swaps the field type for a
-		// user-supplied Go type whose zero literal we don't know — use a
-		// `var zero T` declaration so the getter works for any kind shape
-		// (named primitive alias, struct, pointer wrapper, …).
-		if ctType, ok := fg.customtypeGoFieldType(fd); ok {
-			fmt.Fprintf(fg.body, "func (m *%s) Get%s() %s {\n", name, goName, ctType)
-			fmt.Fprintf(fg.body, "\tif m != nil {\n\t\treturn m.%s\n\t}\n", goName)
-			fmt.Fprintf(fg.body, "\tvar zero %s\n\treturn zero\n}\n\n", ctType)
 			continue
 		}
 

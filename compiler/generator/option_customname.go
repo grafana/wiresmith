@@ -32,6 +32,13 @@ func (o *customnameOption) Value(fd protoreflect.FieldDescriptor) (string, bool)
 	return stringOption(o.ext, fd)
 }
 
+// Has satisfies FieldOption. Customname is a string-valued option, so
+// presence equals "Value returned ok=true".
+func (o *customnameOption) Has(fd protoreflect.FieldDescriptor) bool {
+	_, ok := o.Value(fd)
+	return ok
+}
+
 // FieldType / GoFieldType always return false: customname affects naming,
 // not the field's Go-side type or wire encoding. Satisfies FieldOption so
 // the option can ride the same resolve+validate loop as the others.

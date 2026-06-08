@@ -6,9 +6,9 @@ option go_package = "github.com/grafana/wiresmith/gen/basic/customtype/v1";
 
 import "wiresmith/options.proto";
 
-// CustomTypeHolder exercises (wiresmith.options.customtype) on the two field
-// kinds the v1 scope covers: bytes and string. A control field of each kind
-// without the option demonstrates that the swap is local.
+// CustomTypeHolder exercises (wiresmith.options.customtype) on singular
+// bytes and string fields. A control field of each kind without the
+// option demonstrates that the swap is local.
 //
 // LabelPairs and TenantID live in github.com/grafana/wiresmith/test/customtypes and implement
 // the wiresmith CustomMarshaler shape (Size/Marshal/Unmarshal/Equal). The
@@ -21,4 +21,22 @@ message CustomTypeHolder {
   // annotated fields, not the rest of the message.
   bytes  plain_bytes  = 3;
   string plain_string = 4;
+}
+
+// RepeatedCustomTypeHolder exercises (wiresmith.options.customtype) on the
+// repeated bytes and string cases — every per-element envelope is still
+// length-delimited, so the user type's contract is identical to the
+// singular case but invoked in a loop.
+//
+// UUID stands in for the canonical "repeated bytes" customtype: each
+// element is a fixed-size opaque payload that wants to surface as a
+// strongly-typed Go value rather than a `[]byte`. Tag wraps "repeated
+// string" with the same shape.
+message RepeatedCustomTypeHolder {
+  repeated bytes  ids  = 1 [(wiresmith.options.customtype) = "github.com/grafana/wiresmith/test/customtypes.UUID"];
+  repeated string tags = 2 [(wiresmith.options.customtype) = "github.com/grafana/wiresmith/test/customtypes.Tag"];
+
+  // Controls: stock repeated bytes / string slices stay unaffected.
+  repeated bytes  plain_ids  = 3;
+  repeated string plain_tags = 4;
 }
