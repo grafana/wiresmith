@@ -8,7 +8,6 @@
 package grpc
 
 import (
-	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -87,7 +86,11 @@ func Generate(fd protoreflect.FileDescriptor, dests map[string]Dest) ([]byte, er
 
 	resp := plugin.Response()
 	if e := resp.GetError(); e != "" {
-		return nil, errors.New(e)
+		// protogen surfaces plugin failures as a string on the response,
+		// not an `error` value, so there's nothing to `%w`-wrap. Add the
+		// file path so the caller stack identifies which proto blew up
+		// rather than just echoing protogen's bare message.
+		return nil, fmt.Errorf("protogen reported error generating %q: %s", fd.Path(), e)
 	}
 	// generateFile is skipped when len(file.Services) == 0 (upstream); we
 	// guarded the same case above. If we reach here with no Response files
