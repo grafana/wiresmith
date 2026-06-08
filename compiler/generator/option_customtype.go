@@ -49,7 +49,7 @@ func (o *customtypeOption) Has(fd protoreflect.FieldDescriptor) bool {
 //
 // Adding a new peer option means deciding here whether it can ride
 // alongside customtype, which is the same gate as "does this option
-// touch the Go type or wire bytes" — making the decision explicit and
+// touch the Go type or wire bytes" — making the decision explicit
 // keeps the rejection list automatic.
 var customtypeCompatiblePeers = map[string]bool{
 	customnameExtensionName: true,
