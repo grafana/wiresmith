@@ -4,12 +4,13 @@ import (
 	"google.golang.org/protobuf/encoding/protowire"
 )
 
-// RepeatedCustomType is the FieldType for a repeated message field
-// annotated with (wiresmith.options.customtype). Each element rides the
-// standard length-delimited message envelope (tag + varint length +
-// payload), with the user-supplied Go type owning the payload bytes via
-// Size/Marshal/Unmarshal/Equal/CompareWiresmith — the same contract the
-// singular CustomType emits, scaled out into a per-element loop.
+// RepeatedCustomType is the FieldType for a repeated bytes, string, or
+// message field annotated with (wiresmith.options.customtype). Each
+// per-element envelope is length-delimited regardless of source kind
+// (wire type 2: tag + varint length + payload), so the emit shape is
+// kind-agnostic — the user-supplied Go type owns the payload bytes via
+// Size/Marshal/Unmarshal/Equal/CompareWiresmith, the same contract the
+// singular CustomType uses, scaled out into a per-element loop.
 //
 // GoType is the Go expression used to spell a fresh zero value during
 // unmarshal (e.g. "LabelAdapter" for a same-package type or

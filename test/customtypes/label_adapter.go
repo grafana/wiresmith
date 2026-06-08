@@ -17,9 +17,10 @@ import (
 // of `name` and `value` are non-empty. Both fields are length-delimited
 // (wire type 2), so the encoder emits tag = (field<<3)|2.
 //
-// The deliberately stdlib-only implementation (encoding/protowire) keeps
-// the customtype contract explicit — the user is responsible for any
-// wire-compatible encoding, not just one that imports wiresmith helpers.
+// The implementation deliberately uses only Google's `protowire` package
+// (no wiresmith-internal helpers) to keep the customtype contract
+// explicit: a user type is responsible for any wire-compatible encoding,
+// not one that has to depend on wiresmith's own emit-time helpers.
 type LabelAdapter struct {
 	Name  string
 	Value string
