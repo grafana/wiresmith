@@ -428,17 +428,18 @@ func (g *Generator) generateFromFiles(results []protoreflect.FileDescriptor, emi
 	// internal schemas and empty protos that emit no output, so they can't
 	// clobber a neighbour).
 	//
-	// Each proto emits up to four outputs (the main .pb.go and the companion
-	// _reflect.pb.go, _compare.pb.go, and _equal.pb.go), so an input like
-	// foo_reflect.proto / foo_compare.proto / foo_equal.proto would generate
-	// a file that collides with foo.proto's companion. Check all four paths
-	// against the same map.
-	outputs := make(map[string]string, 4*len(results))
+	// Each proto emits up to five outputs (the main .pb.go and the
+	// companion _reflect.pb.go, _compare.pb.go, _equal.pb.go, and — when
+	// the proto declares services — _grpc.pb.go), so an input like
+	// foo_reflect.proto / foo_compare.proto / foo_equal.proto / foo_grpc.proto
+	// would generate a file that collides with foo.proto's companion.
+	// Check all five paths against the same map.
+	outputs := make(map[string]string, 5*len(results))
 	for _, fd := range results {
 		if !g.shouldEmit(fd) {
 			continue
 		}
-		for _, outPath := range []string{g.outputPathFor(fd), g.outputReflectPathFor(fd), g.outputComparePathFor(fd), g.outputEqualPathFor(fd)} {
+		for _, outPath := range []string{g.outputPathFor(fd), g.outputReflectPathFor(fd), g.outputComparePathFor(fd), g.outputEqualPathFor(fd), g.outputGrpcPathFor(fd)} {
 			if prev, exists := outputs[outPath]; exists {
 				return nil, fmt.Errorf("output collision at %s: %q and %q both write to this path (proto package %q)",
 					outPath, prev, fd.Path(), fd.Package())
@@ -488,15 +489,21 @@ func (g *Generator) shouldEmit(fd protoreflect.FileDescriptor) bool {
 	return true
 }
 
-// shouldGenerateFile reports whether fd contributes a .pb.go to the output.
-// Internal schema files (wiresmith.options) and proto files with no messages
-// or enums are skipped — the latter would emit only an empty init() plus
-// unused imports, which go build rejects.
+// shouldGenerateFile reports whether fd contributes any Go output. Internal
+// schema files (wiresmith.options) are always skipped. Files with no
+// messages, enums, or services emit nothing — the main .pb.go would be
+// header-only, the reflect/compare/equal companions have nothing to write,
+// and the gRPC stub generator has nothing to do.
+//
+// Service-only files (no messages, no enums, but `service` declarations)
+// produce both the FileDescriptor-registration companion (`_reflect.pb.go`)
+// and the gRPC stub companion (`_grpc.pb.go`); without them the gRPC bridge
+// would never reach a file whose only Go output is its stub set.
 func shouldGenerateFile(fd protoreflect.FileDescriptor) bool {
 	if isInternalSchemaFile(fd) {
 		return false
 	}
-	return fd.Messages().Len() > 0 || fd.Enums().Len() > 0
+	return fd.Messages().Len() > 0 || fd.Enums().Len() > 0 || fd.Services().Len() > 0
 }
 
 // isInternalSchemaFile reports whether a compiled file is wiresmith-internal
@@ -810,11 +817,17 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 	fg.emitAllProtoReflectMethods(fd)
 	fg.emitRegistration(fd)
 
-	// Record the main .pb.go file.
-	var mainOut bytes.Buffer
-	fg.emitHeader(&mainOut, fg.imports)
-	mainOut.Write(fg.body.Bytes())
-	g.writeFormatted(g.outputPathFor(fd), mainOut.Bytes(), fd.Path())
+	// Record the main .pb.go file. Skip when fg.body is empty — that's the
+	// service-only case (no enums, oneofs, structs, accessors, or marshal
+	// methods to emit), and emitting a header-only file would just produce
+	// unused imports / no useful Go output. Mirrors the per-companion
+	// conditional writes for _reflect / _compare / _equal below.
+	if fg.body.Len() > 0 {
+		var mainOut bytes.Buffer
+		fg.emitHeader(&mainOut, fg.imports)
+		mainOut.Write(fg.body.Bytes())
+		g.writeFormatted(g.outputPathFor(fd), mainOut.Bytes(), fd.Path())
+	}
 
 	// Record the companion _reflect.pb.go file. Skip if the proto declared no
 	// messages and no enums — there's nothing to register and emitting a file
@@ -843,15 +856,18 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 
 	// Record the companion _equal.pb.go file. Skip if no messages contributed
 	// an Equal method (file with only enums, or filtered to none).
-	if fg.equalBody.Len() == 0 {
-		return nil
+	if fg.equalBody.Len() > 0 {
+		var eqOut bytes.Buffer
+		fg.emitHeader(&eqOut, fg.equalImports)
+		fg.emitEqualFileBanner(&eqOut)
+		eqOut.Write(fg.equalBody.Bytes())
+		g.writeFormatted(g.outputEqualPathFor(fd), eqOut.Bytes(), fd.Path())
 	}
-	var eqOut bytes.Buffer
-	fg.emitHeader(&eqOut, fg.equalImports)
-	fg.emitEqualFileBanner(&eqOut)
-	eqOut.Write(fg.equalBody.Bytes())
-	g.writeFormatted(g.outputEqualPathFor(fd), eqOut.Bytes(), fd.Path())
-	return nil
+
+	// Record the companion _grpc.pb.go file. Skip when fd declares no
+	// services — emitGRPC short-circuits the same case but checking
+	// inline keeps the order-of-files generated visible in this loop.
+	return g.emitGRPC(fd)
 }
 
 // writeFormatted gofmt-formats src and records it as one of this run's
@@ -892,6 +908,17 @@ func (g *Generator) outputComparePathFor(fd protoreflect.FileDescriptor) string 
 // iTLB locality reasons as `_reflect.pb.go`.
 func (g *Generator) outputEqualPathFor(fd protoreflect.FileDescriptor) string {
 	base := strings.TrimSuffix(filepath.Base(fd.Path()), ".proto") + "_equal.pb.go"
+	return filepath.Join(g.OutDir, sourceRelDir(fd.Path()), base)
+}
+
+// outputGrpcPathFor returns the path for the companion `_grpc.pb.go` file
+// that holds the gRPC client/server stubs emitted by the vendored
+// protoc-gen-go-grpc generator (compiler/generator/grpc). The path is
+// reserved unconditionally so collision detection can flag a hypothetical
+// `<name>_grpc.proto` even when fd itself has no services; the actual file
+// is only written when fd.Services().Len() > 0 (see emit_grpc.go).
+func (g *Generator) outputGrpcPathFor(fd protoreflect.FileDescriptor) string {
+	base := strings.TrimSuffix(filepath.Base(fd.Path()), ".proto") + "_grpc.pb.go"
 	return filepath.Join(g.OutDir, sourceRelDir(fd.Path()), base)
 }
 
@@ -1076,7 +1103,14 @@ func (fg *FileGenerator) emitAllMarshalMethods(fd protoreflect.FileDescriptor) {
 }
 
 func (fg *FileGenerator) emitAllUnmarshalMethods(fd protoreflect.FileDescriptor) {
-	// Emit the max recursion depth constant and skip helpers once per file.
+	// Emit nothing for a file with no messages — the maxUnmarshalDepth
+	// constant and skipValue helper exist only to be referenced by the
+	// per-message Unmarshal methods, so emitting them in a service-only
+	// or enums-only file would push fg.body across the "skip empty main
+	// .pb.go" threshold that generateFile uses to drop header-only output.
+	if fd.Messages().Len() == 0 {
+		return
+	}
 	fmt.Fprintf(fg.body, "const maxUnmarshalDepth = 10000\n\n")
 	fg.emitSkipValueHelper()
 	forEachMessage(fd, fg.emitUnmarshal)

@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package basic.serviceonly.v1;
+
+import "serviceonly/v1/messages.proto";
+
+option go_package = "github.com/grafana/wiresmith/gen/serviceonly/v1;serviceonlyv1";
+
+// EchoSplit is the regression fixture for wiresmith-e9h: a service-only
+// .proto that references message types from a sibling file. The plain
+// service.proto fixture co-locates messages with the service, so it
+// does not exercise the codepath where shouldGenerateFile would have
+// dropped a file because it has no messages or enums of its own.
+service EchoSplit {
+  rpc Unary(Request) returns (Response);
+  rpc ClientStream(stream Request) returns (Response);
+  rpc ServerStream(Request) returns (stream Response);
+  rpc BidiStream(stream Request) returns (stream Response);
+}

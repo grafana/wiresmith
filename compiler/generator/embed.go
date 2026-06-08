@@ -14,3 +14,15 @@ var embeddedOptionsProto []byte
 // of the embedded schema file in code generation — the Generate loop skips
 // any compiled file whose path matches this constant.
 const embeddedOptionsPath = "wiresmith/options.proto"
+
+// embeddedOptionsImportPath / embeddedOptionsPkgName are sentinel Go-side
+// identifiers for `wiresmith/options.proto`. The file is generator-internal
+// and has no Go output (computeDests skips internal schemas), so these
+// strings never appear in any emitted code. They exist solely so emit_grpc
+// can register a Dest entry for the embedded schema when it shows up as a
+// transitive import of a user file — the grpc bridge's `buildParameter`
+// fails closed on any transitive import without a Dest, by design.
+const (
+	embeddedOptionsImportPath = "github.com/grafana/wiresmith/internal/wiresmithoptions"
+	embeddedOptionsPkgName    = "wiresmithoptionspb"
+)

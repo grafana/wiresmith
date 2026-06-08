@@ -253,13 +253,6 @@ func TestGenerateMatchesCheckedIn(t *testing.T) {
 					if e.IsDir() || !strings.HasSuffix(e.Name(), ".pb.go") {
 						continue
 					}
-					// _grpc.pb.go files come from protoc-gen-go-grpc, which
-					// co-locates its service stubs with wiresmith's message
-					// output (see proto/basic/service.proto). They are not
-					// produced by Generate, so we skip them here.
-					if strings.HasSuffix(e.Name(), "_grpc.pb.go") {
-						continue
-					}
 					rel := filepath.Join(dir, e.Name())
 					if _, ok := generatedFiles[rel]; !ok {
 						t.Errorf("checked-in %s was not generated; run 'make generate-ours'", rel)
