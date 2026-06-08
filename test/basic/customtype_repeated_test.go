@@ -56,9 +56,6 @@ func TestRepeatedCustomType_RoundTrip(t *testing.T) {
 // repeated bytes/string field would produce for the same payload content.
 // Each UUID element is 16 bytes; each Tag is a length-prefixed string.
 func TestRepeatedCustomType_WireCompatWithControl(t *testing.T) {
-	// Single UUID, all-zero-byte payload that the SizeWiresmith==0 gate
-	// skips. We'd lose round-trip identity for the zero UUID otherwise —
-	// the test below uses a non-zero payload to keep wire bytes present.
 	id := customtypes.UUID{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10}
 
 	// Customtype path: Ids[0] via UUID; PlainIds unset.
@@ -91,17 +88,24 @@ func TestRepeatedCustomType_EmptyRoundTrip(t *testing.T) {
 	assert.Nil(t, dst.Tags)
 }
 
-// TestRepeatedCustomType_PreservesAllElements pins that every slice
-// element is emitted to the wire, including the all-zero element —
-// proto3 repeated semantics preserve each occurrence (analogous to
-// `repeated bytes` emitting `tag + 0` for an empty `[]byte` element).
-// Skipping zero-sized elements would silently corrupt round-trips.
-func TestRepeatedCustomType_PreservesAllElements(t *testing.T) {
+// TestRepeatedCustomType_PreservesEmptyElements pins that every slice
+// element is emitted to the wire, including an element whose
+// SizeWiresmith() returns 0 — proto3 repeated semantics preserve each
+// occurrence (analogous to `repeated bytes` emitting `tag + 0` for an
+// empty `[]byte` element). Skipping zero-sized elements would silently
+// corrupt round-trips.
+//
+// Uses Tag (a string-backed customtype) rather than UUID for this
+// regression: UUID is fixed-size at 16 bytes so SizeWiresmith() never
+// returns 0, and a "skip on size 0" bug in the generator would slip
+// through a UUID-only fixture. Tag("") has SizeWiresmith() == 0 and
+// makes the gate testable.
+func TestRepeatedCustomType_PreservesEmptyElements(t *testing.T) {
 	msg := &ct.RepeatedCustomTypeHolder{
-		Ids: []customtypes.UUID{
-			{0x01}, // non-zero
-			{},     // all-zero — must still round-trip
-			{0x02}, // non-zero
+		Tags: []customtypes.Tag{
+			"alpha", // non-empty
+			"",      // size-0 — must still round-trip
+			"omega", // non-empty
 		},
 	}
 	b, err := msg.Marshal()
@@ -109,10 +113,10 @@ func TestRepeatedCustomType_PreservesAllElements(t *testing.T) {
 
 	dst := &ct.RepeatedCustomTypeHolder{}
 	require.NoError(t, dst.Unmarshal(b))
-	require.Len(t, dst.Ids, 3, "every slice element must round-trip, including the zero element")
-	assert.Equal(t, byte(0x01), dst.Ids[0][0])
-	assert.Equal(t, customtypes.UUID{}, dst.Ids[1])
-	assert.Equal(t, byte(0x02), dst.Ids[2][0])
+	require.Len(t, dst.Tags, 3, "every slice element must round-trip, including the size-0 element")
+	assert.Equal(t, customtypes.Tag("alpha"), dst.Tags[0])
+	assert.Equal(t, customtypes.Tag(""), dst.Tags[1])
+	assert.Equal(t, customtypes.Tag("omega"), dst.Tags[2])
 }
 
 // TestRepeatedCustomType_GetterOnNilReceiver pins the nil-safety contract

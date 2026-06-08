@@ -165,9 +165,9 @@ Rejected (combined compile-time error from `customtypeOption.Validate`):
 - Non-bytes/non-string scalars, enums.
 - Map fields, oneof variants, proto3 `optional` fields.
 - Malformed values: empty string, leading-digit type name, embedded whitespace, etc.
-- Combined with any peer wiresmith option not in the customtype whitelist (currently `customname` and `jsontag`). Combining customtype with `pointer` or `stdtime` would produce two conflicting Go-shape overrides, so it's rejected at validation time.
+- Combined with any peer wiresmith `FieldOption` not in the customtype whitelist (currently `customname`). Combining customtype with `pointer` or `stdtime` would produce two conflicting Go-shape overrides, so it's rejected at validation time.
 
-The compatibility whitelist lives in `customtypeCompatiblePeers` in `compiler/generator/option_customtype.go`; adding a new peer option means deciding explicitly whether it can ride alongside customtype.
+The compatibility whitelist lives in `customtypeCompatiblePeers` in `compiler/generator/option_customtype.go`; adding a new peer option means deciding explicitly whether it can ride alongside customtype. `jsontag` is not validated through the same `FieldOption` registry (it changes only the struct tag, not the Go type or wire bytes), so it's implicitly compatible with customtype without needing a whitelist entry.
 
 ### Worked examples
 

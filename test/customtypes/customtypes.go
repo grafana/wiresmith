@@ -114,8 +114,8 @@ func (u UUID) MarshalWiresmith(buf []byte) (int, error) {
 }
 
 func (u *UUID) UnmarshalWiresmith(buf []byte) error {
-	if len(buf) != len(u) {
-		return fmt.Errorf("UUID.UnmarshalWiresmith: expected %d bytes, got %d", len(u), len(buf))
+	if len(buf) != len(*u) {
+		return fmt.Errorf("UUID.UnmarshalWiresmith: expected %d bytes, got %d", len(*u), len(buf))
 	}
 	copy(u[:], buf)
 	return nil
