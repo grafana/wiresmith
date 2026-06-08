@@ -69,9 +69,10 @@ func TestRepeatedCustomType_WireCompatWithControl(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, bA, len(bB), "customtype and control wire byte counts must match for equivalent payload")
-	// Tag bytes differ by field number (1 vs 3). Strip the first byte and
-	// confirm length-prefix + payload bytes are identical between the two.
-	assert.Equal(t, bA[1:], bB[1:], "payload bytes after the tag must be identical between customtype and control")
+	// The two encodings differ only in the wire-tag byte (field number 1
+	// vs 3). Strip that leading byte and confirm length-prefix + payload
+	// bytes are identical between the customtype and control paths.
+	assert.Equal(t, bA[1:], bB[1:], "payload bytes after the wire tag must be identical between customtype and control")
 }
 
 // TestRepeatedCustomType_EmptyRoundTrip confirms an empty customtype slice
