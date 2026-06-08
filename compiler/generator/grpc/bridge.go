@@ -35,8 +35,8 @@ type Dest struct {
 // (nil, nil) when fd declares no services. dests must hold a Dest for fd
 // itself and every file fd transitively imports — those are exactly the
 // files protogen needs to resolve cross-package symbols in the generated
-// stubs. Missing entries surface as a "Go import path" error from
-// protogen.Options.New.
+// stubs. A missing entry is rejected up front (see buildParameter) so the
+// caller cannot silently regress to protogen's go_package fallback.
 //
 // The returned bytes are already gofmt-formatted by protogen (its
 // GeneratedFile.Content parses + reprints via go/format), so wiresmith's
@@ -53,7 +53,10 @@ func Generate(fd protoreflect.FileDescriptor, dests map[string]Dest) ([]byte, er
 		protoFiles[i] = protodesc.ToFileDescriptorProto(f)
 	}
 
-	parameter := buildParameter(files, dests)
+	parameter, err := buildParameter(files, dests)
+	if err != nil {
+		return nil, err
+	}
 
 	req := &pluginpb.CodeGeneratorRequest{
 		FileToGenerate: []string{fd.Path()},
@@ -127,16 +130,22 @@ func transitiveFiles(fd protoreflect.FileDescriptor) []protoreflect.FileDescript
 // their M-params is pure overhead that grows with the total compiled-
 // file count rather than the import depth of this service file.
 //
+// A transitive file missing from dests is an error: protogen would
+// otherwise fall back to the file's own go_package option, which can
+// diverge from the destination wiresmith resolved for that file and
+// embed inconsistent imports / package names in the generated stub.
+// Surface the gap loudly rather than letting it slip into the output.
+//
 // Sorted alphabetically so the same inputs always produce the same
 // parameter string — `splitImportPathAndPackageName` is order-
 // independent, but determinism makes plugin-mode behaviour reproducible
 // and is cheap to provide here.
-func buildParameter(files []protoreflect.FileDescriptor, dests map[string]Dest) string {
+func buildParameter(files []protoreflect.FileDescriptor, dests map[string]Dest) (string, error) {
 	parts := make([]string, 0, len(files))
 	for _, f := range files {
 		d, ok := dests[f.Path()]
 		if !ok {
-			continue
+			return "", fmt.Errorf("no destination for transitive import %q", f.Path())
 		}
 		// Always emit the ;pkgname suffix so protogen's pkgName derivation
 		// never falls back to `cleanPackageName(path.Base(importPath))` —
@@ -145,5 +154,5 @@ func buildParameter(files []protoreflect.FileDescriptor, dests map[string]Dest) 
 		parts = append(parts, fmt.Sprintf("M%s=%s;%s", f.Path(), d.ImportPath, d.PkgName))
 	}
 	sort.Strings(parts)
-	return strings.Join(parts, ",")
+	return strings.Join(parts, ","), nil
 }
