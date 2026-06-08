@@ -110,10 +110,18 @@ func (fg *FileGenerator) emitRegistration(fd protoreflect.FileDescriptor) {
 	enums := flattenedEnums(fd)
 	msgs := flattenedMessages(fd)
 
-	// Empty proto file (no enums and no messages): emit nothing. The
-	// caller already skips writing the _reflect.pb.go file if reflectBody
-	// stayed empty after all emitters ran.
-	if len(enums) == 0 && len(msgs) == 0 {
+	// Empty proto file (no enums, no messages, no services): emit nothing.
+	// The caller already skips writing the _reflect.pb.go file if
+	// reflectBody stayed empty after all emitters ran.
+	//
+	// A file with only services still goes through registration: its
+	// rawDesc records the package, dependencies, and (now-stripped)
+	// service set, and registering it in `protoregistry.GlobalFiles`
+	// keeps a stub-only file discoverable via FindFileByPath. The
+	// NumEnums / NumMessages / NumServices counts collapse to zero, which
+	// is what `protoimpl.TypeBuilder.Build()` expects when neither the
+	// EnumInfos nor MessageInfos slice is set on the builder.
+	if len(enums) == 0 && len(msgs) == 0 && fd.Services().Len() == 0 {
 		return
 	}
 

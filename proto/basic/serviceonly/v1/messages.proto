@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package basic.serviceonly.v1;
+
+option go_package = "github.com/grafana/wiresmith/gen/serviceonly/v1;serviceonlyv1";
+
+// Request is the input type for the EchoSplit service methods. Kept simple
+// — the goal of this fixture is to exercise the split-file service-only
+// generator path, not to repeat the kitchen-sink coverage in service.proto.
+message Request {
+  string id = 1;
+  bytes payload = 2;
+}
+
+// Response is the output type. Carries the request id back unchanged plus
+// a byte-count annotation the server fills in. The field is named
+// `payload_bytes` (rather than `size`) to avoid shadowing the generated
+// `Size()` marshal-helper method on the same struct.
+message Response {
+  string id = 1;
+  int64 payload_bytes = 2;
+}

@@ -27,9 +27,22 @@ func (g *Generator) emitGRPC(fd protoreflect.FileDescriptor) error {
 		return nil
 	}
 
-	dests := make(map[string]grpc.Dest, len(g.destinations))
+	dests := make(map[string]grpc.Dest, len(g.destinations)+1)
 	for path, d := range g.destinations {
 		dests[path] = grpc.Dest{ImportPath: d.importPath, PkgName: d.pkgName}
+	}
+	// wiresmith/options.proto is excluded from g.destinations because it
+	// is internal (computeDests skips internal schemas), so any user file
+	// that imports it would otherwise show up in the grpc bridge's
+	// transitiveFiles walk without a Dest entry — and buildParameter
+	// fails closed on missing transitive dests by design. Register a
+	// sentinel here so the bridge's strict check stays strict for genuine
+	// gaps. The sentinel strings are never referenced from any emitted
+	// stub: services never declare (wiresmith.options.*) field options,
+	// so protogen never produces a cross-package reference into them.
+	dests[embeddedOptionsPath] = grpc.Dest{
+		ImportPath: embeddedOptionsImportPath,
+		PkgName:    embeddedOptionsPkgName,
 	}
 
 	content, err := grpc.Generate(fd, dests)
