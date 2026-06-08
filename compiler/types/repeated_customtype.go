@@ -30,27 +30,27 @@ type RepeatedCustomType struct {
 func (r *RepeatedCustomType) RequiredImports() []string { return []string{"fmt"} }
 
 // EmitSize emits a per-element loop accumulating tag + varint length +
-// payload size for each entry whose SizeWiresmith reports a positive
-// length. The zero-length skip mirrors CustomType's behavior so an empty
-// element stays off the wire — `append(slice, T{})` produced by an
-// upstream unmarshal of an empty payload still round-trips.
+// payload size for every entry in the slice. Unlike the singular
+// CustomType, we emit each element unconditionally — proto3 repeated
+// semantics preserve every slice element on the wire (a zero-payload
+// element appears as `tag + 0`), and skipping `SizeWiresmith()==0`
+// elements would silently drop them on re-marshal.
 func (r *RepeatedCustomType) EmitSize(e Emitter, access string, tagSize int) {
 	e.Writef("\tfor i := range %s {\n", access)
-	e.Writef("\t\tif s := %s[i].SizeWiresmith(); s > 0 {\n", access)
-	e.Writef("\t\t\tn += %d + protowire.SizeVarint(uint64(s)) + s\n", tagSize)
-	e.Writef("\t\t}\n")
+	e.Writef("\t\ts := %s[i].SizeWiresmith()\n", access)
+	e.Writef("\t\tn += %d + protowire.SizeVarint(uint64(s)) + s\n", tagSize)
 	e.Writef("\t}\n")
 }
 
 // EmitMarshal walks the slice in reverse (the reverse-write convention
 // every other repeated emitter uses) and writes payload, varint length,
-// and field tag for each element. The size-then-marshal pattern matches
-// the singular CustomType emit shape — see CustomType.EmitMarshal for why
-// we re-call SizeWiresmith inside the loop body rather than caching it.
+// and field tag for each element. Every element is emitted, including
+// those whose SizeWiresmith reports 0 — same rationale as EmitSize.
 func (r *RepeatedCustomType) EmitMarshal(e Emitter, access string, num protowire.Number) {
 	e.Writef("\tfor iNdEx := len(%s) - 1; iNdEx >= 0; iNdEx-- {\n", access)
-	e.Writef("\t\tif s := %s[iNdEx].SizeWiresmith(); s > 0 {\n", access)
-	e.Writef("\t\t\ti -= s\n")
+	e.Writef("\t\ts := %s[iNdEx].SizeWiresmith()\n", access)
+	e.Writef("\t\ti -= s\n")
+	e.Writef("\t\tif s > 0 {\n")
 	e.Writef("\t\t\tn, err := %s[iNdEx].MarshalWiresmith(dAtA[i : i+s])\n", access)
 	e.Writef("\t\t\tif err != nil {\n")
 	e.Writef("\t\t\t\treturn 0, err\n")
@@ -58,9 +58,9 @@ func (r *RepeatedCustomType) EmitMarshal(e Emitter, access string, num protowire
 	e.Writef("\t\t\tif n != s {\n")
 	e.Writef("\t\t\t\treturn 0, fmt.Errorf(\"%s[iNdEx].MarshalWiresmith returned %%d bytes, expected %%d\", n, s)\n", access)
 	e.Writef("\t\t\t}\n")
-	e.Writef("\t\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(s))\n")
-	e.ReverseTag("\t\t\t", num, protowire.BytesType)
 	e.Writef("\t\t}\n")
+	e.Writef("\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(s))\n")
+	e.ReverseTag("\t\t", num, protowire.BytesType)
 	e.Writef("\t}\n")
 }
 

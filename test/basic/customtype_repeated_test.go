@@ -91,14 +91,16 @@ func TestRepeatedCustomType_EmptyRoundTrip(t *testing.T) {
 	assert.Nil(t, dst.Tags)
 }
 
-// TestRepeatedCustomType_ZeroElementSkipped pins that an element whose
-// SizeWiresmith returns 0 (here, the all-zero UUID) is skipped on the
-// wire, mirroring proto3's "omit default" semantics for plain bytes.
-func TestRepeatedCustomType_ZeroElementSkipped(t *testing.T) {
+// TestRepeatedCustomType_PreservesAllElements pins that every slice
+// element is emitted to the wire, including the all-zero element —
+// proto3 repeated semantics preserve each occurrence (analogous to
+// `repeated bytes` emitting `tag + 0` for an empty `[]byte` element).
+// Skipping zero-sized elements would silently corrupt round-trips.
+func TestRepeatedCustomType_PreservesAllElements(t *testing.T) {
 	msg := &ct.RepeatedCustomTypeHolder{
 		Ids: []customtypes.UUID{
 			{0x01}, // non-zero
-			{},     // zero — should be skipped
+			{},     // all-zero — must still round-trip
 			{0x02}, // non-zero
 		},
 	}
@@ -107,9 +109,10 @@ func TestRepeatedCustomType_ZeroElementSkipped(t *testing.T) {
 
 	dst := &ct.RepeatedCustomTypeHolder{}
 	require.NoError(t, dst.Unmarshal(b))
-	require.Len(t, dst.Ids, 2, "zero-sized element must not appear on the wire")
+	require.Len(t, dst.Ids, 3, "every slice element must round-trip, including the zero element")
 	assert.Equal(t, byte(0x01), dst.Ids[0][0])
-	assert.Equal(t, byte(0x02), dst.Ids[1][0])
+	assert.Equal(t, customtypes.UUID{}, dst.Ids[1])
+	assert.Equal(t, byte(0x02), dst.Ids[2][0])
 }
 
 // TestRepeatedCustomType_GetterOnNilReceiver pins the nil-safety contract

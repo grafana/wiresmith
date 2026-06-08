@@ -41,6 +41,17 @@ func (fg *FileGenerator) fieldsForPresence(md protoreflect.MessageDescriptor) []
 		if fd.Kind() == protoreflect.MessageKind && fg.hasStdtimeOption(fd) {
 			continue
 		}
+		// `(wiresmith.options.customtype)` on a singular message field hands
+		// the field's wire encoding to the user type entirely — presence is
+		// carried by their `SizeWiresmith() > 0` gate, not by a bitmap bit.
+		// Without this skip the bitmap would say "present" for a `tag+0`
+		// payload that the user's SizeWiresmith() reports as zero, but the
+		// customtype Size/Marshal emitters wouldn't honour that bit on
+		// re-marshal — a present-but-empty value would silently round-trip
+		// to absent.
+		if fd.Kind() == protoreflect.MessageKind && fg.hasCustomtypeOption(fd) {
+			continue
+		}
 		fields = append(fields, presenceField{fd: fd, bitIndex: len(fields)})
 	}
 	return fields

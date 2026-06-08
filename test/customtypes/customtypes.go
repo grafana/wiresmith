@@ -98,23 +98,15 @@ func (t TenantID) CompareWiresmith(other any) int {
 
 // UUID is a fixed-size [16]byte customtype intended for repeated `bytes`
 // fields — the canonical "I want a strongly-typed slice element" case.
-// The wire payload is the raw 16 bytes; SizeWiresmith returns 16 unless
-// the value is the zero UUID, in which case it returns 0 so the
-// generator's "skip on size 0" gate omits the element from the wire
-// (mirroring proto3's omit-default behavior for plain bytes).
+// The wire payload is always the raw 16 bytes: a repeated customtype
+// element appears on the wire as `tag + 16 + payload`, including the
+// all-zero UUID — proto3 repeated semantics preserve every slice
+// element verbatim.
 type UUID [16]byte
 
-func (u UUID) SizeWiresmith() int {
-	if u == (UUID{}) {
-		return 0
-	}
-	return len(u)
-}
+func (u UUID) SizeWiresmith() int { return len(u) }
 
 func (u UUID) MarshalWiresmith(buf []byte) (int, error) {
-	if u == (UUID{}) {
-		return 0, nil
-	}
 	if len(buf) < len(u) {
 		return 0, fmt.Errorf("UUID.MarshalWiresmith: buf too small: have %d, want %d", len(buf), len(u))
 	}

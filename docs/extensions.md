@@ -158,7 +158,7 @@ The interface deliberately uses wiresmith-specific method names so a caller can'
 
 ### Where it applies
 
-Allowed: singular or repeated `bytes`, `string`, and message fields. Each per-element envelope is length-delimited regardless of source kind, so the user type's `Size/Marshal/UnmarshalWiresmith` contract is identical across the three — only the bytes the type owns differ (raw bytes for `bytes`, UTF-8 for `string`, an encoded submessage for `message`).
+Allowed: singular or repeated `bytes`, `string`, and message fields. Each per-element envelope is length-delimited regardless of source kind, so the user type's `SizeWiresmith` / `MarshalWiresmith` / `UnmarshalWiresmith` contract is identical across the three — only the bytes the type owns differ (raw bytes for `bytes`, UTF-8 for `string`, an encoded submessage for `message`).
 
 Rejected (combined compile-time error from `customtypeOption.Validate`):
 

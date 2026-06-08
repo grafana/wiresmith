@@ -88,18 +88,11 @@ func (m *Label) HasValue() bool {
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
-func (m *CustomTypeMessageHolder) HasPrimary() bool {
-	if m == nil {
-		return false
-	}
-	return m.fieldsPresent[0]&(1<<0) != 0
-}
-
 func (m *CustomTypeMessageHolder) HasControlSingular() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<1) != 0
+	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Label) GetName() string {
@@ -132,7 +125,7 @@ func (m *CustomTypeMessageHolder) GetLabels() []customtypes.LabelAdapter {
 }
 
 func (m *CustomTypeMessageHolder) GetControlSingular() *Label {
-	if m != nil && m.fieldsPresent[0]&(1<<1) != 0 {
+	if m != nil && m.fieldsPresent[0]&(1<<0) != 0 {
 		return &m.ControlSingular
 	}
 	return nil
@@ -168,15 +161,14 @@ func (m *CustomTypeMessageHolder) Size() int {
 		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	for i := range m.Labels {
-		if s := m.Labels[i].SizeWiresmith(); s > 0 {
-			n += 1 + protowire.SizeVarint(uint64(s)) + s
-		}
+		s := m.Labels[i].SizeWiresmith()
+		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	{
 		s := m.ControlSingular.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
-		} else if m.fieldsPresent[0]&(1<<1) != 0 {
+		} else if m.fieldsPresent[0]&(1<<0) != 0 {
 			n += 2
 		}
 	}
@@ -282,7 +274,7 @@ func (m *CustomTypeMessageHolder) MarshalToSizedBuffer(dAtA []byte) (int, error)
 			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 			i--
 			dAtA[i] = 0x1a
-		} else if m.fieldsPresent[0]&(1<<1) != 0 {
+		} else if m.fieldsPresent[0]&(1<<0) != 0 {
 			i--
 			dAtA[i] = 0
 			i--
@@ -290,8 +282,9 @@ func (m *CustomTypeMessageHolder) MarshalToSizedBuffer(dAtA []byte) (int, error)
 		}
 	}
 	for iNdEx := len(m.Labels) - 1; iNdEx >= 0; iNdEx-- {
-		if s := m.Labels[iNdEx].SizeWiresmith(); s > 0 {
-			i -= s
+		s := m.Labels[iNdEx].SizeWiresmith()
+		i -= s
+		if s > 0 {
 			n, err := m.Labels[iNdEx].MarshalWiresmith(dAtA[i : i+s])
 			if err != nil {
 				return 0, err
@@ -299,10 +292,10 @@ func (m *CustomTypeMessageHolder) MarshalToSizedBuffer(dAtA []byte) (int, error)
 			if n != s {
 				return 0, fmt.Errorf("m.Labels[iNdEx].MarshalWiresmith returned %d bytes, expected %d", n, s)
 			}
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(s))
-			i--
-			dAtA[i] = 0x12
 		}
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(s))
+		i--
+		dAtA[i] = 0x12
 	}
 	if s := m.Primary.SizeWiresmith(); s > 0 {
 		i -= s
@@ -700,7 +693,6 @@ func (m *CustomTypeMessageHolder) unmarshal(dAtA []byte, depth int) error {
 				return err
 			}
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
 		case 2: // labels
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -797,7 +789,7 @@ func (m *CustomTypeMessageHolder) unmarshal(dAtA []byte, depth int) error {
 				return err
 			}
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 1
+			m.fieldsPresent[0] |= 1 << 0
 		case 4: // control_repeated
 			if wireType != 2 {
 				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)

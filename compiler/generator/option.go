@@ -280,6 +280,18 @@ func (fg *FileGenerator) hasStdtimeOption(fd protoreflect.FieldDescriptor) bool 
 	return opt.Has(fd)
 }
 
+// hasCustomtypeOption reports whether the field is annotated with
+// `(wiresmith.options.customtype)`. Thin wrapper over the registered
+// customtypeOption. Used by fieldsForPresence to exclude singular message
+// customtype fields from the presence bitmap.
+func (fg *FileGenerator) hasCustomtypeOption(fd protoreflect.FieldDescriptor) bool {
+	opt := findOption[*customtypeOption](fg.options)
+	if opt == nil {
+		return false
+	}
+	return opt.Has(fd)
+}
+
 // stdtimeGoFieldType returns the Go-side struct-field type for an stdtime-
 // annotated field. Thin pass-through to the registered stdtimeOption; the
 // emit_getter / emit_struct call sites read more naturally as

@@ -187,14 +187,12 @@ func (m *RepeatedCustomTypeHolder) Size() int {
 	}
 	var n int
 	for i := range m.Ids {
-		if s := m.Ids[i].SizeWiresmith(); s > 0 {
-			n += 1 + protowire.SizeVarint(uint64(s)) + s
-		}
+		s := m.Ids[i].SizeWiresmith()
+		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	for i := range m.Tags {
-		if s := m.Tags[i].SizeWiresmith(); s > 0 {
-			n += 1 + protowire.SizeVarint(uint64(s)) + s
-		}
+		s := m.Tags[i].SizeWiresmith()
+		n += 1 + protowire.SizeVarint(uint64(s)) + s
 	}
 	for _, v := range m.PlainIds {
 		n += 1 + protowire.SizeVarint(uint64(len(v))) + len(v)
@@ -321,8 +319,9 @@ func (m *RepeatedCustomTypeHolder) MarshalToSizedBuffer(dAtA []byte) (int, error
 		dAtA[i] = 0x1a
 	}
 	for iNdEx := len(m.Tags) - 1; iNdEx >= 0; iNdEx-- {
-		if s := m.Tags[iNdEx].SizeWiresmith(); s > 0 {
-			i -= s
+		s := m.Tags[iNdEx].SizeWiresmith()
+		i -= s
+		if s > 0 {
 			n, err := m.Tags[iNdEx].MarshalWiresmith(dAtA[i : i+s])
 			if err != nil {
 				return 0, err
@@ -330,14 +329,15 @@ func (m *RepeatedCustomTypeHolder) MarshalToSizedBuffer(dAtA []byte) (int, error
 			if n != s {
 				return 0, fmt.Errorf("m.Tags[iNdEx].MarshalWiresmith returned %d bytes, expected %d", n, s)
 			}
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(s))
-			i--
-			dAtA[i] = 0x12
 		}
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(s))
+		i--
+		dAtA[i] = 0x12
 	}
 	for iNdEx := len(m.Ids) - 1; iNdEx >= 0; iNdEx-- {
-		if s := m.Ids[iNdEx].SizeWiresmith(); s > 0 {
-			i -= s
+		s := m.Ids[iNdEx].SizeWiresmith()
+		i -= s
+		if s > 0 {
 			n, err := m.Ids[iNdEx].MarshalWiresmith(dAtA[i : i+s])
 			if err != nil {
 				return 0, err
@@ -345,10 +345,10 @@ func (m *RepeatedCustomTypeHolder) MarshalToSizedBuffer(dAtA []byte) (int, error
 			if n != s {
 				return 0, fmt.Errorf("m.Ids[iNdEx].MarshalWiresmith returned %d bytes, expected %d", n, s)
 			}
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(s))
-			i--
-			dAtA[i] = 0x0a
 		}
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(s))
+		i--
+		dAtA[i] = 0x0a
 	}
 	return len(dAtA) - i, nil
 }

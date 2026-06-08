@@ -143,6 +143,23 @@ func TestCustomTypeMessage_EqualDelegatesToUserType(t *testing.T) {
 	assert.False(t, a.Equal(c))
 }
 
+// TestCustomTypeMessage_NoHasMethod pins that a singular message
+// customtype field does NOT get a Has<Name>() accessor — the user's
+// SizeWiresmith() carries presence, mirroring stdtime's
+// !t.IsZero() pattern. Without this exclusion the bitmap would say
+// "present" for a `tag+0` wire payload but the customtype marshal path
+// (which skips SizeWiresmith()==0) would silently drop the field on
+// re-marshal — the bug copilot flagged on PR #117.
+func TestCustomTypeMessage_NoHasMethod(t *testing.T) {
+	holderType := reflect.TypeFor[ctm.CustomTypeMessageHolder]()
+	// HasControlSingular should exist (default singular-message presence
+	// bitmap), HasPrimary should NOT (singular customtype message opts out).
+	_, ctrlHas := reflect.PointerTo(holderType).MethodByName("HasControlSingular")
+	assert.True(t, ctrlHas, "default singular message field should have a Has<Name>() method")
+	_, primaryHas := reflect.PointerTo(holderType).MethodByName("HasPrimary")
+	assert.False(t, primaryHas, "singular customtype message field must not emit Has<Name>() — user type owns presence")
+}
+
 // TestCustomTypeMessage_GetterOnNilReceiver pins the nil-safety contract
 // for the swapped accessors — the singular returns `var zero T` (avoiding
 // the `*Msg` shape the non-customtype message getter uses), the repeated
