@@ -53,7 +53,7 @@ func Generate(fd protoreflect.FileDescriptor, dests map[string]Dest) ([]byte, er
 		protoFiles[i] = protodesc.ToFileDescriptorProto(f)
 	}
 
-	parameter := buildParameter(dests)
+	parameter := buildParameter(files, dests)
 
 	req := &pluginpb.CodeGeneratorRequest{
 		FileToGenerate: []string{fd.Path()},
@@ -120,19 +120,29 @@ func transitiveFiles(fd protoreflect.FileDescriptor) []protoreflect.FileDescript
 	return out
 }
 
-// buildParameter renders the M-flag entries for one wiresmith generation
-// pass. Sorted alphabetically so the same dests map always produces the
-// same parameter string — `splitImportPathAndPackageName` is order-
+// buildParameter renders the M-flag entries protogen consults when
+// resolving go_package — namely for files protogen sees in ProtoFile
+// (fd plus its transitive imports). dests entries for files outside that
+// set are dropped: protogen never reads them, so building and parsing
+// their M-params is pure overhead that grows with the total compiled-
+// file count rather than the import depth of this service file.
+//
+// Sorted alphabetically so the same inputs always produce the same
+// parameter string — `splitImportPathAndPackageName` is order-
 // independent, but determinism makes plugin-mode behaviour reproducible
 // and is cheap to provide here.
-func buildParameter(dests map[string]Dest) string {
-	parts := make([]string, 0, len(dests))
-	for path, d := range dests {
+func buildParameter(files []protoreflect.FileDescriptor, dests map[string]Dest) string {
+	parts := make([]string, 0, len(files))
+	for _, f := range files {
+		d, ok := dests[f.Path()]
+		if !ok {
+			continue
+		}
 		// Always emit the ;pkgname suffix so protogen's pkgName derivation
 		// never falls back to `cleanPackageName(path.Base(importPath))` —
 		// that fallback can rename `v1` segments and would diverge from
 		// the package clause wiresmith wrote into the main .pb.go.
-		parts = append(parts, fmt.Sprintf("M%s=%s;%s", path, d.ImportPath, d.PkgName))
+		parts = append(parts, fmt.Sprintf("M%s=%s;%s", f.Path(), d.ImportPath, d.PkgName))
 	}
 	sort.Strings(parts)
 	return strings.Join(parts, ",")
