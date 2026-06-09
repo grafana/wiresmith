@@ -1315,9 +1315,14 @@ func buildImportMapping(protoDirs []string) (map[string][]byte, []string, map[st
 				if prevKey == key {
 					// Same file walked twice under the same key —
 					// happens when the user passes the same root
-					// multiple times, or when two roots resolve to
-					// the same directory via symlink. Silently skip;
-					// the file is already registered.
+					// multiple times or under different but equivalent
+					// spellings (e.g. "proto" and "./proto", which
+					// filepath.Abs normalises identically). filepath.Abs
+					// does *not* resolve symlinks, so a symlinked root
+					// produces a different abs string and falls through
+					// to the collision branches below — by design,
+					// since the user expressed those as separate roots.
+					// Silently skip; the file is already registered.
 					return nil
 				}
 				// Same file reachable from two roots under *different*

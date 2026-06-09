@@ -1133,17 +1133,35 @@ func TestBuildImportMappingMultiRootCollision(t *testing.T) {
 // (user mistake) or a Mimir Makefile that ends up listing one root
 // twice through different code paths takes. Without the same-abs guard
 // it would surface as a misleading "duplicate import key" error.
+//
+// The sub-cases together cover the de-dup contract: identical strings,
+// trailing slash, and a "./"-prefixed spelling all normalise to the
+// same filepath.Abs and must hit the de-dup branch. Symlinked roots
+// deliberately do *not* hit this branch — filepath.Abs doesn't resolve
+// symlinks, so two symlinked spellings of the same directory produce
+// different abs strings and fall through to the explicit-collision
+// branches by design.
 func TestBuildImportMappingMultiRootSameRootTwice(t *testing.T) {
 	dir := t.TempDir()
 	writeProto(t, dir, "lib/v1/foo.proto",
 		"syntax = \"proto3\";\npackage lib.v1;\nmessage Foo {}")
 
-	mapping, importPaths, _, err := buildImportMapping([]string{dir, dir})
-	if err != nil {
-		t.Fatalf("buildImportMapping: same root passed twice must not error, got: %v", err)
-	}
-	if len(importPaths) != 1 || len(mapping) != 1 {
-		t.Errorf("expected single import entry after de-dup, got importPaths=%v mapping=%v", importPaths, mapping)
+	for _, tc := range []struct {
+		name  string
+		roots []string
+	}{
+		{"identical", []string{dir, dir}},
+		{"trailing-slash", []string{dir, dir + string(filepath.Separator)}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			mapping, importPaths, _, err := buildImportMapping(tc.roots)
+			if err != nil {
+				t.Fatalf("buildImportMapping: equivalent-spelling roots must not error, got: %v", err)
+			}
+			if len(importPaths) != 1 || len(mapping) != 1 {
+				t.Errorf("expected single import entry after de-dup, got importPaths=%v mapping=%v", importPaths, mapping)
+			}
+		})
 	}
 }
 
