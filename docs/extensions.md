@@ -156,21 +156,23 @@ type CustomMarshaler interface {
 
 The interface deliberately uses wiresmith-specific method names so a caller can't accidentally satisfy it with gogoproto's `Marshal()` / `Unmarshal()` shape — those have incompatible signatures.
 
-### Where it applies (v1)
+### Where it applies
 
-Allowed: singular `bytes` and `string` fields.
+Allowed: singular or repeated `bytes`, `string`, and message fields. Each per-element envelope is length-delimited regardless of source kind, so the user type's `SizeWiresmith` / `MarshalWiresmith` / `UnmarshalWiresmith` contract is identical across the three — only the bytes the type owns differ (raw bytes for `bytes`, UTF-8 for `string`, an encoded submessage for `message`).
 
-Rejected (combined compile-time error from `validateCustomtypeOptions`):
+Rejected (combined compile-time error from `customtypeOption.Validate`):
 
-- Non-bytes/non-string scalars, enums, and message fields.
-- Map fields, oneof variants, repeated fields, and proto3 `optional` fields.
+- Non-bytes/non-string scalars, enums.
+- Map fields, oneof variants, proto3 `optional` fields.
 - Malformed values: empty string, leading-digit type name, embedded whitespace, etc.
+- Combined with any peer wiresmith `FieldOption` not in the customtype whitelist (currently `customname`). Combining customtype with `pointer` or `stdtime` would produce two conflicting Go-shape overrides, so it's rejected at validation time.
 
-Customtype-on-message is fundamentally different plumbing (the user type owns the entire submessage wire encoding) and is out of scope for v1.
+The compatibility whitelist lives in `customtypeCompatiblePeers` in `compiler/generator/option_customtype.go`; adding a new peer option means deciding explicitly whether it can ride alongside customtype. `jsontag` is not validated through the same `FieldOption` registry (it changes only the struct tag, not the Go type or wire bytes), so it's implicitly compatible with customtype without needing a whitelist entry.
 
-### Worked example
+### Worked examples
 
-[`proto/basic/customtype.proto`](../proto/basic/customtype.proto) annotates a bytes and a string field with customtypes defined in [`test/customtypes/customtypes.go`](../test/customtypes/customtypes.go), with unannotated controls of each kind to demonstrate the swap is local to the annotated field.
+- [`proto/basic/customtype.proto`](../proto/basic/customtype.proto) annotates singular and repeated bytes/string fields. The singular cases use the `LabelPairs` / `TenantID` types in [`test/customtypes/customtypes.go`](../test/customtypes/customtypes.go); the repeated cases use `UUID` (fixed-size opaque bytes) and `Tag` (string-backed) — the canonical "I want a typed slice element" patterns.
+- [`proto/basic/customtype_message.proto`](../proto/basic/customtype_message.proto) annotates singular and repeated message fields. The `LabelAdapter` type in [`test/customtypes/label_adapter.go`](../test/customtypes/label_adapter.go) writes the inner `Label` submessage's wire payload directly via `google.golang.org/protobuf/encoding/protowire`, demonstrating that the customtype contract is identical across kinds — the user type owns the payload bytes; wiresmith owns the envelope.
 
 ## `(wiresmith.options.customname) = "Identifier"`
 

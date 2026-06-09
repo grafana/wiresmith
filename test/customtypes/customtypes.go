@@ -95,3 +95,78 @@ func (t TenantID) CompareWiresmith(other any) int {
 	}
 	return strings.Compare(string(t), string(o))
 }
+
+// UUID is a fixed-size [16]byte customtype intended for repeated `bytes`
+// fields — the canonical "I want a strongly-typed slice element" case.
+// The wire payload is always the raw 16 bytes: a repeated customtype
+// element appears on the wire as `tag + 16 + payload`, including the
+// all-zero UUID — proto3 repeated semantics preserve every slice
+// element verbatim.
+type UUID [16]byte
+
+func (u UUID) SizeWiresmith() int { return len(u) }
+
+func (u UUID) MarshalWiresmith(buf []byte) (int, error) {
+	if len(buf) < len(u) {
+		return 0, fmt.Errorf("UUID.MarshalWiresmith: buf too small: have %d, want %d", len(buf), len(u))
+	}
+	return copy(buf, u[:]), nil
+}
+
+func (u *UUID) UnmarshalWiresmith(buf []byte) error {
+	if len(buf) != len(*u) {
+		return fmt.Errorf("UUID.UnmarshalWiresmith: expected %d bytes, got %d", len(*u), len(buf))
+	}
+	copy(u[:], buf)
+	return nil
+}
+
+func (u UUID) EqualWiresmith(other any) bool {
+	o, ok := other.(UUID)
+	if !ok {
+		return false
+	}
+	return u == o
+}
+
+func (u UUID) CompareWiresmith(other any) int {
+	o, ok := other.(UUID)
+	if !ok {
+		return -1
+	}
+	return bytes.Compare(u[:], o[:])
+}
+
+// Tag is a string-backed customtype intended for repeated `string` fields
+// — same shape as TenantID but exercised under the repeated emit path.
+type Tag string
+
+func (t Tag) SizeWiresmith() int { return len(t) }
+
+func (t Tag) MarshalWiresmith(buf []byte) (int, error) {
+	if len(buf) < len(t) {
+		return 0, fmt.Errorf("Tag.MarshalWiresmith: buf too small: have %d, want %d", len(buf), len(t))
+	}
+	return copy(buf, t), nil
+}
+
+func (t *Tag) UnmarshalWiresmith(buf []byte) error {
+	*t = Tag(buf)
+	return nil
+}
+
+func (t Tag) EqualWiresmith(other any) bool {
+	o, ok := other.(Tag)
+	if !ok {
+		return false
+	}
+	return t == o
+}
+
+func (t Tag) CompareWiresmith(other any) int {
+	o, ok := other.(Tag)
+	if !ok {
+		return -1
+	}
+	return strings.Compare(string(t), string(o))
+}

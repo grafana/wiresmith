@@ -32,11 +32,41 @@ func (o *customtypeOption) Value(fd protoreflect.FieldDescriptor) (string, bool)
 	return stringOption(o.ext, fd)
 }
 
+// Has satisfies FieldOption. Customtype is a string-valued option, so
+// presence equals "Value returned ok=true".
+func (o *customtypeOption) Has(fd protoreflect.FieldDescriptor) bool {
+	_, ok := o.Value(fd)
+	return ok
+}
+
+// customtypeCompatiblePeers is the whitelist of peer wiresmith options that
+// can coexist with customtype on the same field. Customtype owns the
+// field's Go shape and wire-encode/decode entirely, so any option that
+// would override the Go type or wire format is incompatible. Only the
+// naming-only options (customname here; jsontag is outside the
+// FieldOption registry and is implicitly compatible — it changes only
+// the struct tag) make this list.
+//
+// Adding a new peer option means deciding here whether it can ride
+// alongside customtype, which is the same gate as "does this option
+// touch the Go type or wire bytes" — making the decision explicit
+// keeps the rejection list automatic.
+var customtypeCompatiblePeers = map[string]bool{
+	customnameExtensionName: true,
+}
+
 // Validate rejects invalid placements of customtype.
 //
-// v1 scope: only singular `bytes` and `string` fields. Map values, oneof
-// variants, repeated, optional, scalar non-bytes/string, message, and enum
-// fields are all rejected.
+// Allowed: singular or repeated `bytes`, `string`, and message fields.
+// Each per-element wire envelope is length-delimited regardless of source
+// kind, so the user-supplied type's Size/Marshal/UnmarshalWiresmith
+// contract is identical across the three — the bytes the type owns are
+// raw bytes (`bytes`), UTF-8 (`string`), or an encoded submessage.
+//
+// Rejected: map values, oneof variants, optional fields, scalar non-
+// bytes/string fields, enum fields, and any peer wiresmith option not in
+// customtypeCompatiblePeers. Cross-option rejections live here so the
+// compatibility whitelist reads as a single explicit list.
 func (o *customtypeOption) Validate(g *Generator, results []protoreflect.FileDescriptor) error {
 	if o.ext == nil {
 		return nil
@@ -53,42 +83,79 @@ func (o *customtypeOption) Validate(g *Generator, results []protoreflect.FileDes
 			}
 			if reason := customtypeOptionRejection(field, v); reason != "" {
 				errs = append(errs, fmt.Sprintf("%s: field %q: %s", fd.Path(), field.FullName(), reason))
+				return
+			}
+			for _, peer := range g.options {
+				if peer.Name() == o.Name() {
+					continue
+				}
+				if customtypeCompatiblePeers[peer.Name()] {
+					continue
+				}
+				if peer.Has(field) {
+					errs = append(errs, fmt.Sprintf("%s: field %q: (wiresmith.options.customtype) is not compatible with %s on the same field", fd.Path(), field.FullName(), peer.Name()))
+				}
 			}
 		})
 	}
 	return combinedOptionError(customtypeExtensionName, "placement", errs)
 }
 
-// FieldType returns a CustomType wrapper for valid customtype annotations.
-// Registers the user-supplied import (if any) under an explicit alias as a
-// side effect so the marshal/unmarshal emission and the struct-field
-// declaration reach the user's package via the same identifier.
+// FieldType returns a CustomType wrapper (or RepeatedCustomType for a
+// repeated customtype). Registers the user-supplied import (if any) under
+// an explicit alias as a side effect so the marshal/unmarshal emission
+// and the struct-field declaration reach the user's package via the same
+// identifier.
+//
+// Dispatch matrix:
+//   - singular bytes / string / message → CustomType
+//   - repeated bytes / string / message → RepeatedCustomType
+//
+// Each per-element wire envelope is length-delimited (wire type 2), so
+// the repeated path is kind-agnostic: the user type owns the payload bytes
+// whether they originated as raw bytes, UTF-8 string, or encoded message.
+//
+// Other field shapes fall through to (nil, false); Validate has rejected
+// them already, so this is purely defensive against direct descriptor
+// construction in tests.
 func (o *customtypeOption) FieldType(fg *FileGenerator, fd protoreflect.FieldDescriptor) (types.FieldType, bool) {
 	v, ok := o.Value(fd)
 	if !ok {
 		return nil, false
 	}
-	if fd.Kind() != protoreflect.BytesKind && fd.Kind() != protoreflect.StringKind {
+	if fd.IsMap() || fd.HasOptionalKeyword() || isRealOneof(fd) {
 		return nil, false
 	}
-	if fd.IsMap() || fd.IsList() || fd.HasOptionalKeyword() || isRealOneof(fd) {
+	switch fd.Kind() {
+	case protoreflect.BytesKind, protoreflect.StringKind, protoreflect.MessageKind:
+	default:
 		return nil, false
 	}
-	importPath, _, err := parseCustomtypeValue(v)
+	importPath, typeName, err := parseCustomtypeValue(v)
 	if err != nil {
 		return nil, false
 	}
+	// Register the import even for the singular path. The struct-field
+	// emitter goes through GoFieldType (not FieldType) and must reach the
+	// user's package via the same alias the unmarshal code uses; doing
+	// the registration here keeps both phases consistent.
+	goType := typeName
 	if importPath != "" {
-		fg.imports.addExplicitAliasImport(importPath)
+		alias := fg.imports.addExplicitAliasImport(importPath)
+		goType = alias + "." + typeName
+	}
+	if fd.IsList() {
+		return &types.RepeatedCustomType{GoType: goType}, true
 	}
 	return &types.CustomType{}, true
 }
 
 // GoFieldType resolves the customtype value to its Go type expression
 // (`alias.TypeName` for an external type, `TypeName` for a same-package
-// type) and registers the supporting import. Validate has rejected
-// malformed values at this point so the parse-error path is purely
-// defensive against direct descriptor construction in tests.
+// type) and registers the supporting import. Repeated customtype fields
+// wrap the resolved type in a slice. Validate has rejected malformed
+// values at this point so the parse-error path is purely defensive
+// against direct descriptor construction in tests.
 func (o *customtypeOption) GoFieldType(fg *FileGenerator, fd protoreflect.FieldDescriptor) (string, bool) {
 	v, ok := o.Value(fd)
 	if !ok {
@@ -98,11 +165,15 @@ func (o *customtypeOption) GoFieldType(fg *FileGenerator, fd protoreflect.FieldD
 	if err != nil {
 		return "", false
 	}
-	if importPath == "" {
-		return typeName, true
+	goType := typeName
+	if importPath != "" {
+		alias := fg.imports.addExplicitAliasImport(importPath)
+		goType = alias + "." + typeName
 	}
-	alias := fg.imports.addExplicitAliasImport(importPath)
-	return alias + "." + typeName, true
+	if fd.IsList() {
+		return "[]" + goType, true
+	}
+	return goType, true
 }
 
 // parseCustomtypeValue splits a value like "github.com/foo/bar.LabelAdapter"
@@ -210,16 +281,13 @@ func customtypeOptionRejection(fd protoreflect.FieldDescriptor, value string) st
 	if isRealOneof(fd) {
 		return "(wiresmith.options.customtype) is not supported on oneof variants"
 	}
-	if fd.IsList() {
-		return "(wiresmith.options.customtype) is not supported on repeated fields (v1 scope)"
-	}
 	if fd.HasOptionalKeyword() {
 		return "(wiresmith.options.customtype) is not supported on proto3 `optional` fields"
 	}
 	switch fd.Kind() {
-	case protoreflect.BytesKind, protoreflect.StringKind:
+	case protoreflect.BytesKind, protoreflect.StringKind, protoreflect.MessageKind:
 		return ""
 	default:
-		return fmt.Sprintf("(wiresmith.options.customtype) only applies to singular bytes or string fields, got %s", fd.Kind())
+		return fmt.Sprintf("(wiresmith.options.customtype) only applies to bytes, string, or message fields, got %s", fd.Kind())
 	}
 }

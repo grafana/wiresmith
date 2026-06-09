@@ -56,6 +56,12 @@ type FieldOption interface {
 	// declaration if this option applies, else ("", false). Same
 	// short-circuit semantics as FieldType.
 	GoFieldType(fg *FileGenerator, fd protoreflect.FieldDescriptor) (string, bool)
+
+	// Has reports whether the option is set on fd. Used by peer options
+	// to enforce cross-option compatibility whitelists without each
+	// option having to know the others' representations (bool vs string
+	// extension, etc.).
+	Has(fd protoreflect.FieldDescriptor) bool
 }
 
 // newOptionRegistry returns the default registry of field options. Order
@@ -268,6 +274,18 @@ func (fg *FileGenerator) hasPointerOption(fd protoreflect.FieldDescriptor) bool 
 // stdtimeOption.
 func (fg *FileGenerator) hasStdtimeOption(fd protoreflect.FieldDescriptor) bool {
 	opt := findOption[*stdtimeOption](fg.options)
+	if opt == nil {
+		return false
+	}
+	return opt.Has(fd)
+}
+
+// hasCustomtypeOption reports whether the field is annotated with
+// `(wiresmith.options.customtype)`. Thin wrapper over the registered
+// customtypeOption. Used by fieldsForPresence to exclude singular message
+// customtype fields from the presence bitmap.
+func (fg *FileGenerator) hasCustomtypeOption(fd protoreflect.FieldDescriptor) bool {
+	opt := findOption[*customtypeOption](fg.options)
 	if opt == nil {
 		return false
 	}

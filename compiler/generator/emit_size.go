@@ -2,6 +2,7 @@ package generator
 
 import (
 	"fmt"
+
 	"github.com/grafana/wiresmith/compiler/types"
 
 	"google.golang.org/protobuf/encoding/protowire"
@@ -29,11 +30,18 @@ func (fg *FileGenerator) emitSize(md protoreflect.MessageDescriptor) {
 			}
 			continue
 		}
-		// Singular message fields with presence bitmap: account for
-		// tag + length-0 when the field was set to an empty message.
-		if bitIndex, ok := pm[fd.Number()]; ok && fd.Kind() == protoreflect.MessageKind {
-			fg.emitMessageSizeWithPresence(fd, bitIndex)
-			continue
+		// Singular value-typed wiresmith messages with a presence bit
+		// need a special emit shape (tag + length-0 when the bitmap
+		// says "set but empty"). Every other FieldType — CustomType,
+		// PointerField, StdtimeType, RepeatedField — takes its own
+		// emit path through fieldType, so dispatching on the resolved
+		// FieldType (rather than fd.Kind()) keeps option overrides
+		// from accidentally tripping this branch.
+		if _, isMsg := fg.fieldType(fd).(*types.MessageType); isMsg {
+			if bitIndex, ok := pm[fd.Number()]; ok {
+				fg.emitMessageSizeWithPresence(fd, bitIndex)
+				continue
+			}
 		}
 		fg.emitFieldSize(fd)
 	}

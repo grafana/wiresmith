@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package basic.customtype_message.v1;
+
+option go_package = "github.com/grafana/wiresmith/gen/basic/customtype_message/v1";
+
+import "wiresmith/options.proto";
+
+// Label is the inner submessage referenced by every field below — the
+// non-customtype control fields use it directly as `Label`, and the
+// customtype fields point at a Go type (LabelAdapter) that owns wire-
+// equivalent encoding of the same two fields. The two shapes are
+// wire-interchangeable: a value written through one Holder shape decodes
+// cleanly through the other.
+message Label {
+  string name  = 1;
+  string value = 2;
+}
+
+// CustomTypeMessageHolder exercises (wiresmith.options.customtype) on the
+// two field shapes the Mimir migration needs (wiresmith-cqa):
+//   - singular `Label primary` → Go field `LabelAdapter`
+//   - repeated `Label labels`  → Go field `[]LabelAdapter`
+//
+// LabelAdapter lives in github.com/grafana/wiresmith/test/customtypes and
+// owns the inner Label submessage's wire encoding via Size/Marshal/
+// Unmarshal/Equal/CompareWiresmith. The wire envelope (parent's tag +
+// length prefix) is still wiresmith's; only the payload bytes are the
+// custom type's responsibility.
+message CustomTypeMessageHolder {
+  Label primary = 1 [(wiresmith.options.customtype) = "github.com/grafana/wiresmith/test/customtypes.LabelAdapter"];
+
+  repeated Label labels = 2 [(wiresmith.options.customtype) = "github.com/grafana/wiresmith/test/customtypes.LabelAdapter"];
+
+  // Controls: stock singular and repeated message shapes prove the option
+  // only swaps the annotated fields, not the rest of the message.
+  Label control_singular = 3;
+  repeated Label control_repeated = 4;
+}
