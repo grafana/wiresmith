@@ -2076,8 +2076,11 @@ func TestGenerateMissingProtoPath_CleanError(t *testing.T) {
 	if !strings.Contains(msg, "--proto_path") {
 		t.Errorf("error must name the flag, got: %q", msg)
 	}
-	if !strings.Contains(msg, gen.ProtoDir) {
-		t.Errorf("error must echo the bad value %q, got: %q", gen.ProtoDir, msg)
+	// The production formatter prints the path via %q, so on Windows
+	// `C:\tmp\x` shows up as `"C:\\tmp\\x"`. Compare against the same
+	// quoted form rather than the raw path so the test stays portable.
+	if quoted := fmt.Sprintf("%q", gen.ProtoDir); !strings.Contains(msg, quoted) {
+		t.Errorf("error must echo the bad value %s, got: %q", quoted, msg)
 	}
 	if strings.Contains(msg, "lstat") {
 		t.Errorf("error must not leak the lstat syscall name, got: %q", msg)
@@ -2113,7 +2116,8 @@ func TestGenerateProtoPathIsFile_CleanError(t *testing.T) {
 	if !strings.Contains(msg, "not a directory") {
 		t.Errorf("error must surface the not-a-directory reason, got: %q", msg)
 	}
-	if !strings.Contains(msg, gen.ProtoDir) {
-		t.Errorf("error must echo the bad value %q, got: %q", gen.ProtoDir, msg)
+	// Same %q-quoted comparison as the missing-path test above.
+	if quoted := fmt.Sprintf("%q", gen.ProtoDir); !strings.Contains(msg, quoted) {
+		t.Errorf("error must echo the bad value %s, got: %q", quoted, msg)
 	}
 }
