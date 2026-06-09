@@ -380,6 +380,17 @@ func (fg *FileGenerator) emitFieldUnmarshal(md protoreflect.MessageDescriptor, f
 		return
 	}
 
+	// Singular scalar with `(wiresmith.options.casttype)` wraps the
+	// underlying scalar's emit with the user-supplied Go alias. CastType
+	// uses Inner.EmitConsume + a re-cast assignment, so the dispatch shape
+	// matches customtype/stdtime — the underlying t.EmitUnmarshal call at
+	// the bottom of this function would emit the un-aliased cast.
+	if ft, ok := fg.casttypeFieldType(fd); ok {
+		types.AddTypeImports(fg, ft)
+		ft.EmitUnmarshal(fg, access, ctx)
+		return
+	}
+
 	types.AddTypeImports(fg, t)
 	t.EmitUnmarshal(fg, access, ctx)
 }

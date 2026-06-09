@@ -66,13 +66,15 @@ type FieldOption interface {
 
 // newOptionRegistry returns the default registry of field options. Order
 // is load-bearing: FieldType / GoFieldType dispatch takes the first
-// match, so the more-specific overrides (stdtime, stdduration, customtype)
-// precede the pointer pass that delegates to the default emit shape.
+// match, so the more-specific overrides (stdtime, stdduration, customtype,
+// casttype) precede the pointer pass that delegates to the default emit
+// shape.
 func newOptionRegistry() []FieldOption {
 	return []FieldOption{
 		&stdtimeOption{},
 		&stddurationOption{},
 		&customtypeOption{},
+		&casttypeOption{},
 		&pointerOption{},
 		&customnameOption{},
 	}
@@ -368,6 +370,28 @@ func (fg *FileGenerator) stdDurationFieldType(fd protoreflect.FieldDescriptor) (
 // for singular bytes / string fields.
 func (fg *FileGenerator) customtypeFieldType(fd protoreflect.FieldDescriptor) (types.FieldType, bool) {
 	opt := findOption[*customtypeOption](fg.options)
+	if opt == nil {
+		return nil, false
+	}
+	return opt.FieldType(fg, fd)
+}
+
+// casttypeGoFieldType returns the Go-side struct-field type for a
+// casttype-annotated field. Thin pass-through to the registered
+// casttypeOption — keeps the getter / struct emitter call sites readable.
+func (fg *FileGenerator) casttypeGoFieldType(fd protoreflect.FieldDescriptor) (string, bool) {
+	opt := findOption[*casttypeOption](fg.options)
+	if opt == nil {
+		return "", false
+	}
+	return opt.GoFieldType(fg, fd)
+}
+
+// casttypeFieldType returns the FieldType wrapper for a casttype-annotated
+// field. Used by emit_unmarshal to take the casttype branch on the
+// singular scalar path (which doesn't go through fg.fieldType).
+func (fg *FileGenerator) casttypeFieldType(fd protoreflect.FieldDescriptor) (types.FieldType, bool) {
+	opt := findOption[*casttypeOption](fg.options)
 	if opt == nil {
 		return nil, false
 	}
