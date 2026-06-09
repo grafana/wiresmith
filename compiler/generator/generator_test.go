@@ -2083,3 +2083,37 @@ func TestGenerateMissingProtoPath_CleanError(t *testing.T) {
 		t.Errorf("error must not leak the lstat syscall name, got: %q", msg)
 	}
 }
+
+// TestGenerateProtoPathIsFile_CleanError pins that --proto_path pointing
+// at a regular file (not a directory) produces a clean diagnostic instead
+// of silently walking nothing and reporting success. Without the IsDir
+// guard, filepath.WalkDir on a file emits one callback with the file
+// itself, which the .proto-suffix filter skips, leaving the generator to
+// declare a successful empty run — a confusing outcome for what is
+// usually a flag-value typo.
+func TestGenerateProtoPathIsFile_CleanError(t *testing.T) {
+	tmp := t.TempDir()
+	asFile := filepath.Join(tmp, "definitely-a-file.txt")
+	if err := os.WriteFile(asFile, []byte("not a proto tree"), 0o600); err != nil {
+		t.Fatalf("seed: %v", err)
+	}
+	gen := &Generator{
+		Module:   "wiresmith",
+		OutDir:   testOutDir(t),
+		ProtoDir: asFile,
+	}
+	err := gen.Generate(context.Background())
+	if err == nil {
+		t.Fatal("expected error for file-shaped proto_path, got nil")
+	}
+	msg := err.Error()
+	if !strings.Contains(msg, "--proto_path") {
+		t.Errorf("error must name the flag, got: %q", msg)
+	}
+	if !strings.Contains(msg, "not a directory") {
+		t.Errorf("error must surface the not-a-directory reason, got: %q", msg)
+	}
+	if !strings.Contains(msg, gen.ProtoDir) {
+		t.Errorf("error must echo the bad value %q, got: %q", gen.ProtoDir, msg)
+	}
+}
