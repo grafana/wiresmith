@@ -2052,3 +2052,29 @@ message Bar { p.xfoo.Foo foo = 1; }`)
 		t.Errorf("use.pb.go did not round-trip through go/format: %v", err)
 	}
 }
+
+// TestGenerateMissingProtoPath_CleanError pins that a non-existent --proto_path
+// value produces a user-facing diagnostic naming the flag and the bad value —
+// not the raw filesystem syscall string ("lstat ... no such file or directory")
+// that filepath.WalkDir surfaces by default. The leak was DOC-9 / wiresmith-d2x.
+func TestGenerateMissingProtoPath_CleanError(t *testing.T) {
+	gen := &Generator{
+		Module:   "wiresmith",
+		OutDir:   testOutDir(t),
+		ProtoDir: "/this/path/definitely/does/not/exist",
+	}
+	err := gen.Generate(context.Background())
+	if err == nil {
+		t.Fatal("expected error for non-existent proto_path, got nil")
+	}
+	msg := err.Error()
+	if !strings.Contains(msg, "--proto_path") {
+		t.Errorf("error must name the flag, got: %q", msg)
+	}
+	if !strings.Contains(msg, gen.ProtoDir) {
+		t.Errorf("error must echo the bad value %q, got: %q", gen.ProtoDir, msg)
+	}
+	if strings.Contains(msg, "lstat") {
+		t.Errorf("error must not leak the lstat syscall name, got: %q", msg)
+	}
+}

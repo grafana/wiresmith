@@ -3,8 +3,10 @@ package generator
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"go/format"
+	"io/fs"
 	"os"
 	"path"
 	"path/filepath"
@@ -299,6 +301,14 @@ func (g *Generator) compileSources(ctx context.Context) ([]protoreflect.FileDesc
 
 	mapping, importPaths, pathToKey, err := buildImportMapping(g.ProtoDir)
 	if err != nil {
+		// fs.ErrNotExist surfaces from filepath.WalkDir's first callback with
+		// the underlying lstat error wrapped; bare-wrapping it would leak
+		// "lstat ... no such file or directory" to end users. Substitute a
+		// clean diagnostic that names the flag and the value so the typo is
+		// immediately obvious.
+		if errors.Is(err, fs.ErrNotExist) {
+			return nil, nil, fmt.Errorf("--proto_path %q: directory does not exist", g.ProtoDir)
+		}
 		return nil, nil, fmt.Errorf("building import mapping: %w", err)
 	}
 
