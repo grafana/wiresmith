@@ -361,7 +361,7 @@ func (g *Generator) compileSources(ctx context.Context) ([]protoreflect.FileDesc
 			if _, statErr := os.Stat(src); os.IsNotExist(statErr) {
 				return nil, nil, fmt.Errorf("file %q does not exist", src)
 			}
-			return nil, nil, fmt.Errorf("file %q is not a .proto under any --proto_path=%v", src, g.ProtoDirs)
+			return nil, nil, fmt.Errorf("file %q is not a .proto under any --proto_path=%q", src, g.ProtoDirs)
 		}
 	}
 
@@ -1273,7 +1273,28 @@ func buildImportMapping(protoDirs []string) (map[string][]byte, []string, map[st
 	var importPaths []string
 	pkgRE := regexp.MustCompile(`(?m)^package\s+([\w.]+)\s*;`)
 
-	for _, protoDir := range protoDirs {
+	// Dedupe roots by filepath.Abs identity before walking so a
+	// repeated value (`--proto_path=proto:proto`, a Makefile that
+	// concatenates the same root through two code paths, etc.) doesn't
+	// re-walk the entire tree. filepath.Abs does not resolve symlinks,
+	// so symlinked spellings of the same directory remain distinct
+	// roots — that's intentional, the file-level collision branches
+	// below catch the resulting key clash.
+	seenRoot := make(map[string]bool, len(protoDirs))
+	uniqueDirs := make([]string, 0, len(protoDirs))
+	for _, dir := range protoDirs {
+		abs, err := filepath.Abs(dir)
+		if err != nil {
+			return nil, nil, nil, fmt.Errorf("resolving --proto_path %q: %w", dir, err)
+		}
+		if seenRoot[abs] {
+			continue
+		}
+		seenRoot[abs] = true
+		uniqueDirs = append(uniqueDirs, dir)
+	}
+
+	for _, protoDir := range uniqueDirs {
 		err := filepath.WalkDir(protoDir, func(p string, d os.DirEntry, err error) error {
 			if err != nil {
 				return err
