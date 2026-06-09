@@ -96,6 +96,18 @@ func (fg *FileGenerator) emitGetters(md protoreflect.MessageDescriptor) {
 			continue
 		}
 
+		// `(wiresmith.options.stdduration) = true` on a singular Duration
+		// field produces a `time.Duration` Go field — the getter returns
+		// the zero value (`0`) on a nil receiver rather than `time.Duration{}`
+		// (which is the same value, but Go won't accept that literal for a
+		// non-struct type). Same bitmap-bypass reason as stdtime above.
+		if stdType, ok := fg.stdDurationGoFieldType(fd); ok {
+			fmt.Fprintf(fg.body, "func (m *%s) Get%s() %s {\n", name, goName, stdType)
+			fmt.Fprintf(fg.body, "\tif m != nil {\n\t\treturn m.%s\n\t}\n", goName)
+			fmt.Fprintf(fg.body, "\treturn 0\n}\n\n")
+			continue
+		}
+
 		// Message value-type fields: return pointer, nil when bitmap says absent.
 		// Currently the bitmap entry always exists here (same filter predicate
 		// as fieldsForPresence), but we keep the fallback so the getter

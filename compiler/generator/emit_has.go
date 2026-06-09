@@ -52,6 +52,12 @@ func (fg *FileGenerator) fieldsForPresence(md protoreflect.MessageDescriptor) []
 		if fd.Kind() == protoreflect.MessageKind && fg.hasCustomtypeOption(fd) {
 			continue
 		}
+		// Same shape as stdtime above: `(wiresmith.options.stdduration)`
+		// swaps a Duration field for a value-type `time.Duration`, with
+		// presence carried by `d != 0` rather than a bitmap bit.
+		if fd.Kind() == protoreflect.MessageKind && fg.hasStdDurationOption(fd) {
+			continue
+		}
 		fields = append(fields, presenceField{fd: fd, bitIndex: len(fields)})
 	}
 	return fields

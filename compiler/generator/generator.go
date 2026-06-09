@@ -230,10 +230,10 @@ func (e equalEmitter) ReverseTag(indent string, num protowire.Number, wt protowi
 
 // fieldContext builds a FieldContext from a field descriptor.
 //
-// Stdtime fields are special-cased: they have MessageKind on the wire but
-// the Go field is a stdlib `time.Time`, so we skip the MessageType lookup
-// (which would register a timestamppb import the main `.pb.go` never uses
-// — the stdtime emit path doesn't reach for `ctx.MessageType`).
+// Stdtime / stdduration fields are special-cased: they have MessageKind on
+// the wire but the Go field is a stdlib value type (`time.Time` /
+// `time.Duration`), so we skip the MessageType lookup (which would
+// register a timestamppb/durationpb import the main `.pb.go` never uses).
 func (fg *FileGenerator) fieldContext(fd protoreflect.FieldDescriptor) types.FieldContext {
 	ctx := types.FieldContext{}
 	if fd.Kind() == protoreflect.EnumKind {

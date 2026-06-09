@@ -63,3 +63,48 @@ func (this *StdtimeHolder) Compare(that interface{}) int {
 	}
 	return 0
 }
+
+func (this *StdDurationHolder) Compare(that interface{}) int {
+	if that == nil {
+		if this == nil {
+			return 0
+		}
+		return 1
+	}
+
+	that1, ok := that.(*StdDurationHolder)
+	if !ok {
+		that2, ok := that.(StdDurationHolder)
+		if ok {
+			that1 = &that2
+		} else {
+			return 1
+		}
+	}
+	if that1 == nil {
+		if this == nil {
+			return 0
+		}
+		return 1
+	} else if this == nil {
+		return -1
+	}
+	if this.Name != that1.Name {
+		if this.Name < that1.Name {
+			return -1
+		}
+		return 1
+	}
+	if this.Retries != that1.Retries {
+		if this.Retries < that1.Retries {
+			return -1
+		}
+		return 1
+	}
+	if this.Lookback < that1.Lookback {
+		return -1
+	} else if this.Lookback > that1.Lookback {
+		return 1
+	}
+	return 0
+}

@@ -6,6 +6,7 @@ option go_package = "github.com/grafana/wiresmith/gen/basic/stdtime/v1";
 
 import "wiresmith/options.proto";
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
 
 // StdtimeHolder exercises (wiresmith.options.stdtime) on a singular
 // google.protobuf.Timestamp field. The annotated field is emitted as a
@@ -21,4 +22,21 @@ message StdtimeHolder {
 
   // Generated Go: Created time.Time
   google.protobuf.Timestamp created = 3 [(wiresmith.options.stdtime) = true];
+}
+
+// StdDurationHolder exercises (wiresmith.options.stdduration) on a singular
+// google.protobuf.Duration field. The annotated field is emitted as a
+// stdlib `time.Duration`; the on-wire format is still the standard Duration
+// sub-message envelope (int64 seconds field 1, int32 nanos field 2).
+//
+// `name` and `retries` are stock scalar controls — they prove the
+// substitution is field-local. Plain (unannotated) `google.protobuf.Duration`
+// support belongs to the native well-known-types bead (wiresmith-7m6) and
+// is intentionally not exercised here.
+message StdDurationHolder {
+  string name    = 1;
+  uint32 retries = 2;
+
+  // Generated Go: Lookback time.Duration
+  google.protobuf.Duration lookback = 3 [(wiresmith.options.stdduration) = true];
 }
