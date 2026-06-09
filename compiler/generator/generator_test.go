@@ -2052,3 +2052,72 @@ message Bar { p.xfoo.Foo foo = 1; }`)
 		t.Errorf("use.pb.go did not round-trip through go/format: %v", err)
 	}
 }
+
+// TestGenerateMissingProtoPath_CleanError pins that a non-existent --proto_path
+// value produces a user-facing diagnostic naming the flag and the bad value —
+// not the raw filesystem syscall string ("lstat ... no such file or directory")
+// that filepath.WalkDir surfaces by default. The leak was DOC-9 / wiresmith-d2x.
+func TestGenerateMissingProtoPath_CleanError(t *testing.T) {
+	// Anchor the bad path inside a temp dir so the test stays portable
+	// across OS/filesystem layouts (and a parallel test on another machine
+	// can't ever happen to have a /this/path/... tree). The temp root
+	// exists; the "missing" subpath under it does not.
+	missing := filepath.Join(t.TempDir(), "missing-proto-tree")
+	gen := &Generator{
+		Module:   "wiresmith",
+		OutDir:   testOutDir(t),
+		ProtoDir: missing,
+	}
+	err := gen.Generate(context.Background())
+	if err == nil {
+		t.Fatal("expected error for non-existent proto_path, got nil")
+	}
+	msg := err.Error()
+	if !strings.Contains(msg, "--proto_path") {
+		t.Errorf("error must name the flag, got: %q", msg)
+	}
+	// The production formatter prints the path via %q, so on Windows
+	// `C:\tmp\x` shows up as `"C:\\tmp\\x"`. Compare against the same
+	// quoted form rather than the raw path so the test stays portable.
+	if quoted := fmt.Sprintf("%q", gen.ProtoDir); !strings.Contains(msg, quoted) {
+		t.Errorf("error must echo the bad value %s, got: %q", quoted, msg)
+	}
+	if strings.Contains(msg, "lstat") {
+		t.Errorf("error must not leak the lstat syscall name, got: %q", msg)
+	}
+}
+
+// TestGenerateProtoPathIsFile_CleanError pins that --proto_path pointing
+// at a regular file (not a directory) produces a clean diagnostic instead
+// of silently walking nothing and reporting success. Without the IsDir
+// guard, filepath.WalkDir on a file emits one callback with the file
+// itself, which the .proto-suffix filter skips, leaving the generator to
+// declare a successful empty run — a confusing outcome for what is
+// usually a flag-value typo.
+func TestGenerateProtoPathIsFile_CleanError(t *testing.T) {
+	tmp := t.TempDir()
+	asFile := filepath.Join(tmp, "definitely-a-file.txt")
+	if err := os.WriteFile(asFile, []byte("not a proto tree"), 0o600); err != nil {
+		t.Fatalf("seed: %v", err)
+	}
+	gen := &Generator{
+		Module:   "wiresmith",
+		OutDir:   testOutDir(t),
+		ProtoDir: asFile,
+	}
+	err := gen.Generate(context.Background())
+	if err == nil {
+		t.Fatal("expected error for file-shaped proto_path, got nil")
+	}
+	msg := err.Error()
+	if !strings.Contains(msg, "--proto_path") {
+		t.Errorf("error must name the flag, got: %q", msg)
+	}
+	if !strings.Contains(msg, "not a directory") {
+		t.Errorf("error must surface the not-a-directory reason, got: %q", msg)
+	}
+	// Same %q-quoted comparison as the missing-path test above.
+	if quoted := fmt.Sprintf("%q", gen.ProtoDir); !strings.Contains(msg, quoted) {
+		t.Errorf("error must echo the bad value %s, got: %q", quoted, msg)
+	}
+}

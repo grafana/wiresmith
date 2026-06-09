@@ -3,8 +3,10 @@ package generator
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"go/format"
+	"io/fs"
 	"os"
 	"path"
 	"path/filepath"
@@ -295,6 +297,29 @@ func (g *Generator) compileSources(ctx context.Context) ([]protoreflect.FileDesc
 	// fail Go's directory-equals-import-path rule at build time.
 	if err := g.validateOutDir(); err != nil {
 		return nil, nil, err
+	}
+
+	// Probe the proto_path root explicitly before WalkDir runs so a missing
+	// or wrong-shape flag value gets a clean, user-facing diagnostic.
+	// WalkDir surfaces the underlying lstat error verbatim, which would
+	// otherwise leak "lstat ... no such file or directory" to end users.
+	// Probing here also keeps the narrower "missing inside the tree" case
+	// (broken symlink, file deleted mid-walk) on its own error path with
+	// the lstat context preserved — only the proto_path root itself
+	// triggers the clean message.
+	info, err := os.Stat(g.ProtoDir)
+	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return nil, nil, fmt.Errorf("--proto_path %q: directory does not exist", g.ProtoDir)
+		}
+		return nil, nil, fmt.Errorf("--proto_path %q: %w", g.ProtoDir, err)
+	}
+	if !info.IsDir() {
+		// Without this check WalkDir on a regular file walks nothing and
+		// the generator silently succeeds with an empty output set — a
+		// confusing "no proto files found" outcome for what is really a
+		// flag-value typo.
+		return nil, nil, fmt.Errorf("--proto_path %q: not a directory", g.ProtoDir)
 	}
 
 	mapping, importPaths, pathToKey, err := buildImportMapping(g.ProtoDir)
