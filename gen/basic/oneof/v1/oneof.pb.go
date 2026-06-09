@@ -253,6 +253,10 @@ func (m *OneofPlusEverything) HasName() bool {
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
+func (m *OneofPlusEverything) HasScore() bool {
+	return m != nil && m.Score != nil
+}
+
 func (m *Payload) GetData() string {
 	if m != nil {
 		return m.Data

@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/encoding/protowire"
 
+	num "github.com/grafana/wiresmith/gen/basic/numeric/v1"
 	ks "github.com/grafana/wiresmith/gen/test/kitchensink/v1"
 )
 
@@ -197,4 +198,69 @@ func TestHasField_ZeroInitializedStructHasNothingPresent(t *testing.T) {
 	assert.False(t, msg.HasFieldDouble())
 	assert.False(t, msg.HasFieldString())
 	assert.False(t, msg.HasFieldBool())
+}
+
+// TestHasField_OptionalFields pins the Has*() contract for proto3 optional
+// fields. Presence is carried by the Go field's nil-ability — scalars
+// surface as `*T`, `optional bytes` stays a nil-able `[]byte` slice — and
+// the generated Has accessor checks `m != nil && m.F != nil` so callers
+// using Has* keep the same API surface across value-type and optional
+// kinds. Was missing before wiresmith-hld — users had to fall back to a
+// manual `!= nil` check.
+func TestHasField_OptionalFields(t *testing.T) {
+	// Default-constructed: all optional fields nil → Has returns false.
+	empty := &num.MixedModifiers{}
+	assert.False(t, empty.HasOptionalInt())
+	assert.False(t, empty.HasOptionalDouble())
+	assert.False(t, empty.HasOptionalString())
+	assert.False(t, empty.HasOptionalBytes())
+
+	// Populated: optional fields set → Has returns true.
+	intVal := int64(42)
+	dblVal := 3.14
+	strVal := "hello"
+	populated := &num.MixedModifiers{
+		OptionalInt:    &intVal,
+		OptionalDouble: &dblVal,
+		OptionalString: &strVal,
+		OptionalBytes:  []byte{0x01, 0x02},
+	}
+	assert.True(t, populated.HasOptionalInt())
+	assert.True(t, populated.HasOptionalDouble())
+	assert.True(t, populated.HasOptionalString())
+	assert.True(t, populated.HasOptionalBytes())
+}
+
+// TestHasField_OptionalFields_DefaultValueIsPresent pins the proto3
+// optional contract: an explicitly-set field with the default value
+// (`0`, `""`, empty `[]byte`) is still "present". Has returns true
+// because the pointer / slice is non-nil — the underlying value being
+// the zero-value does not collapse presence to false. Was a gap in the
+// initial wiresmith-hld coverage: the round-trip-set test only exercised
+// non-default values.
+func TestHasField_OptionalFields_DefaultValueIsPresent(t *testing.T) {
+	zeroInt := int64(0)
+	zeroDbl := float64(0)
+	zeroStr := ""
+	m := &num.MixedModifiers{
+		OptionalInt:    &zeroInt,
+		OptionalDouble: &zeroDbl,
+		OptionalString: &zeroStr,
+		OptionalBytes:  []byte{}, // non-nil, empty — distinct from nil
+	}
+	assert.True(t, m.HasOptionalInt(), "explicit zero must compare present")
+	assert.True(t, m.HasOptionalDouble(), "explicit zero must compare present")
+	assert.True(t, m.HasOptionalString(), "explicit empty string must compare present")
+	assert.True(t, m.HasOptionalBytes(), "non-nil empty []byte must compare present")
+}
+
+// TestHasField_OptionalFields_NilReceiver pins nil-safety. The generated
+// Has*() short-circuits on a nil receiver — matches the CLAUDE.md
+// "Nil-safety on all generated receiver methods" contract.
+func TestHasField_OptionalFields_NilReceiver(t *testing.T) {
+	var m *num.MixedModifiers
+	assert.False(t, m.HasOptionalInt())
+	assert.False(t, m.HasOptionalDouble())
+	assert.False(t, m.HasOptionalString())
+	assert.False(t, m.HasOptionalBytes())
 }

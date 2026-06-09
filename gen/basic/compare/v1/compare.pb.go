@@ -412,6 +412,22 @@ func (m *OutOfOrderTags) HasThird() bool {
 	return m.fieldsPresent[0]&(1<<2) != 0
 }
 
+func (m *OptionalScalars) HasFieldInt32() bool {
+	return m != nil && m.FieldInt32 != nil
+}
+
+func (m *OptionalScalars) HasFieldString() bool {
+	return m != nil && m.FieldString != nil
+}
+
+func (m *OptionalScalars) HasFieldBytes() bool {
+	return m != nil && m.FieldBytes != nil
+}
+
+func (m *OptionalScalars) HasFieldDouble() bool {
+	return m != nil && m.FieldDouble != nil
+}
+
 func (m *Inner) HasValue() bool {
 	if m == nil {
 		return false

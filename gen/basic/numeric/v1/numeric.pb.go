@@ -194,6 +194,22 @@ func (m *MixedModifiers) HasRegularBytes() bool {
 	return m.fieldsPresent[0]&(1<<3) != 0
 }
 
+func (m *MixedModifiers) HasOptionalInt() bool {
+	return m != nil && m.OptionalInt != nil
+}
+
+func (m *MixedModifiers) HasOptionalDouble() bool {
+	return m != nil && m.OptionalDouble != nil
+}
+
+func (m *MixedModifiers) HasOptionalString() bool {
+	return m != nil && m.OptionalString != nil
+}
+
+func (m *MixedModifiers) HasOptionalBytes() bool {
+	return m != nil && m.OptionalBytes != nil
+}
+
 func (m *WideFields) HasF1() bool {
 	if m == nil {
 		return false
