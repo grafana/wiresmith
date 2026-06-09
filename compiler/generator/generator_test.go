@@ -933,6 +933,16 @@ message Out { string s = 1; }`), 0o644); err != nil {
 	if !strings.Contains(err.Error(), "not a .proto under any --proto_path") {
 		t.Errorf("error should distinguish 'outside --proto_path' from 'does not exist', got: %v", err)
 	}
+	// The configured roots are formatted with %q on the slice, which
+	// fmt renders as `["root1" "root2"]` — each element quoted, the
+	// whole wrapped in brackets. Pin the quoted form so a regression
+	// back to %v (which would print the unquoted `[root1 root2]`) is
+	// caught. The bracket-and-quote shape also disambiguates roots
+	// that contain spaces.
+	wantQuoted := fmt.Sprintf("[%q]", protoDir)
+	if !strings.Contains(err.Error(), wantQuoted) {
+		t.Errorf("error should print the configured roots in %%q form (expected %q), got: %v", wantQuoted, err)
+	}
 }
 
 func TestBuildImportMappingFlat(t *testing.T) {
