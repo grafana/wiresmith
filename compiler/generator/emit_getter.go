@@ -127,6 +127,17 @@ func (fg *FileGenerator) emitGetters(md protoreflect.MessageDescriptor) {
 			continue
 		}
 
+		// `(wiresmith.options.casttype)` renames the field's Go type without
+		// changing wire encoding. Same `var zero T` pattern as customtype —
+		// the alias may be a defined type with no expressible zero literal
+		// from our side (it could be `type X uint64` or `type X []byte`).
+		if castType, ok := fg.casttypeGoFieldType(fd); ok {
+			fmt.Fprintf(fg.body, "func (m *%s) Get%s() %s {\n", name, goName, castType)
+			fmt.Fprintf(fg.body, "\tif m != nil {\n\t\treturn m.%s\n\t}\n", goName)
+			fmt.Fprintf(fg.body, "\tvar zero %s\n\treturn zero\n}\n\n", castType)
+			continue
+		}
+
 		// Scalar fields: nil-safe return.
 		goType := fg.imports.goSingularType(fd)
 		fmt.Fprintf(fg.body, "func (m *%s) Get%s() %s {\n", name, goName, goType)

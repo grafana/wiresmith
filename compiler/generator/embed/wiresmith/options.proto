@@ -122,4 +122,30 @@ extend google.protobuf.FieldOptions {
   // Map, oneof, repeated, optional, and (wiresmith.options.pointer) are
   // rejected — same shape as stdtime.
   optional bool stdduration = 50035;
+
+  // casttype = "MyAlias" overrides the generated Go field type name
+  // without changing the wire encoding. The wire-level kind stays exactly
+  // what the proto declares; only the Go-side type is renamed:
+  //
+  //   int64 user_id = 1 [(wiresmith.options.casttype) = "github.com/myapp/pkg.UserID"];
+  //   //  -> UserID pkg.UserID `protobuf:"..."`
+  //
+  // The aliased Go type must be a `type X = Underlying` (alias) or
+  // `type X Underlying` (defined type) over the proto field's natural Go
+  // shape. Both forms work because casttype only affects the
+  // declaration; the marshal/unmarshal hot path inserts conversions to
+  // bridge MyAlias and the underlying kind.
+  //
+  // Unlike (wiresmith.options.customtype), casttype does NOT require the
+  // user type to implement any wiresmith interface — the standard scalar
+  // marshal/unmarshal/equal/compare code is reused with a cast at each
+  // boundary.
+  //
+  // v1 scope: integer scalars (int32/int64/uint32/uint64/sint32/sint64/
+  // fixed*/sfixed*), bool, string, bytes. Float/double, enum, message,
+  // map, oneof, and proto3 `optional` are rejected — float/double need
+  // bit-cast handling (math.Float*bits) at every emit site which v1 does
+  // not implement; the rest are filed as follow-up beads if a real use
+  // case surfaces.
+  optional string casttype = 50036;
 }

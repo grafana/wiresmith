@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package basic.casttype.v1;
+
+option go_package = "github.com/grafana/wiresmith/gen/basic/casttype/v1";
+
+import "wiresmith/options.proto";
+
+// CastTypeHolder exercises (wiresmith.options.casttype) on the v1 scope:
+// integer scalars (int64), string, and bytes. Each annotated field surfaces
+// as a Go-side alias type while the wire encoding stays exactly what the
+// proto kind declares — so a peer using any other proto library reads the
+// same bytes back.
+//
+// UserID, TenantTag, and Payload live in github.com/grafana/wiresmith/test/casttypes
+// as defined Go types over the natural underlying (int64, string, []byte).
+// Plain controls demonstrate the substitution is field-local.
+message CastTypeHolder {
+  int64  user_id    = 1 [(wiresmith.options.casttype) = "github.com/grafana/wiresmith/test/casttypes.UserID"];
+  string tenant_tag = 2 [(wiresmith.options.casttype) = "github.com/grafana/wiresmith/test/casttypes.TenantTag"];
+  bytes  payload    = 3 [(wiresmith.options.casttype) = "github.com/grafana/wiresmith/test/casttypes.Payload"];
+
+  // Controls: same kinds without the option, stay default Go shape.
+  int64  plain_id    = 4;
+  string plain_tag   = 5;
+  bytes  plain_bytes = 6;
+}

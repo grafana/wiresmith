@@ -210,6 +210,58 @@ The validation source of truth is `customnameOptionRejection` in `compiler/gener
 
 [`proto/basic/customname.proto`](../proto/basic/customname.proto) exercises the option across scalar, message, repeated, and oneof-variant fields, with an unannotated control showing that default `snake_to_PascalCase` conversion still applies elsewhere.
 
+## `(wiresmith.options.casttype) = "import/path.TypeName"`
+
+The casttype option renames the field's Go type without changing the wire encoding. The marshal/unmarshal hot path keeps the underlying scalar's logic and bridges via Go type conversions at the boundaries — unlike customtype, the user does not implement any wiresmith interface.
+
+```proto
+message Request {
+  int64  user_id    = 1 [(wiresmith.options.casttype) = "github.com/myapp/ids.UserID"];
+  string tenant_tag = 2 [(wiresmith.options.casttype) = "github.com/myapp/ids.TenantTag"];
+  bytes  payload    = 3 [(wiresmith.options.casttype) = "github.com/myapp/ids.Payload"];
+}
+```
+
+```go
+type Request struct {
+    UserID    ids.UserID    `protobuf:"varint,1,opt,name=user_id,proto3"`
+    TenantTag ids.TenantTag `protobuf:"bytes,2,opt,name=tenant_tag,proto3"`
+    Payload   ids.Payload   `protobuf:"bytes,3,opt,name=payload,proto3"`
+}
+```
+
+The aliased Go type must be a defined type or alias over the proto field's natural Go shape — e.g. `type UserID int64`, `type TenantTag string`, `type Payload []byte`. The generator inserts the necessary casts at every emit site:
+
+- **Size / Marshal** rely on Go's automatic conversion of defined integer / slice types when used in arithmetic (`uint64(m.UserID)`) or builtin calls (`len(m.TenantTag)`).
+- **Unmarshal** wraps the underlying scalar's CastExpr with the user alias: `m.UserID = ids.UserID(int64(v))`, `m.TenantTag = ids.TenantTag(string(dAtA[iNdEx:postIndex]))`. The Go compiler folds the redundant inner cast at compile time.
+- **Equal / Compare** delegate to the scalar's `==` / `<` for kinds Go can compare directly; `bytes` casttype falls back to `bytes.Equal([]byte(a), []byte(b))` / `bytes.Compare([]byte(a), []byte(b))` because the stdlib helpers do not accept defined slice types.
+
+### Value format
+
+Same shape as customtype: `"import/path.TypeName"` for an external type (the import is registered automatically with an explicit alias derived from the path base) or `"TypeName"` for a same-package type. Whitespace inside the value and trailing `/path` with no `.TypeName` suffix are rejected at codegen time.
+
+### Where it applies (v1)
+
+Allowed: singular fields of kind int32, int64, uint32, uint64, sint32, sint64, fixed32, sfixed32, fixed64, sfixed64, bool, string, bytes.
+
+Rejected (combined compile-time error from `casttypeOption.Validate`):
+
+- Float and double — bit-cast handling (`math.Float*bits`) does not accept a defined-type argument; supporting it cleanly requires changing every emit site rather than wrapping at the FieldType boundary. Filed as a follow-up if a real use case surfaces.
+- Enum — defer until casttype semantics on enum-valued fields are decided (do we want `type Severity int32` or do we want a stronger guarantee that casttype values match declared enum constants?).
+- Message — use `(wiresmith.options.customtype)` for message-valued user types; casttype's "same wire, different name" contract does not generalise to submessages.
+- Map, oneof, and proto3 `optional` fields. Filed as follow-up beads if needed.
+
+### Difference from customtype
+
+`(wiresmith.options.customtype)` and `(wiresmith.options.casttype)` are deliberately separate options because they serve different needs:
+
+- **customtype**: the user type **owns the wire encoding** (must implement `SizeWiresmith`/`MarshalWiresmith`/`UnmarshalWiresmith`/`EqualWiresmith`/`CompareWiresmith`). Use when the Go representation differs structurally from the proto kind (e.g. a pooled `PreallocBytes` wrapper, a `LabelAdapter` with custom serialization).
+- **casttype**: the user type **shares the underlying** (no methods required). Use for type-safe identifier aliases like `type UserID int64`, `type AccountID int64` where the wire encoding is unchanged but the Go type system catches accidental cross-domain assignment.
+
+### Worked example
+
+[`proto/basic/casttype.proto`](../proto/basic/casttype.proto) annotates an int64, a string, and a bytes field next to plain controls. [`test/casttypes/casttypes.go`](../test/casttypes/casttypes.go) declares the trivial alias types, and [`test/basic/casttype_test.go`](../test/basic/casttype_test.go) pins the field-type swap, round-trip, wire-compatibility with the unannotated control, Equal/Compare, and nil-safe getter invariants documented above.
+
 ## `(wiresmith.options.stdtime) = true`
 
 The stdtime option swaps a `google.protobuf.Timestamp` field for a stdlib `time.Time` value. Wire format is unchanged — the value is still encoded as the standard Timestamp sub-message (int64 `seconds` field 1, int32 `nanos` field 2) so peers using any other proto library see the same bytes.
