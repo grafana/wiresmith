@@ -90,10 +90,7 @@ func (o *casttypeOption) FieldType(fg *FileGenerator, fd protoreflect.FieldDescr
 		alias := fg.imports.addExplicitAliasImport(importPath)
 		goType = alias + "." + typeName
 	}
-	inner, ok := types.Get(fd.Kind()).(types.Type)
-	if !ok {
-		return nil, false
-	}
+	inner := types.Get(fd.Kind())
 	return &types.CastType{Inner: inner, GoAlias: goType}, true
 }
 
