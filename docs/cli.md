@@ -35,8 +35,12 @@ positional-argument convention used by `protoc`,
 `--proto_path` is repeatable for multi-root layouts (vendored protos
 alongside project-local protos, etc.) and matches
 `protoc -I=root1 -I=root2`. A single occurrence may also carry
-colon-separated entries (`--proto_path=root1:root2`). `-I` is accepted
-as a short alias.
+list-separated entries using the OS path-list separator
+(`--proto_path=root1:root2` on Unix, `--proto_path=root1;root2` on
+Windows — Go's `os.PathListSeparator`). `-I` is accepted as a short
+alias. Using the OS separator rather than a fixed `:` keeps Windows
+drive-letter paths like `C:\proto` from being split into `C` and
+`\proto`.
 
 When the same import key would resolve to two different files across
 the configured roots, wiresmith fails with a `duplicate import key`
@@ -50,7 +54,7 @@ mismatch.
 
 | Flag           | Default       | Description                                                |
 |----------------|---------------|------------------------------------------------------------|
-| `--proto_path`, `-I` | `proto` | Directory containing `.proto` files (walked recursively). Repeatable; a single occurrence may carry `:`-separated entries. |
+| `--proto_path`, `-I` | `proto` | Directory containing `.proto` files (walked recursively). Repeatable; a single occurrence may carry list-separated entries using `os.PathListSeparator` (`:` on Unix, `;` on Windows). |
 | `--out`        | `gen`         | Output directory for generated Go packages.                |
 | `--module`     | `wiresmith`   | Go module name used as the prefix when emitting imports.   |
 | `-M`           | _(repeatable)_| Override the Go import path for one `.proto` (see below).  |
@@ -114,7 +118,8 @@ both files compile in one run:
 
 ```sh
 ./wiresmith --proto_path=vendor/proto --proto_path=internal/proto --out=gen --module=example.com/myproject
-# or equivalently with the colon shorthand and the -I alias:
+# or equivalently with the list-separator shorthand and the -I alias
+# (':' on Unix, ';' on Windows):
 ./wiresmith -I=vendor/proto:internal/proto --out=gen --module=example.com/myproject
 ```
 

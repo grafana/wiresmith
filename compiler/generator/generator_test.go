@@ -1129,7 +1129,7 @@ func TestBuildImportMappingMultiRootCollision(t *testing.T) {
 
 // TestBuildImportMappingMultiRootSameRootTwice pins that passing the
 // same root multiple times is silently de-duped, not a collision. This
-// is the path a colon-split CLI value like `--proto_path=proto:proto`
+// is the path a list-separator CLI value like `--proto_path=proto:proto`
 // (user mistake) or a Mimir Makefile that ends up listing one root
 // twice through different code paths takes. Without the same-abs guard
 // it would surface as a misleading "duplicate import key" error.
@@ -1144,6 +1144,49 @@ func TestBuildImportMappingMultiRootSameRootTwice(t *testing.T) {
 	}
 	if len(importPaths) != 1 || len(mapping) != 1 {
 		t.Errorf("expected single import entry after de-dup, got importPaths=%v mapping=%v", importPaths, mapping)
+	}
+}
+
+// TestBuildImportMappingMultiRootOverlap pins the root-containment
+// safety net: when one --proto_path root is a subdirectory of another,
+// the inner root's files are also reachable from the outer root, but
+// under *different* import keys (a nested rel path from the outer root
+// vs. a package-derived top-level key from the inner root). Letting
+// both register would silently compile the file twice and surface as a
+// duplicate-symbol link error in the generated Go.
+//
+// Without this guard the keyToPath de-dup only catches "same key, same
+// file" — it misses "same file, different key", which is exactly what
+// overlapping roots produce when the inner root's files don't sit at a
+// path matching their package.
+func TestBuildImportMappingMultiRootOverlap(t *testing.T) {
+	outer := t.TempDir()
+	// Inner is a subdirectory of outer that itself contains a flat
+	// .proto whose package would yield a key unrelated to the rel
+	// path under outer. Outer sees `inner/foo.proto` as a nested rel
+	// path → key `inner/foo.proto`. Inner sees `foo.proto` as
+	// top-level → key derived from `package mypkg;` → `mypkg/foo.proto`.
+	// Two different keys, one file.
+	inner := filepath.Join(outer, "inner")
+	if err := os.MkdirAll(inner, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	writeProto(t, outer, "inner/foo.proto",
+		"syntax = \"proto3\";\npackage mypkg;\nmessage Foo {}")
+
+	_, _, _, err := buildImportMapping([]string{outer, inner})
+	if err == nil {
+		t.Fatal("expected error for overlapping roots, got nil")
+	}
+	msg := err.Error()
+	if !strings.Contains(msg, "reachable from multiple --proto_path roots") {
+		t.Errorf("error should call out the overlap reason, got: %v", err)
+	}
+	// Both keys must show up so the user can decide which root to drop.
+	for _, wantKey := range []string{"inner/foo.proto", "mypkg/foo.proto"} {
+		if !strings.Contains(msg, wantKey) {
+			t.Errorf("error should name the conflicting key %q, got: %v", wantKey, err)
+		}
 	}
 }
 

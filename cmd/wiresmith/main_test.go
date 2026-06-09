@@ -1,9 +1,17 @@
 package main
 
 import (
+	"os"
 	"reflect"
+	"strings"
 	"testing"
 )
+
+// sep is the OS path-list separator the flag splits on (`:` on Unix,
+// `;` on Windows). Hoisted into a package-level helper so every test
+// uses the same form the production code does and the suite stays
+// portable across both platforms.
+var sep = string(os.PathListSeparator)
 
 // TestProtoPathsFlag_Repeatable verifies the most common --proto_path
 // usage path: one flag occurrence per root, preserving call order. The
@@ -23,15 +31,18 @@ func TestProtoPathsFlag_Repeatable(t *testing.T) {
 	}
 }
 
-// TestProtoPathsFlag_ColonSplit pins the convenience form: a single
-// flag value may carry ':'-separated entries, matching protoc's
-// '-I=a:b:c' shorthand. Entries are appended in order so the
-// resulting slice is indistinguishable from three separate --proto_path
-// flags.
-func TestProtoPathsFlag_ColonSplit(t *testing.T) {
+// TestProtoPathsFlag_ListSplit pins the convenience form: a single
+// flag value may carry list-separated entries (`:`-joined on Unix,
+// `;`-joined on Windows via os.PathListSeparator). Entries are
+// appended in order so the resulting slice is indistinguishable from
+// three separate --proto_path flags. Using os.PathListSeparator rather
+// than a hard-coded ':' keeps Windows drive-letter paths
+// (e.g. C:\proto) from being mangled into "C" + "\proto".
+func TestProtoPathsFlag_ListSplit(t *testing.T) {
 	p := &protoPathsFlag{}
-	if err := p.Set("a:b:c"); err != nil {
-		t.Fatalf("Set: %v", err)
+	value := strings.Join([]string{"a", "b", "c"}, sep)
+	if err := p.Set(value); err != nil {
+		t.Fatalf("Set(%q): %v", value, err)
 	}
 	want := []string{"a", "b", "c"}
 	if !reflect.DeepEqual(p.dirs, want) {
@@ -42,10 +53,11 @@ func TestProtoPathsFlag_ColonSplit(t *testing.T) {
 // TestProtoPathsFlag_MixedRepeatAndSplit pins that the two forms can be
 // freely combined; both end up in one ordered slice. This is the path
 // a Makefile that builds --proto_path arguments from several sources
-// (some single, some colon-joined) will take.
+// (some single, some list-joined) will take.
 func TestProtoPathsFlag_MixedRepeatAndSplit(t *testing.T) {
 	p := &protoPathsFlag{}
-	for _, v := range []string{"first", "second:third", "fourth"} {
+	values := []string{"first", "second" + sep + "third", "fourth"}
+	for _, v := range values {
 		if err := p.Set(v); err != nil {
 			t.Fatalf("Set(%q): %v", v, err)
 		}
@@ -53,6 +65,33 @@ func TestProtoPathsFlag_MixedRepeatAndSplit(t *testing.T) {
 	want := []string{"first", "second", "third", "fourth"}
 	if !reflect.DeepEqual(p.dirs, want) {
 		t.Errorf("dirs = %v, want %v", p.dirs, want)
+	}
+}
+
+// TestProtoPathsFlag_PreservesDriveLetter pins the platform-portable
+// split: a value that on Unix happens to contain ':' inside one path
+// (rare in practice but possible) or on Windows contains a drive
+// letter must stay intact when it is the only separator-shaped
+// character in the value. Without os.PathListSeparator the Windows
+// invocation `--proto_path=C:\proto` would split into `C` and `\proto`
+// and silently misroute the walk.
+func TestProtoPathsFlag_PreservesDriveLetter(t *testing.T) {
+	p := &protoPathsFlag{}
+	// Pick a value that contains the *other* platform's separator so
+	// the split must leave it alone. On Unix that's ';'; on Windows
+	// that's ':'. The value is deliberately separator-free in the
+	// production split semantics on whichever platform runs the test.
+	otherSep := ":"
+	if sep == ":" {
+		otherSep = ";"
+	}
+	value := "root" + otherSep + "sub"
+	if err := p.Set(value); err != nil {
+		t.Fatalf("Set(%q): %v", value, err)
+	}
+	want := []string{value}
+	if !reflect.DeepEqual(p.dirs, want) {
+		t.Errorf("dirs = %v, want %v (separator on this platform is %q)", p.dirs, want, sep)
 	}
 }
 
@@ -67,21 +106,23 @@ func TestProtoPathsFlag_RejectsEmpty(t *testing.T) {
 	}
 }
 
-// TestProtoPathsFlag_RejectsEmptyEntry pins that the colon-split form
-// rejects an embedded empty entry. `a::b` is almost always a typo
-// (extra colon, an undefined env var expanding to ""), and silently
-// dropping the empty entry would mask the typo.
+// TestProtoPathsFlag_RejectsEmptyEntry pins that the list-split form
+// rejects an embedded empty entry. `a::b` (or `a;;b` on Windows) is
+// almost always a typo (extra separator, an undefined env var
+// expanding to ""), and silently dropping the empty entry would mask
+// the typo.
 func TestProtoPathsFlag_RejectsEmptyEntry(t *testing.T) {
 	p := &protoPathsFlag{}
-	if err := p.Set("a::b"); err == nil {
-		t.Error("Set(\"a::b\") must error on the empty middle entry; got nil")
+	value := "a" + sep + sep + "b"
+	if err := p.Set(value); err == nil {
+		t.Errorf("Set(%q) must error on the empty middle entry; got nil", value)
 	}
 }
 
 // TestProtoPathsFlag_String_RoundTrips pins that String() echoes the
 // accumulated entries in a form the user can paste back as a single
-// colon-joined flag value. This is what `flag.PrintDefaults()` and any
-// usage dump display.
+// flag value (using the OS list separator). This is what
+// `flag.PrintDefaults()` and any usage dump display.
 func TestProtoPathsFlag_String_RoundTrips(t *testing.T) {
 	p := &protoPathsFlag{}
 	if got := p.String(); got != "" {
@@ -92,7 +133,7 @@ func TestProtoPathsFlag_String_RoundTrips(t *testing.T) {
 			t.Fatalf("Set(%q): %v", v, err)
 		}
 	}
-	if got, want := p.String(), "a:b"; got != want {
+	if got, want := p.String(), "a"+sep+"b"; got != want {
 		t.Errorf("String() = %q, want %q", got, want)
 	}
 }

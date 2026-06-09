@@ -1311,14 +1311,28 @@ func buildImportMapping(protoDirs []string) (map[string][]byte, []string, map[st
 				return err
 			}
 
-			if prevAbs, exists := keyToPath[key]; exists {
-				if prevAbs == abs {
-					// Same file walked twice — happens when the user
-					// passes the same root multiple times, or when two
-					// roots resolve to the same directory via symlink.
-					// Silently skip; the file is already registered.
+			if prevKey, exists := pathToKey[abs]; exists {
+				if prevKey == key {
+					// Same file walked twice under the same key —
+					// happens when the user passes the same root
+					// multiple times, or when two roots resolve to
+					// the same directory via symlink. Silently skip;
+					// the file is already registered.
 					return nil
 				}
+				// Same file reachable from two roots under *different*
+				// keys (e.g. one root is a subdir of another, so the
+				// file's relative path differs). Letting both keys
+				// register would compile the file twice and trigger
+				// a duplicate-symbol link error downstream — fail
+				// loudly with both keys so the user can drop the
+				// overlapping root.
+				return fmt.Errorf("file %s is reachable from multiple --proto_path roots under different keys %q and %q; remove the overlap (one root contains another) or pass only the deepest root", abs, prevKey, key)
+			}
+			if prevAbs, exists := keyToPath[key]; exists {
+				// Same key produced by two different files — the
+				// classic shadowing case. Both paths in the error so
+				// the user can diff and decide which is canonical.
 				return fmt.Errorf("duplicate import key %q resolves to multiple files: %s and %s", key, prevAbs, abs)
 			}
 			mapping[key] = content
