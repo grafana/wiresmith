@@ -306,21 +306,20 @@ func (g *Generator) compileSources(ctx context.Context) ([]protoreflect.FileDesc
 	// Probing here also keeps the narrower "missing inside the tree" case
 	// (broken symlink, file deleted mid-walk) on its own error path with
 	// the lstat context preserved — only the proto_path root itself
-	// triggers the clean message. Use %s + single-quotes rather than %q so
-	// Windows backslash paths don't show up as Go-escaped strings.
+	// triggers the clean message.
 	info, err := os.Stat(g.ProtoDir)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
-			return nil, nil, fmt.Errorf("--proto_path '%s': directory does not exist", g.ProtoDir)
+			return nil, nil, fmt.Errorf("--proto_path %q: directory does not exist", g.ProtoDir)
 		}
-		return nil, nil, fmt.Errorf("--proto_path '%s': %w", g.ProtoDir, err)
+		return nil, nil, fmt.Errorf("--proto_path %q: %w", g.ProtoDir, err)
 	}
 	if !info.IsDir() {
 		// Without this check WalkDir on a regular file walks nothing and
 		// the generator silently succeeds with an empty output set — a
 		// confusing "no proto files found" outcome for what is really a
 		// flag-value typo.
-		return nil, nil, fmt.Errorf("--proto_path '%s': not a directory", g.ProtoDir)
+		return nil, nil, fmt.Errorf("--proto_path %q: not a directory", g.ProtoDir)
 	}
 
 	mapping, importPaths, pathToKey, err := buildImportMapping(g.ProtoDir)
