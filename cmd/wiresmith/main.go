@@ -42,6 +42,34 @@ func (o *overridesFlag) Set(v string) error {
 	return nil
 }
 
+// protoPathsFlag implements flag.Value for the repeatable `--proto_path`
+// (and `-I` alias) option. Each occurrence appends one or more roots to
+// the underlying slice; a single value may carry colon-separated entries
+// (`--proto_path=a:b:c`) for parity with `protoc`'s `:`-list convention.
+// Order is preserved — it doesn't affect import resolution (collisions
+// are errors, not first-wins) but it does show up in error messages.
+type protoPathsFlag struct{ dirs []string }
+
+func (p *protoPathsFlag) String() string {
+	if p == nil || len(p.dirs) == 0 {
+		return ""
+	}
+	return strings.Join(p.dirs, ":")
+}
+
+func (p *protoPathsFlag) Set(v string) error {
+	if v == "" {
+		return fmt.Errorf("--proto_path: empty value")
+	}
+	for part := range strings.SplitSeq(v, ":") {
+		if part == "" {
+			return fmt.Errorf("--proto_path: empty entry in %q", v)
+		}
+		p.dirs = append(p.dirs, part)
+	}
+	return nil
+}
+
 // version is overridden at build time via -ldflags "-X main.version=...".
 // When unset, buildVersion falls back to runtime/debug build info so
 // `go install` produces something meaningful too.
@@ -60,18 +88,27 @@ Usage:
 When one or more .proto file paths are given as positional arguments,
 only those files are emitted. Their imports are still resolved against
 the full --proto_path walk. When no files are given, wiresmith walks
---proto_path and emits every .proto it finds (the default).
+every --proto_path root and emits every .proto it finds (the default).
 
-Positional .proto paths must live under --proto_path; a path that
-points outside the walked tree is rejected up front so a typo can't
-silently produce an empty generation run.
+--proto_path (-I) may be given multiple times to compile across several
+roots, matching 'protoc -I=root1 -I=root2'. A single occurrence may
+carry colon-separated entries. If the same import key is produced by
+two different files across the roots, wiresmith fails loudly with both
+paths rather than silently letting one shadow the other.
+
+Positional .proto paths must live under some --proto_path root; a path
+that points outside every walked tree is rejected up front so a typo
+can't silently produce an empty generation run.
 
 Flags:
 `)
 		flag.PrintDefaults()
 	}
 
-	protoDir := flag.String("proto_path", "proto", "directory containing .proto files")
+	protoPaths := &protoPathsFlag{}
+	flag.Var(protoPaths, "proto_path",
+		`directory containing .proto files (walked recursively). Repeatable; a single occurrence may carry ':'-separated entries. Defaults to "proto" when omitted.`)
+	flag.Var(protoPaths, "I", `alias for --proto_path.`)
 	outDir := flag.String("out", "gen", "output directory for generated Go files")
 	module := flag.String("module", "github.com/grafana/wiresmith", "Go module name")
 	showVersion := flag.Bool("version", false, "print version and exit")
@@ -85,10 +122,18 @@ Flags:
 		return
 	}
 
+	protoDirs := protoPaths.dirs
+	if len(protoDirs) == 0 {
+		// Preserve the historical default — wiresmith without flags
+		// compiled the local "proto" tree — so existing invocations
+		// don't regress when the flag turns into a repeatable list.
+		protoDirs = []string{"proto"}
+	}
+
 	g := &generator.Generator{
 		Module:    *module,
 		OutDir:    *outDir,
-		ProtoDir:  *protoDir,
+		ProtoDirs: protoDirs,
 		Files:     flag.Args(),
 		Overrides: overrides.m,
 	}

@@ -27,7 +27,7 @@ func runGenerator(t *testing.T, protoBody string) error {
 	g := &Generator{
 		Module:   "wiresmith",
 		OutDir:   outDir,
-		ProtoDir: protoDir,
+		ProtoDirs: []string{protoDir},
 	}
 	return g.Generate(context.Background())
 }
@@ -129,7 +129,7 @@ message Holder {
 		t.Fatalf("writing proto: %v", err)
 	}
 
-	g := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	g := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDirs: []string{protoDir}}
 	if err := g.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate failed: %v", err)
 	}
@@ -168,7 +168,7 @@ message UserMessage { int32 x = 1; }
 		t.Fatalf("writing proto: %v", err)
 	}
 
-	g := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	g := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDirs: []string{protoDir}}
 	if err := g.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate failed: %v", err)
 	}
@@ -205,7 +205,7 @@ message M {}
 		t.Fatalf("writing proto: %v", err)
 	}
 
-	g := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	g := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDirs: []string{protoDir}}
 	err := g.Generate(context.Background())
 	if err == nil {
 		t.Fatalf("expected error, got nil")
@@ -233,7 +233,7 @@ message M {}
 		t.Fatalf("writing proto: %v", err)
 	}
 
-	g := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	g := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDirs: []string{protoDir}}
 	if err := g.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate failed: %v", err)
 	}

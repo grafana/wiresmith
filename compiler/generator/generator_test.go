@@ -71,9 +71,9 @@ func checkDeterminism(t *testing.T, protoDir string, iterations int) {
 		}
 
 		gen := &Generator{
-			Module:   "wiresmith",
-			OutDir:   outDir,
-			ProtoDir: protoDir,
+			Module:    "wiresmith",
+			OutDir:    outDir,
+			ProtoDirs: []string{protoDir},
 		}
 		if err := gen.Generate(ctx); err != nil {
 			t.Fatalf("iteration %d: first Generate failed: %v", i, err)
@@ -186,7 +186,7 @@ func TestGenerateMatchesCheckedIn(t *testing.T) {
 			gen := &Generator{
 				Module:    "wiresmith",
 				OutDir:    outDir,
-				ProtoDir:  protoDir,
+				ProtoDirs: []string{protoDir},
 				Overrides: tc.overrides,
 			}
 			if err := gen.Generate(ctx); err != nil {
@@ -278,7 +278,7 @@ package real_pkg;
 message Foo { string name = 1; }`)
 
 	outDir := testOutDir(t)
-	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDirs: []string{protoDir}}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)
 	}
@@ -313,7 +313,7 @@ enum Color {
 }`)
 
 	outDir := testOutDir(t)
-	gen := &Generator{Module: "github.com/grafana/wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	gen := &Generator{Module: "github.com/grafana/wiresmith", OutDir: outDir, ProtoDirs: []string{protoDir}}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)
 	}
@@ -344,7 +344,7 @@ package shared;
 message Foo { string s = 1; }`)
 
 	outDir := testOutDir(t)
-	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDirs: []string{protoDir}}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)
 	}
@@ -378,7 +378,7 @@ import "example/v1/common.proto";
 message Bar { Foo foo = 1; }`)
 
 	outDir := testOutDir(t)
-	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDirs: []string{protoDir}}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)
 	}
@@ -476,7 +476,7 @@ option go_package = "github.com/grafana/wiresmith/gen/alpha";
 message Foo { string s = 1; }`)
 
 	outDir := testOutDir(t)
-	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDirs: []string{protoDir}}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)
 	}
@@ -631,10 +631,10 @@ message Bar { int32 n = 1; }`)
 
 	outDir := testOutDir(t)
 	gen := &Generator{
-		Module:   "wiresmith",
-		OutDir:   outDir,
-		ProtoDir: protoDir,
-		Files:    []string{filepath.Join(protoDir, "a", "foo.proto")},
+		Module:    "wiresmith",
+		OutDir:    outDir,
+		ProtoDirs: []string{protoDir},
+		Files:     []string{filepath.Join(protoDir, "a", "foo.proto")},
 	}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate (cross-file import must still resolve from --proto_path): %v", err)
@@ -685,7 +685,7 @@ option go_package = "github.com/grafana/wiresmith/scoped/b";
 message Bar { int32 n = 1; }`)
 
 	outDir := testOutDir(t)
-	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDirs: []string{protoDir}}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)
 	}
@@ -696,6 +696,118 @@ message Bar { int32 n = 1; }`)
 		if _, err := os.Stat(filepath.Join(outDir, rel)); err != nil {
 			t.Errorf("expected %s to be emitted in default-walk mode: %v", rel, err)
 		}
+	}
+}
+
+// TestGenerateMultiProtoPath pins the end-to-end contract for multiple
+// --proto_path roots: a .proto in one root resolves an import of a
+// .proto in another root, both get compiled, and both produce .pb.go
+// under --out using their respective source-relative paths. This is
+// the Mimir / Tempo "vendor/ + internal/" workflow the single-root
+// CLI couldn't serve without symlink hacks.
+func TestGenerateMultiProtoPath(t *testing.T) {
+	rootA := t.TempDir()
+	rootB := t.TempDir()
+	writeProto(t, rootA, "lib/v1/foo.proto", `
+syntax = "proto3";
+package lib.v1;
+option go_package = "github.com/grafana/wiresmith/scoped/lib/v1";
+message Foo { string s = 1; }`)
+	writeProto(t, rootB, "app/v1/bar.proto", `
+syntax = "proto3";
+package app.v1;
+import "lib/v1/foo.proto";
+option go_package = "github.com/grafana/wiresmith/scoped/app/v1";
+message Bar { lib.v1.Foo f = 1; }`)
+
+	outDir := testOutDir(t)
+	gen := &Generator{
+		Module:    "wiresmith",
+		OutDir:    outDir,
+		ProtoDirs: []string{rootA, rootB},
+	}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate across two --proto_path roots: %v", err)
+	}
+	for _, rel := range []string{
+		filepath.Join("lib", "v1", "foo.pb.go"),
+		filepath.Join("app", "v1", "bar.pb.go"),
+	} {
+		if _, err := os.Stat(filepath.Join(outDir, rel)); err != nil {
+			t.Errorf("expected %s to be emitted from the multi-root walk: %v", rel, err)
+		}
+	}
+
+	// The cross-root import must resolve to a real qualified type
+	// in the emitted Go (not an empty selector or unregistered alias).
+	bar, err := os.ReadFile(filepath.Join(outDir, "app", "v1", "bar.pb.go"))
+	if err != nil {
+		t.Fatalf("reading app/v1/bar.pb.go: %v", err)
+	}
+	wantQualifier := "v1.Foo"
+	if !strings.Contains(string(bar), wantQualifier) {
+		t.Errorf("app/v1/bar.pb.go should reference Foo via the lib package's import alias (expected %q)\n--- bar.pb.go ---\n%s", wantQualifier, bar)
+	}
+	wantImport := "github.com/grafana/wiresmith/scoped/lib/v1"
+	if !strings.Contains(string(bar), wantImport) {
+		t.Errorf("app/v1/bar.pb.go should import %q\n--- bar.pb.go ---\n%s", wantImport, bar)
+	}
+}
+
+// TestGenerateMultiProtoPathCollision pins the end-to-end propagation
+// of the strict-collision rule: when two --proto_path roots both ship
+// a file at the same import key, Generate refuses to produce any
+// output. The test guards against a regression where the collision is
+// caught at buildImportMapping but a later layer's first-wins logic
+// silently picks one.
+func TestGenerateMultiProtoPathCollision(t *testing.T) {
+	rootA := t.TempDir()
+	rootB := t.TempDir()
+	writeProto(t, rootA, "lib/v1/foo.proto", `
+syntax = "proto3";
+package lib.v1;
+option go_package = "github.com/grafana/wiresmith/scoped/lib/v1";
+message Foo { string a = 1; }`)
+	writeProto(t, rootB, "lib/v1/foo.proto", `
+syntax = "proto3";
+package lib.v1;
+option go_package = "github.com/grafana/wiresmith/scoped/lib/v1";
+message Foo { string b = 1; }`)
+
+	outDir := testOutDir(t)
+	gen := &Generator{
+		Module:    "wiresmith",
+		OutDir:    outDir,
+		ProtoDirs: []string{rootA, rootB},
+	}
+	err := gen.Generate(context.Background())
+	if err == nil {
+		t.Fatal("expected collision error for same import key across --proto_path roots, got nil")
+	}
+	if !strings.Contains(err.Error(), "duplicate import key") {
+		t.Errorf("expected duplicate-import-key error, got: %v", err)
+	}
+	// Nothing should have been written to outDir.
+	if _, err := os.Stat(filepath.Join(outDir, "lib", "v1", "foo.pb.go")); !os.IsNotExist(err) {
+		t.Errorf("collision must abort before emit; got stat err=%v", err)
+	}
+}
+
+// TestGenerateEmptyProtoDirs pins that an empty ProtoDirs slice fails
+// with a clean diagnostic rather than silently walking nothing. The
+// CLI defaults to ["proto"] when no flag is given, so this only fires
+// for direct library use that forgets to set the field.
+func TestGenerateEmptyProtoDirs(t *testing.T) {
+	gen := &Generator{
+		Module: "wiresmith",
+		OutDir: testOutDir(t),
+	}
+	err := gen.Generate(context.Background())
+	if err == nil {
+		t.Fatal("expected error for empty ProtoDirs, got nil")
+	}
+	if !strings.Contains(err.Error(), "--proto_path") {
+		t.Errorf("error must name the flag, got: %v", err)
 	}
 }
 
@@ -718,9 +830,9 @@ option go_package = "github.com/grafana/wiresmith/scoped/b";
 message Bar { int32 n = 1; }`)
 
 	gen := &Generator{
-		Module:   "wiresmith",
-		ProtoDir: protoDir,
-		Files:    []string{filepath.Join(protoDir, "a", "foo.proto")},
+		Module:    "wiresmith",
+		ProtoDirs: []string{protoDir},
+		Files:     []string{filepath.Join(protoDir, "a", "foo.proto")},
 	}
 	scopedOut := testOutDir(t)
 	gen.OutDir = scopedOut
@@ -767,10 +879,10 @@ message In { string s = 1; }`)
 
 	missing := filepath.Join(protoDir, "doesnotexist.proto")
 	gen := &Generator{
-		Module:   "wiresmith",
-		OutDir:   testOutDir(t),
-		ProtoDir: protoDir,
-		Files:    []string{missing},
+		Module:    "wiresmith",
+		OutDir:    testOutDir(t),
+		ProtoDirs: []string{protoDir},
+		Files:     []string{missing},
 	}
 	err := gen.Generate(context.Background())
 	if err == nil {
@@ -806,10 +918,10 @@ message Out { string s = 1; }`), 0o644); err != nil {
 	}
 
 	gen := &Generator{
-		Module:   "wiresmith",
-		OutDir:   testOutDir(t),
-		ProtoDir: protoDir,
-		Files:    []string{outsideFile},
+		Module:    "wiresmith",
+		OutDir:    testOutDir(t),
+		ProtoDirs: []string{protoDir},
+		Files:     []string{outsideFile},
 	}
 	err := gen.Generate(context.Background())
 	if err == nil {
@@ -818,7 +930,7 @@ message Out { string s = 1; }`), 0o644); err != nil {
 	if !strings.Contains(err.Error(), "outside.proto") {
 		t.Errorf("error should name the offending path, got: %v", err)
 	}
-	if !strings.Contains(err.Error(), "not a .proto under --proto_path") {
+	if !strings.Contains(err.Error(), "not a .proto under any --proto_path") {
 		t.Errorf("error should distinguish 'outside --proto_path' from 'does not exist', got: %v", err)
 	}
 }
@@ -827,7 +939,7 @@ func TestBuildImportMappingFlat(t *testing.T) {
 	dir := t.TempDir()
 	writeProto(t, dir, "foo.proto", "syntax = \"proto3\";\npackage test.foo;\nmessage Foo {}")
 
-	mapping, importPaths, _, err := buildImportMapping(dir)
+	mapping, importPaths, _, err := buildImportMapping([]string{dir})
 	if err != nil {
 		t.Fatalf("buildImportMapping: %v", err)
 	}
@@ -858,7 +970,7 @@ func TestBuildImportMappingRecursive(t *testing.T) {
 	writeProto(t, dir, "trace/v1/trace.proto",
 		"syntax = \"proto3\";\npackage tempopb.trace.v1;\nimport \"common/v1/common.proto\";\nmessage Bar { tempopb.common.v1.Foo foo = 1; }")
 
-	mapping, importPaths, _, err := buildImportMapping(dir)
+	mapping, importPaths, _, err := buildImportMapping([]string{dir})
 	if err != nil {
 		t.Fatalf("buildImportMapping: %v", err)
 	}
@@ -890,7 +1002,7 @@ func TestBuildImportMappingMixed(t *testing.T) {
 	writeProto(t, dir, "sub/v1/nested.proto",
 		"syntax = \"proto3\";\npackage mypkg.sub.v1;\nmessage Nested {}")
 
-	mapping, importPaths, _, err := buildImportMapping(dir)
+	mapping, importPaths, _, err := buildImportMapping([]string{dir})
 	if err != nil {
 		t.Fatalf("buildImportMapping: %v", err)
 	}
@@ -909,7 +1021,7 @@ func TestBuildImportMappingNoPackage(t *testing.T) {
 	dir := t.TempDir()
 	writeProto(t, dir, "bare.proto", "syntax = \"proto3\";\nmessage Bare {}")
 
-	_, _, _, err := buildImportMapping(dir)
+	_, _, _, err := buildImportMapping([]string{dir})
 	if err == nil {
 		t.Fatal("expected error for proto without package, got nil")
 	}
@@ -929,12 +1041,109 @@ func TestBuildImportMappingDuplicateKey(t *testing.T) {
 	writeProto(t, dir, "bar/foo.proto",
 		"syntax = \"proto3\";\npackage bar;\nmessage Foo {}")
 
-	_, _, _, err := buildImportMapping(dir)
+	_, _, _, err := buildImportMapping([]string{dir})
 	if err == nil {
 		t.Fatal("expected duplicate-key error, got nil")
 	}
 	if !strings.Contains(err.Error(), "duplicate import key") {
 		t.Errorf("expected 'duplicate import key' error, got: %v", err)
+	}
+}
+
+// TestBuildImportMappingMultiRoot pins the happy-path contract: two
+// `--proto_path` roots union into one mapping, and files in one root
+// can import files in the other via their canonical key. This is the
+// `protoc -I=a -I=b` behaviour the Mimir / Tempo multi-root layouts
+// need (vendor/ + internal/ trees).
+func TestBuildImportMappingMultiRoot(t *testing.T) {
+	rootA := t.TempDir()
+	rootB := t.TempDir()
+	writeProto(t, rootA, "lib/v1/foo.proto",
+		"syntax = \"proto3\";\npackage lib.v1;\nmessage Foo {}")
+	writeProto(t, rootB, "app/v1/bar.proto",
+		"syntax = \"proto3\";\npackage app.v1;\nimport \"lib/v1/foo.proto\";\nmessage Bar { lib.v1.Foo f = 1; }")
+
+	mapping, importPaths, pathToKey, err := buildImportMapping([]string{rootA, rootB})
+	if err != nil {
+		t.Fatalf("buildImportMapping: %v", err)
+	}
+	if len(importPaths) != 2 {
+		t.Fatalf("expected 2 import paths, got %d: %v", len(importPaths), importPaths)
+	}
+	for _, want := range []string{"lib/v1/foo.proto", "app/v1/bar.proto"} {
+		if _, ok := mapping[want]; !ok {
+			keys := make([]string, 0, len(mapping))
+			for k := range mapping {
+				keys = append(keys, k)
+			}
+			sort.Strings(keys)
+			t.Errorf("expected key %q in union mapping, got keys: %v", want, keys)
+		}
+	}
+	// pathToKey must round-trip each file under the root it came from
+	// so the positional-args filter in compileSources keeps working
+	// when the user passes a file from either root.
+	for _, abs := range []string{
+		filepath.Join(rootA, "lib/v1/foo.proto"),
+		filepath.Join(rootB, "app/v1/bar.proto"),
+	} {
+		if _, ok := pathToKey[abs]; !ok {
+			t.Errorf("pathToKey missing entry for %s — positional-arg lookup would fail", abs)
+		}
+	}
+}
+
+// TestBuildImportMappingMultiRootCollision pins the strict-collision
+// policy: when two roots both produce the same import key but point at
+// different files, fail loudly with both paths. This is the safety net
+// against silent shadowing — the alternative (`protoc`'s first-wins)
+// would let a stale copy in one root mask the canonical one in another
+// with no diagnostic.
+func TestBuildImportMappingMultiRootCollision(t *testing.T) {
+	rootA := t.TempDir()
+	rootB := t.TempDir()
+	writeProto(t, rootA, "lib/v1/foo.proto",
+		"syntax = \"proto3\";\npackage lib.v1;\nmessage Foo { string a = 1; }")
+	writeProto(t, rootB, "lib/v1/foo.proto",
+		"syntax = \"proto3\";\npackage lib.v1;\nmessage Foo { string b = 1; }")
+
+	_, _, _, err := buildImportMapping([]string{rootA, rootB})
+	if err == nil {
+		t.Fatal("expected collision error for same import key across roots, got nil")
+	}
+	msg := err.Error()
+	if !strings.Contains(msg, "duplicate import key") {
+		t.Errorf("error should name the duplicate-import-key class, got: %v", err)
+	}
+	// The user needs both paths in the message to know which root to
+	// fix; assert both absolute paths show up.
+	absA, _ := filepath.Abs(filepath.Join(rootA, "lib/v1/foo.proto"))
+	absB, _ := filepath.Abs(filepath.Join(rootB, "lib/v1/foo.proto"))
+	if !strings.Contains(msg, absA) {
+		t.Errorf("error should name the first-registering path %s, got: %v", absA, err)
+	}
+	if !strings.Contains(msg, absB) {
+		t.Errorf("error should name the colliding path %s, got: %v", absB, err)
+	}
+}
+
+// TestBuildImportMappingMultiRootSameRootTwice pins that passing the
+// same root multiple times is silently de-duped, not a collision. This
+// is the path a colon-split CLI value like `--proto_path=proto:proto`
+// (user mistake) or a Mimir Makefile that ends up listing one root
+// twice through different code paths takes. Without the same-abs guard
+// it would surface as a misleading "duplicate import key" error.
+func TestBuildImportMappingMultiRootSameRootTwice(t *testing.T) {
+	dir := t.TempDir()
+	writeProto(t, dir, "lib/v1/foo.proto",
+		"syntax = \"proto3\";\npackage lib.v1;\nmessage Foo {}")
+
+	mapping, importPaths, _, err := buildImportMapping([]string{dir, dir})
+	if err != nil {
+		t.Fatalf("buildImportMapping: same root passed twice must not error, got: %v", err)
+	}
+	if len(importPaths) != 1 || len(mapping) != 1 {
+		t.Errorf("expected single import entry after de-dup, got importPaths=%v mapping=%v", importPaths, mapping)
 	}
 }
 
@@ -962,9 +1171,9 @@ message Req { svc.common.v1.Item item = 1; }`)
 	cwd := t.TempDir()
 	t.Chdir(cwd)
 	gen := &Generator{
-		Module:   "example.com/svc",
-		OutDir:   "pkg/api",
-		ProtoDir: protoDir,
+		Module:    "example.com/svc",
+		OutDir:    "pkg/api",
+		ProtoDirs: []string{protoDir},
 	}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)
@@ -1009,7 +1218,7 @@ func TestGenerateNestedLayout(t *testing.T) {
 		"syntax = \"proto3\";\npackage testpb.trace.v1;\nimport \"testpb/common/v1/common.proto\";\nmessage Span { testpb.common.v1.Resource resource = 1; }")
 
 	outDir := testOutDir(t)
-	gen := &Generator{Module: "github.com/grafana/wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	gen := &Generator{Module: "github.com/grafana/wiresmith", OutDir: outDir, ProtoDirs: []string{protoDir}}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate failed: %v", err)
 	}
@@ -1064,7 +1273,7 @@ import "depthsec/leaf/v1/leaf.proto";
 message Outer { depthsec.leaf.v1.Leaf l = 1; }`)
 
 	outDir := testOutDir(t)
-	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDirs: []string{protoDir}}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)
 	}
@@ -1111,7 +1320,7 @@ import "depthmap/leaf/v1/leaf.proto";
 message Outer { map<string, depthmap.leaf.v1.Leaf> entries = 1; }`)
 
 	outDir := testOutDir(t)
-	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDirs: []string{protoDir}}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)
 	}
@@ -1151,7 +1360,7 @@ import "dupkey/leaf/v1/leaf.proto";
 message Outer { map<string, dupkey.leaf.v1.Leaf> entries = 1; }`)
 
 	outDir := testOutDir(t)
-	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDirs: []string{protoDir}}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)
 	}
@@ -1191,7 +1400,7 @@ package depthclamp.v1;
 message Probe { string s = 1; }`)
 
 	outDir := testOutDir(t)
-	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDirs: []string{protoDir}}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)
 	}
@@ -1225,7 +1434,7 @@ func TestGenerateMixedLayoutImport(t *testing.T) {
 		"syntax = \"proto3\";\npackage testpb.trace.v1;\nimport \"testpb/common.proto\";\nmessage Span { testpb.Resource resource = 1; }")
 
 	outDir := testOutDir(t)
-	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDirs: []string{protoDir}}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate failed: %v", err)
 	}
@@ -1247,7 +1456,7 @@ func TestGenerateMixedLayoutImport(t *testing.T) {
 		"syntax = \"proto3\";\npackage testpb;\nmessage Resource { string name = 1; }")
 	writeProto(t, protoDir2, "testpb/trace/v1/trace.proto",
 		"syntax = \"proto3\";\npackage testpb.trace.v1;\nimport \"common.proto\";\nmessage Span { testpb.Resource resource = 1; }")
-	gen2 := &Generator{Module: "wiresmith", OutDir: testOutDir(t), ProtoDir: protoDir2}
+	gen2 := &Generator{Module: "wiresmith", OutDir: testOutDir(t), ProtoDirs: []string{protoDir2}}
 	if err := gen2.Generate(context.Background()); err == nil {
 		t.Error("expected plain-basename import to fail; canonical pkg-derived path is required for cross-imports")
 	}
@@ -1267,7 +1476,7 @@ func TestGenerateOutputCollision(t *testing.T) {
 		"syntax = \"proto3\";\npackage testpb.shared.v1;\nmessage B {}")
 
 	outDir := testOutDir(t)
-	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDirs: []string{protoDir}}
 	err := gen.Generate(context.Background())
 	if err == nil {
 		t.Fatal("expected proto-package-span error, got nil")
@@ -1297,7 +1506,7 @@ func TestGenerateReflectOutputCollision(t *testing.T) {
 		"syntax = \"proto3\";\npackage testpb.v1;\nmessage FooReflect {}")
 
 	outDir := testOutDir(t)
-	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDirs: []string{protoDir}}
 	err := gen.Generate(context.Background())
 	if err == nil {
 		t.Fatal("expected reflect-output collision error, got nil")
@@ -1332,9 +1541,9 @@ message Bar { myproject.a.Foo foo = 1; }`)
 
 	outDir := testOutDir(t)
 	gen := &Generator{
-		Module:   "example.com/mod",
-		OutDir:   outDir,
-		ProtoDir: protoDir,
+		Module:    "example.com/mod",
+		OutDir:    outDir,
+		ProtoDirs: []string{protoDir},
 	}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)
@@ -1379,9 +1588,9 @@ message Msg { int32 val = 1; }`)
 
 	outDir := testOutDir(t)
 	gen := &Generator{
-		Module:   "wiresmith",
-		OutDir:   outDir,
-		ProtoDir: protoDir,
+		Module:    "wiresmith",
+		OutDir:    outDir,
+		ProtoDirs: []string{protoDir},
 	}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)
@@ -1425,9 +1634,9 @@ message Bar { vendored.a.Foo foo = 1; }`)
 
 	outDir := testOutDir(t)
 	gen := &Generator{
-		Module:   "example.com/mod",
-		OutDir:   outDir,
-		ProtoDir: protoDir,
+		Module:    "example.com/mod",
+		OutDir:    outDir,
+		ProtoDirs: []string{protoDir},
 		Overrides: map[string]string{
 			"vendored/a/a.proto": "example.com/mod/gen/a;aliased",
 		},
@@ -1472,9 +1681,9 @@ message Request { string id = 1; }`)
 
 	outDir := testOutDir(t)
 	gen := &Generator{
-		Module:   "example.com/app",
-		OutDir:   outDir,
-		ProtoDir: protoDir,
+		Module:    "example.com/app",
+		OutDir:    outDir,
+		ProtoDirs: []string{protoDir},
 	}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)
@@ -1508,9 +1717,9 @@ option go_package = "example.com/mod/gen/mypkg;b";
 message Bar { string id = 1; }`)
 
 	gen := &Generator{
-		Module:   "example.com/mod",
-		OutDir:   testOutDir(t),
-		ProtoDir: protoDir,
+		Module:    "example.com/mod",
+		OutDir:    testOutDir(t),
+		ProtoDirs: []string{protoDir},
 	}
 	err := gen.Generate(context.Background())
 	if err == nil {
@@ -1538,9 +1747,9 @@ package mixed;
 message Bar { string s = 1; }`)
 
 	gen := &Generator{
-		Module:   "example.com/mod",
-		OutDir:   testOutDir(t),
-		ProtoDir: protoDir,
+		Module:    "example.com/mod",
+		OutDir:    testOutDir(t),
+		ProtoDirs: []string{protoDir},
 	}
 	err := gen.Generate(context.Background())
 	if err == nil {
@@ -1574,9 +1783,9 @@ message User { x.fmtish.Sprintf s = 1; }`)
 
 	outDir := testOutDir(t)
 	gen := &Generator{
-		Module:   "example.com/mod",
-		OutDir:   outDir,
-		ProtoDir: protoDir,
+		Module:    "example.com/mod",
+		OutDir:    outDir,
+		ProtoDirs: []string{protoDir},
 	}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)
@@ -1635,9 +1844,9 @@ message Request {
 
 	outDir := testOutDir(t)
 	gen := &Generator{
-		Module:   "example.com/mod",
-		OutDir:   outDir,
-		ProtoDir: protoDir,
+		Module:    "example.com/mod",
+		OutDir:    outDir,
+		ProtoDirs: []string{protoDir},
 	}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)
@@ -1705,9 +1914,9 @@ message Req {
 
 	outDir := testOutDir(t)
 	gen := &Generator{
-		Module:   "example.com/mod",
-		OutDir:   outDir,
-		ProtoDir: protoDir,
+		Module:    "example.com/mod",
+		OutDir:    outDir,
+		ProtoDirs: []string{protoDir},
 	}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)
@@ -1744,9 +1953,9 @@ message Msg { string s = 1; }`)
 
 	outDir := testOutDir(t)
 	gen := &Generator{
-		Module:   "example.com/mod",
-		OutDir:   outDir,
-		ProtoDir: protoDir,
+		Module:    "example.com/mod",
+		OutDir:    outDir,
+		ProtoDirs: []string{protoDir},
 	}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)
@@ -1793,9 +2002,9 @@ message Request {
 
 	outDir := testOutDir(t)
 	gen := &Generator{
-		Module:   "example.com/mod",
-		OutDir:   outDir,
-		ProtoDir: protoDir,
+		Module:    "example.com/mod",
+		OutDir:    outDir,
+		ProtoDirs: []string{protoDir},
 	}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)
@@ -1836,9 +2045,9 @@ message Msg { string s = 1; }`)
 
 	outDir := testOutDir(t)
 	gen := &Generator{
-		Module:   "example.com/mod",
-		OutDir:   outDir,
-		ProtoDir: protoDir,
+		Module:    "example.com/mod",
+		OutDir:    outDir,
+		ProtoDirs: []string{protoDir},
 		Overrides: map[string]string{
 			"myproject/x/x.proto": "example.com/mod/gen/../escape",
 		},
@@ -1870,9 +2079,9 @@ message Mal { string s = 1; }`)
 
 	outDir := testOutDir(t)
 	gen := &Generator{
-		Module:   "example.com/mod",
-		OutDir:   outDir,
-		ProtoDir: protoDir,
+		Module:    "example.com/mod",
+		OutDir:    outDir,
+		ProtoDirs: []string{protoDir},
 	}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)
@@ -1904,9 +2113,9 @@ option go_package = "example.com/mod/gen/shared;shared";
 message Bar { string s = 1; }`)
 
 	gen := &Generator{
-		Module:   "example.com/mod",
-		OutDir:   testOutDir(t),
-		ProtoDir: protoDir,
+		Module:    "example.com/mod",
+		OutDir:    testOutDir(t),
+		ProtoDirs: []string{protoDir},
 	}
 	err := gen.Generate(context.Background())
 	if err == nil {
@@ -1937,9 +2146,9 @@ package proj.b;
 message Bar { string s = 1; }`)
 
 	gen := &Generator{
-		Module:   "example.com/mod",
-		OutDir:   testOutDir(t),
-		ProtoDir: protoDir,
+		Module:    "example.com/mod",
+		OutDir:    testOutDir(t),
+		ProtoDirs: []string{protoDir},
 	}
 	err := gen.Generate(context.Background())
 	if err == nil {
@@ -1977,9 +2186,9 @@ message Bar { x.pkgone.Foo foo = 1; }`)
 
 	outDir := testOutDir(t)
 	gen := &Generator{
-		Module:   "example.com/mod",
-		OutDir:   outDir,
-		ProtoDir: protoDir,
+		Module:    "example.com/mod",
+		OutDir:    outDir,
+		ProtoDirs: []string{protoDir},
 	}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)
@@ -2030,9 +2239,9 @@ message Bar { p.xfoo.Foo foo = 1; }`)
 
 	outDir := testOutDir(t)
 	gen := &Generator{
-		Module:   "example.com/mod",
-		OutDir:   outDir,
-		ProtoDir: protoDir,
+		Module:    "example.com/mod",
+		OutDir:    outDir,
+		ProtoDirs: []string{protoDir},
 	}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)
@@ -2064,9 +2273,9 @@ func TestGenerateMissingProtoPath_CleanError(t *testing.T) {
 	// exists; the "missing" subpath under it does not.
 	missing := filepath.Join(t.TempDir(), "missing-proto-tree")
 	gen := &Generator{
-		Module:   "wiresmith",
-		OutDir:   testOutDir(t),
-		ProtoDir: missing,
+		Module:    "wiresmith",
+		OutDir:    testOutDir(t),
+		ProtoDirs: []string{missing},
 	}
 	err := gen.Generate(context.Background())
 	if err == nil {
@@ -2079,7 +2288,7 @@ func TestGenerateMissingProtoPath_CleanError(t *testing.T) {
 	// The production formatter prints the path via %q, so on Windows
 	// `C:\tmp\x` shows up as `"C:\\tmp\\x"`. Compare against the same
 	// quoted form rather than the raw path so the test stays portable.
-	if quoted := fmt.Sprintf("%q", gen.ProtoDir); !strings.Contains(msg, quoted) {
+	if quoted := fmt.Sprintf("%q", gen.ProtoDirs[0]); !strings.Contains(msg, quoted) {
 		t.Errorf("error must echo the bad value %s, got: %q", quoted, msg)
 	}
 	if strings.Contains(msg, "lstat") {
@@ -2101,9 +2310,9 @@ func TestGenerateProtoPathIsFile_CleanError(t *testing.T) {
 		t.Fatalf("seed: %v", err)
 	}
 	gen := &Generator{
-		Module:   "wiresmith",
-		OutDir:   testOutDir(t),
-		ProtoDir: asFile,
+		Module:    "wiresmith",
+		OutDir:    testOutDir(t),
+		ProtoDirs: []string{asFile},
 	}
 	err := gen.Generate(context.Background())
 	if err == nil {
@@ -2117,7 +2326,7 @@ func TestGenerateProtoPathIsFile_CleanError(t *testing.T) {
 		t.Errorf("error must surface the not-a-directory reason, got: %q", msg)
 	}
 	// Same %q-quoted comparison as the missing-path test above.
-	if quoted := fmt.Sprintf("%q", gen.ProtoDir); !strings.Contains(msg, quoted) {
+	if quoted := fmt.Sprintf("%q", gen.ProtoDirs[0]); !strings.Contains(msg, quoted) {
 		t.Errorf("error must echo the bad value %s, got: %q", quoted, msg)
 	}
 }

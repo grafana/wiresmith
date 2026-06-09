@@ -42,7 +42,7 @@ message Container {
 	g := &Generator{
 		Module:   "wiresmith",
 		OutDir:   outDir,
-		ProtoDir: protoDir,
+		ProtoDirs: []string{protoDir},
 	}
 	if err := g.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)

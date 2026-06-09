@@ -24,16 +24,25 @@ import (
 )
 
 type Generator struct {
-	Module   string
-	OutDir   string
-	ProtoDir string
+	Module string
+	OutDir string
 
-	// Files optionally restricts emission to a subset of `.proto` files in
-	// ProtoDir. Entries are filesystem paths (relative to cwd or absolute),
-	// matching protoc's positional-argument convention. Files outside
-	// ProtoDir are rejected. An empty slice keeps the default "walk
-	// --proto_path and emit everything" behavior; cross-file imports are
-	// always resolved against the full walk regardless of this filter.
+	// ProtoDirs is the ordered list of `--proto_path` roots to walk for
+	// .proto sources. Order matches the CLI invocation order and shows up
+	// in error messages but not in import resolution: an import path may
+	// be registered by at most one root, so first-match-vs-later-match
+	// shadowing is replaced by an explicit collision error
+	// (see buildImportMapping). An empty slice rejects up front — the
+	// generator never falls back to an implicit default.
+	ProtoDirs []string
+
+	// Files optionally restricts emission to a subset of `.proto` files
+	// reachable from ProtoDirs. Entries are filesystem paths (relative
+	// to cwd or absolute), matching protoc's positional-argument
+	// convention. Files outside every root are rejected. An empty slice
+	// keeps the default "walk every root and emit everything" behavior;
+	// cross-file imports are always resolved against the full walk
+	// regardless of this filter.
 	Files []string
 
 	// Overrides maps an import-mapping key (the same fd.Path() string
@@ -248,7 +257,7 @@ func (fg *FileGenerator) fieldContext(fd protoreflect.FieldDescriptor) types.Fie
 	return ctx
 }
 
-// Generate compiles .proto sources from g.ProtoDir and writes the
+// Generate compiles .proto sources from g.ProtoDirs and writes the
 // resulting Go files under g.OutDir. CLI entry point.
 func (g *Generator) Generate(ctx context.Context) error {
 	files, emit, err := g.compileSources(ctx)
@@ -287,9 +296,9 @@ func (g *Generator) GenerateFromDescriptors(ctx context.Context, files []protore
 }
 
 // compileSources runs the source-based front half of Generate: read
-// .proto files from g.ProtoDir, build the import-map emit filter from
-// g.Files, inject the embedded wiresmith schema, and invoke protocompile.
-// Split out so GenerateFromDescriptors can skip it.
+// .proto files from every root in g.ProtoDirs, build the import-map
+// emit filter from g.Files, inject the embedded wiresmith schema, and
+// invoke protocompile. Split out so GenerateFromDescriptors can skip it.
 func (g *Generator) compileSources(ctx context.Context) ([]protoreflect.FileDescriptor, map[string]bool, error) {
 	// --out flows into the Go import-path base (module + outDir), so it has to
 	// be a clean, module-relative, forward-slash path. An absolute, '..'-
@@ -299,7 +308,11 @@ func (g *Generator) compileSources(ctx context.Context) ([]protoreflect.FileDesc
 		return nil, nil, err
 	}
 
-	// Probe the proto_path root explicitly before WalkDir runs so a missing
+	if len(g.ProtoDirs) == 0 {
+		return nil, nil, fmt.Errorf("--proto_path: no proto roots configured")
+	}
+
+	// Probe each proto_path root explicitly before WalkDir runs so a missing
 	// or wrong-shape flag value gets a clean, user-facing diagnostic.
 	// WalkDir surfaces the underlying lstat error verbatim, which would
 	// otherwise leak "lstat ... no such file or directory" to end users.
@@ -307,22 +320,24 @@ func (g *Generator) compileSources(ctx context.Context) ([]protoreflect.FileDesc
 	// (broken symlink, file deleted mid-walk) on its own error path with
 	// the lstat context preserved — only the proto_path root itself
 	// triggers the clean message.
-	info, err := os.Stat(g.ProtoDir)
-	if err != nil {
-		if errors.Is(err, fs.ErrNotExist) {
-			return nil, nil, fmt.Errorf("--proto_path %q: directory does not exist", g.ProtoDir)
+	for _, dir := range g.ProtoDirs {
+		info, err := os.Stat(dir)
+		if err != nil {
+			if errors.Is(err, fs.ErrNotExist) {
+				return nil, nil, fmt.Errorf("--proto_path %q: directory does not exist", dir)
+			}
+			return nil, nil, fmt.Errorf("--proto_path %q: %w", dir, err)
 		}
-		return nil, nil, fmt.Errorf("--proto_path %q: %w", g.ProtoDir, err)
-	}
-	if !info.IsDir() {
-		// Without this check WalkDir on a regular file walks nothing and
-		// the generator silently succeeds with an empty output set — a
-		// confusing "no proto files found" outcome for what is really a
-		// flag-value typo.
-		return nil, nil, fmt.Errorf("--proto_path %q: not a directory", g.ProtoDir)
+		if !info.IsDir() {
+			// Without this check WalkDir on a regular file walks nothing and
+			// the generator silently succeeds with an empty output set — a
+			// confusing "no proto files found" outcome for what is really a
+			// flag-value typo.
+			return nil, nil, fmt.Errorf("--proto_path %q: not a directory", dir)
+		}
 	}
 
-	mapping, importPaths, pathToKey, err := buildImportMapping(g.ProtoDir)
+	mapping, importPaths, pathToKey, err := buildImportMapping(g.ProtoDirs)
 	if err != nil {
 		return nil, nil, fmt.Errorf("building import mapping: %w", err)
 	}
@@ -346,7 +361,7 @@ func (g *Generator) compileSources(ctx context.Context) ([]protoreflect.FileDesc
 			if _, statErr := os.Stat(src); os.IsNotExist(statErr) {
 				return nil, nil, fmt.Errorf("file %q does not exist", src)
 			}
-			return nil, nil, fmt.Errorf("file %q is not a .proto under --proto_path=%q", src, g.ProtoDir)
+			return nil, nil, fmt.Errorf("file %q is not a .proto under any --proto_path=%v", src, g.ProtoDirs)
 		}
 	}
 
@@ -1229,68 +1244,92 @@ func oneofVariantName(md protoreflect.MessageDescriptor, fd protoreflect.FieldDe
 	return goMessageTypeName(md) + "_" + snakeToPascal(string(fd.Name()))
 }
 
-// buildImportMapping reads proto files (recursively) and builds a mapping
-// from import paths to file contents. Top-level files are registered under
-// the package-derived path so existing flat layouts keep working; nested
-// files use their on-disk relative path as the import key.
+// buildImportMapping reads proto files (recursively, across every
+// supplied root) and builds a mapping from import paths to file
+// contents. Top-level files are registered under the package-derived
+// path so existing flat layouts keep working; nested files use their
+// on-disk relative path (relative to the root they were found under)
+// as the import key.
 //
-// Each file is registered under exactly one canonical path. Imports across
-// files must use that canonical form: package-derived for top-level files,
-// relative-path for nested files. Registering the same content under two
-// keys would cause protocompile to compile it twice and emit duplicate-symbol
-// errors when a consumer imports it via the non-canonical name.
-func buildImportMapping(protoDir string) (map[string][]byte, []string, map[string]string, error) {
+// Each file is registered under exactly one canonical path. Imports
+// across files must use that canonical form: package-derived for
+// top-level files, relative-path for nested files. Registering the same
+// content under two keys would cause protocompile to compile it twice
+// and emit duplicate-symbol errors when a consumer imports it via the
+// non-canonical name.
+//
+// When the same import key would be produced by two different files
+// (across roots, or within a single root for the package-collision
+// case), the function returns an error naming both candidate absolute
+// paths. This is stricter than `protoc -I=a -I=b`'s first-match-wins
+// behaviour — we trade a bit of ergonomics for a guarantee that no
+// import silently resolves to a shadowed file.
+func buildImportMapping(protoDirs []string) (map[string][]byte, []string, map[string]string, error) {
 	mapping := make(map[string][]byte)
 	pathToKey := make(map[string]string)
+	// keyToPath remembers the absolute path that first registered a key
+	// so collision errors can name both candidates.
+	keyToPath := make(map[string]string)
 	var importPaths []string
 	pkgRE := regexp.MustCompile(`(?m)^package\s+([\w.]+)\s*;`)
 
-	err := filepath.WalkDir(protoDir, func(path string, d os.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		if d.IsDir() || !strings.HasSuffix(d.Name(), ".proto") {
+	for _, protoDir := range protoDirs {
+		err := filepath.WalkDir(protoDir, func(p string, d os.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			if d.IsDir() || !strings.HasSuffix(d.Name(), ".proto") {
+				return nil
+			}
+
+			content, err := os.ReadFile(p)
+			if err != nil {
+				return err
+			}
+
+			m := pkgRE.FindSubmatch(content)
+			if m == nil {
+				return fmt.Errorf("no package found in %s", p)
+			}
+
+			rel, err := filepath.Rel(protoDir, p)
+			if err != nil {
+				return err
+			}
+			rel = filepath.ToSlash(rel)
+
+			var key string
+			if strings.Contains(rel, "/") {
+				key = rel
+			} else {
+				pkg := string(m[1])
+				key = strings.ReplaceAll(pkg, ".", "/") + "/" + d.Name()
+			}
+
+			abs, err := filepath.Abs(p)
+			if err != nil {
+				return err
+			}
+
+			if prevAbs, exists := keyToPath[key]; exists {
+				if prevAbs == abs {
+					// Same file walked twice — happens when the user
+					// passes the same root multiple times, or when two
+					// roots resolve to the same directory via symlink.
+					// Silently skip; the file is already registered.
+					return nil
+				}
+				return fmt.Errorf("duplicate import key %q resolves to multiple files: %s and %s", key, prevAbs, abs)
+			}
+			mapping[key] = content
+			importPaths = append(importPaths, key)
+			pathToKey[abs] = key
+			keyToPath[key] = abs
 			return nil
-		}
-
-		content, err := os.ReadFile(path)
+		})
 		if err != nil {
-			return err
+			return nil, nil, nil, err
 		}
-
-		m := pkgRE.FindSubmatch(content)
-		if m == nil {
-			return fmt.Errorf("no package found in %s", path)
-		}
-
-		rel, err := filepath.Rel(protoDir, path)
-		if err != nil {
-			return err
-		}
-		rel = filepath.ToSlash(rel)
-
-		var key string
-		if strings.Contains(rel, "/") {
-			key = rel
-		} else {
-			pkg := string(m[1])
-			key = strings.ReplaceAll(pkg, ".", "/") + "/" + d.Name()
-		}
-		if _, exists := mapping[key]; exists {
-			return fmt.Errorf("duplicate import key %q (from %s)", key, path)
-		}
-		mapping[key] = content
-		importPaths = append(importPaths, key)
-
-		abs, err := filepath.Abs(path)
-		if err != nil {
-			return err
-		}
-		pathToKey[abs] = key
-		return nil
-	})
-	if err != nil {
-		return nil, nil, nil, err
 	}
 
 	sort.Strings(importPaths)
