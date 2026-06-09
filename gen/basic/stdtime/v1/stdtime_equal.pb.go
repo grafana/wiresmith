@@ -46,3 +46,34 @@ func (this *StdtimeHolder) Equal(that interface{}) bool {
 	}
 	return true
 }
+
+func (this *StdDurationHolder) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*StdDurationHolder)
+	if !ok {
+		that2, ok := that.(StdDurationHolder)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Name != that1.Name {
+		return false
+	}
+	if this.Retries != that1.Retries {
+		return false
+	}
+	if this.Lookback != that1.Lookback {
+		return false
+	}
+	return true
+}

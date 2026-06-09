@@ -96,4 +96,30 @@ extend google.protobuf.FieldOptions {
   // Map, oneof, repeated, optional, and (wiresmith.options.pointer) are
   // rejected — they need separate plumbing and are tracked in follow-up beads.
   optional bool stdtime = 50034;
+
+  // stdduration = true emits a `google.protobuf.Duration` field as a stdlib
+  // `time.Duration` value instead of a generated `*Duration` message:
+  //
+  //   google.protobuf.Duration lookback = 1 [(wiresmith.options.stdduration) = true];
+  //   //  -> Lookback time.Duration `protobuf:"..."`
+  //
+  // The on-wire format is unchanged — the value is still encoded as a
+  // length-delimited Duration sub-message with int64 seconds (field 1) and
+  // int32 nanos (field 2).
+  //
+  // Presence semantics: the Go zero `time.Duration(0)` is treated as "not
+  // set" and skipped on marshal — matching proto3 default-suppression for
+  // the underlying submessage. A wire payload with seconds=0 nanos=0
+  // (explicit zero) decodes to `time.Duration(0)`, indistinguishable from
+  // an absent field. If you need to distinguish "explicit zero" from
+  // "unset", store presence alongside the duration.
+  //
+  // Overflow on decode saturates to math.MaxInt64 / math.MinInt64 nanos —
+  // proto Duration can express up to ~10000 years while time.Duration tops
+  // out at ~292 years (int64 nanoseconds).
+  //
+  // v1 scope: only valid on singular `google.protobuf.Duration` fields.
+  // Map, oneof, repeated, optional, and (wiresmith.options.pointer) are
+  // rejected — same shape as stdtime.
+  optional bool stdduration = 50035;
 }

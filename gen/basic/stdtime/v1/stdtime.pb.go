@@ -29,6 +29,24 @@ type StdtimeHolder struct {
 	fieldsPresent [1]uint64
 }
 
+// StdDurationHolder exercises (wiresmith.options.stdduration) on a singular
+// google.protobuf.Duration field. The annotated field is emitted as a
+// stdlib `time.Duration`; the on-wire format is still the standard Duration
+// sub-message envelope (int64 seconds field 1, int32 nanos field 2).
+//
+// `name` and `retries` are stock scalar controls — they prove the
+// substitution is field-local. Plain (unannotated) `google.protobuf.Duration`
+// support belongs to the native well-known-types bead (wiresmith-7m6) and
+// is intentionally not exercised here.
+type StdDurationHolder struct {
+	Name    string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Retries uint32 `protobuf:"varint,2,opt,name=retries,proto3" json:"retries,omitempty"`
+	// Generated Go: Lookback time.Duration
+	Lookback time.Duration `protobuf:"bytes,3,opt,name=lookback,proto3" json:"lookback,omitempty"`
+
+	fieldsPresent [1]uint64
+}
+
 func (m *StdtimeHolder) Reset() {
 	if m == nil {
 		return
@@ -43,6 +61,20 @@ func (m *StdtimeHolder) String() string {
 	return fmt.Sprintf("%v", *m)
 }
 
+func (m *StdDurationHolder) Reset() {
+	if m == nil {
+		return
+	}
+	*m = StdDurationHolder{}
+}
+func (*StdDurationHolder) ProtoMessage() {}
+func (m *StdDurationHolder) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *m)
+}
+
 func (m *StdtimeHolder) HasName() bool {
 	if m == nil {
 		return false
@@ -51,6 +83,20 @@ func (m *StdtimeHolder) HasName() bool {
 }
 
 func (m *StdtimeHolder) HasVersion() bool {
+	if m == nil {
+		return false
+	}
+	return m.fieldsPresent[0]&(1<<1) != 0
+}
+
+func (m *StdDurationHolder) HasName() bool {
+	if m == nil {
+		return false
+	}
+	return m.fieldsPresent[0]&(1<<0) != 0
+}
+
+func (m *StdDurationHolder) HasRetries() bool {
 	if m == nil {
 		return false
 	}
@@ -78,6 +124,27 @@ func (m *StdtimeHolder) GetCreated() time.Time {
 	return time.Time{}
 }
 
+func (m *StdDurationHolder) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+func (m *StdDurationHolder) GetRetries() uint32 {
+	if m != nil {
+		return m.Retries
+	}
+	return 0
+}
+
+func (m *StdDurationHolder) GetLookback() time.Duration {
+	if m != nil {
+		return m.Lookback
+	}
+	return 0
+}
+
 func (m *StdtimeHolder) Size() int {
 	if m == nil {
 		return 0
@@ -91,6 +158,24 @@ func (m *StdtimeHolder) Size() int {
 	}
 	if !m.Created.IsZero() {
 		inner := protohelpers.SizeStdTime(m.Created)
+		n += 1 + protowire.SizeVarint(uint64(inner)) + inner
+	}
+	return n
+}
+
+func (m *StdDurationHolder) Size() int {
+	if m == nil {
+		return 0
+	}
+	var n int
+	if len(m.Name) > 0 {
+		n += 1 + protowire.SizeVarint(uint64(len(m.Name))) + len(m.Name)
+	}
+	if m.Retries != 0 {
+		n += 1 + protowire.SizeVarint(uint64(m.Retries))
+	}
+	if m.Lookback != 0 {
+		inner := protohelpers.SizeStdDuration(m.Lookback)
 		n += 1 + protowire.SizeVarint(uint64(inner)) + inner
 	}
 	return n
@@ -135,6 +220,58 @@ func (m *StdtimeHolder) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	}
 	if m.Version != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.Version))
+		i--
+		dAtA[i] = 0x10
+	}
+	if len(m.Name) > 0 {
+		i -= len(m.Name)
+		copy(dAtA[i:], m.Name)
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Name)))
+		i--
+		dAtA[i] = 0x0a
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *StdDurationHolder) Marshal() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
+	size := m.Size()
+	dAtA = make([]byte, size)
+	if size == 0 {
+		return dAtA, nil
+	}
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *StdDurationHolder) MarshalTo(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *StdDurationHolder) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
+	i := len(dAtA)
+	if m.Lookback != 0 {
+		start := i
+		i = protohelpers.EncodeStdDuration(dAtA, i, m.Lookback)
+		inner := start - i
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(inner))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if m.Retries != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.Retries))
 		i--
 		dAtA[i] = 0x10
 	}
@@ -382,6 +519,188 @@ func (m *StdtimeHolder) unmarshal(dAtA []byte, depth int) error {
 				return err
 			}
 			m.Created = stdtimeVal
+			iNdEx = postIndex
+		default:
+			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+			if err != nil {
+				return err
+			}
+			iNdEx += n
+		}
+	}
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
+func (m *StdDurationHolder) Unmarshal(b []byte) error {
+	return m.unmarshal(b, 0)
+}
+
+func (m *StdDurationHolder) UnmarshalWithDepth(b []byte, depth int) error {
+	if depth < 0 {
+		depth = 0
+	}
+	return m.unmarshal(b, depth)
+}
+
+func (m *StdDurationHolder) unmarshal(dAtA []byte, depth int) error {
+	if depth > maxUnmarshalDepth {
+		return fmt.Errorf("exceeded max recursion depth")
+	}
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		var wire uint64
+		if iNdEx < l && dAtA[iNdEx] < 0x80 {
+			wire = uint64(dAtA[iNdEx])
+			iNdEx++
+		} else {
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 35 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		}
+		if wire>>3 < 1 || wire>>3 > 0x1FFFFFFF {
+			return fmt.Errorf("invalid field number")
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		switch fieldNum {
+		case 1: // name
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				if err != nil {
+					return err
+				}
+				iNdEx += n
+				continue
+			}
+			var byteLen uint64
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
+				iNdEx++
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
+				}
+			}
+			if byteLen > uint64(math.MaxInt) {
+				return io.ErrUnexpectedEOF
+			}
+			intByteLen := int(byteLen)
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Name = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+			m.fieldsPresent[0] |= 1 << 0
+		case 2: // retries
+			if wireType != 0 {
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				if err != nil {
+					return err
+				}
+				iNdEx += n
+				continue
+			}
+			var v uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return fmt.Errorf("proto: integer overflow")
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					if shift == 63 && b > 1 {
+						return fmt.Errorf("proto: varint overflow")
+					}
+					break
+				}
+			}
+			m.Retries = uint32(v)
+			m.fieldsPresent[0] |= 1 << 1
+		case 3: // lookback
+			if wireType != 2 {
+				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				if err != nil {
+					return err
+				}
+				iNdEx += n
+				continue
+			}
+			var byteLen uint64
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
+				iNdEx++
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
+				}
+			}
+			if byteLen > uint64(math.MaxInt) {
+				return io.ErrUnexpectedEOF
+			}
+			intByteLen := int(byteLen)
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			stddurationVal, err := protohelpers.DecodeStdDuration(dAtA[iNdEx:postIndex])
+			if err != nil {
+				return err
+			}
+			m.Lookback = stddurationVal
 			iNdEx = postIndex
 		default:
 			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)

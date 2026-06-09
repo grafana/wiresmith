@@ -66,11 +66,12 @@ type FieldOption interface {
 
 // newOptionRegistry returns the default registry of field options. Order
 // is load-bearing: FieldType / GoFieldType dispatch takes the first
-// match, so the more-specific overrides (stdtime, customtype) precede
-// the pointer pass that delegates to the default emit shape.
+// match, so the more-specific overrides (stdtime, stdduration, customtype)
+// precede the pointer pass that delegates to the default emit shape.
 func newOptionRegistry() []FieldOption {
 	return []FieldOption{
 		&stdtimeOption{},
+		&stddurationOption{},
 		&customtypeOption{},
 		&pointerOption{},
 		&customnameOption{},
@@ -232,14 +233,18 @@ func (fg *FileGenerator) goFieldType(fd protoreflect.FieldDescriptor) string {
 // Go-side type for fd with something that isn't a wiresmith-generated
 // message struct. fieldContext consults this to skip populating
 // ctx.MessageType — emitters that would otherwise lookup the message's
-// import alias don't reach into a string-typed `time.Time` or a customtype
-// the same way.
+// import alias don't reach into a stdlib `time.Time`/`time.Duration` the
+// same way.
 //
-// Currently only stdtime returns true; customtype substitutes for a
-// scalar (bytes / string), so the MessageType branch never reaches it.
+// stdtime and stdduration both substitute the Timestamp/Duration message
+// for a stdlib value type; customtype substitutes for a scalar
+// (bytes/string), so the MessageType branch never reaches it.
 func (fg *FileGenerator) suppressMessageType(fd protoreflect.FieldDescriptor) bool {
-	if opt := findOption[*stdtimeOption](fg.options); opt != nil {
-		return opt.Has(fd)
+	if opt := findOption[*stdtimeOption](fg.options); opt != nil && opt.Has(fd) {
+		return true
+	}
+	if opt := findOption[*stddurationOption](fg.options); opt != nil && opt.Has(fd) {
+		return true
 	}
 	return false
 }
@@ -319,6 +324,39 @@ func (fg *FileGenerator) customtypeGoFieldType(fd protoreflect.FieldDescriptor) 
 // field. Used by emit_unmarshal to type-assert the singular branch.
 func (fg *FileGenerator) stdtimeFieldType(fd protoreflect.FieldDescriptor) (types.FieldType, bool) {
 	opt := findOption[*stdtimeOption](fg.options)
+	if opt == nil {
+		return nil, false
+	}
+	return opt.FieldType(fg, fd)
+}
+
+// hasStdDurationOption reports whether the field is annotated with
+// `(wiresmith.options.stdduration) = true`. Thin wrapper over the
+// registered stddurationOption — mirrors hasStdtimeOption.
+func (fg *FileGenerator) hasStdDurationOption(fd protoreflect.FieldDescriptor) bool {
+	opt := findOption[*stddurationOption](fg.options)
+	if opt == nil {
+		return false
+	}
+	return opt.Has(fd)
+}
+
+// stdDurationGoFieldType returns the Go-side struct-field type for an
+// stdduration-annotated field. Thin pass-through to the registered
+// stddurationOption.
+func (fg *FileGenerator) stdDurationGoFieldType(fd protoreflect.FieldDescriptor) (string, bool) {
+	opt := findOption[*stddurationOption](fg.options)
+	if opt == nil {
+		return "", false
+	}
+	return opt.GoFieldType(fg, fd)
+}
+
+// stdDurationFieldType returns the FieldType wrapper for an
+// stdduration-annotated field. Used by emit_unmarshal to type-assert the
+// singular branch.
+func (fg *FileGenerator) stdDurationFieldType(fd protoreflect.FieldDescriptor) (types.FieldType, bool) {
+	opt := findOption[*stddurationOption](fg.options)
 	if opt == nil {
 		return nil, false
 	}

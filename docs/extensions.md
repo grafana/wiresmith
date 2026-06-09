@@ -267,3 +267,61 @@ The generated `*_reflect.pb.go` still describes the field as `google.protobuf.Ti
 ### Worked example
 
 [`proto/basic/stdtime.proto`](../proto/basic/stdtime.proto) annotates a Timestamp field next to stock scalar controls, and [`test/basic/stdtime_test.go`](../test/basic/stdtime_test.go) pins the round-trip / zero-presence / UTC-normalization / cross-library wire-format invariants documented above.
+
+## `(wiresmith.options.stdduration) = true`
+
+The stdduration option swaps a `google.protobuf.Duration` field for a stdlib `time.Duration` value. Wire format is unchanged — the value is still encoded as the standard Duration sub-message (int64 `seconds` field 1, int32 `nanos` field 2). Mirrors `gogoproto.stdduration` and pairs with `stdtime` on the Timestamp side.
+
+```proto
+syntax = "proto3";
+package myapp.v1;
+
+import "wiresmith/options.proto";
+import "google/protobuf/duration.proto";
+
+message Query {
+  string name    = 1;
+  uint32 retries = 2;
+
+  // Generated Go: Lookback time.Duration
+  google.protobuf.Duration lookback = 3 [(wiresmith.options.stdduration) = true];
+}
+```
+
+```go
+type Query struct {
+    Name     string
+    Retries  uint32
+    Lookback time.Duration `protobuf:"bytes,3,opt,name=lookback,proto3" json:"lookback,omitempty"`
+}
+```
+
+### Zero-value presence
+
+`time.Duration(0)` is treated as "field not set" — proto3 default-suppression applied to the whole Duration envelope. On marshal, no tag is emitted; on unmarshal, an absent tag leaves the field at zero.
+
+Unlike stdtime, `time.Duration` has only one zero value, so there is **no "explicit zero vs unset" distinction**. A wire payload encoding `seconds=0 nanos=0` (which can arise from a peer that marshals an empty Duration submessage) decodes to `time.Duration(0)`, the same value a never-set field produces. If you need to distinguish "explicit zero" from "unset", store presence alongside the duration.
+
+Presence is carried entirely by the value (`d != 0`) — wiresmith does **not** emit a `Has<Name>()` accessor for stdduration fields, same shape as stdtime.
+
+### Overflow saturation
+
+`time.Duration` is int64 nanoseconds and tops out at ~292 years; proto Duration permits up to ~10000 years. A payload whose `seconds * 1e9 + nanos` does not fit decodes to `math.MaxInt64` (or `math.MinInt64` on negative overflow) rather than wrapping silently — matches `(*durationpb.Duration).AsDuration()` in `google.golang.org/protobuf`. See `protohelpers.DecodeStdDuration`.
+
+### Where it applies (v1)
+
+Allowed: singular `google.protobuf.Duration` fields.
+
+Rejected (combined compile-time error from `stddurationOption.Validate`):
+
+- Non-Duration message fields, scalars, enums, and `bytes`/`string`. Error: `(wiresmith.options.stdduration) only applies to google.protobuf.Duration fields, got <kind-or-name>`.
+- Map, oneof, repeated, and proto3 `optional` fields. Filed as follow-up beads if a real Mimir / Tempo use case surfaces.
+- Combination with `(wiresmith.options.pointer)`. The two options produce conflicting Go shapes (`*time.Duration` vs `time.Duration`); the generator refuses to pick one for you.
+
+### Protoreflect compatibility caveat
+
+Same caveat as stdtime: the `*_reflect.pb.go` describes the field as `google.protobuf.Duration` (referencing `google.golang.org/protobuf/types/known/durationpb`) while the Go struct field is `time.Duration`. Code routing through `protoreflect.Message.Get`/`Set` will not see a normal `*Duration` slot — the field is opaque from protoreflect's perspective. Matches the `gogoproto.stdduration` trade-off.
+
+### Worked example
+
+[`proto/basic/stdtime.proto`](../proto/basic/stdtime.proto) (shared with stdtime) declares a `StdDurationHolder` message with an annotated `lookback` field, and [`test/basic/stdduration_test.go`](../test/basic/stdduration_test.go) pins the round-trip / zero-presence / negative / truncation-boundary / cross-library wire-format invariants documented above.

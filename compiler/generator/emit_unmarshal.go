@@ -2,6 +2,7 @@ package generator
 
 import (
 	"fmt"
+
 	"github.com/grafana/wiresmith/compiler/types"
 
 	"google.golang.org/protobuf/reflect/protoreflect"
@@ -365,6 +366,15 @@ func (fg *FileGenerator) emitFieldUnmarshal(md protoreflect.MessageDescriptor, f
 	// message-kind path for an inline Timestamp envelope decode into a
 	// `time.Time`. Same single-FieldType dispatch as customtype above.
 	if ft, ok := fg.stdtimeFieldType(fd); ok {
+		types.AddTypeImports(fg, ft)
+		ft.EmitUnmarshal(fg, access, ctx)
+		return
+	}
+
+	// Singular Duration with `(wiresmith.options.stdduration) = true` swaps
+	// the message-kind path for an inline Duration envelope decode into a
+	// `time.Duration`. Same single-FieldType dispatch as stdtime above.
+	if ft, ok := fg.stdDurationFieldType(fd); ok {
 		types.AddTypeImports(fg, ft)
 		ft.EmitUnmarshal(fg, access, ctx)
 		return
