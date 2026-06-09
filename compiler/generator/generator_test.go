@@ -2058,10 +2058,15 @@ message Bar { p.xfoo.Foo foo = 1; }`)
 // not the raw filesystem syscall string ("lstat ... no such file or directory")
 // that filepath.WalkDir surfaces by default. The leak was DOC-9 / wiresmith-d2x.
 func TestGenerateMissingProtoPath_CleanError(t *testing.T) {
+	// Anchor the bad path inside a temp dir so the test stays portable
+	// across OS/filesystem layouts (and a parallel test on another machine
+	// can't ever happen to have a /this/path/... tree). The temp root
+	// exists; the "missing" subpath under it does not.
+	missing := filepath.Join(t.TempDir(), "missing-proto-tree")
 	gen := &Generator{
 		Module:   "wiresmith",
 		OutDir:   testOutDir(t),
-		ProtoDir: "/this/path/definitely/does/not/exist",
+		ProtoDir: missing,
 	}
 	err := gen.Generate(context.Background())
 	if err == nil {
