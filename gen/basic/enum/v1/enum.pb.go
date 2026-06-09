@@ -181,6 +181,10 @@ func (m *EnumContainer) HasSigned() bool {
 	return m.fieldsPresent[0]&(1<<1) != 0
 }
 
+func (m *EnumContainer) HasOptionalSigned() bool {
+	return m != nil && m.OptionalSigned != nil
+}
+
 func (m *WithNestedEnum) GetPriority() WithNestedEnum_Priority {
 	if m != nil {
 		return m.Priority

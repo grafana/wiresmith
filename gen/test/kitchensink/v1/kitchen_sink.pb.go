@@ -574,6 +574,66 @@ func (m *AllScalars) HasFieldBytes() bool {
 	return m.fieldsPresent[0]&(1<<14) != 0
 }
 
+func (m *AllOptionalScalars) HasFieldDouble() bool {
+	return m != nil && m.FieldDouble != nil
+}
+
+func (m *AllOptionalScalars) HasFieldFloat() bool {
+	return m != nil && m.FieldFloat != nil
+}
+
+func (m *AllOptionalScalars) HasFieldInt32() bool {
+	return m != nil && m.FieldInt32 != nil
+}
+
+func (m *AllOptionalScalars) HasFieldInt64() bool {
+	return m != nil && m.FieldInt64 != nil
+}
+
+func (m *AllOptionalScalars) HasFieldUint32() bool {
+	return m != nil && m.FieldUint32 != nil
+}
+
+func (m *AllOptionalScalars) HasFieldUint64() bool {
+	return m != nil && m.FieldUint64 != nil
+}
+
+func (m *AllOptionalScalars) HasFieldSint32() bool {
+	return m != nil && m.FieldSint32 != nil
+}
+
+func (m *AllOptionalScalars) HasFieldSint64() bool {
+	return m != nil && m.FieldSint64 != nil
+}
+
+func (m *AllOptionalScalars) HasFieldFixed32() bool {
+	return m != nil && m.FieldFixed32 != nil
+}
+
+func (m *AllOptionalScalars) HasFieldFixed64() bool {
+	return m != nil && m.FieldFixed64 != nil
+}
+
+func (m *AllOptionalScalars) HasFieldSfixed32() bool {
+	return m != nil && m.FieldSfixed32 != nil
+}
+
+func (m *AllOptionalScalars) HasFieldSfixed64() bool {
+	return m != nil && m.FieldSfixed64 != nil
+}
+
+func (m *AllOptionalScalars) HasFieldBool() bool {
+	return m != nil && m.FieldBool != nil
+}
+
+func (m *AllOptionalScalars) HasFieldString() bool {
+	return m != nil && m.FieldString != nil
+}
+
+func (m *AllOptionalScalars) HasFieldBytes() bool {
+	return m != nil && m.FieldBytes != nil
+}
+
 func (m *Outer) HasMiddle() bool {
 	if m == nil {
 		return false

@@ -6,11 +6,13 @@ import (
 	"testing"
 )
 
-// TestEmitHas_NoPresenceFields covers the 0-field corner: a message whose
-// fields are all repeated/map/optional/oneof carries no presence bitmap and
-// emits no Has methods. Anything else (an empty word array, a stray Has stub)
-// would force consumers to deal with state they cannot meaningfully set.
-func TestEmitHas_NoPresenceFields(t *testing.T) {
+// TestEmitHas_NoBitmapFields covers the bitmap-free corner: a message whose
+// fields are all repeated/map/optional/oneof carries no presence bitmap. The
+// repeated/map/oneof variants emit no Has accessor (presence is conveyed by
+// len() or the interface wrapper), but optional fields DO get a nil-check
+// Has accessor — wiresmith-hld closed the gap where consumers had to drop
+// down to `m.Maybe != nil` for optionals while using `m.HasX()` elsewhere.
+func TestEmitHas_NoBitmapFields(t *testing.T) {
 	fg := newFixtureGenerator(t, compileProtoFixture(t, `
 syntax = "proto3";
 package test.v1;
@@ -30,8 +32,19 @@ message M {
 		t.Errorf("presenceBitmapWords = %d, want 0", got)
 	}
 	fg.emitHasMethods(md)
-	if body := fg.body.String(); body != "" {
-		t.Errorf("expected no Has methods, got:\n%s", body)
+	body := fg.body.String()
+	// HasMaybe is the only accessor expected (optional int32 maybe = 2).
+	if !strings.Contains(body, "func (m *M) HasMaybe() bool {") {
+		t.Errorf("expected HasMaybe accessor, got:\n%s", body)
+	}
+	if !strings.Contains(body, "return m != nil && m.Maybe != nil") {
+		t.Errorf("expected nil-check shape for HasMaybe, got:\n%s", body)
+	}
+	// Repeated, map, and oneof variants must not get a Has accessor.
+	for _, forbidden := range []string{"HasXs", "HasKv", "HasS", "HasN", "HasChoice"} {
+		if strings.Contains(body, "func (m *M) "+forbidden+"() bool {") {
+			t.Errorf("unexpected %s accessor in:\n%s", forbidden, body)
+		}
 	}
 }
 

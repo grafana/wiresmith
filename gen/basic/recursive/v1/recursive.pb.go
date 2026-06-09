@@ -107,6 +107,10 @@ func (m *LinkedList) HasValue() bool {
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
+func (m *LinkedList) HasNext() bool {
+	return m != nil && m.Next != nil
+}
+
 func (m *TreeNode) HasLabel() bool {
 	if m == nil {
 		return false
@@ -128,11 +132,19 @@ func (m *NodeA) HasName() bool {
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
+func (m *NodeA) HasPeer() bool {
+	return m != nil && m.Peer != nil
+}
+
 func (m *NodeB) HasId() bool {
 	if m == nil {
 		return false
 	}
 	return m.fieldsPresent[0]&(1<<0) != 0
+}
+
+func (m *NodeB) HasParent() bool {
+	return m != nil && m.Parent != nil
 }
 
 func (m *LinkedList) GetValue() int64 {

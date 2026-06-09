@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/encoding/protowire"
 
+	num "github.com/grafana/wiresmith/gen/basic/numeric/v1"
 	ks "github.com/grafana/wiresmith/gen/test/kitchensink/v1"
 )
 
@@ -197,4 +198,44 @@ func TestHasField_ZeroInitializedStructHasNothingPresent(t *testing.T) {
 	assert.False(t, msg.HasFieldDouble())
 	assert.False(t, msg.HasFieldString())
 	assert.False(t, msg.HasFieldBool())
+}
+
+// TestHasField_OptionalFields pins the Has*() contract for proto3 optional
+// fields. Presence is carried by the pointer (nil = unset); the generated
+// Has accessor checks `m != nil && m.F != nil` so callers using Has* keep
+// the same API surface across value-type and optional kinds. Was missing
+// before wiresmith-hld — users had to fall back to a manual `!= nil` check.
+func TestHasField_OptionalFields(t *testing.T) {
+	// Default-constructed: all optional pointers nil → Has returns false.
+	empty := &num.MixedModifiers{}
+	assert.False(t, empty.HasOptionalInt())
+	assert.False(t, empty.HasOptionalDouble())
+	assert.False(t, empty.HasOptionalString())
+	assert.False(t, empty.HasOptionalBytes())
+
+	// Populated: optional fields set → Has returns true.
+	intVal := int64(42)
+	dblVal := 3.14
+	strVal := "hello"
+	populated := &num.MixedModifiers{
+		OptionalInt:    &intVal,
+		OptionalDouble: &dblVal,
+		OptionalString: &strVal,
+		OptionalBytes:  []byte{0x01, 0x02},
+	}
+	assert.True(t, populated.HasOptionalInt())
+	assert.True(t, populated.HasOptionalDouble())
+	assert.True(t, populated.HasOptionalString())
+	assert.True(t, populated.HasOptionalBytes())
+}
+
+// TestHasField_OptionalFields_NilReceiver pins nil-safety. The generated
+// Has*() short-circuits on a nil receiver — matches the CLAUDE.md
+// "Nil-safety on all generated receiver methods" contract.
+func TestHasField_OptionalFields_NilReceiver(t *testing.T) {
+	var m *num.MixedModifiers
+	assert.False(t, m.HasOptionalInt())
+	assert.False(t, m.HasOptionalDouble())
+	assert.False(t, m.HasOptionalString())
+	assert.False(t, m.HasOptionalBytes())
 }

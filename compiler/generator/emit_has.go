@@ -102,4 +102,25 @@ func (fg *FileGenerator) emitHasMethods(md protoreflect.MessageDescriptor) {
 		fmt.Fprintf(fg.body, "\treturn %s\n", presenceCheck(pf.bitIndex))
 		fmt.Fprintf(fg.body, "}\n\n")
 	}
+	// Optional fields carry presence in the pointer itself rather than the
+	// bitmap, so they're excluded from fieldsForPresence. Emit a separate
+	// pure-nil-check Has*() here so callers don't have to drop down to
+	// `m.X != nil` for optionals while using `m.HasY()` for value-type
+	// fields — matches protobuf-go's emission shape.
+	//
+	// Excludes oneof variants, maps, and repeated fields by design:
+	//   - oneof presence flows through the interface-typed wrapper field
+	//     (consumer calls `m.Choice.(*Foo_Bar)` or `m.GetX() != nil`).
+	//   - map and repeated have no "set vs unset" — they're either nil/empty
+	//     or populated, and len() conveys that without a Has accessor.
+	for i := 0; i < md.Fields().Len(); i++ {
+		fd := md.Fields().Get(i)
+		if !fd.HasOptionalKeyword() || isRealOneof(fd) {
+			continue
+		}
+		goName := fg.goFieldName(fd)
+		fmt.Fprintf(fg.body, "func (m *%s) Has%s() bool {\n", name, goName)
+		fmt.Fprintf(fg.body, "\treturn m != nil && m.%s != nil\n", goName)
+		fmt.Fprintf(fg.body, "}\n\n")
+	}
 }

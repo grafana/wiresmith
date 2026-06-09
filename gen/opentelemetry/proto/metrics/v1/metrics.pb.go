@@ -1123,6 +1123,18 @@ func (m *HistogramDataPoint) HasFlags() bool {
 	return m.fieldsPresent[0]&(1<<3) != 0
 }
 
+func (m *HistogramDataPoint) HasSum() bool {
+	return m != nil && m.Sum != nil
+}
+
+func (m *HistogramDataPoint) HasMin() bool {
+	return m != nil && m.Min != nil
+}
+
+func (m *HistogramDataPoint) HasMax() bool {
+	return m != nil && m.Max != nil
+}
+
 func (m *ExponentialHistogramDataPoint_Buckets) HasOffset() bool {
 	if m == nil {
 		return false
@@ -1191,6 +1203,18 @@ func (m *ExponentialHistogramDataPoint) HasZeroThreshold() bool {
 		return false
 	}
 	return m.fieldsPresent[0]&(1<<8) != 0
+}
+
+func (m *ExponentialHistogramDataPoint) HasSum() bool {
+	return m != nil && m.Sum != nil
+}
+
+func (m *ExponentialHistogramDataPoint) HasMin() bool {
+	return m != nil && m.Min != nil
+}
+
+func (m *ExponentialHistogramDataPoint) HasMax() bool {
+	return m != nil && m.Max != nil
 }
 
 func (m *SummaryDataPoint_ValueAtQuantile) HasQuantile() bool {

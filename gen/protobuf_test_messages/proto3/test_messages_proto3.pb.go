@@ -373,6 +373,10 @@ func (m *TestAllTypesProto3_NestedMessage) HasA() bool {
 	return m.fieldsPresent[0]&(1<<0) != 0
 }
 
+func (m *TestAllTypesProto3_NestedMessage) HasCorecursive() bool {
+	return m != nil && m.Corecursive != nil
+}
+
 func (m *TestAllTypesProto3) HasOptionalInt32() bool {
 	if m == nil {
 		return false
@@ -644,6 +648,10 @@ func (m *TestAllTypesProto3) HasFieldName18() bool {
 		return false
 	}
 	return m.fieldsPresent[0]&(1<<38) != 0
+}
+
+func (m *TestAllTypesProto3) HasRecursiveMessage() bool {
+	return m != nil && m.RecursiveMessage != nil
 }
 
 func (m *ForeignMessage) HasC() bool {
