@@ -224,16 +224,18 @@ message Request {
 
 ```go
 type Request struct {
-    UserID    ids.UserID    `protobuf:"varint,1,opt,name=user_id,proto3"`
+    UserId    ids.UserID    `protobuf:"varint,1,opt,name=user_id,proto3"`
     TenantTag ids.TenantTag `protobuf:"bytes,2,opt,name=tenant_tag,proto3"`
     Payload   ids.Payload   `protobuf:"bytes,3,opt,name=payload,proto3"`
 }
 ```
 
+(The struct field is `UserId`, not `UserID` — wiresmith's default `snake_case` → `PascalCase` conversion treats `user_id` as a two-word identifier. Pair casttype with `(wiresmith.options.customname) = "UserID"` to preserve the initialism in the Go API.)
+
 The aliased Go type must be a defined type or alias over the proto field's natural Go shape — e.g. `type UserID int64`, `type TenantTag string`, `type Payload []byte`. The generator inserts the necessary casts at every emit site:
 
-- **Size / Marshal** rely on Go's automatic conversion of defined integer / slice types when used in arithmetic (`uint64(m.UserID)`) or builtin calls (`len(m.TenantTag)`).
-- **Unmarshal** wraps the underlying scalar's CastExpr with the user alias: `m.UserID = ids.UserID(int64(v))`, `m.TenantTag = ids.TenantTag(string(dAtA[iNdEx:postIndex]))`. The Go compiler folds the redundant inner cast at compile time.
+- **Size / Marshal** rely on Go's automatic conversion of defined integer / slice types when used in arithmetic (`uint64(m.UserId)`) or builtin calls (`len(m.TenantTag)`).
+- **Unmarshal** wraps the underlying scalar's CastExpr with the user alias: `m.UserId = ids.UserID(int64(v))`, `m.TenantTag = ids.TenantTag(string(dAtA[iNdEx:postIndex]))`. The Go compiler folds the redundant inner cast at compile time.
 - **Equal / Compare** delegate to the scalar's `==` / `<` for kinds Go can compare directly; `bytes` casttype falls back to `bytes.Equal([]byte(a), []byte(b))` / `bytes.Compare([]byte(a), []byte(b))` because the stdlib helpers do not accept defined slice types.
 
 ### Value format

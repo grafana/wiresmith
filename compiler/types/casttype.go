@@ -54,8 +54,20 @@ func (c *CastType) EmitMarshal(e Emitter, access string, num protowire.Number) {
 // For length-delimited kinds (string, bytes) the source is the payload
 // slice instead of the varint `v`, and we re-emit the `iNdEx = postIndex`
 // advance that the underlying type's EmitUnmarshal would have produced.
+//
+// The bytes case avoids the BytesType.CastExpr's `append([]byte(nil), …)`
+// shape because that allocates a fresh backing array on every unmarshal,
+// regressing the BytesType emit path which reuses the existing backing
+// via `append(access[:0], …)`. Convert through `[]byte` so the result
+// types line up with the alias on assignment — the conversion is a
+// header reinterpretation and stays zero-cost.
 func (c *CastType) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
 	c.Inner.EmitConsume(e)
+	if _, isBytes := c.Inner.(*BytesType); isBytes {
+		e.Writef("\t\t\t%s = %s(append([]byte(%s)[:0], dAtA[iNdEx:postIndex]...))\n", access, c.GoAlias, access)
+		e.Writef("\t\t\tiNdEx = postIndex\n")
+		return
+	}
 	lengthDelimited := c.Inner.WireType() == "protowire.BytesType"
 	source := "v"
 	if lengthDelimited {

@@ -11,7 +11,8 @@
 package casttypes
 
 // UserID is a defined int64 alias — the canonical casttype use case (e.g.
-// `gogoproto.casttype = "UserID"` on `int64 user_id`).
+// `(wiresmith.options.casttype) = ".../casttypes.UserID"` on
+// `int64 user_id`).
 type UserID int64
 
 // TenantTag is a defined string alias for tag-style identifiers.

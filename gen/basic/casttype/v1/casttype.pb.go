@@ -459,7 +459,7 @@ func (m *CastTypeHolder) unmarshal(dAtA []byte, depth int) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Payload = casttypes.Payload(append([]byte(nil), dAtA[iNdEx:postIndex]...))
+			m.Payload = casttypes.Payload(append([]byte(m.Payload)[:0], dAtA[iNdEx:postIndex]...))
 			iNdEx = postIndex
 			m.fieldsPresent[0] |= 1 << 2
 		case 4: // plain_id
