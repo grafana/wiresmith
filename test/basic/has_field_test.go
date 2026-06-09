@@ -201,12 +201,14 @@ func TestHasField_ZeroInitializedStructHasNothingPresent(t *testing.T) {
 }
 
 // TestHasField_OptionalFields pins the Has*() contract for proto3 optional
-// fields. Presence is carried by the pointer (nil = unset); the generated
-// Has accessor checks `m != nil && m.F != nil` so callers using Has* keep
-// the same API surface across value-type and optional kinds. Was missing
-// before wiresmith-hld — users had to fall back to a manual `!= nil` check.
+// fields. Presence is carried by the Go field's nil-ability — scalars
+// surface as `*T`, `optional bytes` stays a nil-able `[]byte` slice — and
+// the generated Has accessor checks `m != nil && m.F != nil` so callers
+// using Has* keep the same API surface across value-type and optional
+// kinds. Was missing before wiresmith-hld — users had to fall back to a
+// manual `!= nil` check.
 func TestHasField_OptionalFields(t *testing.T) {
-	// Default-constructed: all optional pointers nil → Has returns false.
+	// Default-constructed: all optional fields nil → Has returns false.
 	empty := &num.MixedModifiers{}
 	assert.False(t, empty.HasOptionalInt())
 	assert.False(t, empty.HasOptionalDouble())
@@ -227,6 +229,29 @@ func TestHasField_OptionalFields(t *testing.T) {
 	assert.True(t, populated.HasOptionalDouble())
 	assert.True(t, populated.HasOptionalString())
 	assert.True(t, populated.HasOptionalBytes())
+}
+
+// TestHasField_OptionalFields_DefaultValueIsPresent pins the proto3
+// optional contract: an explicitly-set field with the default value
+// (`0`, `""`, empty `[]byte`) is still "present". Has returns true
+// because the pointer / slice is non-nil — the underlying value being
+// the zero-value does not collapse presence to false. Was a gap in the
+// initial wiresmith-hld coverage: the round-trip-set test only exercised
+// non-default values.
+func TestHasField_OptionalFields_DefaultValueIsPresent(t *testing.T) {
+	zeroInt := int64(0)
+	zeroDbl := float64(0)
+	zeroStr := ""
+	m := &num.MixedModifiers{
+		OptionalInt:    &zeroInt,
+		OptionalDouble: &zeroDbl,
+		OptionalString: &zeroStr,
+		OptionalBytes:  []byte{}, // non-nil, empty — distinct from nil
+	}
+	assert.True(t, m.HasOptionalInt(), "explicit zero must compare present")
+	assert.True(t, m.HasOptionalDouble(), "explicit zero must compare present")
+	assert.True(t, m.HasOptionalString(), "explicit empty string must compare present")
+	assert.True(t, m.HasOptionalBytes(), "non-nil empty []byte must compare present")
 }
 
 // TestHasField_OptionalFields_NilReceiver pins nil-safety. The generated
