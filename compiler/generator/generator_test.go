@@ -1673,6 +1673,86 @@ message B { string s = 1; }`)
 	}
 }
 
+// TestGenerateFilesSkipsUnrelatedBrokenSiblings pins the lazy compile set:
+// positional files compile only themselves plus transitive imports, so an
+// unrelated sibling .proto that doesn't compile (gogo annotations without
+// the gogo schema on the path, syntax errors, unresolvable imports) must
+// not fail the run. This is what lets a staged migration generate one file
+// from a tree that still contains gogo-annotated protos, without copying
+// the target into a staging directory first.
+func TestGenerateFilesSkipsUnrelatedBrokenSiblings(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "good/good.proto", `
+syntax = "proto3";
+package good.v1;
+option go_package = "example.com/mod/gen/good";
+import "dep/dep.proto";
+message G { dep.v1.D d = 1; }`)
+	writeProto(t, protoDir, "dep/dep.proto", `
+syntax = "proto3";
+package dep.v1;
+option go_package = "example.com/mod/gen/dep";
+message D { string s = 1; }`)
+	// Unrelated sibling that cannot compile: imports a file that's nowhere
+	// on the path (the shape a gogo-annotated proto has when gogoproto's
+	// schema isn't provided).
+	writeProto(t, protoDir, "legacy/legacy.proto", `
+syntax = "proto3";
+package legacy.v1;
+import "gogoproto/gogo.proto";
+message L { string s = 1; }`)
+
+	outDir := testOutDir(t)
+	gen := &Generator{
+		Module:   "example.com/mod",
+		OutDir:   outDir,
+		ProtoDir: protoDir,
+		Files:    []string{filepath.Join(protoDir, "good", "good.proto")},
+	}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate with positional file must ignore unrelated broken sibling: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(outDir, "good", "good.pb.go")); err != nil {
+		t.Errorf("expected good.pb.go: %v", err)
+	}
+	// The transitive import is compiled (for destinations) but not emitted.
+	if _, err := os.Stat(filepath.Join(outDir, "dep", "dep.pb.go")); err == nil {
+		t.Errorf("dep.pb.go must not be emitted (not in the positional set)")
+	}
+	if _, err := os.Stat(filepath.Join(outDir, "legacy", "legacy.pb.go")); err == nil {
+		t.Errorf("legacy.pb.go must not exist")
+	}
+}
+
+// TestGenerateFilesBrokenImportStillFails is the counterpart: when the
+// positional file actually imports the broken proto, the failure must
+// surface — lazy compilation narrows the compile set, it doesn't swallow
+// real errors.
+func TestGenerateFilesBrokenImportStillFails(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "good/good.proto", `
+syntax = "proto3";
+package good.v1;
+option go_package = "example.com/mod/gen/good";
+import "legacy/legacy.proto";
+message G { legacy.v1.L l = 1; }`)
+	writeProto(t, protoDir, "legacy/legacy.proto", `
+syntax = "proto3";
+package legacy.v1;
+import "gogoproto/gogo.proto";
+message L { string s = 1; }`)
+
+	gen := &Generator{
+		Module:   "example.com/mod",
+		OutDir:   testOutDir(t),
+		ProtoDir: protoDir,
+		Files:    []string{filepath.Join(protoDir, "good", "good.proto")},
+	}
+	if err := gen.Generate(context.Background()); err == nil {
+		t.Fatal("expected error when the positional file imports a broken proto")
+	}
+}
+
 // TestGenerateCustomtypeSuppressesUnusedCrossFileImport pins that a
 // customtype-annotated message field does not register an import for the
 // natural (replaced) message type. When such a field is the file's only

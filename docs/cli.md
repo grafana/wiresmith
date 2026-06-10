@@ -21,7 +21,10 @@ wiresmith [flags] [files...]
 ```
 
 When one or more `.proto` file paths are given as positional arguments,
-only those files are emitted. Their imports are still resolved against the
+only those files are emitted. Only the listed files and their transitive
+imports are compiled — unrelated siblings in the tree are never parsed, so
+gogo-annotated protos elsewhere in a mid-migration tree don't block a
+scoped run. Their imports are still resolved against the
 full `--proto_path` walk, so cross-file references in the unemitted set
 keep working. When no files are given, wiresmith walks `--proto_path` and
 emits every `.proto` it finds (the default).

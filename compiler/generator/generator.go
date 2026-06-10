@@ -395,7 +395,25 @@ func (g *Generator) compileSources(ctx context.Context) ([]protoreflect.FileDesc
 		),
 	}
 
-	linked, err := compiler.Compile(ctx, importPaths...)
+	// With positional files, compile only those (plus the embedded options
+	// schema); the resolver pulls transitive imports from the full mapping
+	// on demand. Unrelated siblings in the walked tree are never parsed —
+	// a staged migration can generate one file from a tree whose other
+	// protos don't compile (gogo annotations without the gogo schema on
+	// the path). Without positional files, the whole walk compiles, as
+	// before. Validation (go_package consistency, destination collisions)
+	// therefore covers the compiled subgraph only in scoped runs — the
+	// same trade protoc makes.
+	roots := importPaths
+	if len(emit) > 0 {
+		roots = make([]string, 0, len(emit)+1)
+		for key := range emit {
+			roots = append(roots, key)
+		}
+		sort.Strings(roots)
+		roots = append(roots, embeddedOptionsPath)
+	}
+	linked, err := compiler.Compile(ctx, roots...)
 	if err != nil {
 		return nil, nil, fmt.Errorf("compiling protos: %w", err)
 	}
