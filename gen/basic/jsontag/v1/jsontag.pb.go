@@ -657,7 +657,9 @@ func (m *JsonTagHolder) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.Counters = make(map[string]int64, c)
+			if m.Counters == nil {
+				m.Counters = make(map[string]int64, c)
+			}
 		}
 	}
 	for iNdEx < l {

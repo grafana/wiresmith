@@ -507,17 +507,19 @@ func (m *Payload) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Chunks) < c {
-				m.Chunks = make([][]byte, 0, c)
-			} else {
-				m.Chunks = m.Chunks[:0]
+			if need := len(m.Chunks) + c; cap(m.Chunks) < need {
+				grown := make([][]byte, len(m.Chunks), need)
+				copy(grown, m.Chunks)
+				m.Chunks = grown
 			}
 		}
 		if c := field4count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.Labels = make(map[string]string, c)
+			if m.Labels == nil {
+				m.Labels = make(map[string]string, c)
+			}
 		}
 	}
 	for iNdEx < l {

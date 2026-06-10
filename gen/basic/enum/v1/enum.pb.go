@@ -724,7 +724,9 @@ func (m *EnumContainer) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.SignedMap = make(map[string]SignedEnum, c)
+			if m.SignedMap == nil {
+				m.SignedMap = make(map[string]SignedEnum, c)
+			}
 		}
 	}
 	for iNdEx < l {

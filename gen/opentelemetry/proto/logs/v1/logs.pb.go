@@ -1035,10 +1035,10 @@ func (m *LogsData) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.ResourceLogs) < c {
-				m.ResourceLogs = make([]ResourceLogs, 0, c)
-			} else {
-				m.ResourceLogs = m.ResourceLogs[:0]
+			if need := len(m.ResourceLogs) + c; cap(m.ResourceLogs) < need {
+				grown := make([]ResourceLogs, len(m.ResourceLogs), need)
+				copy(grown, m.ResourceLogs)
+				m.ResourceLogs = grown
 			}
 		}
 	}
@@ -1208,10 +1208,10 @@ func (m *ResourceLogs) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.ScopeLogs) < c {
-				m.ScopeLogs = make([]ScopeLogs, 0, c)
-			} else {
-				m.ScopeLogs = m.ScopeLogs[:0]
+			if need := len(m.ScopeLogs) + c; cap(m.ScopeLogs) < need {
+				grown := make([]ScopeLogs, len(m.ScopeLogs), need)
+				copy(grown, m.ScopeLogs)
+				m.ScopeLogs = grown
 			}
 		}
 	}
@@ -1475,10 +1475,10 @@ func (m *ScopeLogs) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.LogRecords) < c {
-				m.LogRecords = make([]LogRecord, 0, c)
-			} else {
-				m.LogRecords = m.LogRecords[:0]
+			if need := len(m.LogRecords) + c; cap(m.LogRecords) < need {
+				grown := make([]LogRecord, len(m.LogRecords), need)
+				copy(grown, m.LogRecords)
+				m.LogRecords = grown
 			}
 		}
 	}
@@ -1742,10 +1742,10 @@ func (m *LogRecord) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Attributes) < c {
-				m.Attributes = make([]commonv1.KeyValue, 0, c)
-			} else {
-				m.Attributes = m.Attributes[:0]
+			if need := len(m.Attributes) + c; cap(m.Attributes) < need {
+				grown := make([]commonv1.KeyValue, len(m.Attributes), need)
+				copy(grown, m.Attributes)
+				m.Attributes = grown
 			}
 		}
 	}

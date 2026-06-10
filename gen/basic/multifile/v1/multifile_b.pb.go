@@ -196,10 +196,10 @@ func (m *BetaHolder) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Entries) < c {
-				m.Entries = make([]AlphaEntry, 0, c)
-			} else {
-				m.Entries = m.Entries[:0]
+			if need := len(m.Entries) + c; cap(m.Entries) < need {
+				grown := make([]AlphaEntry, len(m.Entries), need)
+				copy(grown, m.Entries)
+				m.Entries = grown
 			}
 		}
 	}

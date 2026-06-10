@@ -2586,70 +2586,70 @@ func (m *ProfilesDictionary) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.MappingTable) < c {
-				m.MappingTable = make([]Mapping, 0, c)
-			} else {
-				m.MappingTable = m.MappingTable[:0]
+			if need := len(m.MappingTable) + c; cap(m.MappingTable) < need {
+				grown := make([]Mapping, len(m.MappingTable), need)
+				copy(grown, m.MappingTable)
+				m.MappingTable = grown
 			}
 		}
 		if c := field2count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.LocationTable) < c {
-				m.LocationTable = make([]Location, 0, c)
-			} else {
-				m.LocationTable = m.LocationTable[:0]
+			if need := len(m.LocationTable) + c; cap(m.LocationTable) < need {
+				grown := make([]Location, len(m.LocationTable), need)
+				copy(grown, m.LocationTable)
+				m.LocationTable = grown
 			}
 		}
 		if c := field3count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.FunctionTable) < c {
-				m.FunctionTable = make([]Function, 0, c)
-			} else {
-				m.FunctionTable = m.FunctionTable[:0]
+			if need := len(m.FunctionTable) + c; cap(m.FunctionTable) < need {
+				grown := make([]Function, len(m.FunctionTable), need)
+				copy(grown, m.FunctionTable)
+				m.FunctionTable = grown
 			}
 		}
 		if c := field4count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.LinkTable) < c {
-				m.LinkTable = make([]Link, 0, c)
-			} else {
-				m.LinkTable = m.LinkTable[:0]
+			if need := len(m.LinkTable) + c; cap(m.LinkTable) < need {
+				grown := make([]Link, len(m.LinkTable), need)
+				copy(grown, m.LinkTable)
+				m.LinkTable = grown
 			}
 		}
 		if c := field5count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.StringTable) < c {
-				m.StringTable = make([]string, 0, c)
-			} else {
-				m.StringTable = m.StringTable[:0]
+			if need := len(m.StringTable) + c; cap(m.StringTable) < need {
+				grown := make([]string, len(m.StringTable), need)
+				copy(grown, m.StringTable)
+				m.StringTable = grown
 			}
 		}
 		if c := field6count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.AttributeTable) < c {
-				m.AttributeTable = make([]KeyValueAndUnit, 0, c)
-			} else {
-				m.AttributeTable = m.AttributeTable[:0]
+			if need := len(m.AttributeTable) + c; cap(m.AttributeTable) < need {
+				grown := make([]KeyValueAndUnit, len(m.AttributeTable), need)
+				copy(grown, m.AttributeTable)
+				m.AttributeTable = grown
 			}
 		}
 		if c := field7count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.StackTable) < c {
-				m.StackTable = make([]Stack, 0, c)
-			} else {
-				m.StackTable = m.StackTable[:0]
+			if need := len(m.StackTable) + c; cap(m.StackTable) < need {
+				grown := make([]Stack, len(m.StackTable), need)
+				copy(grown, m.StackTable)
+				m.StackTable = grown
 			}
 		}
 	}
@@ -3104,10 +3104,10 @@ func (m *ProfilesData) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.ResourceProfiles) < c {
-				m.ResourceProfiles = make([]ResourceProfiles, 0, c)
-			} else {
-				m.ResourceProfiles = m.ResourceProfiles[:0]
+			if need := len(m.ResourceProfiles) + c; cap(m.ResourceProfiles) < need {
+				grown := make([]ResourceProfiles, len(m.ResourceProfiles), need)
+				copy(grown, m.ResourceProfiles)
+				m.ResourceProfiles = grown
 			}
 		}
 	}
@@ -3325,10 +3325,10 @@ func (m *ResourceProfiles) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.ScopeProfiles) < c {
-				m.ScopeProfiles = make([]ScopeProfiles, 0, c)
-			} else {
-				m.ScopeProfiles = m.ScopeProfiles[:0]
+			if need := len(m.ScopeProfiles) + c; cap(m.ScopeProfiles) < need {
+				grown := make([]ScopeProfiles, len(m.ScopeProfiles), need)
+				copy(grown, m.ScopeProfiles)
+				m.ScopeProfiles = grown
 			}
 		}
 	}
@@ -3592,10 +3592,10 @@ func (m *ScopeProfiles) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Profiles) < c {
-				m.Profiles = make([]Profile, 0, c)
-			} else {
-				m.Profiles = m.Profiles[:0]
+			if need := len(m.Profiles) + c; cap(m.Profiles) < need {
+				grown := make([]Profile, len(m.Profiles), need)
+				copy(grown, m.Profiles)
+				m.Profiles = grown
 			}
 		}
 	}
@@ -3859,10 +3859,10 @@ func (m *Profile) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Samples) < c {
-				m.Samples = make([]Sample, 0, c)
-			} else {
-				m.Samples = m.Samples[:0]
+			if need := len(m.Samples) + c; cap(m.Samples) < need {
+				grown := make([]Sample, len(m.Samples), need)
+				copy(grown, m.Samples)
+				m.Samples = grown
 			}
 		}
 	}
@@ -5531,10 +5531,10 @@ func (m *Location) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Lines) < c {
-				m.Lines = make([]Line, 0, c)
-			} else {
-				m.Lines = m.Lines[:0]
+			if need := len(m.Lines) + c; cap(m.Lines) < need {
+				grown := make([]Line, len(m.Lines), need)
+				copy(grown, m.Lines)
+				m.Lines = grown
 			}
 		}
 	}

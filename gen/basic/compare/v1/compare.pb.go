@@ -2810,30 +2810,30 @@ func (m *Repeated) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Strs) < c {
-				m.Strs = make([]string, 0, c)
-			} else {
-				m.Strs = m.Strs[:0]
+			if need := len(m.Strs) + c; cap(m.Strs) < need {
+				grown := make([]string, len(m.Strs), need)
+				copy(grown, m.Strs)
+				m.Strs = grown
 			}
 		}
 		if c := field3count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Inners) < c {
-				m.Inners = make([]Inner, 0, c)
-			} else {
-				m.Inners = m.Inners[:0]
+			if need := len(m.Inners) + c; cap(m.Inners) < need {
+				grown := make([]Inner, len(m.Inners), need)
+				copy(grown, m.Inners)
+				m.Inners = grown
 			}
 		}
 		if c := field4count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Blobs) < c {
-				m.Blobs = make([][]byte, 0, c)
-			} else {
-				m.Blobs = m.Blobs[:0]
+			if need := len(m.Blobs) + c; cap(m.Blobs) < need {
+				grown := make([][]byte, len(m.Blobs), need)
+				copy(grown, m.Blobs)
+				m.Blobs = grown
 			}
 		}
 	}
@@ -3199,25 +3199,33 @@ func (m *WithMap) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MStringString = make(map[string]string, c)
+			if m.MStringString == nil {
+				m.MStringString = make(map[string]string, c)
+			}
 		}
 		if c := field2count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MInt32String = make(map[int32]string, c)
+			if m.MInt32String == nil {
+				m.MInt32String = make(map[int32]string, c)
+			}
 		}
 		if c := field3count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MStringInner = make(map[string]Inner, c)
+			if m.MStringInner == nil {
+				m.MStringInner = make(map[string]Inner, c)
+			}
 		}
 		if c := field4count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MBoolString = make(map[bool]string, c)
+			if m.MBoolString == nil {
+				m.MBoolString = make(map[bool]string, c)
+			}
 		}
 	}
 	for iNdEx < l {

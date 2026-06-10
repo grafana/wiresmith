@@ -1544,7 +1544,9 @@ func (m *OneofPlusEverything) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.Labels = make(map[string]string, c)
+			if m.Labels == nil {
+				m.Labels = make(map[string]string, c)
+			}
 		}
 	}
 	for iNdEx < l {

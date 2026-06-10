@@ -373,19 +373,25 @@ func (m *MapBench) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.StringMap = make(map[string]string, c)
+			if m.StringMap == nil {
+				m.StringMap = make(map[string]string, c)
+			}
 		}
 		if c := field2count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.IntMap = make(map[int64]int64, c)
+			if m.IntMap == nil {
+				m.IntMap = make(map[int64]int64, c)
+			}
 		}
 		if c := field3count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MessageMap = make(map[string]Inner, c)
+			if m.MessageMap == nil {
+				m.MessageMap = make(map[string]Inner, c)
+			}
 		}
 	}
 	for iNdEx < l {
