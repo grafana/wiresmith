@@ -3736,13 +3736,21 @@ func (m *MixedModifiers) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.RepeatedString = make([]string, 0, c)
+			if cap(m.RepeatedString) < c {
+				m.RepeatedString = make([]string, 0, c)
+			} else {
+				m.RepeatedString = m.RepeatedString[:0]
+			}
 		}
 		if c := field12count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.RepeatedBytes = make([][]byte, 0, c)
+			if cap(m.RepeatedBytes) < c {
+				m.RepeatedBytes = make([][]byte, 0, c)
+			} else {
+				m.RepeatedBytes = m.RepeatedBytes[:0]
+			}
 		}
 	}
 	for iNdEx < l {

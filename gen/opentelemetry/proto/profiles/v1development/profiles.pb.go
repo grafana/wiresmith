@@ -2653,43 +2653,71 @@ func (m *ProfilesDictionary) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MappingTable = make([]Mapping, 0, c)
+			if cap(m.MappingTable) < c {
+				m.MappingTable = make([]Mapping, 0, c)
+			} else {
+				m.MappingTable = m.MappingTable[:0]
+			}
 		}
 		if c := field2count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.LocationTable = make([]Location, 0, c)
+			if cap(m.LocationTable) < c {
+				m.LocationTable = make([]Location, 0, c)
+			} else {
+				m.LocationTable = m.LocationTable[:0]
+			}
 		}
 		if c := field3count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.FunctionTable = make([]Function, 0, c)
+			if cap(m.FunctionTable) < c {
+				m.FunctionTable = make([]Function, 0, c)
+			} else {
+				m.FunctionTable = m.FunctionTable[:0]
+			}
 		}
 		if c := field4count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.LinkTable = make([]Link, 0, c)
+			if cap(m.LinkTable) < c {
+				m.LinkTable = make([]Link, 0, c)
+			} else {
+				m.LinkTable = m.LinkTable[:0]
+			}
 		}
 		if c := field5count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.StringTable = make([]string, 0, c)
+			if cap(m.StringTable) < c {
+				m.StringTable = make([]string, 0, c)
+			} else {
+				m.StringTable = m.StringTable[:0]
+			}
 		}
 		if c := field6count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.AttributeTable = make([]KeyValueAndUnit, 0, c)
+			if cap(m.AttributeTable) < c {
+				m.AttributeTable = make([]KeyValueAndUnit, 0, c)
+			} else {
+				m.AttributeTable = m.AttributeTable[:0]
+			}
 		}
 		if c := field7count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.StackTable = make([]Stack, 0, c)
+			if cap(m.StackTable) < c {
+				m.StackTable = make([]Stack, 0, c)
+			} else {
+				m.StackTable = m.StackTable[:0]
+			}
 		}
 	}
 	for iNdEx < l {
@@ -3143,7 +3171,11 @@ func (m *ProfilesData) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.ResourceProfiles = make([]ResourceProfiles, 0, c)
+			if cap(m.ResourceProfiles) < c {
+				m.ResourceProfiles = make([]ResourceProfiles, 0, c)
+			} else {
+				m.ResourceProfiles = m.ResourceProfiles[:0]
+			}
 		}
 	}
 	for iNdEx < l {
@@ -3360,7 +3392,11 @@ func (m *ResourceProfiles) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.ScopeProfiles = make([]ScopeProfiles, 0, c)
+			if cap(m.ScopeProfiles) < c {
+				m.ScopeProfiles = make([]ScopeProfiles, 0, c)
+			} else {
+				m.ScopeProfiles = m.ScopeProfiles[:0]
+			}
 		}
 	}
 	for iNdEx < l {
@@ -3623,7 +3659,11 @@ func (m *ScopeProfiles) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.Profiles = make([]Profile, 0, c)
+			if cap(m.Profiles) < c {
+				m.Profiles = make([]Profile, 0, c)
+			} else {
+				m.Profiles = m.Profiles[:0]
+			}
 		}
 	}
 	for iNdEx < l {
@@ -3886,7 +3926,11 @@ func (m *Profile) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.Samples = make([]Sample, 0, c)
+			if cap(m.Samples) < c {
+				m.Samples = make([]Sample, 0, c)
+			} else {
+				m.Samples = m.Samples[:0]
+			}
 		}
 	}
 	for iNdEx < l {
@@ -5554,7 +5598,11 @@ func (m *Location) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.Lines = make([]Line, 0, c)
+			if cap(m.Lines) < c {
+				m.Lines = make([]Line, 0, c)
+			} else {
+				m.Lines = m.Lines[:0]
+			}
 		}
 	}
 	for iNdEx < l {

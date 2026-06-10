@@ -3774,37 +3774,61 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.RepeatedString = make([]string, 0, c)
+			if cap(m.RepeatedString) < c {
+				m.RepeatedString = make([]string, 0, c)
+			} else {
+				m.RepeatedString = m.RepeatedString[:0]
+			}
 		}
 		if c := field45count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.RepeatedBytes = make([][]byte, 0, c)
+			if cap(m.RepeatedBytes) < c {
+				m.RepeatedBytes = make([][]byte, 0, c)
+			} else {
+				m.RepeatedBytes = m.RepeatedBytes[:0]
+			}
 		}
 		if c := field48count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.RepeatedNestedMessage = make([]TestAllTypesProto3_NestedMessage, 0, c)
+			if cap(m.RepeatedNestedMessage) < c {
+				m.RepeatedNestedMessage = make([]TestAllTypesProto3_NestedMessage, 0, c)
+			} else {
+				m.RepeatedNestedMessage = m.RepeatedNestedMessage[:0]
+			}
 		}
 		if c := field49count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.RepeatedForeignMessage = make([]ForeignMessage, 0, c)
+			if cap(m.RepeatedForeignMessage) < c {
+				m.RepeatedForeignMessage = make([]ForeignMessage, 0, c)
+			} else {
+				m.RepeatedForeignMessage = m.RepeatedForeignMessage[:0]
+			}
 		}
 		if c := field54count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.RepeatedStringPiece = make([]string, 0, c)
+			if cap(m.RepeatedStringPiece) < c {
+				m.RepeatedStringPiece = make([]string, 0, c)
+			} else {
+				m.RepeatedStringPiece = m.RepeatedStringPiece[:0]
+			}
 		}
 		if c := field55count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.RepeatedCord = make([]string, 0, c)
+			if cap(m.RepeatedCord) < c {
+				m.RepeatedCord = make([]string, 0, c)
+			} else {
+				m.RepeatedCord = m.RepeatedCord[:0]
+			}
 		}
 		if c := field56count; c > 0 {
 			if c > preCapMax {

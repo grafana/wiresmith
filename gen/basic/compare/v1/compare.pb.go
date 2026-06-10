@@ -2877,19 +2877,31 @@ func (m *Repeated) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.Strs = make([]string, 0, c)
+			if cap(m.Strs) < c {
+				m.Strs = make([]string, 0, c)
+			} else {
+				m.Strs = m.Strs[:0]
+			}
 		}
 		if c := field3count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.Inners = make([]Inner, 0, c)
+			if cap(m.Inners) < c {
+				m.Inners = make([]Inner, 0, c)
+			} else {
+				m.Inners = m.Inners[:0]
+			}
 		}
 		if c := field4count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.Blobs = make([][]byte, 0, c)
+			if cap(m.Blobs) < c {
+				m.Blobs = make([][]byte, 0, c)
+			} else {
+				m.Blobs = m.Blobs[:0]
+			}
 		}
 	}
 	for iNdEx < l {

@@ -1102,7 +1102,11 @@ func (m *LogsData) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.ResourceLogs = make([]ResourceLogs, 0, c)
+			if cap(m.ResourceLogs) < c {
+				m.ResourceLogs = make([]ResourceLogs, 0, c)
+			} else {
+				m.ResourceLogs = m.ResourceLogs[:0]
+			}
 		}
 	}
 	for iNdEx < l {
@@ -1271,7 +1275,11 @@ func (m *ResourceLogs) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.ScopeLogs = make([]ScopeLogs, 0, c)
+			if cap(m.ScopeLogs) < c {
+				m.ScopeLogs = make([]ScopeLogs, 0, c)
+			} else {
+				m.ScopeLogs = m.ScopeLogs[:0]
+			}
 		}
 	}
 	for iNdEx < l {
@@ -1534,7 +1542,11 @@ func (m *ScopeLogs) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.LogRecords = make([]LogRecord, 0, c)
+			if cap(m.LogRecords) < c {
+				m.LogRecords = make([]LogRecord, 0, c)
+			} else {
+				m.LogRecords = m.LogRecords[:0]
+			}
 		}
 	}
 	for iNdEx < l {
@@ -1797,7 +1809,11 @@ func (m *LogRecord) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.Attributes = make([]commonv1.KeyValue, 0, c)
+			if cap(m.Attributes) < c {
+				m.Attributes = make([]commonv1.KeyValue, 0, c)
+			} else {
+				m.Attributes = m.Attributes[:0]
+			}
 		}
 	}
 	for iNdEx < l {

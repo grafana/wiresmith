@@ -772,7 +772,11 @@ func (m *TreeNode) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.Children = make([]TreeNode, 0, c)
+			if cap(m.Children) < c {
+				m.Children = make([]TreeNode, 0, c)
+			} else {
+				m.Children = m.Children[:0]
+			}
 		}
 	}
 	for iNdEx < l {
@@ -1016,7 +1020,11 @@ func (m *NodeA) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.Peers = make([]NodeB, 0, c)
+			if cap(m.Peers) < c {
+				m.Peers = make([]NodeB, 0, c)
+			} else {
+				m.Peers = m.Peers[:0]
+			}
 		}
 	}
 	for iNdEx < l {

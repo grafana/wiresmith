@@ -752,25 +752,41 @@ func (m *RepeatedCustomTypeHolder) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.Ids = make([]customtypes.UUID, 0, c)
+			if cap(m.Ids) < c {
+				m.Ids = make([]customtypes.UUID, 0, c)
+			} else {
+				m.Ids = m.Ids[:0]
+			}
 		}
 		if c := field2count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.Tags = make([]customtypes.Tag, 0, c)
+			if cap(m.Tags) < c {
+				m.Tags = make([]customtypes.Tag, 0, c)
+			} else {
+				m.Tags = m.Tags[:0]
+			}
 		}
 		if c := field3count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.PlainIds = make([][]byte, 0, c)
+			if cap(m.PlainIds) < c {
+				m.PlainIds = make([][]byte, 0, c)
+			} else {
+				m.PlainIds = m.PlainIds[:0]
+			}
 		}
 		if c := field4count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.PlainTags = make([]string, 0, c)
+			if cap(m.PlainTags) < c {
+				m.PlainTags = make([]string, 0, c)
+			} else {
+				m.PlainTags = m.PlainTags[:0]
+			}
 		}
 	}
 	for iNdEx < l {

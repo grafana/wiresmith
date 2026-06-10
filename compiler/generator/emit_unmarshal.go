@@ -189,7 +189,20 @@ func (fg *FileGenerator) emitPreScan(md protoreflect.MessageDescriptor) {
 		if fd.IsMap() {
 			fmt.Fprintf(fg.body, "\t\t\tm.%s = make(%s, c)\n", goName, goType)
 		} else {
-			fmt.Fprintf(fg.body, "\t\t\tm.%s = make(%s, 0, c)\n", goName, goType)
+			// Reuse a caller-provided backing array when it already fits the
+			// counted elements — the pooled-message pattern (Mimir resets a
+			// message from a sync.Pool and unmarshals into it; an
+			// unconditional make() here would discard the pooled capacity on
+			// every decode). The cap test is against the *uncapped* need:
+			// when count was clamped by preCapMax the true element count may
+			// exceed c, but it can never exceed the legitimate-payload bound
+			// the cap encodes, so reuse stays safe — append() grows past c
+			// the same way it does on the fresh-make path.
+			fmt.Fprintf(fg.body, "\t\t\tif cap(m.%s) < c {\n", goName)
+			fmt.Fprintf(fg.body, "\t\t\t\tm.%s = make(%s, 0, c)\n", goName, goType)
+			fmt.Fprintf(fg.body, "\t\t\t} else {\n")
+			fmt.Fprintf(fg.body, "\t\t\t\tm.%s = m.%s[:0]\n", goName, goName)
+			fmt.Fprintf(fg.body, "\t\t\t}\n")
 		}
 		fmt.Fprintf(fg.body, "\t\t}\n")
 	}

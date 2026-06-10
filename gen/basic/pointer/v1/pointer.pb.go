@@ -578,7 +578,11 @@ func (m *PointerHolder) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.Items = make([]*Leaf, 0, c)
+			if cap(m.Items) < c {
+				m.Items = make([]*Leaf, 0, c)
+			} else {
+				m.Items = m.Items[:0]
+			}
 		}
 	}
 	for iNdEx < l {

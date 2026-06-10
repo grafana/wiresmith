@@ -4299,13 +4299,21 @@ func (m *AllRepeatedScalars) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.FieldString = make([]string, 0, c)
+			if cap(m.FieldString) < c {
+				m.FieldString = make([]string, 0, c)
+			} else {
+				m.FieldString = m.FieldString[:0]
+			}
 		}
 		if c := field15count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.FieldBytes = make([][]byte, 0, c)
+			if cap(m.FieldBytes) < c {
+				m.FieldBytes = make([][]byte, 0, c)
+			} else {
+				m.FieldBytes = m.FieldBytes[:0]
+			}
 		}
 	}
 	for iNdEx < l {
@@ -6001,7 +6009,11 @@ func (m *Outer) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.Middles = make([]Middle, 0, c)
+			if cap(m.Middles) < c {
+				m.Middles = make([]Middle, 0, c)
+			} else {
+				m.Middles = m.Middles[:0]
+			}
 		}
 	}
 	for iNdEx < l {
@@ -6264,7 +6276,11 @@ func (m *Middle) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.Inners = make([]Inner, 0, c)
+			if cap(m.Inners) < c {
+				m.Inners = make([]Inner, 0, c)
+			} else {
+				m.Inners = m.Inners[:0]
+			}
 		}
 	}
 	for iNdEx < l {
@@ -7238,13 +7254,21 @@ func (m *OnlyRepeated) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.Names = make([]string, 0, c)
+			if cap(m.Names) < c {
+				m.Names = make([]string, 0, c)
+			} else {
+				m.Names = m.Names[:0]
+			}
 		}
 		if c := field3count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.Items = make([]Inner, 0, c)
+			if cap(m.Items) < c {
+				m.Items = make([]Inner, 0, c)
+			} else {
+				m.Items = m.Items[:0]
+			}
 		}
 	}
 	for iNdEx < l {
@@ -7555,7 +7579,11 @@ func (m *Container) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.Variants = make([]OneofVariants, 0, c)
+			if cap(m.Variants) < c {
+				m.Variants = make([]OneofVariants, 0, c)
+			} else {
+				m.Variants = m.Variants[:0]
+			}
 		}
 	}
 	for iNdEx < l {

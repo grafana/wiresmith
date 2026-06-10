@@ -54,6 +54,8 @@ During unmarshal, a lightweight pre-scan counts repeated elements before allocat
 
 Net result: value-type cache locality benefits without the memory penalty -- 30-40% less memory than VTProto on unmarshal.
 
+When the destination slice already has enough capacity (e.g. a pooled message reused across decodes), the prealloc reuses the backing array instead of allocating. Corollary: `Unmarshal` expects a `Reset()` or fresh message -- see [docs/design.md](docs/design.md).
+
 ### Packed scalar exact-capacity allocation
 
 For fixed-size packed fields (`uint64`, `float64`), we compute `len(data)/8` and allocate once.

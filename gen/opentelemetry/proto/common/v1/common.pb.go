@@ -1434,7 +1434,11 @@ func (m *ArrayValue) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.Values = make([]AnyValue, 0, c)
+			if cap(m.Values) < c {
+				m.Values = make([]AnyValue, 0, c)
+			} else {
+				m.Values = m.Values[:0]
+			}
 		}
 	}
 	for iNdEx < l {
@@ -1603,7 +1607,11 @@ func (m *KeyValueList) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.Values = make([]KeyValue, 0, c)
+			if cap(m.Values) < c {
+				m.Values = make([]KeyValue, 0, c)
+			} else {
+				m.Values = m.Values[:0]
+			}
 		}
 	}
 	for iNdEx < l {
@@ -1953,7 +1961,11 @@ func (m *InstrumentationScope) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.Attributes = make([]KeyValue, 0, c)
+			if cap(m.Attributes) < c {
+				m.Attributes = make([]KeyValue, 0, c)
+			} else {
+				m.Attributes = m.Attributes[:0]
+			}
 		}
 	}
 	for iNdEx < l {
@@ -2246,13 +2258,21 @@ func (m *EntityRef) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.IdKeys = make([]string, 0, c)
+			if cap(m.IdKeys) < c {
+				m.IdKeys = make([]string, 0, c)
+			} else {
+				m.IdKeys = m.IdKeys[:0]
+			}
 		}
 		if c := field4count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.DescriptionKeys = make([]string, 0, c)
+			if cap(m.DescriptionKeys) < c {
+				m.DescriptionKeys = make([]string, 0, c)
+			} else {
+				m.DescriptionKeys = m.DescriptionKeys[:0]
+			}
 		}
 	}
 	for iNdEx < l {

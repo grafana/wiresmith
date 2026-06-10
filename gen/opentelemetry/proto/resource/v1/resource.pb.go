@@ -297,13 +297,21 @@ func (m *Resource) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.Attributes = make([]commonv1.KeyValue, 0, c)
+			if cap(m.Attributes) < c {
+				m.Attributes = make([]commonv1.KeyValue, 0, c)
+			} else {
+				m.Attributes = m.Attributes[:0]
+			}
 		}
 		if c := field3count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.EntityRefs = make([]commonv1.EntityRef, 0, c)
+			if cap(m.EntityRefs) < c {
+				m.EntityRefs = make([]commonv1.EntityRef, 0, c)
+			} else {
+				m.EntityRefs = m.EntityRefs[:0]
+			}
 		}
 	}
 	for iNdEx < l {
