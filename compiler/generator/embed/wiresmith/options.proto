@@ -149,3 +149,39 @@ extend google.protobuf.FieldOptions {
   // case surfaces.
   optional string casttype = 50036;
 }
+
+extend google.protobuf.MessageOptions {
+  // no_presence = true omits the fieldsPresent bitmap from this message's
+  // generated struct.
+  //
+  // By default wiresmith tracks wire-presence of singular value-typed
+  // fields in a `fieldsPresent [N]uint64` bitmap, which powers Has<F>()
+  // and lets a present-but-empty nested message survive a round-trip.
+  // The bitmap changes the struct's memory layout, which matters when
+  // consumer code relies on layout compatibility with hand-written types
+  // (e.g. unsafe slice casts between generated and domain types) or
+  // compares structs with reflect.DeepEqual.
+  //
+  // With no_presence = true:
+  //   - the struct contains exactly the declared fields (gogoproto
+  //     `nullable=false` layout parity);
+  //   - Has<F>() is not emitted for bitmap-tracked fields (proto3
+  //     `optional` fields keep their nil-check Has<F>());
+  //   - a present-but-empty nested message marshals to nothing — absent
+  //     and empty are indistinguishable, exactly like gogoproto
+  //     value-type fields;
+  //   - Get<MsgField>() returns &m.Field unconditionally instead of
+  //     consulting the bitmap.
+  //
+  // Applies to this message only — nested message declarations need
+  // their own annotation (or use no_presence_all).
+  optional bool no_presence = 50040;
+}
+
+extend google.protobuf.FileOptions {
+  // no_presence_all applies (wiresmith.options.no_presence) to every
+  // message in the file, including nested ones. A per-message
+  // no_presence value (true or false) overrides the file default —
+  // same override layering as gogoproto's *_all options.
+  optional bool no_presence_all = 50041;
+}

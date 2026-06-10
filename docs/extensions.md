@@ -379,3 +379,24 @@ Same caveat as stdtime: the `*_reflect.pb.go` describes the field as `google.pro
 ### Worked example
 
 [`proto/basic/stdtime.proto`](../proto/basic/stdtime.proto) (shared with stdtime) declares a `StdDurationHolder` message with an annotated `lookback` field, and [`test/basic/stdduration_test.go`](../test/basic/stdduration_test.go) pins the round-trip / zero-presence / negative / truncation-boundary / cross-library wire-format invariants documented above.
+
+## `(wiresmith.options.no_presence) = true` (message) / `(wiresmith.options.no_presence_all) = true` (file)
+
+Unlike the options above, this pair annotates **messages and files**, not fields.
+
+By default every generated message tracks wire-presence of its singular value-typed fields in a `fieldsPresent [N]uint64` bitmap. The bitmap powers `Has<Name>()`, lets `Get<MsgField>()` return `nil` for an unset field, and preserves a present-but-empty nested message across a round-trip. It also changes the struct's memory layout and makes two structurally-equal values potentially differ under `reflect.DeepEqual`.
+
+`no_presence = true` on a message omits the bitmap for that message:
+
+- The struct contains exactly the declared fields — layout parity with gogoproto `nullable=false` structs. This is the property consumers need for unsafe casts between generated and domain types (e.g. Mimir's `[]Sample` ↔ `[]promql.FPoint`) and for `require.Equal(literal, unmarshalled)` tests.
+- `Has<Name>()` is **not emitted** for bitmap-tracked fields. proto3 `optional` fields keep their pointer-based `Has<Name>()`.
+- `Get<MsgField>()` returns `&m.Field` unconditionally.
+- A present-but-empty nested message does **not** survive a round-trip: marshal emits nothing for an empty child, so absent and empty are indistinguishable — exactly the gogoproto value-type trade-off.
+
+`no_presence_all = true` at file level applies the same to every message in the file (nested ones included). A per-message `no_presence` value — `true` or `false` — overrides the file default, same layering as gogoproto's `*_all` options. Nested messages do not inherit from their containing message; annotate them individually or use the file option.
+
+For deep-equality between hand-built and decoded values, every transitively-embedded message must drop its bitmap too — a single annotated message embedding an unannotated one still decodes with bits set in the inner value.
+
+### Worked example
+
+[`proto/basic/no_presence.proto`](../proto/basic/no_presence.proto) declares an annotated `BareHolder` next to an unannotated `TrackedHolder` control, and [`test/basic/no_presence_test.go`](../test/basic/no_presence_test.go) pins the layout, round-trip, empty-child-drop, and accessor semantics.

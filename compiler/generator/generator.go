@@ -78,6 +78,15 @@ type Generator struct {
 	// run as two inline calls in Generate.
 	jsontagExt protoreflect.FieldDescriptor
 
+	// noPresenceExt / noPresenceAllExt are the linked extension descriptors
+	// for the message-level `(wiresmith.options.no_presence)` and the
+	// file-level `(wiresmith.options.no_presence_all)` options. Like
+	// jsontag they sit outside the FieldOption registry (they annotate
+	// messages and files, not fields). Consulted by
+	// FileGenerator.hasNoPresence via fieldsForPresence.
+	noPresenceExt    protoreflect.FieldDescriptor
+	noPresenceAllExt protoreflect.FieldDescriptor
+
 	// outputs accumulates the formatted Go files produced by writeFormatted
 	// during a Generate run. Two callers harvest it: Generate writes them
 	// to disk; GenerateFromDescriptors returns them to a protoc plugin
@@ -161,6 +170,13 @@ type FileGenerator struct {
 	// GoFieldType behavior), so the descriptor still rides through as a
 	// dedicated field rather than via the registry.
 	jsontagExt protoreflect.FieldDescriptor
+
+	// noPresenceExt / noPresenceAllExt are the cached message-level and
+	// file-level no_presence extension descriptors — non-field options, so
+	// outside the registry for the same reason as jsontagExt. Consulted by
+	// hasNoPresence (option_no_presence.go).
+	noPresenceExt    protoreflect.FieldDescriptor
+	noPresenceAllExt protoreflect.FieldDescriptor
 
 	// compareBody / compareImports hold a second companion `_compare.pb.go`
 	// file: just the per-message Compare(other interface{}) int methods.
@@ -427,6 +443,8 @@ func (g *Generator) generateFromFiles(results []protoreflect.FileDescriptor, emi
 	if err := g.resolveJsontagExtension(results); err != nil {
 		return nil, err
 	}
+	g.noPresenceExt = findExtension(results, noPresenceExtName)
+	g.noPresenceAllExt = findExtension(results, noPresenceAllExtName)
 	if err := g.validateJsontagOptions(results); err != nil {
 		return nil, err
 	}
@@ -839,19 +857,21 @@ func (g *Generator) validateDestinations(results []protoreflect.FileDescriptor) 
 func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 	selfDest := g.destinations[fd.Path()]
 	fg := &FileGenerator{
-		fd:             fd,
-		module:         g.Module,
-		imports:        newImportTracker(g.Module, selfDest, g.destinations),
-		body:           &bytes.Buffer{},
-		reflectImports: newImportTracker(g.Module, selfDest, g.destinations),
-		reflectBody:    &bytes.Buffer{},
-		compareImports: newImportTracker(g.Module, selfDest, g.destinations),
-		compareBody:    &bytes.Buffer{},
-		equalImports:   newImportTracker(g.Module, selfDest, g.destinations),
-		equalBody:      &bytes.Buffer{},
-		fileVarName:    sanitizeFileVarName(fd.Path()),
-		options:        g.options,
-		jsontagExt:     g.jsontagExt,
+		fd:               fd,
+		module:           g.Module,
+		imports:          newImportTracker(g.Module, selfDest, g.destinations),
+		body:             &bytes.Buffer{},
+		reflectImports:   newImportTracker(g.Module, selfDest, g.destinations),
+		reflectBody:      &bytes.Buffer{},
+		compareImports:   newImportTracker(g.Module, selfDest, g.destinations),
+		compareBody:      &bytes.Buffer{},
+		equalImports:     newImportTracker(g.Module, selfDest, g.destinations),
+		equalBody:        &bytes.Buffer{},
+		fileVarName:      sanitizeFileVarName(fd.Path()),
+		options:          g.options,
+		jsontagExt:       g.jsontagExt,
+		noPresenceExt:    g.noPresenceExt,
+		noPresenceAllExt: g.noPresenceAllExt,
 	}
 
 	// Hot-path emitters target the main .pb.go: structs, oneof variants,
