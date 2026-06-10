@@ -20,7 +20,7 @@ type AlphaEntry struct {
 	Key   string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
 	Count int64  `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64
 }
 
 func (m *AlphaEntry) Reset() {
@@ -41,14 +41,14 @@ func (m *AlphaEntry) HasKey() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *AlphaEntry) HasCount() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<1) != 0
+	return m.XXX_fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *AlphaEntry) GetKey() string {
@@ -212,7 +212,7 @@ func (m *AlphaEntry) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Key = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		case 2: // count
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -241,7 +241,7 @@ func (m *AlphaEntry) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.Count = int64(v)
-			m.fieldsPresent[0] |= 1 << 1
+			m.XXX_fieldsPresent[0] |= 1 << 1
 		default:
 			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {

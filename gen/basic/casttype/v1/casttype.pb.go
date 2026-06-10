@@ -30,7 +30,7 @@ type CastTypeHolder struct {
 	PlainTag   string `protobuf:"bytes,5,opt,name=plain_tag,json=plainTag,proto3" json:"plain_tag,omitempty"`
 	PlainBytes []byte `protobuf:"bytes,6,opt,name=plain_bytes,json=plainBytes,proto3" json:"plain_bytes,omitempty"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64
 }
 
 func (m *CastTypeHolder) Reset() {
@@ -51,42 +51,42 @@ func (m *CastTypeHolder) HasUserId() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *CastTypeHolder) HasTenantTag() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<1) != 0
+	return m.XXX_fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *CastTypeHolder) HasPayload() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<2) != 0
+	return m.XXX_fieldsPresent[0]&(1<<2) != 0
 }
 
 func (m *CastTypeHolder) HasPlainId() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<3) != 0
+	return m.XXX_fieldsPresent[0]&(1<<3) != 0
 }
 
 func (m *CastTypeHolder) HasPlainTag() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<4) != 0
+	return m.XXX_fieldsPresent[0]&(1<<4) != 0
 }
 
 func (m *CastTypeHolder) HasPlainBytes() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<5) != 0
+	return m.XXX_fieldsPresent[0]&(1<<5) != 0
 }
 
 func (m *CastTypeHolder) GetUserId() casttypes.UserID {
@@ -302,7 +302,7 @@ func (m *CastTypeHolder) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.UserId = casttypes.UserID(int64(v))
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		case 2: // tenant_tag
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -348,7 +348,7 @@ func (m *CastTypeHolder) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.TenantTag = casttypes.TenantTag(string(dAtA[iNdEx:postIndex]))
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 1
+			m.XXX_fieldsPresent[0] |= 1 << 1
 		case 3: // payload
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -394,7 +394,7 @@ func (m *CastTypeHolder) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Payload = casttypes.Payload(append([]byte(m.Payload)[:0], dAtA[iNdEx:postIndex]...))
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 2
+			m.XXX_fieldsPresent[0] |= 1 << 2
 		case 4: // plain_id
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -423,7 +423,7 @@ func (m *CastTypeHolder) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.PlainId = int64(v)
-			m.fieldsPresent[0] |= 1 << 3
+			m.XXX_fieldsPresent[0] |= 1 << 3
 		case 5: // plain_tag
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -469,7 +469,7 @@ func (m *CastTypeHolder) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.PlainTag = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 4
+			m.XXX_fieldsPresent[0] |= 1 << 4
 		case 6: // plain_bytes
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -515,7 +515,7 @@ func (m *CastTypeHolder) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.PlainBytes = append(m.PlainBytes[:0], dAtA[iNdEx:postIndex]...)
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 5
+			m.XXX_fieldsPresent[0] |= 1 << 5
 		default:
 			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {

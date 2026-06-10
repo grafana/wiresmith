@@ -22,7 +22,7 @@ type Label struct {
 	Name  string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	Value string `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64
 }
 
 // CustomTypeMessageHolder exercises (wiresmith.options.customtype) on the
@@ -43,7 +43,7 @@ type CustomTypeMessageHolder struct {
 	ControlSingular Label   `protobuf:"bytes,3,opt,name=control_singular,json=controlSingular,proto3" json:"control_singular,omitempty"`
 	ControlRepeated []Label `protobuf:"bytes,4,rep,name=control_repeated,json=controlRepeated,proto3" json:"control_repeated,omitempty"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64
 }
 
 func (m *Label) Reset() {
@@ -78,21 +78,21 @@ func (m *Label) HasName() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Label) HasValue() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<1) != 0
+	return m.XXX_fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *CustomTypeMessageHolder) HasControlSingular() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Label) GetName() string {
@@ -125,7 +125,7 @@ func (m *CustomTypeMessageHolder) GetLabels() []customtypes.LabelAdapter {
 }
 
 func (m *CustomTypeMessageHolder) GetControlSingular() *Label {
-	if m != nil && m.fieldsPresent[0]&(1<<0) != 0 {
+	if m != nil && m.XXX_fieldsPresent[0]&(1<<0) != 0 {
 		return &m.ControlSingular
 	}
 	return nil
@@ -168,7 +168,7 @@ func (m *CustomTypeMessageHolder) Size() int {
 		s := m.ControlSingular.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
-		} else if m.fieldsPresent[0]&(1<<0) != 0 {
+		} else if m.XXX_fieldsPresent[0]&(1<<0) != 0 {
 			n += 2
 		}
 	}
@@ -274,7 +274,7 @@ func (m *CustomTypeMessageHolder) MarshalToSizedBuffer(dAtA []byte) (int, error)
 			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 			i--
 			dAtA[i] = 0x1a
-		} else if m.fieldsPresent[0]&(1<<0) != 0 {
+		} else if m.XXX_fieldsPresent[0]&(1<<0) != 0 {
 			i--
 			dAtA[i] = 0
 			i--
@@ -402,7 +402,7 @@ func (m *Label) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Name = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		case 2: // value
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -448,7 +448,7 @@ func (m *Label) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Value = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 1
+			m.XXX_fieldsPresent[0] |= 1 << 1
 		default:
 			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
@@ -730,7 +730,7 @@ func (m *CustomTypeMessageHolder) unmarshal(dAtA []byte, depth int) error {
 				return err
 			}
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		case 4: // control_repeated
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)

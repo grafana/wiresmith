@@ -45,7 +45,7 @@ type MixedModifiers struct {
 	OptionalBytes  []byte    `protobuf:"bytes,11,opt,name=optional_bytes,json=optionalBytes,proto3,oneof" json:"optional_bytes,omitempty"`
 	RepeatedBytes  [][]byte  `protobuf:"bytes,12,rep,name=repeated_bytes,json=repeatedBytes,proto3" json:"repeated_bytes,omitempty"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64
 }
 
 // 70 singular fields to force fieldsPresent [2]uint64 (bitmap word boundary at 64).
@@ -121,7 +121,7 @@ type WideFields struct {
 	F69 bool    `protobuf:"varint,69,opt,name=f69,proto3" json:"f69,omitempty"`
 	F70 bool    `protobuf:"varint,70,opt,name=f70,proto3" json:"f70,omitempty"`
 
-	fieldsPresent [2]uint64
+	XXX_fieldsPresent [2]uint64
 }
 
 func (m *UnpackedScalars) Reset() {
@@ -170,28 +170,28 @@ func (m *MixedModifiers) HasRegularInt() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *MixedModifiers) HasRegularDouble() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<1) != 0
+	return m.XXX_fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *MixedModifiers) HasRegularString() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<2) != 0
+	return m.XXX_fieldsPresent[0]&(1<<2) != 0
 }
 
 func (m *MixedModifiers) HasRegularBytes() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<3) != 0
+	return m.XXX_fieldsPresent[0]&(1<<3) != 0
 }
 
 func (m *MixedModifiers) HasOptionalInt() bool {
@@ -214,490 +214,490 @@ func (m *WideFields) HasF1() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *WideFields) HasF2() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<1) != 0
+	return m.XXX_fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *WideFields) HasF3() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<2) != 0
+	return m.XXX_fieldsPresent[0]&(1<<2) != 0
 }
 
 func (m *WideFields) HasF4() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<3) != 0
+	return m.XXX_fieldsPresent[0]&(1<<3) != 0
 }
 
 func (m *WideFields) HasF5() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<4) != 0
+	return m.XXX_fieldsPresent[0]&(1<<4) != 0
 }
 
 func (m *WideFields) HasF6() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<5) != 0
+	return m.XXX_fieldsPresent[0]&(1<<5) != 0
 }
 
 func (m *WideFields) HasF7() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<6) != 0
+	return m.XXX_fieldsPresent[0]&(1<<6) != 0
 }
 
 func (m *WideFields) HasF8() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<7) != 0
+	return m.XXX_fieldsPresent[0]&(1<<7) != 0
 }
 
 func (m *WideFields) HasF9() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<8) != 0
+	return m.XXX_fieldsPresent[0]&(1<<8) != 0
 }
 
 func (m *WideFields) HasF10() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<9) != 0
+	return m.XXX_fieldsPresent[0]&(1<<9) != 0
 }
 
 func (m *WideFields) HasF11() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<10) != 0
+	return m.XXX_fieldsPresent[0]&(1<<10) != 0
 }
 
 func (m *WideFields) HasF12() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<11) != 0
+	return m.XXX_fieldsPresent[0]&(1<<11) != 0
 }
 
 func (m *WideFields) HasF13() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<12) != 0
+	return m.XXX_fieldsPresent[0]&(1<<12) != 0
 }
 
 func (m *WideFields) HasF14() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<13) != 0
+	return m.XXX_fieldsPresent[0]&(1<<13) != 0
 }
 
 func (m *WideFields) HasF15() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<14) != 0
+	return m.XXX_fieldsPresent[0]&(1<<14) != 0
 }
 
 func (m *WideFields) HasF16() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<15) != 0
+	return m.XXX_fieldsPresent[0]&(1<<15) != 0
 }
 
 func (m *WideFields) HasF17() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<16) != 0
+	return m.XXX_fieldsPresent[0]&(1<<16) != 0
 }
 
 func (m *WideFields) HasF18() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<17) != 0
+	return m.XXX_fieldsPresent[0]&(1<<17) != 0
 }
 
 func (m *WideFields) HasF19() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<18) != 0
+	return m.XXX_fieldsPresent[0]&(1<<18) != 0
 }
 
 func (m *WideFields) HasF20() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<19) != 0
+	return m.XXX_fieldsPresent[0]&(1<<19) != 0
 }
 
 func (m *WideFields) HasF21() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<20) != 0
+	return m.XXX_fieldsPresent[0]&(1<<20) != 0
 }
 
 func (m *WideFields) HasF22() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<21) != 0
+	return m.XXX_fieldsPresent[0]&(1<<21) != 0
 }
 
 func (m *WideFields) HasF23() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<22) != 0
+	return m.XXX_fieldsPresent[0]&(1<<22) != 0
 }
 
 func (m *WideFields) HasF24() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<23) != 0
+	return m.XXX_fieldsPresent[0]&(1<<23) != 0
 }
 
 func (m *WideFields) HasF25() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<24) != 0
+	return m.XXX_fieldsPresent[0]&(1<<24) != 0
 }
 
 func (m *WideFields) HasF26() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<25) != 0
+	return m.XXX_fieldsPresent[0]&(1<<25) != 0
 }
 
 func (m *WideFields) HasF27() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<26) != 0
+	return m.XXX_fieldsPresent[0]&(1<<26) != 0
 }
 
 func (m *WideFields) HasF28() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<27) != 0
+	return m.XXX_fieldsPresent[0]&(1<<27) != 0
 }
 
 func (m *WideFields) HasF29() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<28) != 0
+	return m.XXX_fieldsPresent[0]&(1<<28) != 0
 }
 
 func (m *WideFields) HasF30() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<29) != 0
+	return m.XXX_fieldsPresent[0]&(1<<29) != 0
 }
 
 func (m *WideFields) HasF31() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<30) != 0
+	return m.XXX_fieldsPresent[0]&(1<<30) != 0
 }
 
 func (m *WideFields) HasF32() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<31) != 0
+	return m.XXX_fieldsPresent[0]&(1<<31) != 0
 }
 
 func (m *WideFields) HasF33() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<32) != 0
+	return m.XXX_fieldsPresent[0]&(1<<32) != 0
 }
 
 func (m *WideFields) HasF34() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<33) != 0
+	return m.XXX_fieldsPresent[0]&(1<<33) != 0
 }
 
 func (m *WideFields) HasF35() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<34) != 0
+	return m.XXX_fieldsPresent[0]&(1<<34) != 0
 }
 
 func (m *WideFields) HasF36() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<35) != 0
+	return m.XXX_fieldsPresent[0]&(1<<35) != 0
 }
 
 func (m *WideFields) HasF37() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<36) != 0
+	return m.XXX_fieldsPresent[0]&(1<<36) != 0
 }
 
 func (m *WideFields) HasF38() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<37) != 0
+	return m.XXX_fieldsPresent[0]&(1<<37) != 0
 }
 
 func (m *WideFields) HasF39() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<38) != 0
+	return m.XXX_fieldsPresent[0]&(1<<38) != 0
 }
 
 func (m *WideFields) HasF40() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<39) != 0
+	return m.XXX_fieldsPresent[0]&(1<<39) != 0
 }
 
 func (m *WideFields) HasF41() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<40) != 0
+	return m.XXX_fieldsPresent[0]&(1<<40) != 0
 }
 
 func (m *WideFields) HasF42() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<41) != 0
+	return m.XXX_fieldsPresent[0]&(1<<41) != 0
 }
 
 func (m *WideFields) HasF43() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<42) != 0
+	return m.XXX_fieldsPresent[0]&(1<<42) != 0
 }
 
 func (m *WideFields) HasF44() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<43) != 0
+	return m.XXX_fieldsPresent[0]&(1<<43) != 0
 }
 
 func (m *WideFields) HasF45() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<44) != 0
+	return m.XXX_fieldsPresent[0]&(1<<44) != 0
 }
 
 func (m *WideFields) HasF46() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<45) != 0
+	return m.XXX_fieldsPresent[0]&(1<<45) != 0
 }
 
 func (m *WideFields) HasF47() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<46) != 0
+	return m.XXX_fieldsPresent[0]&(1<<46) != 0
 }
 
 func (m *WideFields) HasF48() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<47) != 0
+	return m.XXX_fieldsPresent[0]&(1<<47) != 0
 }
 
 func (m *WideFields) HasF49() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<48) != 0
+	return m.XXX_fieldsPresent[0]&(1<<48) != 0
 }
 
 func (m *WideFields) HasF50() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<49) != 0
+	return m.XXX_fieldsPresent[0]&(1<<49) != 0
 }
 
 func (m *WideFields) HasF51() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<50) != 0
+	return m.XXX_fieldsPresent[0]&(1<<50) != 0
 }
 
 func (m *WideFields) HasF52() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<51) != 0
+	return m.XXX_fieldsPresent[0]&(1<<51) != 0
 }
 
 func (m *WideFields) HasF53() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<52) != 0
+	return m.XXX_fieldsPresent[0]&(1<<52) != 0
 }
 
 func (m *WideFields) HasF54() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<53) != 0
+	return m.XXX_fieldsPresent[0]&(1<<53) != 0
 }
 
 func (m *WideFields) HasF55() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<54) != 0
+	return m.XXX_fieldsPresent[0]&(1<<54) != 0
 }
 
 func (m *WideFields) HasF56() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<55) != 0
+	return m.XXX_fieldsPresent[0]&(1<<55) != 0
 }
 
 func (m *WideFields) HasF57() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<56) != 0
+	return m.XXX_fieldsPresent[0]&(1<<56) != 0
 }
 
 func (m *WideFields) HasF58() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<57) != 0
+	return m.XXX_fieldsPresent[0]&(1<<57) != 0
 }
 
 func (m *WideFields) HasF59() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<58) != 0
+	return m.XXX_fieldsPresent[0]&(1<<58) != 0
 }
 
 func (m *WideFields) HasF60() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<59) != 0
+	return m.XXX_fieldsPresent[0]&(1<<59) != 0
 }
 
 func (m *WideFields) HasF61() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<60) != 0
+	return m.XXX_fieldsPresent[0]&(1<<60) != 0
 }
 
 func (m *WideFields) HasF62() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<61) != 0
+	return m.XXX_fieldsPresent[0]&(1<<61) != 0
 }
 
 func (m *WideFields) HasF63() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<62) != 0
+	return m.XXX_fieldsPresent[0]&(1<<62) != 0
 }
 
 func (m *WideFields) HasF64() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<63) != 0
+	return m.XXX_fieldsPresent[0]&(1<<63) != 0
 }
 
 func (m *WideFields) HasF65() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[1]&(1<<0) != 0
+	return m.XXX_fieldsPresent[1]&(1<<0) != 0
 }
 
 func (m *WideFields) HasF66() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[1]&(1<<1) != 0
+	return m.XXX_fieldsPresent[1]&(1<<1) != 0
 }
 
 func (m *WideFields) HasF67() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[1]&(1<<2) != 0
+	return m.XXX_fieldsPresent[1]&(1<<2) != 0
 }
 
 func (m *WideFields) HasF68() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[1]&(1<<3) != 0
+	return m.XXX_fieldsPresent[1]&(1<<3) != 0
 }
 
 func (m *WideFields) HasF69() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[1]&(1<<4) != 0
+	return m.XXX_fieldsPresent[1]&(1<<4) != 0
 }
 
 func (m *WideFields) HasF70() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[1]&(1<<5) != 0
+	return m.XXX_fieldsPresent[1]&(1<<5) != 0
 }
 
 func (m *UnpackedScalars) GetFieldDouble() []float64 {
@@ -3741,7 +3741,7 @@ func (m *MixedModifiers) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.RegularInt = int64(v)
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		case 2: // optional_int
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -3883,7 +3883,7 @@ func (m *MixedModifiers) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.RegularDouble = math.Float64frombits(v)
-			m.fieldsPresent[0] |= 1 << 1
+			m.XXX_fieldsPresent[0] |= 1 << 1
 		case 5: // optional_double
 			if wireType != 1 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4008,7 +4008,7 @@ func (m *MixedModifiers) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.RegularString = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 2
+			m.XXX_fieldsPresent[0] |= 1 << 2
 		case 8: // optional_string
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4145,7 +4145,7 @@ func (m *MixedModifiers) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.RegularBytes = append(m.RegularBytes[:0], dAtA[iNdEx:postIndex]...)
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 3
+			m.XXX_fieldsPresent[0] |= 1 << 3
 		case 11: // optional_bytes
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4342,7 +4342,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.F1 = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		case 2: // f2
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4388,7 +4388,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.F2 = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 1
+			m.XXX_fieldsPresent[0] |= 1 << 1
 		case 3: // f3
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4434,7 +4434,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.F3 = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 2
+			m.XXX_fieldsPresent[0] |= 1 << 2
 		case 4: // f4
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4480,7 +4480,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.F4 = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 3
+			m.XXX_fieldsPresent[0] |= 1 << 3
 		case 5: // f5
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4526,7 +4526,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.F5 = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 4
+			m.XXX_fieldsPresent[0] |= 1 << 4
 		case 6: // f6
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4572,7 +4572,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.F6 = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 5
+			m.XXX_fieldsPresent[0] |= 1 << 5
 		case 7: // f7
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4618,7 +4618,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.F7 = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 6
+			m.XXX_fieldsPresent[0] |= 1 << 6
 		case 8: // f8
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4664,7 +4664,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.F8 = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 7
+			m.XXX_fieldsPresent[0] |= 1 << 7
 		case 9: // f9
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4710,7 +4710,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.F9 = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 8
+			m.XXX_fieldsPresent[0] |= 1 << 8
 		case 10: // f10
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4756,7 +4756,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.F10 = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 9
+			m.XXX_fieldsPresent[0] |= 1 << 9
 		case 11: // f11
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4802,7 +4802,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.F11 = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 10
+			m.XXX_fieldsPresent[0] |= 1 << 10
 		case 12: // f12
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4848,7 +4848,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.F12 = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 11
+			m.XXX_fieldsPresent[0] |= 1 << 11
 		case 13: // f13
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4894,7 +4894,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.F13 = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 12
+			m.XXX_fieldsPresent[0] |= 1 << 12
 		case 14: // f14
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4940,7 +4940,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.F14 = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 13
+			m.XXX_fieldsPresent[0] |= 1 << 13
 		case 15: // f15
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4986,7 +4986,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.F15 = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 14
+			m.XXX_fieldsPresent[0] |= 1 << 14
 		case 16: // f16
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5032,7 +5032,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.F16 = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 15
+			m.XXX_fieldsPresent[0] |= 1 << 15
 		case 17: // f17
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5078,7 +5078,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.F17 = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 16
+			m.XXX_fieldsPresent[0] |= 1 << 16
 		case 18: // f18
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5124,7 +5124,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.F18 = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 17
+			m.XXX_fieldsPresent[0] |= 1 << 17
 		case 19: // f19
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5170,7 +5170,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.F19 = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 18
+			m.XXX_fieldsPresent[0] |= 1 << 18
 		case 20: // f20
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5216,7 +5216,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.F20 = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 19
+			m.XXX_fieldsPresent[0] |= 1 << 19
 		case 21: // f21
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5245,7 +5245,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F21 = int32(v)
-			m.fieldsPresent[0] |= 1 << 20
+			m.XXX_fieldsPresent[0] |= 1 << 20
 		case 22: // f22
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5274,7 +5274,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F22 = int32(v)
-			m.fieldsPresent[0] |= 1 << 21
+			m.XXX_fieldsPresent[0] |= 1 << 21
 		case 23: // f23
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5303,7 +5303,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F23 = int32(v)
-			m.fieldsPresent[0] |= 1 << 22
+			m.XXX_fieldsPresent[0] |= 1 << 22
 		case 24: // f24
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5332,7 +5332,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F24 = int32(v)
-			m.fieldsPresent[0] |= 1 << 23
+			m.XXX_fieldsPresent[0] |= 1 << 23
 		case 25: // f25
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5361,7 +5361,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F25 = int32(v)
-			m.fieldsPresent[0] |= 1 << 24
+			m.XXX_fieldsPresent[0] |= 1 << 24
 		case 26: // f26
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5390,7 +5390,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F26 = int32(v)
-			m.fieldsPresent[0] |= 1 << 25
+			m.XXX_fieldsPresent[0] |= 1 << 25
 		case 27: // f27
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5419,7 +5419,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F27 = int32(v)
-			m.fieldsPresent[0] |= 1 << 26
+			m.XXX_fieldsPresent[0] |= 1 << 26
 		case 28: // f28
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5448,7 +5448,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F28 = int32(v)
-			m.fieldsPresent[0] |= 1 << 27
+			m.XXX_fieldsPresent[0] |= 1 << 27
 		case 29: // f29
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5477,7 +5477,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F29 = int32(v)
-			m.fieldsPresent[0] |= 1 << 28
+			m.XXX_fieldsPresent[0] |= 1 << 28
 		case 30: // f30
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5506,7 +5506,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F30 = int32(v)
-			m.fieldsPresent[0] |= 1 << 29
+			m.XXX_fieldsPresent[0] |= 1 << 29
 		case 31: // f31
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5535,7 +5535,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F31 = int32(v)
-			m.fieldsPresent[0] |= 1 << 30
+			m.XXX_fieldsPresent[0] |= 1 << 30
 		case 32: // f32
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5564,7 +5564,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F32 = int32(v)
-			m.fieldsPresent[0] |= 1 << 31
+			m.XXX_fieldsPresent[0] |= 1 << 31
 		case 33: // f33
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5593,7 +5593,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F33 = int32(v)
-			m.fieldsPresent[0] |= 1 << 32
+			m.XXX_fieldsPresent[0] |= 1 << 32
 		case 34: // f34
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5622,7 +5622,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F34 = int32(v)
-			m.fieldsPresent[0] |= 1 << 33
+			m.XXX_fieldsPresent[0] |= 1 << 33
 		case 35: // f35
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5651,7 +5651,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F35 = int32(v)
-			m.fieldsPresent[0] |= 1 << 34
+			m.XXX_fieldsPresent[0] |= 1 << 34
 		case 36: // f36
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5680,7 +5680,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F36 = int32(v)
-			m.fieldsPresent[0] |= 1 << 35
+			m.XXX_fieldsPresent[0] |= 1 << 35
 		case 37: // f37
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5709,7 +5709,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F37 = int32(v)
-			m.fieldsPresent[0] |= 1 << 36
+			m.XXX_fieldsPresent[0] |= 1 << 36
 		case 38: // f38
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5738,7 +5738,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F38 = int32(v)
-			m.fieldsPresent[0] |= 1 << 37
+			m.XXX_fieldsPresent[0] |= 1 << 37
 		case 39: // f39
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5767,7 +5767,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F39 = int32(v)
-			m.fieldsPresent[0] |= 1 << 38
+			m.XXX_fieldsPresent[0] |= 1 << 38
 		case 40: // f40
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5796,7 +5796,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F40 = int32(v)
-			m.fieldsPresent[0] |= 1 << 39
+			m.XXX_fieldsPresent[0] |= 1 << 39
 		case 41: // f41
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5825,7 +5825,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F41 = int64(v)
-			m.fieldsPresent[0] |= 1 << 40
+			m.XXX_fieldsPresent[0] |= 1 << 40
 		case 42: // f42
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5854,7 +5854,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F42 = int64(v)
-			m.fieldsPresent[0] |= 1 << 41
+			m.XXX_fieldsPresent[0] |= 1 << 41
 		case 43: // f43
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5883,7 +5883,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F43 = int64(v)
-			m.fieldsPresent[0] |= 1 << 42
+			m.XXX_fieldsPresent[0] |= 1 << 42
 		case 44: // f44
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5912,7 +5912,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F44 = int64(v)
-			m.fieldsPresent[0] |= 1 << 43
+			m.XXX_fieldsPresent[0] |= 1 << 43
 		case 45: // f45
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5941,7 +5941,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F45 = int64(v)
-			m.fieldsPresent[0] |= 1 << 44
+			m.XXX_fieldsPresent[0] |= 1 << 44
 		case 46: // f46
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5970,7 +5970,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F46 = int64(v)
-			m.fieldsPresent[0] |= 1 << 45
+			m.XXX_fieldsPresent[0] |= 1 << 45
 		case 47: // f47
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -5999,7 +5999,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F47 = int64(v)
-			m.fieldsPresent[0] |= 1 << 46
+			m.XXX_fieldsPresent[0] |= 1 << 46
 		case 48: // f48
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -6028,7 +6028,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F48 = int64(v)
-			m.fieldsPresent[0] |= 1 << 47
+			m.XXX_fieldsPresent[0] |= 1 << 47
 		case 49: // f49
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -6057,7 +6057,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F49 = int64(v)
-			m.fieldsPresent[0] |= 1 << 48
+			m.XXX_fieldsPresent[0] |= 1 << 48
 		case 50: // f50
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -6086,7 +6086,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F50 = int64(v)
-			m.fieldsPresent[0] |= 1 << 49
+			m.XXX_fieldsPresent[0] |= 1 << 49
 		case 51: // f51
 			if wireType != 1 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -6102,7 +6102,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.F51 = math.Float64frombits(v)
-			m.fieldsPresent[0] |= 1 << 50
+			m.XXX_fieldsPresent[0] |= 1 << 50
 		case 52: // f52
 			if wireType != 1 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -6118,7 +6118,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.F52 = math.Float64frombits(v)
-			m.fieldsPresent[0] |= 1 << 51
+			m.XXX_fieldsPresent[0] |= 1 << 51
 		case 53: // f53
 			if wireType != 1 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -6134,7 +6134,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.F53 = math.Float64frombits(v)
-			m.fieldsPresent[0] |= 1 << 52
+			m.XXX_fieldsPresent[0] |= 1 << 52
 		case 54: // f54
 			if wireType != 1 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -6150,7 +6150,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.F54 = math.Float64frombits(v)
-			m.fieldsPresent[0] |= 1 << 53
+			m.XXX_fieldsPresent[0] |= 1 << 53
 		case 55: // f55
 			if wireType != 1 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -6166,7 +6166,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.F55 = math.Float64frombits(v)
-			m.fieldsPresent[0] |= 1 << 54
+			m.XXX_fieldsPresent[0] |= 1 << 54
 		case 56: // f56
 			if wireType != 1 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -6182,7 +6182,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.F56 = math.Float64frombits(v)
-			m.fieldsPresent[0] |= 1 << 55
+			m.XXX_fieldsPresent[0] |= 1 << 55
 		case 57: // f57
 			if wireType != 1 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -6198,7 +6198,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.F57 = math.Float64frombits(v)
-			m.fieldsPresent[0] |= 1 << 56
+			m.XXX_fieldsPresent[0] |= 1 << 56
 		case 58: // f58
 			if wireType != 1 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -6214,7 +6214,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.F58 = math.Float64frombits(v)
-			m.fieldsPresent[0] |= 1 << 57
+			m.XXX_fieldsPresent[0] |= 1 << 57
 		case 59: // f59
 			if wireType != 1 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -6230,7 +6230,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.F59 = math.Float64frombits(v)
-			m.fieldsPresent[0] |= 1 << 58
+			m.XXX_fieldsPresent[0] |= 1 << 58
 		case 60: // f60
 			if wireType != 1 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -6246,7 +6246,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.F60 = math.Float64frombits(v)
-			m.fieldsPresent[0] |= 1 << 59
+			m.XXX_fieldsPresent[0] |= 1 << 59
 		case 61: // f61
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -6275,7 +6275,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F61 = v != 0
-			m.fieldsPresent[0] |= 1 << 60
+			m.XXX_fieldsPresent[0] |= 1 << 60
 		case 62: // f62
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -6304,7 +6304,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F62 = v != 0
-			m.fieldsPresent[0] |= 1 << 61
+			m.XXX_fieldsPresent[0] |= 1 << 61
 		case 63: // f63
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -6333,7 +6333,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F63 = v != 0
-			m.fieldsPresent[0] |= 1 << 62
+			m.XXX_fieldsPresent[0] |= 1 << 62
 		case 64: // f64
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -6362,7 +6362,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F64 = v != 0
-			m.fieldsPresent[0] |= 1 << 63
+			m.XXX_fieldsPresent[0] |= 1 << 63
 		case 65: // f65
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -6391,7 +6391,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F65 = v != 0
-			m.fieldsPresent[1] |= 1 << 0
+			m.XXX_fieldsPresent[1] |= 1 << 0
 		case 66: // f66
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -6420,7 +6420,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F66 = v != 0
-			m.fieldsPresent[1] |= 1 << 1
+			m.XXX_fieldsPresent[1] |= 1 << 1
 		case 67: // f67
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -6449,7 +6449,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F67 = v != 0
-			m.fieldsPresent[1] |= 1 << 2
+			m.XXX_fieldsPresent[1] |= 1 << 2
 		case 68: // f68
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -6478,7 +6478,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F68 = v != 0
-			m.fieldsPresent[1] |= 1 << 3
+			m.XXX_fieldsPresent[1] |= 1 << 3
 		case 69: // f69
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -6507,7 +6507,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F69 = v != 0
-			m.fieldsPresent[1] |= 1 << 4
+			m.XXX_fieldsPresent[1] |= 1 << 4
 		case 70: // f70
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -6536,7 +6536,7 @@ func (m *WideFields) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.F70 = v != 0
-			m.fieldsPresent[1] |= 1 << 5
+			m.XXX_fieldsPresent[1] |= 1 << 5
 		default:
 			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {

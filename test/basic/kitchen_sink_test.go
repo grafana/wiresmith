@@ -5,11 +5,22 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	ks "github.com/grafana/wiresmith/gen/test/kitchensink/v1"
 )
+
+// ignoreBitmaps drops the XXX_fieldsPresent presence bitmap from deep
+// comparisons: a hand-built message (bits clear) and its decoded round-trip
+// (bits set) are semantically equal. Same recipe consumers need for
+// cmp.Diff/require.Equal on wiresmith messages; the generated Equal()
+// already ignores the bitmap.
+var ignoreBitmaps = cmp.FilterPath(func(p cmp.Path) bool {
+	sf, ok := p.Last().(cmp.StructField)
+	return ok && sf.Name() == "XXX_fieldsPresent"
+}, cmp.Ignore())
 
 // helper to run the standard marshal/unmarshal/re-marshal cycle.
 func roundTrip[T interface {
@@ -26,7 +37,9 @@ func roundTrip[T interface {
 
 	dst := reflect.New(reflect.TypeOf(src).Elem()).Interface().(T)
 	require.NoError(t, dst.Unmarshal(b))
-	assert.EqualExportedValues(t, src, dst, "unmarshal must reproduce original")
+	if diff := cmp.Diff(src, dst, ignoreBitmaps); diff != "" {
+		t.Errorf("unmarshal must reproduce original (-src +dst):\n%s", diff)
+	}
 	assert.True(t, src.Equal(dst), "Equal() must agree with assert.Equal")
 
 	b2, err := dst.Marshal()

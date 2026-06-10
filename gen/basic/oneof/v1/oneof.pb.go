@@ -141,7 +141,7 @@ type Payload struct {
 	Data   string `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
 	Number int64  `protobuf:"varint,2,opt,name=number,proto3" json:"number,omitempty"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64
 }
 
 // Two oneofs in the same message.
@@ -150,7 +150,7 @@ type MultiOneof struct {
 	Secondary    MultiOneof_Secondary `protobuf_oneof:"secondary"`
 	RegularField string               `protobuf:"bytes,7,opt,name=regular_field,json=regularField,proto3" json:"regular_field,omitempty"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64
 }
 
 // Oneof with message and enum variant types.
@@ -166,7 +166,7 @@ type OneofPlusEverything struct {
 	Labels  map[string]string           `protobuf:"bytes,4,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	Payload OneofPlusEverything_Payload `protobuf_oneof:"payload"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64
 }
 
 func (m *Payload) Reset() {
@@ -229,28 +229,28 @@ func (m *Payload) HasData() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Payload) HasNumber() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<1) != 0
+	return m.XXX_fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *MultiOneof) HasRegularField() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *OneofPlusEverything) HasName() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *OneofPlusEverything) HasScore() bool {
@@ -895,7 +895,7 @@ func (m *Payload) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Data = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		case 2: // number
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -924,7 +924,7 @@ func (m *Payload) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.Number = int64(v)
-			m.fieldsPresent[0] |= 1 << 1
+			m.XXX_fieldsPresent[0] |= 1 << 1
 		default:
 			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
@@ -1241,7 +1241,7 @@ func (m *MultiOneof) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.RegularField = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		default:
 			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
@@ -1619,7 +1619,7 @@ func (m *OneofPlusEverything) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Name = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		case 2: // values
 			if wireType == 2 {
 				var byteLen uint64

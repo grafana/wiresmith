@@ -93,7 +93,7 @@ type AllScalars struct {
 	FieldBytes    []byte  `protobuf:"bytes,15,opt,name=field_bytes,json=fieldBytes,proto3" json:"field_bytes,omitempty"`
 	FieldEnum     Color   `protobuf:"varint,16,opt,name=field_enum,json=fieldEnum,proto3,enum=basic.compare.v1.Color" json:"field_enum,omitempty"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64
 }
 
 // Tag-ascending ordering check: declaration order intentionally puts the
@@ -105,7 +105,7 @@ type OutOfOrderTags struct {
 	First  int32 `protobuf:"varint,1,opt,name=first,proto3" json:"first,omitempty"`
 	Third  int32 `protobuf:"varint,3,opt,name=third,proto3" json:"third,omitempty"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64
 }
 
 type OptionalScalars struct {
@@ -118,14 +118,14 @@ type OptionalScalars struct {
 type Inner struct {
 	Value int32 `protobuf:"varint,1,opt,name=value,proto3" json:"value,omitempty"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64
 }
 
 type WithMessage struct {
 	Inner Inner  `protobuf:"bytes,1,opt,name=inner,proto3" json:"inner,omitempty"`
 	Name  string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64
 }
 
 type WithPointerMessage struct {
@@ -150,7 +150,7 @@ type WithOneof struct {
 	Value WithOneof_Value `protobuf_oneof:"value"`
 	After string          `protobuf:"bytes,5,opt,name=after,proto3" json:"after,omitempty"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64
 }
 
 func (m *AllScalars) Reset() {
@@ -283,133 +283,133 @@ func (m *AllScalars) HasFieldDouble() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *AllScalars) HasFieldFloat() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<1) != 0
+	return m.XXX_fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *AllScalars) HasFieldInt32() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<2) != 0
+	return m.XXX_fieldsPresent[0]&(1<<2) != 0
 }
 
 func (m *AllScalars) HasFieldInt64() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<3) != 0
+	return m.XXX_fieldsPresent[0]&(1<<3) != 0
 }
 
 func (m *AllScalars) HasFieldUint32() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<4) != 0
+	return m.XXX_fieldsPresent[0]&(1<<4) != 0
 }
 
 func (m *AllScalars) HasFieldUint64() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<5) != 0
+	return m.XXX_fieldsPresent[0]&(1<<5) != 0
 }
 
 func (m *AllScalars) HasFieldSint32() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<6) != 0
+	return m.XXX_fieldsPresent[0]&(1<<6) != 0
 }
 
 func (m *AllScalars) HasFieldSint64() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<7) != 0
+	return m.XXX_fieldsPresent[0]&(1<<7) != 0
 }
 
 func (m *AllScalars) HasFieldFixed32() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<8) != 0
+	return m.XXX_fieldsPresent[0]&(1<<8) != 0
 }
 
 func (m *AllScalars) HasFieldFixed64() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<9) != 0
+	return m.XXX_fieldsPresent[0]&(1<<9) != 0
 }
 
 func (m *AllScalars) HasFieldSfixed32() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<10) != 0
+	return m.XXX_fieldsPresent[0]&(1<<10) != 0
 }
 
 func (m *AllScalars) HasFieldSfixed64() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<11) != 0
+	return m.XXX_fieldsPresent[0]&(1<<11) != 0
 }
 
 func (m *AllScalars) HasFieldBool() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<12) != 0
+	return m.XXX_fieldsPresent[0]&(1<<12) != 0
 }
 
 func (m *AllScalars) HasFieldString() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<13) != 0
+	return m.XXX_fieldsPresent[0]&(1<<13) != 0
 }
 
 func (m *AllScalars) HasFieldBytes() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<14) != 0
+	return m.XXX_fieldsPresent[0]&(1<<14) != 0
 }
 
 func (m *AllScalars) HasFieldEnum() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<15) != 0
+	return m.XXX_fieldsPresent[0]&(1<<15) != 0
 }
 
 func (m *OutOfOrderTags) HasSecond() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *OutOfOrderTags) HasFirst() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<1) != 0
+	return m.XXX_fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *OutOfOrderTags) HasThird() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<2) != 0
+	return m.XXX_fieldsPresent[0]&(1<<2) != 0
 }
 
 func (m *OptionalScalars) HasFieldInt32() bool {
@@ -432,28 +432,28 @@ func (m *Inner) HasValue() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *WithMessage) HasInner() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *WithMessage) HasName() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<1) != 0
+	return m.XXX_fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *WithOneof) HasAfter() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *AllScalars) GetFieldDouble() float64 {
@@ -625,7 +625,7 @@ func (m *Inner) GetValue() int32 {
 }
 
 func (m *WithMessage) GetInner() *Inner {
-	if m != nil && m.fieldsPresent[0]&(1<<0) != 0 {
+	if m != nil && m.XXX_fieldsPresent[0]&(1<<0) != 0 {
 		return &m.Inner
 	}
 	return nil
@@ -856,7 +856,7 @@ func (m *WithMessage) Size() int {
 		s := m.Inner.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
-		} else if m.fieldsPresent[0]&(1<<0) != 0 {
+		} else if m.XXX_fieldsPresent[0]&(1<<0) != 0 {
 			n += 2
 		}
 	}
@@ -1276,7 +1276,7 @@ func (m *WithMessage) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 			i--
 			dAtA[i] = 0x0a
-		} else if m.fieldsPresent[0]&(1<<0) != 0 {
+		} else if m.XXX_fieldsPresent[0]&(1<<0) != 0 {
 			i--
 			dAtA[i] = 0
 			i--
@@ -1619,7 +1619,7 @@ func (m *AllScalars) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.FieldDouble = math.Float64frombits(v)
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		case 2: // field_float
 			if wireType != 5 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1635,7 +1635,7 @@ func (m *AllScalars) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint32(dAtA[iNdEx:])
 			iNdEx += 4
 			m.FieldFloat = math.Float32frombits(v)
-			m.fieldsPresent[0] |= 1 << 1
+			m.XXX_fieldsPresent[0] |= 1 << 1
 		case 3: // field_int32
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1664,7 +1664,7 @@ func (m *AllScalars) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.FieldInt32 = int32(v)
-			m.fieldsPresent[0] |= 1 << 2
+			m.XXX_fieldsPresent[0] |= 1 << 2
 		case 4: // field_int64
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1693,7 +1693,7 @@ func (m *AllScalars) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.FieldInt64 = int64(v)
-			m.fieldsPresent[0] |= 1 << 3
+			m.XXX_fieldsPresent[0] |= 1 << 3
 		case 5: // field_uint32
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1722,7 +1722,7 @@ func (m *AllScalars) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.FieldUint32 = uint32(v)
-			m.fieldsPresent[0] |= 1 << 4
+			m.XXX_fieldsPresent[0] |= 1 << 4
 		case 6: // field_uint64
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1751,7 +1751,7 @@ func (m *AllScalars) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.FieldUint64 = v
-			m.fieldsPresent[0] |= 1 << 5
+			m.XXX_fieldsPresent[0] |= 1 << 5
 		case 7: // field_sint32
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1780,7 +1780,7 @@ func (m *AllScalars) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.FieldSint32 = int32(uint32(v)>>1) ^ int32(uint32(v))<<31>>31
-			m.fieldsPresent[0] |= 1 << 6
+			m.XXX_fieldsPresent[0] |= 1 << 6
 		case 8: // field_sint64
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1809,7 +1809,7 @@ func (m *AllScalars) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.FieldSint64 = int64(v>>1) ^ int64(v)<<63>>63
-			m.fieldsPresent[0] |= 1 << 7
+			m.XXX_fieldsPresent[0] |= 1 << 7
 		case 9: // field_fixed32
 			if wireType != 5 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1825,7 +1825,7 @@ func (m *AllScalars) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint32(dAtA[iNdEx:])
 			iNdEx += 4
 			m.FieldFixed32 = v
-			m.fieldsPresent[0] |= 1 << 8
+			m.XXX_fieldsPresent[0] |= 1 << 8
 		case 10: // field_fixed64
 			if wireType != 1 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1841,7 +1841,7 @@ func (m *AllScalars) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.FieldFixed64 = v
-			m.fieldsPresent[0] |= 1 << 9
+			m.XXX_fieldsPresent[0] |= 1 << 9
 		case 11: // field_sfixed32
 			if wireType != 5 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1857,7 +1857,7 @@ func (m *AllScalars) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint32(dAtA[iNdEx:])
 			iNdEx += 4
 			m.FieldSfixed32 = int32(v)
-			m.fieldsPresent[0] |= 1 << 10
+			m.XXX_fieldsPresent[0] |= 1 << 10
 		case 12: // field_sfixed64
 			if wireType != 1 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1873,7 +1873,7 @@ func (m *AllScalars) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.FieldSfixed64 = int64(v)
-			m.fieldsPresent[0] |= 1 << 11
+			m.XXX_fieldsPresent[0] |= 1 << 11
 		case 13: // field_bool
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1902,7 +1902,7 @@ func (m *AllScalars) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.FieldBool = v != 0
-			m.fieldsPresent[0] |= 1 << 12
+			m.XXX_fieldsPresent[0] |= 1 << 12
 		case 14: // field_string
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1948,7 +1948,7 @@ func (m *AllScalars) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.FieldString = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 13
+			m.XXX_fieldsPresent[0] |= 1 << 13
 		case 15: // field_bytes
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1994,7 +1994,7 @@ func (m *AllScalars) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.FieldBytes = append(m.FieldBytes[:0], dAtA[iNdEx:postIndex]...)
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 14
+			m.XXX_fieldsPresent[0] |= 1 << 14
 		case 16: // field_enum
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2023,7 +2023,7 @@ func (m *AllScalars) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.FieldEnum = Color(v)
-			m.fieldsPresent[0] |= 1 << 15
+			m.XXX_fieldsPresent[0] |= 1 << 15
 		default:
 			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
@@ -2110,7 +2110,7 @@ func (m *OutOfOrderTags) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.Second = int32(v)
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		case 1: // first
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2139,7 +2139,7 @@ func (m *OutOfOrderTags) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.First = int32(v)
-			m.fieldsPresent[0] |= 1 << 1
+			m.XXX_fieldsPresent[0] |= 1 << 1
 		case 3: // third
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2168,7 +2168,7 @@ func (m *OutOfOrderTags) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.Third = int32(v)
-			m.fieldsPresent[0] |= 1 << 2
+			m.XXX_fieldsPresent[0] |= 1 << 2
 		default:
 			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
@@ -2452,7 +2452,7 @@ func (m *Inner) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.Value = int32(v)
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		default:
 			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
@@ -2558,7 +2558,7 @@ func (m *WithMessage) unmarshal(dAtA []byte, depth int) error {
 				return err
 			}
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		case 2: // name
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2604,7 +2604,7 @@ func (m *WithMessage) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Name = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 1
+			m.XXX_fieldsPresent[0] |= 1 << 1
 		default:
 			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
@@ -4180,7 +4180,7 @@ func (m *WithOneof) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.After = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		default:
 			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {

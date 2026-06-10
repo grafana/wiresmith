@@ -69,14 +69,14 @@ type Payload struct {
 	Nested   Nested            `protobuf:"bytes,7,opt,name=nested,proto3" json:"nested,omitempty"`
 	Status   Payload_Status    `protobuf:"varint,8,opt,name=status,proto3,enum=basic.service.v1.Payload.Status" json:"status,omitempty"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64
 }
 
 type Nested struct {
 	Name  string  `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	Value float64 `protobuf:"fixed64,2,opt,name=value,proto3" json:"value,omitempty"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64
 }
 
 func (m *Payload) Reset() {
@@ -111,42 +111,42 @@ func (m *Payload) HasId() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Payload) HasSequence() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<1) != 0
+	return m.XXX_fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *Payload) HasNested() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<2) != 0
+	return m.XXX_fieldsPresent[0]&(1<<2) != 0
 }
 
 func (m *Payload) HasStatus() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<3) != 0
+	return m.XXX_fieldsPresent[0]&(1<<3) != 0
 }
 
 func (m *Nested) HasName() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Nested) HasValue() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<1) != 0
+	return m.XXX_fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *Payload) GetId() string {
@@ -199,7 +199,7 @@ func (m *Payload) GetNumber() int64 {
 }
 
 func (m *Payload) GetNested() *Nested {
-	if m != nil && m.fieldsPresent[0]&(1<<2) != 0 {
+	if m != nil && m.XXX_fieldsPresent[0]&(1<<2) != 0 {
 		return &m.Nested
 	}
 	return nil
@@ -257,7 +257,7 @@ func (m *Payload) Size() int {
 		s := m.Nested.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
-		} else if m.fieldsPresent[0]&(1<<2) != 0 {
+		} else if m.XXX_fieldsPresent[0]&(1<<2) != 0 {
 			n += 2
 		}
 	}
@@ -325,7 +325,7 @@ func (m *Payload) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 			i--
 			dAtA[i] = 0x3a
-		} else if m.fieldsPresent[0]&(1<<2) != 0 {
+		} else if m.XXX_fieldsPresent[0]&(1<<2) != 0 {
 			i--
 			dAtA[i] = 0
 			i--
@@ -592,7 +592,7 @@ func (m *Payload) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Id = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		case 2: // sequence
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -621,7 +621,7 @@ func (m *Payload) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.Sequence = int64(v)
-			m.fieldsPresent[0] |= 1 << 1
+			m.XXX_fieldsPresent[0] |= 1 << 1
 		case 3: // chunks
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -960,7 +960,7 @@ func (m *Payload) unmarshal(dAtA []byte, depth int) error {
 				return err
 			}
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 2
+			m.XXX_fieldsPresent[0] |= 1 << 2
 		case 8: // status
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -989,7 +989,7 @@ func (m *Payload) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.Status = Payload_Status(v)
-			m.fieldsPresent[0] |= 1 << 3
+			m.XXX_fieldsPresent[0] |= 1 << 3
 		default:
 			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
@@ -1093,7 +1093,7 @@ func (m *Nested) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Name = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		case 2: // value
 			if wireType != 1 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1109,7 +1109,7 @@ func (m *Nested) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.Value = math.Float64frombits(v)
-			m.fieldsPresent[0] |= 1 << 1
+			m.XXX_fieldsPresent[0] |= 1 << 1
 		default:
 			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {

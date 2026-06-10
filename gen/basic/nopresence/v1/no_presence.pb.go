@@ -38,7 +38,7 @@ type TrackedHolder struct {
 	Child Leaf  `protobuf:"bytes,1,opt,name=child,proto3" json:"child,omitempty"`
 	Num   int64 `protobuf:"varint,2,opt,name=num,proto3" json:"num,omitempty"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64
 }
 
 func (m *Leaf) Reset() {
@@ -91,14 +91,14 @@ func (m *TrackedHolder) HasChild() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *TrackedHolder) HasNum() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<1) != 0
+	return m.XXX_fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *Leaf) GetId() int64 {
@@ -144,7 +144,7 @@ func (m *BareHolder) GetMaybe() int64 {
 }
 
 func (m *TrackedHolder) GetChild() *Leaf {
-	if m != nil && m.fieldsPresent[0]&(1<<0) != 0 {
+	if m != nil && m.XXX_fieldsPresent[0]&(1<<0) != 0 {
 		return &m.Child
 	}
 	return nil
@@ -203,7 +203,7 @@ func (m *TrackedHolder) Size() int {
 		s := m.Child.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
-		} else if m.fieldsPresent[0]&(1<<0) != 0 {
+		} else if m.XXX_fieldsPresent[0]&(1<<0) != 0 {
 			n += 2
 		}
 	}
@@ -362,7 +362,7 @@ func (m *TrackedHolder) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 			i--
 			dAtA[i] = 0x0a
-		} else if m.fieldsPresent[0]&(1<<0) != 0 {
+		} else if m.XXX_fieldsPresent[0]&(1<<0) != 0 {
 			i--
 			dAtA[i] = 0
 			i--
@@ -801,7 +801,7 @@ func (m *TrackedHolder) unmarshal(dAtA []byte, depth int) error {
 				return err
 			}
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		case 2: // num
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -830,7 +830,7 @@ func (m *TrackedHolder) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.Num = int64(v)
-			m.fieldsPresent[0] |= 1 << 1
+			m.XXX_fieldsPresent[0] |= 1 << 1
 		default:
 			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {

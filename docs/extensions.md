@@ -384,7 +384,7 @@ Same caveat as stdtime: the `*_reflect.pb.go` describes the field as `google.pro
 
 Unlike the options above, this pair annotates **messages and files**, not fields.
 
-By default every generated message tracks wire-presence of its singular value-typed fields in a `fieldsPresent [N]uint64` bitmap. The bitmap powers `Has<Name>()`, lets `Get<MsgField>()` return `nil` for an unset field, and preserves a present-but-empty nested message across a round-trip. It also changes the struct's memory layout and makes two structurally-equal values potentially differ under `reflect.DeepEqual`.
+By default every generated message tracks wire-presence of its singular value-typed fields in a `XXX_fieldsPresent [N]uint64` bitmap. The bitmap powers `Has<Name>()`, lets `Get<MsgField>()` return `nil` for an unset field, and preserves a present-but-empty nested message across a round-trip. It also changes the struct's memory layout and makes two structurally-equal values potentially differ under `reflect.DeepEqual`.
 
 `no_presence = true` on a message omits the bitmap for that message:
 

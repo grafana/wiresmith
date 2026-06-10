@@ -17,7 +17,7 @@ type BetaHolder struct {
 	Entries []AlphaEntry `protobuf:"bytes,1,rep,name=entries,proto3" json:"entries,omitempty"`
 	Note    string       `protobuf:"bytes,2,opt,name=note,proto3" json:"note,omitempty"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64
 }
 
 func (m *BetaHolder) Reset() {
@@ -38,7 +38,7 @@ func (m *BetaHolder) HasNote() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *BetaHolder) GetEntries() []AlphaEntry {
@@ -323,7 +323,7 @@ func (m *BetaHolder) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Note = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		default:
 			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {

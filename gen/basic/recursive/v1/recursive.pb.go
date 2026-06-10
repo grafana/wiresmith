@@ -16,7 +16,7 @@ type LinkedList struct {
 	Value int64       `protobuf:"varint,1,opt,name=value,proto3" json:"value,omitempty"`
 	Next  *LinkedList `protobuf:"bytes,2,opt,name=next,proto3,oneof" json:"next,omitempty"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64
 }
 
 // Self-referencing via repeated (slice) field.
@@ -25,7 +25,7 @@ type TreeNode struct {
 	Value    int64      `protobuf:"varint,2,opt,name=value,proto3" json:"value,omitempty"`
 	Children []TreeNode `protobuf:"bytes,3,rep,name=children,proto3" json:"children,omitempty"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64
 }
 
 // Mutual recursion: NodeA references NodeB and vice versa.
@@ -34,14 +34,14 @@ type NodeA struct {
 	Peer  *NodeB  `protobuf:"bytes,2,opt,name=peer,proto3,oneof" json:"peer,omitempty"`
 	Peers []NodeB `protobuf:"bytes,3,rep,name=peers,proto3" json:"peers,omitempty"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64
 }
 
 type NodeB struct {
 	Id     int64  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Parent *NodeA `protobuf:"bytes,2,opt,name=parent,proto3,oneof" json:"parent,omitempty"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64
 }
 
 func (m *LinkedList) Reset() {
@@ -104,7 +104,7 @@ func (m *LinkedList) HasValue() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *LinkedList) HasNext() bool {
@@ -115,21 +115,21 @@ func (m *TreeNode) HasLabel() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *TreeNode) HasValue() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<1) != 0
+	return m.XXX_fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *NodeA) HasName() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *NodeA) HasPeer() bool {
@@ -140,7 +140,7 @@ func (m *NodeB) HasId() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *NodeB) HasParent() bool {
@@ -563,7 +563,7 @@ func (m *LinkedList) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.Value = int64(v)
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		case 2: // next
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -784,7 +784,7 @@ func (m *TreeNode) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Label = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		case 2: // value
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -813,7 +813,7 @@ func (m *TreeNode) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.Value = int64(v)
-			m.fieldsPresent[0] |= 1 << 1
+			m.XXX_fieldsPresent[0] |= 1 << 1
 		case 3: // children
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1032,7 +1032,7 @@ func (m *NodeA) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Name = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		case 2: // peer
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1217,7 +1217,7 @@ func (m *NodeB) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.Id = int64(v)
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		case 2: // parent
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
