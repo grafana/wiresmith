@@ -1551,6 +1551,128 @@ message Bar { string s = 1; }`)
 	}
 }
 
+// TestGenerateSplitPackageWithOverrides pins the -M escape hatch for proto
+// packages that legitimately span multiple Go packages (Loki's `package
+// logproto` lives in both pkg/push — a separate Go module — and
+// pkg/logproto). A file pinned via Overrides opts out of the
+// one-go_package-per-proto-package agreement: the remaining files still
+// agree among themselves, the pinned file resolves to its override, and
+// cross-Go-package references between the two halves come out qualified.
+func TestGenerateSplitPackageWithOverrides(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "push/push.proto", `
+syntax = "proto3";
+package logproto;
+option go_package = "example.com/loki/pkg/push";
+message Stream { string labels = 1; }`)
+	writeProto(t, protoDir, "logproto/logproto.proto", `
+syntax = "proto3";
+package logproto;
+option go_package = "example.com/loki/v3/pkg/logproto";
+import "push/push.proto";
+message QueryResponse { Stream stream = 1; }`)
+
+	outDir := testOutDir(t)
+	gen := &Generator{
+		Module:   "example.com/loki",
+		OutDir:   outDir,
+		ProtoDir: protoDir,
+		Overrides: map[string]string{
+			"push/push.proto": "example.com/loki/pkg/push",
+		},
+	}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate with -M override: %v", err)
+	}
+
+	pushSrc := mustReadFile(t, filepath.Join(outDir, "push", "push.pb.go"))
+	logSrc := mustReadFile(t, filepath.Join(outDir, "logproto", "logproto.pb.go"))
+
+	if !strings.Contains(pushSrc, "package push\n") {
+		t.Errorf("push.pb.go must declare 'package push' (from the override), got:\n%.300s", pushSrc)
+	}
+	if !strings.Contains(logSrc, "package logproto\n") {
+		t.Errorf("logproto.pb.go must declare 'package logproto', got:\n%.300s", logSrc)
+	}
+	// The reference into the pinned half must be a qualified import, not a
+	// bare same-package identifier.
+	if !strings.Contains(logSrc, `"example.com/loki/pkg/push"`) {
+		t.Errorf("logproto.pb.go must import the pinned push package")
+	}
+	if !strings.Contains(logSrc, "push.Stream") {
+		t.Errorf("logproto.pb.go must reference Stream as push.Stream")
+	}
+	if strings.Contains(logSrc, "type Stream struct") {
+		t.Errorf("logproto.pb.go must not redeclare Stream locally")
+	}
+}
+
+// TestGenerateSplitPackageWithoutOverridesRejected pins that the same
+// split-package layout WITHOUT -M pins still fails the consistency check —
+// the override is an explicit opt-in, not a relaxation of the default rule.
+func TestGenerateSplitPackageWithoutOverridesRejected(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "push/push.proto", `
+syntax = "proto3";
+package logproto;
+option go_package = "example.com/loki/pkg/push";
+message Stream { string labels = 1; }`)
+	writeProto(t, protoDir, "logproto/logproto.proto", `
+syntax = "proto3";
+package logproto;
+option go_package = "example.com/loki/v3/pkg/logproto";
+import "push/push.proto";
+message QueryResponse { Stream stream = 1; }`)
+
+	gen := &Generator{
+		Module:   "example.com/loki",
+		OutDir:   testOutDir(t),
+		ProtoDir: protoDir,
+	}
+	err := gen.Generate(context.Background())
+	if err == nil {
+		t.Fatal("expected inconsistent go_package error, got nil")
+	}
+	if !strings.Contains(err.Error(), "inconsistent go_package") {
+		t.Errorf("expected 'inconsistent go_package' error, got: %v", err)
+	}
+}
+
+// TestGenerateOverrideSplittingDirRejected guards against -M misuse: pinning
+// one file of a directory to a different Go import path than its dir-mates
+// would put two Go packages in one output directory — Go's
+// directory-equals-package rule makes that uncompilable, so reject it up
+// front with an error naming both files.
+func TestGenerateOverrideSplittingDirRejected(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "pkg/a.proto", `
+syntax = "proto3";
+package samedir;
+option go_package = "example.com/mod/gen/samedir";
+message A { string s = 1; }`)
+	writeProto(t, protoDir, "pkg/b.proto", `
+syntax = "proto3";
+package samedir;
+option go_package = "example.com/mod/gen/samedir";
+message B { string s = 1; }`)
+
+	gen := &Generator{
+		Module:   "example.com/mod",
+		OutDir:   testOutDir(t),
+		ProtoDir: protoDir,
+		Overrides: map[string]string{
+			"pkg/b.proto": "example.com/elsewhere/bpkg",
+		},
+	}
+	err := gen.Generate(context.Background())
+	if err == nil {
+		t.Fatal("expected conflicting-import-path error, got nil")
+	}
+	if !strings.Contains(err.Error(), "conflicting Go import paths") {
+		t.Errorf("expected 'conflicting Go import paths' error, got: %v", err)
+	}
+}
+
 // TestGenerateGoPackageShadowsStdlibAlias forces a proto's go_package pkgName
 // to equal a stdlib name wiresmith always uses ("fmt"). The pre-reserved
 // stdlib entry in newImportTracker keeps the alias pool aware of "fmt", so

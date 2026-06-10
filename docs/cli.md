@@ -55,6 +55,8 @@ The on-disk write location is always `<out>/<source-relative path>` regardless o
 
 `-M` is the documented escape hatch when a vendored `.proto` declares a `go_package` that doesn't match the consumer's tree — for example wiresmith's own OTel build, where the upstream `go_package = "go.opentelemetry.io/proto/otlp/..."` is overridden to `github.com/grafana/wiresmith/gen/opentelemetry/proto/...;...` so the generated imports resolve under the local module.
 
+An `-M`-pinned file is also exempt from the one-`go_package`-per-proto-package consistency check, so `-M` is the way to compile a proto package that legitimately spans multiple Go packages (e.g. Loki's `package logproto`, split between the standalone `pkg/push` module and `pkg/logproto`): pin the odd files out with `-M` and the rest of the package must still agree among itself. References between the two halves are emitted as qualified imports. An override that would split one output *directory* across two Go packages is still rejected — one directory maps to one Go package.
+
 ## Examples
 
 Given a `.proto` tree like:

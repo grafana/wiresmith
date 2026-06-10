@@ -584,6 +584,18 @@ func (g *Generator) collectGoPackages(results []protoreflect.FileDescriptor) err
 		if isInternalSchemaFile(fd) {
 			continue
 		}
+		// A file pinned via -M resolves its destination from the override
+		// (destForPath checks Overrides first), so it neither seeds the
+		// agreement map nor conflicts with it. This is the escape hatch for
+		// proto packages that legitimately span multiple Go packages (e.g.
+		// Loki's `package logproto` split between a standalone push module
+		// and pkg/logproto): pin the odd files out with -M and the rest of
+		// the package still has to agree among itself. validateDestinations
+		// separately rejects an override that would split a single output
+		// directory across two Go packages.
+		if override, ok := g.Overrides[fd.Path()]; ok && override != "" {
+			continue
+		}
 		// GetGoPackage is nil-safe — it returns "" if the cast fails or
 		// the option is unset.
 		opts, _ := fd.Options().(*descriptorpb.FileOptions)
@@ -724,6 +736,21 @@ func (g *Generator) computeDests(results []protoreflect.FileDescriptor) error {
 		protoPkg := string(fd.Package())
 		relDir := sourceRelDir(fd.Path())
 		dest := g.destFor(fd)
+		// An -M-pinned file opts out of the package-wide agreement (same
+		// rationale as in collectGoPackages): its destination is explicit,
+		// so it must not seed the seen-map (which would force dir agreement
+		// on its unpinned package-mates) nor be checked against it. It still
+		// claims its import path below so a different proto package can't
+		// silently share it.
+		if override, ok := g.Overrides[fd.Path()]; ok && override != "" {
+			if owner, exists := importOwner[dest.importPath]; exists && owner != protoPkg {
+				return fmt.Errorf("import path %q is claimed by both proto packages %q and %q (check go_package options and -M overrides)",
+					dest.importPath, owner, protoPkg)
+			}
+			importOwner[dest.importPath] = protoPkg
+			g.destinations[fd.Path()] = dest
+			continue
+		}
 		if prev, ok := seen[protoPkg]; ok {
 			if prev.relDir != relDir {
 				return fmt.Errorf("proto package %q spans multiple source-relative directories: %s declares %q but %s declares %q",
@@ -777,19 +804,34 @@ func destForReachable(fd protoreflect.FileDescriptor) goDest {
 // Files that won't emit are skipped: an empty .proto cannot collide on disk
 // with a non-empty proto resolving to the same Go dir, because it writes
 // nothing there. Including it would produce a false-positive collision error.
+//
+// The same directory-equals-package rule also rejects two files in one
+// directory whose *resolved* Go import paths disagree — possible only when
+// an -M override pins one file of a directory somewhere its dir-mates don't
+// go. Both files would still be written into the same output directory with
+// different package clauses, which Go cannot compile.
 func (g *Generator) validateDestinations(results []protoreflect.FileDescriptor) error {
-	dirOwner := make(map[string]string)
+	type claim struct{ protoPkg, importPath, path string }
+	dirOwner := make(map[string]claim)
 	for _, fd := range results {
 		if !g.shouldEmit(fd) {
 			continue
 		}
 		protoPkg := string(fd.Package())
 		relDir := sourceRelDir(fd.Path())
-		if owner, ok := dirOwner[relDir]; ok && owner != protoPkg {
-			return fmt.Errorf("destination %q is claimed by both proto packages %q and %q (two proto packages cannot share one source-relative directory)",
-				relDir, owner, protoPkg)
+		importPath := g.destinations[fd.Path()].importPath
+		if owner, ok := dirOwner[relDir]; ok {
+			if owner.protoPkg != protoPkg {
+				return fmt.Errorf("destination %q is claimed by both proto packages %q and %q (two proto packages cannot share one source-relative directory)",
+					relDir, owner.protoPkg, protoPkg)
+			}
+			if owner.importPath != importPath {
+				return fmt.Errorf("destination %q has conflicting Go import paths: %s resolves to %q but %s resolves to %q (check -M overrides — one directory must map to one Go package)",
+					relDir, owner.path, owner.importPath, fd.Path(), importPath)
+			}
+			continue
 		}
-		dirOwner[relDir] = protoPkg
+		dirOwner[relDir] = claim{protoPkg: protoPkg, importPath: importPath, path: fd.Path()}
 	}
 	return nil
 }
