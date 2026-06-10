@@ -1673,6 +1673,45 @@ message B { string s = 1; }`)
 	}
 }
 
+// TestGenerateCustomtypeSuppressesUnusedCrossFileImport pins that a
+// customtype-annotated message field does not register an import for the
+// natural (replaced) message type. When such a field is the file's only
+// reference into the imported proto, the stale registration emitted an
+// import that nothing used — a compile error in the generated code.
+// (Same mechanism as the stdtime/stdduration suppression in fieldContext.)
+func TestGenerateCustomtypeSuppressesUnusedCrossFileImport(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "dep/dep.proto", `
+syntax = "proto3";
+package dep.v1;
+option go_package = "example.com/mod/gen/dep";
+message Inner { string s = 1; }`)
+	writeProto(t, protoDir, "main/main.proto", `
+syntax = "proto3";
+package main.v1;
+option go_package = "example.com/mod/gen/mainpb";
+import "wiresmith/options.proto";
+import "dep/dep.proto";
+message Outer {
+  dep.v1.Inner x = 1 [(wiresmith.options.customtype) = "example.com/mod/custom.MyType"];
+  repeated dep.v1.Inner xs = 2 [(wiresmith.options.customtype) = "example.com/mod/custom.MyType"];
+}`)
+
+	outDir := testOutDir(t)
+	gen := &Generator{Module: "example.com/mod", OutDir: outDir, ProtoDir: protoDir}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
+	}
+
+	mainSrc := mustReadFile(t, filepath.Join(outDir, "main", "main.pb.go"))
+	if strings.Contains(mainSrc, `"example.com/mod/gen/dep"`) {
+		t.Errorf("main.pb.go imports the replaced type's package but never references it:\n%.600s", mainSrc)
+	}
+	if !strings.Contains(mainSrc, "custom.MyType") {
+		t.Errorf("main.pb.go must use the customtype custom.MyType")
+	}
+}
+
 // TestGenerateGoPackageShadowsStdlibAlias forces a proto's go_package pkgName
 // to equal a stdlib name wiresmith always uses ("fmt"). The pre-reserved
 // stdlib entry in newImportTracker keeps the alias pool aware of "fmt", so
