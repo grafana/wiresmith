@@ -87,6 +87,13 @@ type Generator struct {
 	noPresenceExt    protoreflect.FieldDescriptor
 	noPresenceAllExt protoreflect.FieldDescriptor
 
+	// enumNoPrefixExt / enumNoPrefixAllExt are the linked extension
+	// descriptors for the enum-level `(wiresmith.options.enum_no_prefix)`
+	// and file-level `enum_no_prefix_all` options. Same shape as the
+	// no_presence pair. Consulted by FileGenerator.hasEnumNoPrefix.
+	enumNoPrefixExt    protoreflect.FieldDescriptor
+	enumNoPrefixAllExt protoreflect.FieldDescriptor
+
 	// outputs accumulates the formatted Go files produced by writeFormatted
 	// during a Generate run. Two callers harvest it: Generate writes them
 	// to disk; GenerateFromDescriptors returns them to a protoc plugin
@@ -177,6 +184,11 @@ type FileGenerator struct {
 	// hasNoPresence (option_no_presence.go).
 	noPresenceExt    protoreflect.FieldDescriptor
 	noPresenceAllExt protoreflect.FieldDescriptor
+
+	// enumNoPrefixExt / enumNoPrefixAllExt — same shape, for the
+	// enum_no_prefix pair (option_enum_no_prefix.go).
+	enumNoPrefixExt    protoreflect.FieldDescriptor
+	enumNoPrefixAllExt protoreflect.FieldDescriptor
 
 	// compareBody / compareImports hold a second companion `_compare.pb.go`
 	// file: just the per-message Compare(other interface{}) int methods.
@@ -463,6 +475,8 @@ func (g *Generator) generateFromFiles(results []protoreflect.FileDescriptor, emi
 	}
 	g.noPresenceExt = findExtension(results, noPresenceExtName)
 	g.noPresenceAllExt = findExtension(results, noPresenceAllExtName)
+	g.enumNoPrefixExt = findExtension(results, enumNoPrefixExtName)
+	g.enumNoPrefixAllExt = findExtension(results, enumNoPrefixAllExtName)
 	if err := g.validateJsontagOptions(results); err != nil {
 		return nil, err
 	}
@@ -875,21 +889,23 @@ func (g *Generator) validateDestinations(results []protoreflect.FileDescriptor) 
 func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 	selfDest := g.destinations[fd.Path()]
 	fg := &FileGenerator{
-		fd:               fd,
-		module:           g.Module,
-		imports:          newImportTracker(g.Module, selfDest, g.destinations),
-		body:             &bytes.Buffer{},
-		reflectImports:   newImportTracker(g.Module, selfDest, g.destinations),
-		reflectBody:      &bytes.Buffer{},
-		compareImports:   newImportTracker(g.Module, selfDest, g.destinations),
-		compareBody:      &bytes.Buffer{},
-		equalImports:     newImportTracker(g.Module, selfDest, g.destinations),
-		equalBody:        &bytes.Buffer{},
-		fileVarName:      sanitizeFileVarName(fd.Path()),
-		options:          g.options,
-		jsontagExt:       g.jsontagExt,
-		noPresenceExt:    g.noPresenceExt,
-		noPresenceAllExt: g.noPresenceAllExt,
+		fd:                 fd,
+		module:             g.Module,
+		imports:            newImportTracker(g.Module, selfDest, g.destinations),
+		body:               &bytes.Buffer{},
+		reflectImports:     newImportTracker(g.Module, selfDest, g.destinations),
+		reflectBody:        &bytes.Buffer{},
+		compareImports:     newImportTracker(g.Module, selfDest, g.destinations),
+		compareBody:        &bytes.Buffer{},
+		equalImports:       newImportTracker(g.Module, selfDest, g.destinations),
+		equalBody:          &bytes.Buffer{},
+		fileVarName:        sanitizeFileVarName(fd.Path()),
+		options:            g.options,
+		jsontagExt:         g.jsontagExt,
+		noPresenceExt:      g.noPresenceExt,
+		noPresenceAllExt:   g.noPresenceAllExt,
+		enumNoPrefixExt:    g.enumNoPrefixExt,
+		enumNoPrefixAllExt: g.enumNoPrefixAllExt,
 	}
 
 	// Hot-path emitters target the main .pb.go: structs, oneof variants,

@@ -20,12 +20,21 @@ func (fg *FileGenerator) emitEnum(ed protoreflect.EnumDescriptor) {
 
 	fmt.Fprintf(fg.body, "type %s int32\n\n", typeName)
 	fmt.Fprintf(fg.body, "const (\n")
+	noPrefix := fg.hasEnumNoPrefix(ed)
 	for i := 0; i < ed.Values().Len(); i++ {
 		v := ed.Values().Get(i)
 		if c := leadingComment(v); c != "" {
 			fg.body.WriteString(indentComment(c))
 		}
-		fmt.Fprintf(fg.body, "\t%s_%s %s = %d\n", valuePrefix, string(v.Name()), typeName, v.Number())
+		// `(wiresmith.options.enum_no_prefix)` drops the EnumName_ prefix
+		// from the constant identifier (gogo goproto_enum_prefix=false
+		// parity). Only the identifier changes — name/value maps and
+		// String() always use the bare proto names.
+		if noPrefix {
+			fmt.Fprintf(fg.body, "\t%s %s = %d\n", string(v.Name()), typeName, v.Number())
+		} else {
+			fmt.Fprintf(fg.body, "\t%s_%s %s = %d\n", valuePrefix, string(v.Name()), typeName, v.Number())
+		}
 	}
 	fmt.Fprintf(fg.body, ")\n\n")
 
