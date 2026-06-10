@@ -249,7 +249,7 @@ func (r *RepeatedField) emitPackedUnmarshal(e Emitter, access string, ctx FieldC
 
 	// Skip unknown wire type
 	e.Writef("\t\t\t} else {\n")
-	e.Writef("\t\t\t\tn, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)\n")
+	e.Writef("\t\t\t\tn, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)\n")
 	e.Writef("\t\t\t\tif err != nil {\n\t\t\t\t\treturn err\n\t\t\t\t}\n")
 	e.Writef("\t\t\t\tiNdEx += n\n")
 	e.Writef("\t\t\t}\n")

@@ -2491,73 +2491,6 @@ func (m *KeyValueAndUnit) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-const maxUnmarshalDepth = 10000
-
-func skipValue(dAtA []byte, wireType int, fieldNum int32) (int, error) {
-	iNdEx := 0
-	l := len(dAtA)
-	switch wireType {
-	case 0:
-		for shift := 0; ; shift++ {
-			if shift >= 10 {
-				return 0, fmt.Errorf("invalid varint")
-			}
-			if iNdEx >= l {
-				return 0, fmt.Errorf("invalid varint")
-			}
-			iNdEx++
-			if dAtA[iNdEx-1] < 0x80 {
-				break
-			}
-		}
-	case 1:
-		if (iNdEx + 8) > l {
-			return 0, fmt.Errorf("truncated fixed64")
-		}
-		iNdEx += 8
-	case 2:
-		var length uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return 0, fmt.Errorf("invalid bytes")
-			}
-			if iNdEx >= l {
-				return 0, fmt.Errorf("invalid bytes")
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			length |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				if shift == 63 && b > 1 {
-					return 0, fmt.Errorf("invalid bytes")
-				}
-				break
-			}
-		}
-		if length > uint64(math.MaxInt) {
-			return 0, fmt.Errorf("invalid bytes")
-		}
-		iNdEx += int(length)
-		if iNdEx < 0 || iNdEx > l {
-			return 0, fmt.Errorf("invalid bytes")
-		}
-	case 3:
-		_, n := protowire.ConsumeGroup(protowire.Number(fieldNum), dAtA[iNdEx:])
-		if n < 0 {
-			return 0, fmt.Errorf("invalid group")
-		}
-		iNdEx += n
-	case 5:
-		if (iNdEx + 4) > l {
-			return 0, fmt.Errorf("truncated fixed32")
-		}
-		iNdEx += 4
-	default:
-		return 0, fmt.Errorf("unknown wire type %d", wireType)
-	}
-	return iNdEx, nil
-}
-
 func (m *ProfilesDictionary) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -2570,7 +2503,7 @@ func (m *ProfilesDictionary) UnmarshalWithDepth(b []byte, depth int) error {
 }
 
 func (m *ProfilesDictionary) unmarshal(dAtA []byte, depth int) error {
-	if depth > maxUnmarshalDepth {
+	if depth > protohelpers.MaxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
 	}
 	l := len(dAtA)
@@ -2749,7 +2682,7 @@ func (m *ProfilesDictionary) unmarshal(dAtA []byte, depth int) error {
 		switch fieldNum {
 		case 1: // mapping_table
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2797,7 +2730,7 @@ func (m *ProfilesDictionary) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 2: // location_table
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2845,7 +2778,7 @@ func (m *ProfilesDictionary) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 3: // function_table
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2893,7 +2826,7 @@ func (m *ProfilesDictionary) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 4: // link_table
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2941,7 +2874,7 @@ func (m *ProfilesDictionary) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 5: // string_table
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -2986,7 +2919,7 @@ func (m *ProfilesDictionary) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 6: // attribute_table
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -3034,7 +2967,7 @@ func (m *ProfilesDictionary) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 7: // stack_table
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -3081,7 +3014,7 @@ func (m *ProfilesDictionary) unmarshal(dAtA []byte, depth int) error {
 			}
 			iNdEx = postIndex
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -3106,7 +3039,7 @@ func (m *ProfilesData) UnmarshalWithDepth(b []byte, depth int) error {
 }
 
 func (m *ProfilesData) unmarshal(dAtA []byte, depth int) error {
-	if depth > maxUnmarshalDepth {
+	if depth > protohelpers.MaxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
 	}
 	l := len(dAtA)
@@ -3207,7 +3140,7 @@ func (m *ProfilesData) unmarshal(dAtA []byte, depth int) error {
 		switch fieldNum {
 		case 1: // resource_profiles
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -3255,7 +3188,7 @@ func (m *ProfilesData) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 2: // dictionary
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -3302,7 +3235,7 @@ func (m *ProfilesData) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 			m.fieldsPresent[0] |= 1 << 0
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -3327,7 +3260,7 @@ func (m *ResourceProfiles) UnmarshalWithDepth(b []byte, depth int) error {
 }
 
 func (m *ResourceProfiles) unmarshal(dAtA []byte, depth int) error {
-	if depth > maxUnmarshalDepth {
+	if depth > protohelpers.MaxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
 	}
 	l := len(dAtA)
@@ -3428,7 +3361,7 @@ func (m *ResourceProfiles) unmarshal(dAtA []byte, depth int) error {
 		switch fieldNum {
 		case 1: // resource
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -3476,7 +3409,7 @@ func (m *ResourceProfiles) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 0
 		case 2: // scope_profiles
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -3524,7 +3457,7 @@ func (m *ResourceProfiles) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 3: // schema_url
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -3569,7 +3502,7 @@ func (m *ResourceProfiles) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 			m.fieldsPresent[0] |= 1 << 1
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -3594,7 +3527,7 @@ func (m *ScopeProfiles) UnmarshalWithDepth(b []byte, depth int) error {
 }
 
 func (m *ScopeProfiles) unmarshal(dAtA []byte, depth int) error {
-	if depth > maxUnmarshalDepth {
+	if depth > protohelpers.MaxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
 	}
 	l := len(dAtA)
@@ -3695,7 +3628,7 @@ func (m *ScopeProfiles) unmarshal(dAtA []byte, depth int) error {
 		switch fieldNum {
 		case 1: // scope
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -3743,7 +3676,7 @@ func (m *ScopeProfiles) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 0
 		case 2: // profiles
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -3791,7 +3724,7 @@ func (m *ScopeProfiles) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 3: // schema_url
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -3836,7 +3769,7 @@ func (m *ScopeProfiles) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 			m.fieldsPresent[0] |= 1 << 1
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -3861,7 +3794,7 @@ func (m *Profile) UnmarshalWithDepth(b []byte, depth int) error {
 }
 
 func (m *Profile) unmarshal(dAtA []byte, depth int) error {
-	if depth > maxUnmarshalDepth {
+	if depth > protohelpers.MaxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
 	}
 	l := len(dAtA)
@@ -3962,7 +3895,7 @@ func (m *Profile) unmarshal(dAtA []byte, depth int) error {
 		switch fieldNum {
 		case 1: // sample_type
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4010,7 +3943,7 @@ func (m *Profile) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 0
 		case 2: // samples
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4058,7 +3991,7 @@ func (m *Profile) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 3: // time_unix_nano
 			if wireType != 1 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4074,7 +4007,7 @@ func (m *Profile) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 1
 		case 4: // duration_nano
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4103,7 +4036,7 @@ func (m *Profile) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 2
 		case 5: // period_type
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4151,7 +4084,7 @@ func (m *Profile) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 3
 		case 6: // period
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4180,7 +4113,7 @@ func (m *Profile) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 4
 		case 7: // profile_id
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4226,7 +4159,7 @@ func (m *Profile) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 5
 		case 8: // dropped_attributes_count
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4255,7 +4188,7 @@ func (m *Profile) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 6
 		case 9: // original_payload_format
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4301,7 +4234,7 @@ func (m *Profile) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 7
 		case 10: // original_payload
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4436,14 +4369,14 @@ func (m *Profile) unmarshal(dAtA []byte, depth int) error {
 				}
 				m.AttributeIndices = append(m.AttributeIndices, int32(v))
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
 				iNdEx += n
 			}
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -4468,7 +4401,7 @@ func (m *Link) UnmarshalWithDepth(b []byte, depth int) error {
 }
 
 func (m *Link) unmarshal(dAtA []byte, depth int) error {
-	if depth > maxUnmarshalDepth {
+	if depth > protohelpers.MaxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
 	}
 	l := len(dAtA)
@@ -4502,7 +4435,7 @@ func (m *Link) unmarshal(dAtA []byte, depth int) error {
 		switch fieldNum {
 		case 1: // trace_id
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4548,7 +4481,7 @@ func (m *Link) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 0
 		case 2: // span_id
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4593,7 +4526,7 @@ func (m *Link) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 			m.fieldsPresent[0] |= 1 << 1
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -4618,7 +4551,7 @@ func (m *ValueType) UnmarshalWithDepth(b []byte, depth int) error {
 }
 
 func (m *ValueType) unmarshal(dAtA []byte, depth int) error {
-	if depth > maxUnmarshalDepth {
+	if depth > protohelpers.MaxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
 	}
 	l := len(dAtA)
@@ -4652,7 +4585,7 @@ func (m *ValueType) unmarshal(dAtA []byte, depth int) error {
 		switch fieldNum {
 		case 1: // type_strindex
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4681,7 +4614,7 @@ func (m *ValueType) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 0
 		case 2: // unit_strindex
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4709,7 +4642,7 @@ func (m *ValueType) unmarshal(dAtA []byte, depth int) error {
 			m.UnitStrindex = int32(v)
 			m.fieldsPresent[0] |= 1 << 1
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -4734,7 +4667,7 @@ func (m *Sample) UnmarshalWithDepth(b []byte, depth int) error {
 }
 
 func (m *Sample) unmarshal(dAtA []byte, depth int) error {
-	if depth > maxUnmarshalDepth {
+	if depth > protohelpers.MaxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
 	}
 	l := len(dAtA)
@@ -4768,7 +4701,7 @@ func (m *Sample) unmarshal(dAtA []byte, depth int) error {
 		switch fieldNum {
 		case 1: // stack_index
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4886,7 +4819,7 @@ func (m *Sample) unmarshal(dAtA []byte, depth int) error {
 				}
 				m.AttributeIndices = append(m.AttributeIndices, int32(v))
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4894,7 +4827,7 @@ func (m *Sample) unmarshal(dAtA []byte, depth int) error {
 			}
 		case 3: // link_index
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -5012,7 +4945,7 @@ func (m *Sample) unmarshal(dAtA []byte, depth int) error {
 				}
 				m.Values = append(m.Values, int64(v))
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -5075,14 +5008,14 @@ func (m *Sample) unmarshal(dAtA []byte, depth int) error {
 				iNdEx += 8
 				m.TimestampsUnixNano = append(m.TimestampsUnixNano, v)
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
 				iNdEx += n
 			}
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -5107,7 +5040,7 @@ func (m *Mapping) UnmarshalWithDepth(b []byte, depth int) error {
 }
 
 func (m *Mapping) unmarshal(dAtA []byte, depth int) error {
-	if depth > maxUnmarshalDepth {
+	if depth > protohelpers.MaxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
 	}
 	l := len(dAtA)
@@ -5141,7 +5074,7 @@ func (m *Mapping) unmarshal(dAtA []byte, depth int) error {
 		switch fieldNum {
 		case 1: // memory_start
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -5170,7 +5103,7 @@ func (m *Mapping) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 0
 		case 2: // memory_limit
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -5199,7 +5132,7 @@ func (m *Mapping) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 1
 		case 3: // file_offset
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -5228,7 +5161,7 @@ func (m *Mapping) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 2
 		case 4: // filename_strindex
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -5346,14 +5279,14 @@ func (m *Mapping) unmarshal(dAtA []byte, depth int) error {
 				}
 				m.AttributeIndices = append(m.AttributeIndices, int32(v))
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
 				iNdEx += n
 			}
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -5378,7 +5311,7 @@ func (m *Stack) UnmarshalWithDepth(b []byte, depth int) error {
 }
 
 func (m *Stack) unmarshal(dAtA []byte, depth int) error {
-	if depth > maxUnmarshalDepth {
+	if depth > protohelpers.MaxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
 	}
 	l := len(dAtA)
@@ -5501,14 +5434,14 @@ func (m *Stack) unmarshal(dAtA []byte, depth int) error {
 				}
 				m.LocationIndices = append(m.LocationIndices, int32(v))
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
 				iNdEx += n
 			}
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -5533,7 +5466,7 @@ func (m *Location) UnmarshalWithDepth(b []byte, depth int) error {
 }
 
 func (m *Location) unmarshal(dAtA []byte, depth int) error {
-	if depth > maxUnmarshalDepth {
+	if depth > protohelpers.MaxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
 	}
 	l := len(dAtA)
@@ -5634,7 +5567,7 @@ func (m *Location) unmarshal(dAtA []byte, depth int) error {
 		switch fieldNum {
 		case 1: // mapping_index
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -5663,7 +5596,7 @@ func (m *Location) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 0
 		case 2: // address
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -5692,7 +5625,7 @@ func (m *Location) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 1
 		case 3: // lines
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -5829,14 +5762,14 @@ func (m *Location) unmarshal(dAtA []byte, depth int) error {
 				}
 				m.AttributeIndices = append(m.AttributeIndices, int32(v))
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
 				iNdEx += n
 			}
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -5861,7 +5794,7 @@ func (m *Line) UnmarshalWithDepth(b []byte, depth int) error {
 }
 
 func (m *Line) unmarshal(dAtA []byte, depth int) error {
-	if depth > maxUnmarshalDepth {
+	if depth > protohelpers.MaxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
 	}
 	l := len(dAtA)
@@ -5895,7 +5828,7 @@ func (m *Line) unmarshal(dAtA []byte, depth int) error {
 		switch fieldNum {
 		case 1: // function_index
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -5924,7 +5857,7 @@ func (m *Line) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 0
 		case 2: // line
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -5953,7 +5886,7 @@ func (m *Line) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 1
 		case 3: // column
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -5981,7 +5914,7 @@ func (m *Line) unmarshal(dAtA []byte, depth int) error {
 			m.Column = int64(v)
 			m.fieldsPresent[0] |= 1 << 2
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -6006,7 +5939,7 @@ func (m *Function) UnmarshalWithDepth(b []byte, depth int) error {
 }
 
 func (m *Function) unmarshal(dAtA []byte, depth int) error {
-	if depth > maxUnmarshalDepth {
+	if depth > protohelpers.MaxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
 	}
 	l := len(dAtA)
@@ -6040,7 +5973,7 @@ func (m *Function) unmarshal(dAtA []byte, depth int) error {
 		switch fieldNum {
 		case 1: // name_strindex
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -6069,7 +6002,7 @@ func (m *Function) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 0
 		case 2: // system_name_strindex
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -6098,7 +6031,7 @@ func (m *Function) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 1
 		case 3: // filename_strindex
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -6127,7 +6060,7 @@ func (m *Function) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 2
 		case 4: // start_line
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -6155,7 +6088,7 @@ func (m *Function) unmarshal(dAtA []byte, depth int) error {
 			m.StartLine = int64(v)
 			m.fieldsPresent[0] |= 1 << 3
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -6180,7 +6113,7 @@ func (m *KeyValueAndUnit) UnmarshalWithDepth(b []byte, depth int) error {
 }
 
 func (m *KeyValueAndUnit) unmarshal(dAtA []byte, depth int) error {
-	if depth > maxUnmarshalDepth {
+	if depth > protohelpers.MaxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
 	}
 	l := len(dAtA)
@@ -6214,7 +6147,7 @@ func (m *KeyValueAndUnit) unmarshal(dAtA []byte, depth int) error {
 		switch fieldNum {
 		case 1: // key_strindex
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -6243,7 +6176,7 @@ func (m *KeyValueAndUnit) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 0
 		case 2: // value
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -6291,7 +6224,7 @@ func (m *KeyValueAndUnit) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 1
 		case 3: // unit_strindex
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -6319,7 +6252,7 @@ func (m *KeyValueAndUnit) unmarshal(dAtA []byte, depth int) error {
 			m.UnitStrindex = int32(v)
 			m.fieldsPresent[0] |= 1 << 2
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}

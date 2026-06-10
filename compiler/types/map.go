@@ -98,7 +98,7 @@ func (m *MapField) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
 
 	// Unknown fields
 	e.Writef("\t\t\t\tdefault:\n")
-	e.Writef("\t\t\t\t\tn, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))\n")
+	e.Writef("\t\t\t\t\tn, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))\n")
 	e.Writef("\t\t\t\t\tif err != nil {\n\t\t\t\t\t\treturn err\n\t\t\t\t\t}\n")
 	e.Writef("\t\t\t\t\tiNdEx += n\n")
 
@@ -175,7 +175,7 @@ func (m *MapField) EmitCompare(e Emitter, indent, lhs, rhs string) {
 func emitMapEntryWireTypeCheck(e Emitter, wt string) {
 	// Extract wire type constant's numeric value for comparison
 	e.Writef("\t\t\t\t\tif int(entryWire&0x7) != int(%s) {\n", wt)
-	e.Writef("\t\t\t\t\t\tn, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))\n")
+	e.Writef("\t\t\t\t\t\tn, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))\n")
 	e.Writef("\t\t\t\t\t\tif err != nil {\n\t\t\t\t\t\t\treturn err\n\t\t\t\t\t\t}\n")
 	e.Writef("\t\t\t\t\t\tiNdEx += n\n")
 	e.Writef("\t\t\t\t\t\tcontinue\n")

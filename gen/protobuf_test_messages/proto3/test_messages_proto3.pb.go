@@ -3421,73 +3421,6 @@ func (m *EnumOnlyProto3) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-const maxUnmarshalDepth = 10000
-
-func skipValue(dAtA []byte, wireType int, fieldNum int32) (int, error) {
-	iNdEx := 0
-	l := len(dAtA)
-	switch wireType {
-	case 0:
-		for shift := 0; ; shift++ {
-			if shift >= 10 {
-				return 0, fmt.Errorf("invalid varint")
-			}
-			if iNdEx >= l {
-				return 0, fmt.Errorf("invalid varint")
-			}
-			iNdEx++
-			if dAtA[iNdEx-1] < 0x80 {
-				break
-			}
-		}
-	case 1:
-		if (iNdEx + 8) > l {
-			return 0, fmt.Errorf("truncated fixed64")
-		}
-		iNdEx += 8
-	case 2:
-		var length uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return 0, fmt.Errorf("invalid bytes")
-			}
-			if iNdEx >= l {
-				return 0, fmt.Errorf("invalid bytes")
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			length |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				if shift == 63 && b > 1 {
-					return 0, fmt.Errorf("invalid bytes")
-				}
-				break
-			}
-		}
-		if length > uint64(math.MaxInt) {
-			return 0, fmt.Errorf("invalid bytes")
-		}
-		iNdEx += int(length)
-		if iNdEx < 0 || iNdEx > l {
-			return 0, fmt.Errorf("invalid bytes")
-		}
-	case 3:
-		_, n := protowire.ConsumeGroup(protowire.Number(fieldNum), dAtA[iNdEx:])
-		if n < 0 {
-			return 0, fmt.Errorf("invalid group")
-		}
-		iNdEx += n
-	case 5:
-		if (iNdEx + 4) > l {
-			return 0, fmt.Errorf("truncated fixed32")
-		}
-		iNdEx += 4
-	default:
-		return 0, fmt.Errorf("unknown wire type %d", wireType)
-	}
-	return iNdEx, nil
-}
-
 func (m *TestAllTypesProto3_NestedMessage) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -3500,7 +3433,7 @@ func (m *TestAllTypesProto3_NestedMessage) UnmarshalWithDepth(b []byte, depth in
 }
 
 func (m *TestAllTypesProto3_NestedMessage) unmarshal(dAtA []byte, depth int) error {
-	if depth > maxUnmarshalDepth {
+	if depth > protohelpers.MaxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
 	}
 	l := len(dAtA)
@@ -3534,7 +3467,7 @@ func (m *TestAllTypesProto3_NestedMessage) unmarshal(dAtA []byte, depth int) err
 		switch fieldNum {
 		case 1: // a
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -3563,7 +3496,7 @@ func (m *TestAllTypesProto3_NestedMessage) unmarshal(dAtA []byte, depth int) err
 			m.fieldsPresent[0] |= 1 << 0
 		case 2: // corecursive
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -3612,7 +3545,7 @@ func (m *TestAllTypesProto3_NestedMessage) unmarshal(dAtA []byte, depth int) err
 			}
 			iNdEx = postIndex
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -3637,7 +3570,7 @@ func (m *TestAllTypesProto3) UnmarshalWithDepth(b []byte, depth int) error {
 }
 
 func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
-	if depth > maxUnmarshalDepth {
+	if depth > protohelpers.MaxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
 	}
 	l := len(dAtA)
@@ -3974,7 +3907,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 		switch fieldNum {
 		case 1: // optional_int32
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4003,7 +3936,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 0
 		case 2: // optional_int64
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4032,7 +3965,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 1
 		case 3: // optional_uint32
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4061,7 +3994,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 2
 		case 4: // optional_uint64
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4090,7 +4023,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 3
 		case 5: // optional_sint32
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4119,7 +4052,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 4
 		case 6: // optional_sint64
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4148,7 +4081,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 5
 		case 7: // optional_fixed32
 			if wireType != 5 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4164,7 +4097,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 6
 		case 8: // optional_fixed64
 			if wireType != 1 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4180,7 +4113,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 7
 		case 9: // optional_sfixed32
 			if wireType != 5 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4196,7 +4129,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 8
 		case 10: // optional_sfixed64
 			if wireType != 1 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4212,7 +4145,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 9
 		case 11: // optional_float
 			if wireType != 5 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4228,7 +4161,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 10
 		case 12: // optional_double
 			if wireType != 1 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4244,7 +4177,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 11
 		case 13: // optional_bool
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4273,7 +4206,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 12
 		case 14: // optional_string
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4319,7 +4252,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 13
 		case 15: // optional_bytes
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4365,7 +4298,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 14
 		case 18: // optional_nested_message
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4413,7 +4346,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 15
 		case 19: // optional_foreign_message
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4461,7 +4394,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 16
 		case 21: // optional_nested_enum
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4490,7 +4423,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 17
 		case 22: // optional_foreign_enum
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4519,7 +4452,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 18
 		case 24: // optional_string_piece
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4565,7 +4498,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 19
 		case 25: // optional_cord
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4611,7 +4544,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 20
 		case 27: // recursive_message
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4750,7 +4683,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 				m.RepeatedInt32 = append(m.RepeatedInt32, int32(v))
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4847,7 +4780,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 				m.RepeatedInt64 = append(m.RepeatedInt64, int64(v))
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -4944,7 +4877,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 				m.RepeatedUint32 = append(m.RepeatedUint32, uint32(v))
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -5041,7 +4974,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 				m.RepeatedUint64 = append(m.RepeatedUint64, v)
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -5138,7 +5071,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 				m.RepeatedSint32 = append(m.RepeatedSint32, int32(uint32(v)>>1)^int32(uint32(v))<<31>>31)
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -5235,7 +5168,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 				m.RepeatedSint64 = append(m.RepeatedSint64, int64(v>>1)^int64(v)<<63>>63)
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -5298,7 +5231,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				iNdEx += 4
 				m.RepeatedFixed32 = append(m.RepeatedFixed32, v)
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -5361,7 +5294,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				iNdEx += 8
 				m.RepeatedFixed64 = append(m.RepeatedFixed64, v)
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -5424,7 +5357,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				iNdEx += 4
 				m.RepeatedSfixed32 = append(m.RepeatedSfixed32, int32(v))
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -5487,7 +5420,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				iNdEx += 8
 				m.RepeatedSfixed64 = append(m.RepeatedSfixed64, int64(v))
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -5550,7 +5483,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				iNdEx += 4
 				m.RepeatedFloat = append(m.RepeatedFloat, math.Float32frombits(v))
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -5613,7 +5546,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				iNdEx += 8
 				m.RepeatedDouble = append(m.RepeatedDouble, math.Float64frombits(v))
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -5704,7 +5637,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 				m.RepeatedBool = append(m.RepeatedBool, v != 0)
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -5712,7 +5645,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			}
 		case 44: // repeated_string
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -5757,7 +5690,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 45: // repeated_bytes
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -5802,7 +5735,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 48: // repeated_nested_message
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -5850,7 +5783,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 49: // repeated_foreign_message
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -5987,7 +5920,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 				m.RepeatedNestedEnum = append(m.RepeatedNestedEnum, TestAllTypesProto3_NestedEnum(v))
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -6084,7 +6017,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 				m.RepeatedForeignEnum = append(m.RepeatedForeignEnum, ForeignEnum(v))
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -6092,7 +6025,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			}
 		case 54: // repeated_string_piece
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -6137,7 +6070,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 55: // repeated_cord
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -6182,7 +6115,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 56: // map_int32_int32
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -6255,7 +6188,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				switch int32(entryWire >> 3) {
 				case 1:
 					if int(entryWire&0x7) != int(protowire.VarintType) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -6283,7 +6216,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					mapkey = int32(v)
 				case 2:
 					if int(entryWire&0x7) != int(protowire.VarintType) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -6310,7 +6243,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					}
 					mapvalue = int32(v)
 				default:
-					n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+					n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 					if err != nil {
 						return err
 					}
@@ -6321,7 +6254,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 57: // map_int64_int64
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -6394,7 +6327,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				switch int32(entryWire >> 3) {
 				case 1:
 					if int(entryWire&0x7) != int(protowire.VarintType) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -6422,7 +6355,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					mapkey = int64(v)
 				case 2:
 					if int(entryWire&0x7) != int(protowire.VarintType) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -6449,7 +6382,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					}
 					mapvalue = int64(v)
 				default:
-					n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+					n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 					if err != nil {
 						return err
 					}
@@ -6460,7 +6393,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 58: // map_uint32_uint32
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -6533,7 +6466,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				switch int32(entryWire >> 3) {
 				case 1:
 					if int(entryWire&0x7) != int(protowire.VarintType) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -6561,7 +6494,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					mapkey = uint32(v)
 				case 2:
 					if int(entryWire&0x7) != int(protowire.VarintType) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -6588,7 +6521,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					}
 					mapvalue = uint32(v)
 				default:
-					n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+					n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 					if err != nil {
 						return err
 					}
@@ -6599,7 +6532,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 59: // map_uint64_uint64
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -6672,7 +6605,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				switch int32(entryWire >> 3) {
 				case 1:
 					if int(entryWire&0x7) != int(protowire.VarintType) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -6700,7 +6633,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					mapkey = v
 				case 2:
 					if int(entryWire&0x7) != int(protowire.VarintType) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -6727,7 +6660,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					}
 					mapvalue = v
 				default:
-					n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+					n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 					if err != nil {
 						return err
 					}
@@ -6738,7 +6671,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 60: // map_sint32_sint32
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -6811,7 +6744,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				switch int32(entryWire >> 3) {
 				case 1:
 					if int(entryWire&0x7) != int(protowire.VarintType) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -6839,7 +6772,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					mapkey = int32(uint32(v)>>1) ^ int32(uint32(v))<<31>>31
 				case 2:
 					if int(entryWire&0x7) != int(protowire.VarintType) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -6866,7 +6799,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					}
 					mapvalue = int32(uint32(v)>>1) ^ int32(uint32(v))<<31>>31
 				default:
-					n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+					n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 					if err != nil {
 						return err
 					}
@@ -6877,7 +6810,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 61: // map_sint64_sint64
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -6950,7 +6883,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				switch int32(entryWire >> 3) {
 				case 1:
 					if int(entryWire&0x7) != int(protowire.VarintType) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -6978,7 +6911,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					mapkey = int64(v>>1) ^ int64(v)<<63>>63
 				case 2:
 					if int(entryWire&0x7) != int(protowire.VarintType) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -7005,7 +6938,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					}
 					mapvalue = int64(v>>1) ^ int64(v)<<63>>63
 				default:
-					n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+					n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 					if err != nil {
 						return err
 					}
@@ -7016,7 +6949,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 62: // map_fixed32_fixed32
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -7089,7 +7022,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				switch int32(entryWire >> 3) {
 				case 1:
 					if int(entryWire&0x7) != int(protowire.Fixed32Type) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -7104,7 +7037,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					mapkey = v
 				case 2:
 					if int(entryWire&0x7) != int(protowire.Fixed32Type) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -7118,7 +7051,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					iNdEx += 4
 					mapvalue = v
 				default:
-					n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+					n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 					if err != nil {
 						return err
 					}
@@ -7129,7 +7062,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 63: // map_fixed64_fixed64
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -7202,7 +7135,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				switch int32(entryWire >> 3) {
 				case 1:
 					if int(entryWire&0x7) != int(protowire.Fixed64Type) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -7217,7 +7150,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					mapkey = v
 				case 2:
 					if int(entryWire&0x7) != int(protowire.Fixed64Type) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -7231,7 +7164,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					iNdEx += 8
 					mapvalue = v
 				default:
-					n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+					n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 					if err != nil {
 						return err
 					}
@@ -7242,7 +7175,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 64: // map_sfixed32_sfixed32
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -7315,7 +7248,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				switch int32(entryWire >> 3) {
 				case 1:
 					if int(entryWire&0x7) != int(protowire.Fixed32Type) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -7330,7 +7263,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					mapkey = int32(v)
 				case 2:
 					if int(entryWire&0x7) != int(protowire.Fixed32Type) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -7344,7 +7277,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					iNdEx += 4
 					mapvalue = int32(v)
 				default:
-					n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+					n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 					if err != nil {
 						return err
 					}
@@ -7355,7 +7288,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 65: // map_sfixed64_sfixed64
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -7428,7 +7361,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				switch int32(entryWire >> 3) {
 				case 1:
 					if int(entryWire&0x7) != int(protowire.Fixed64Type) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -7443,7 +7376,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					mapkey = int64(v)
 				case 2:
 					if int(entryWire&0x7) != int(protowire.Fixed64Type) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -7457,7 +7390,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					iNdEx += 8
 					mapvalue = int64(v)
 				default:
-					n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+					n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 					if err != nil {
 						return err
 					}
@@ -7468,7 +7401,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 66: // map_int32_float
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -7541,7 +7474,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				switch int32(entryWire >> 3) {
 				case 1:
 					if int(entryWire&0x7) != int(protowire.VarintType) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -7569,7 +7502,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					mapkey = int32(v)
 				case 2:
 					if int(entryWire&0x7) != int(protowire.Fixed32Type) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -7583,7 +7516,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					iNdEx += 4
 					mapvalue = math.Float32frombits(v)
 				default:
-					n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+					n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 					if err != nil {
 						return err
 					}
@@ -7594,7 +7527,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 67: // map_int32_double
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -7667,7 +7600,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				switch int32(entryWire >> 3) {
 				case 1:
 					if int(entryWire&0x7) != int(protowire.VarintType) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -7695,7 +7628,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					mapkey = int32(v)
 				case 2:
 					if int(entryWire&0x7) != int(protowire.Fixed64Type) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -7709,7 +7642,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					iNdEx += 8
 					mapvalue = math.Float64frombits(v)
 				default:
-					n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+					n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 					if err != nil {
 						return err
 					}
@@ -7720,7 +7653,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 68: // map_bool_bool
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -7793,7 +7726,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				switch int32(entryWire >> 3) {
 				case 1:
 					if int(entryWire&0x7) != int(protowire.VarintType) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -7821,7 +7754,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					mapkey = v != 0
 				case 2:
 					if int(entryWire&0x7) != int(protowire.VarintType) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -7848,7 +7781,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					}
 					mapvalue = v != 0
 				default:
-					n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+					n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 					if err != nil {
 						return err
 					}
@@ -7859,7 +7792,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 69: // map_string_string
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -7932,7 +7865,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				switch int32(entryWire >> 3) {
 				case 1:
 					if int(entryWire&0x7) != int(protowire.BytesType) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -7977,7 +7910,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					iNdEx = postIndex
 				case 2:
 					if int(entryWire&0x7) != int(protowire.BytesType) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -8021,7 +7954,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					mapvalue = string(dAtA[iNdEx:postIndex])
 					iNdEx = postIndex
 				default:
-					n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+					n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 					if err != nil {
 						return err
 					}
@@ -8032,7 +7965,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 70: // map_string_bytes
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -8105,7 +8038,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				switch int32(entryWire >> 3) {
 				case 1:
 					if int(entryWire&0x7) != int(protowire.BytesType) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -8150,7 +8083,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					iNdEx = postIndex
 				case 2:
 					if int(entryWire&0x7) != int(protowire.BytesType) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -8194,7 +8127,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					mapvalue = append([]byte(nil), dAtA[iNdEx:postIndex]...)
 					iNdEx = postIndex
 				default:
-					n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+					n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 					if err != nil {
 						return err
 					}
@@ -8205,7 +8138,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 71: // map_string_nested_message
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -8278,7 +8211,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				switch int32(entryWire >> 3) {
 				case 1:
 					if int(entryWire&0x7) != int(protowire.BytesType) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -8323,7 +8256,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					iNdEx = postIndex
 				case 2:
 					if int(entryWire&0x7) != int(protowire.BytesType) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -8369,7 +8302,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					}
 					iNdEx = postIndex
 				default:
-					n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+					n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 					if err != nil {
 						return err
 					}
@@ -8380,7 +8313,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 72: // map_string_foreign_message
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -8453,7 +8386,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				switch int32(entryWire >> 3) {
 				case 1:
 					if int(entryWire&0x7) != int(protowire.BytesType) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -8498,7 +8431,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					iNdEx = postIndex
 				case 2:
 					if int(entryWire&0x7) != int(protowire.BytesType) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -8544,7 +8477,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					}
 					iNdEx = postIndex
 				default:
-					n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+					n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 					if err != nil {
 						return err
 					}
@@ -8555,7 +8488,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 73: // map_string_nested_enum
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -8628,7 +8561,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				switch int32(entryWire >> 3) {
 				case 1:
 					if int(entryWire&0x7) != int(protowire.BytesType) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -8673,7 +8606,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					iNdEx = postIndex
 				case 2:
 					if int(entryWire&0x7) != int(protowire.VarintType) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -8700,7 +8633,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					}
 					mapvalue = TestAllTypesProto3_NestedEnum(v)
 				default:
-					n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+					n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 					if err != nil {
 						return err
 					}
@@ -8711,7 +8644,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 74: // map_string_foreign_enum
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -8784,7 +8717,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				switch int32(entryWire >> 3) {
 				case 1:
 					if int(entryWire&0x7) != int(protowire.BytesType) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -8829,7 +8762,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					iNdEx = postIndex
 				case 2:
 					if int(entryWire&0x7) != int(protowire.VarintType) {
-						n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+						n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 						if err != nil {
 							return err
 						}
@@ -8856,7 +8789,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 					}
 					mapvalue = ForeignEnum(v)
 				default:
-					n, err := skipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
+					n, err := protohelpers.SkipValue(dAtA[iNdEx:], int(entryWire&0x7), int32(entryWire>>3))
 					if err != nil {
 						return err
 					}
@@ -8956,7 +8889,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 				m.PackedInt32 = append(m.PackedInt32, int32(v))
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -9053,7 +8986,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 				m.PackedInt64 = append(m.PackedInt64, int64(v))
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -9150,7 +9083,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 				m.PackedUint32 = append(m.PackedUint32, uint32(v))
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -9247,7 +9180,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 				m.PackedUint64 = append(m.PackedUint64, v)
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -9344,7 +9277,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 				m.PackedSint32 = append(m.PackedSint32, int32(uint32(v)>>1)^int32(uint32(v))<<31>>31)
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -9441,7 +9374,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 				m.PackedSint64 = append(m.PackedSint64, int64(v>>1)^int64(v)<<63>>63)
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -9504,7 +9437,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				iNdEx += 4
 				m.PackedFixed32 = append(m.PackedFixed32, v)
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -9567,7 +9500,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				iNdEx += 8
 				m.PackedFixed64 = append(m.PackedFixed64, v)
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -9630,7 +9563,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				iNdEx += 4
 				m.PackedSfixed32 = append(m.PackedSfixed32, int32(v))
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -9693,7 +9626,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				iNdEx += 8
 				m.PackedSfixed64 = append(m.PackedSfixed64, int64(v))
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -9756,7 +9689,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				iNdEx += 4
 				m.PackedFloat = append(m.PackedFloat, math.Float32frombits(v))
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -9819,7 +9752,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				iNdEx += 8
 				m.PackedDouble = append(m.PackedDouble, math.Float64frombits(v))
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -9910,7 +9843,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 				m.PackedBool = append(m.PackedBool, v != 0)
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -10007,7 +9940,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 				m.PackedNestedEnum = append(m.PackedNestedEnum, TestAllTypesProto3_NestedEnum(v))
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -10104,7 +10037,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 				m.UnpackedInt32 = append(m.UnpackedInt32, int32(v))
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -10201,7 +10134,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 				m.UnpackedInt64 = append(m.UnpackedInt64, int64(v))
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -10298,7 +10231,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 				m.UnpackedUint32 = append(m.UnpackedUint32, uint32(v))
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -10395,7 +10328,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 				m.UnpackedUint64 = append(m.UnpackedUint64, v)
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -10492,7 +10425,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 				m.UnpackedSint32 = append(m.UnpackedSint32, int32(uint32(v)>>1)^int32(uint32(v))<<31>>31)
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -10589,7 +10522,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 				m.UnpackedSint64 = append(m.UnpackedSint64, int64(v>>1)^int64(v)<<63>>63)
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -10652,7 +10585,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				iNdEx += 4
 				m.UnpackedFixed32 = append(m.UnpackedFixed32, v)
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -10715,7 +10648,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				iNdEx += 8
 				m.UnpackedFixed64 = append(m.UnpackedFixed64, v)
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -10778,7 +10711,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				iNdEx += 4
 				m.UnpackedSfixed32 = append(m.UnpackedSfixed32, int32(v))
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -10841,7 +10774,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				iNdEx += 8
 				m.UnpackedSfixed64 = append(m.UnpackedSfixed64, int64(v))
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -10904,7 +10837,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				iNdEx += 4
 				m.UnpackedFloat = append(m.UnpackedFloat, math.Float32frombits(v))
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -10967,7 +10900,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				iNdEx += 8
 				m.UnpackedDouble = append(m.UnpackedDouble, math.Float64frombits(v))
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -11058,7 +10991,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 				m.UnpackedBool = append(m.UnpackedBool, v != 0)
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -11155,7 +11088,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 				m.UnpackedNestedEnum = append(m.UnpackedNestedEnum, TestAllTypesProto3_NestedEnum(v))
 			} else {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -11163,7 +11096,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			}
 		case 111: // oneof_uint32
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -11191,7 +11124,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.OneofField = &TestAllTypesProto3_OneofUint32{OneofUint32: uint32(v)}
 		case 112: // oneof_nested_message
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -11243,7 +11176,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 113: // oneof_string
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -11288,7 +11221,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 114: // oneof_bytes
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -11333,7 +11266,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 115: // oneof_bool
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -11361,7 +11294,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.OneofField = &TestAllTypesProto3_OneofBool{OneofBool: v != 0}
 		case 116: // oneof_uint64
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -11389,7 +11322,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.OneofField = &TestAllTypesProto3_OneofUint64{OneofUint64: v}
 		case 117: // oneof_float
 			if wireType != 5 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -11404,7 +11337,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.OneofField = &TestAllTypesProto3_OneofFloat{OneofFloat: math.Float32frombits(v)}
 		case 118: // oneof_double
 			if wireType != 1 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -11419,7 +11352,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.OneofField = &TestAllTypesProto3_OneofDouble{OneofDouble: math.Float64frombits(v)}
 		case 119: // oneof_enum
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -11447,7 +11380,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.OneofField = &TestAllTypesProto3_OneofEnum{OneofEnum: TestAllTypesProto3_NestedEnum(v)}
 		case 401: // fieldname1
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -11476,7 +11409,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 21
 		case 402: // field_name2
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -11505,7 +11438,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 22
 		case 403: // _field_name3
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -11534,7 +11467,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 23
 		case 404: // field__name4_
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -11563,7 +11496,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 24
 		case 405: // field0name5
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -11592,7 +11525,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 25
 		case 406: // field_0_name6
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -11621,7 +11554,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 26
 		case 407: // fieldName7
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -11650,7 +11583,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 27
 		case 408: // FieldName8
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -11679,7 +11612,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 28
 		case 409: // field_Name9
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -11708,7 +11641,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 29
 		case 410: // Field_Name10
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -11737,7 +11670,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 30
 		case 411: // FIELD_NAME11
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -11766,7 +11699,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 31
 		case 412: // FIELD_name12
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -11795,7 +11728,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 32
 		case 413: // _field_name13
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -11824,7 +11757,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 33
 		case 414: // __field_name14
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -11853,7 +11786,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 34
 		case 415: // field__name15
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -11882,7 +11815,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 35
 		case 416: // field__Name16
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -11911,7 +11844,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 36
 		case 417: // field_name17__
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -11940,7 +11873,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.fieldsPresent[0] |= 1 << 37
 		case 418: // Field_name18__
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -11968,7 +11901,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			m.FieldName18 = int32(v)
 			m.fieldsPresent[0] |= 1 << 38
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -11993,7 +11926,7 @@ func (m *ForeignMessage) UnmarshalWithDepth(b []byte, depth int) error {
 }
 
 func (m *ForeignMessage) unmarshal(dAtA []byte, depth int) error {
-	if depth > maxUnmarshalDepth {
+	if depth > protohelpers.MaxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
 	}
 	l := len(dAtA)
@@ -12027,7 +11960,7 @@ func (m *ForeignMessage) unmarshal(dAtA []byte, depth int) error {
 		switch fieldNum {
 		case 1: // c
 			if wireType != 0 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -12055,7 +11988,7 @@ func (m *ForeignMessage) unmarshal(dAtA []byte, depth int) error {
 			m.C = int32(v)
 			m.fieldsPresent[0] |= 1 << 0
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -12080,7 +12013,7 @@ func (m *NullHypothesisProto3) UnmarshalWithDepth(b []byte, depth int) error {
 }
 
 func (m *NullHypothesisProto3) unmarshal(dAtA []byte, depth int) error {
-	if depth > maxUnmarshalDepth {
+	if depth > protohelpers.MaxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
 	}
 	l := len(dAtA)
@@ -12113,7 +12046,7 @@ func (m *NullHypothesisProto3) unmarshal(dAtA []byte, depth int) error {
 		wireType := int(wire & 0x7)
 		switch fieldNum {
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -12138,7 +12071,7 @@ func (m *EnumOnlyProto3) UnmarshalWithDepth(b []byte, depth int) error {
 }
 
 func (m *EnumOnlyProto3) unmarshal(dAtA []byte, depth int) error {
-	if depth > maxUnmarshalDepth {
+	if depth > protohelpers.MaxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
 	}
 	l := len(dAtA)
@@ -12171,7 +12104,7 @@ func (m *EnumOnlyProto3) unmarshal(dAtA []byte, depth int) error {
 		wireType := int(wire & 0x7)
 		switch fieldNum {
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}

@@ -1190,16 +1190,10 @@ func (fg *FileGenerator) emitAllMarshalMethods(fd protoreflect.FileDescriptor) {
 }
 
 func (fg *FileGenerator) emitAllUnmarshalMethods(fd protoreflect.FileDescriptor) {
-	// Emit nothing for a file with no messages — the maxUnmarshalDepth
-	// constant and skipValue helper exist only to be referenced by the
-	// per-message Unmarshal methods, so emitting them in a service-only
-	// or enums-only file would push fg.body across the "skip empty main
-	// .pb.go" threshold that generateFile uses to drop header-only output.
-	if fd.Messages().Len() == 0 {
-		return
-	}
-	fmt.Fprintf(fg.body, "const maxUnmarshalDepth = 10000\n\n")
-	fg.emitSkipValueHelper()
+	// The depth constant and skip helper live in protohelpers
+	// (MaxUnmarshalDepth / SkipValue) rather than being emitted per file:
+	// package-level declarations would collide when multiple .proto files
+	// generate into one Go package (Tempo's tempopb, Loki's logproto).
 	forEachMessage(fd, fg.emitUnmarshal)
 }
 
