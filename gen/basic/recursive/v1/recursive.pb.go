@@ -16,7 +16,7 @@ type LinkedList struct {
 	Value int64       `protobuf:"varint,1,opt,name=value,proto3" json:"value,omitempty"`
 	Next  *LinkedList `protobuf:"bytes,2,opt,name=next,proto3,oneof" json:"next,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // Self-referencing via repeated (slice) field.
@@ -25,7 +25,7 @@ type TreeNode struct {
 	Value    int64      `protobuf:"varint,2,opt,name=value,proto3" json:"value,omitempty"`
 	Children []TreeNode `protobuf:"bytes,3,rep,name=children,proto3" json:"children,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // Mutual recursion: NodeA references NodeB and vice versa.
@@ -34,14 +34,14 @@ type NodeA struct {
 	Peer  *NodeB  `protobuf:"bytes,2,opt,name=peer,proto3,oneof" json:"peer,omitempty"`
 	Peers []NodeB `protobuf:"bytes,3,rep,name=peers,proto3" json:"peers,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 type NodeB struct {
 	Id     int64  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Parent *NodeA `protobuf:"bytes,2,opt,name=parent,proto3,oneof" json:"parent,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 func (m *LinkedList) Reset() {

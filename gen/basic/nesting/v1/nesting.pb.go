@@ -15,14 +15,14 @@ type Level0_Level1_Level2_Level3 struct {
 	DeepValue string `protobuf:"bytes,1,opt,name=deep_value,json=deepValue,proto3" json:"deep_value,omitempty"`
 	Depth     int64  `protobuf:"varint,2,opt,name=depth,proto3" json:"depth,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 type Level0_Level1_Level2 struct {
 	Child Level0_Level1_Level2_Level3 `protobuf:"bytes,1,opt,name=child,proto3" json:"child,omitempty"`
 	Value string                      `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 type Level0_Level1 struct {
@@ -30,7 +30,7 @@ type Level0_Level1 struct {
 	Extras []Level0_Level1_Level2 `protobuf:"bytes,2,rep,name=extras,proto3" json:"extras,omitempty"`
 	Value  string                 `protobuf:"bytes,3,opt,name=value,proto3" json:"value,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // Four-level inline message definitions.
@@ -38,7 +38,7 @@ type Level0 struct {
 	Child Level0_Level1 `protobuf:"bytes,1,opt,name=child,proto3" json:"child,omitempty"`
 	Label string        `protobuf:"bytes,2,opt,name=label,proto3" json:"label,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // Cross-references to nested types from a top-level message.
@@ -47,7 +47,7 @@ type CrossRef struct {
 	DeepRef   Level0_Level1_Level2_Level3 `protobuf:"bytes,2,opt,name=deep_ref,json=deepRef,proto3" json:"deep_ref,omitempty"`
 	Tag       string                      `protobuf:"bytes,3,opt,name=tag,proto3" json:"tag,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 func (m *Level0_Level1_Level2_Level3) Reset() {

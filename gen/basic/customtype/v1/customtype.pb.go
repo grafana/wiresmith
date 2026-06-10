@@ -27,7 +27,7 @@ type CustomTypeHolder struct {
 	PlainBytes  []byte `protobuf:"bytes,3,opt,name=plain_bytes,json=plainBytes,proto3" json:"plain_bytes,omitempty"`
 	PlainString string `protobuf:"bytes,4,opt,name=plain_string,json=plainString,proto3" json:"plain_string,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // RepeatedCustomTypeHolder exercises (wiresmith.options.customtype) on the

@@ -22,7 +22,7 @@ type Inner struct {
 	Value int64  `protobuf:"varint,2,opt,name=value,proto3" json:"value,omitempty"`
 	Data  []byte `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 func (m *MapBench) Reset() {

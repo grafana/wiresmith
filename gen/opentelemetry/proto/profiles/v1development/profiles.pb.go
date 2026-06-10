@@ -114,7 +114,7 @@ type ProfilesData struct {
 	// One instance of ProfilesDictionary
 	Dictionary ProfilesDictionary `protobuf:"bytes,2,opt,name=dictionary,proto3" json:"dictionary,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // A collection of ScopeProfiles from a Resource.
@@ -134,7 +134,7 @@ type ResourceProfiles struct {
 	// to the data in the "scope_profiles" field which have their own schema_url field.
 	SchemaUrl string `protobuf:"bytes,3,opt,name=schema_url,json=schemaUrl,proto3" json:"schema_url,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // A collection of Profiles produced by an InstrumentationScope.
@@ -155,7 +155,7 @@ type ScopeProfiles struct {
 	// "profiles" field.
 	SchemaUrl string `protobuf:"bytes,3,opt,name=schema_url,json=schemaUrl,proto3" json:"schema_url,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // Represents a complete profile, including sample types, samples, mappings to
@@ -228,7 +228,7 @@ type Profile struct {
 	// References to attributes in attribute_table. [optional]
 	AttributeIndices []int32 `protobuf:"varint,11,rep,packed,name=attribute_indices,json=attributeIndices,proto3" json:"attribute_indices,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // A pointer from a profile Sample to a trace Span.
@@ -242,7 +242,7 @@ type Link struct {
 	// A unique identifier for the linked span. The ID is an 8-byte array.
 	SpanId []byte `protobuf:"bytes,2,opt,name=span_id,json=spanId,proto3" json:"span_id,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // ValueType describes the type and units of a value.
@@ -254,7 +254,7 @@ type ValueType struct {
 	// Index into ProfilesDictionary.string_table.
 	UnitStrindex int32 `protobuf:"varint,2,opt,name=unit_strindex,json=unitStrindex,proto3" json:"unit_strindex,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // Each Sample records values encountered in some program context. The program
@@ -304,7 +304,7 @@ type Sample struct {
 	// time range.
 	TimestampsUnixNano []uint64 `protobuf:"fixed64,5,rep,packed,name=timestamps_unix_nano,json=timestampsUnixNano,proto3" json:"timestamps_unix_nano,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // Describes the mapping of a binary in memory, including its address range,
@@ -325,7 +325,7 @@ type Mapping struct {
 	// References to attributes in ProfilesDictionary.attribute_table. [optional]
 	AttributeIndices []int32 `protobuf:"varint,5,rep,packed,name=attribute_indices,json=attributeIndices,proto3" json:"attribute_indices,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // A Stack represents a stack trace as a list of locations.
@@ -362,7 +362,7 @@ type Location struct {
 	// References to attributes in ProfilesDictionary.attribute_table. [optional]
 	AttributeIndices []int32 `protobuf:"varint,4,rep,packed,name=attribute_indices,json=attributeIndices,proto3" json:"attribute_indices,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // Details a specific line in a source code, linked to a function.
@@ -376,7 +376,7 @@ type Line struct {
 	// Column number in source code. 0 means unset.
 	Column int64 `protobuf:"varint,3,opt,name=column,proto3" json:"column,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // Describes a function, including its human-readable name, system name,
@@ -394,7 +394,7 @@ type Function struct {
 	// Line number in source file. 0 means unset.
 	StartLine int64 `protobuf:"varint,4,opt,name=start_line,json=startLine,proto3" json:"start_line,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // A custom 'dictionary native' style of encoding attributes which is more convenient
@@ -411,7 +411,7 @@ type KeyValueAndUnit struct {
 	// zero indicates implicit (by semconv) or non-defined unit.
 	UnitStrindex int32 `protobuf:"varint,3,opt,name=unit_strindex,json=unitStrindex,proto3" json:"unit_strindex,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 func (m *ProfilesDictionary) Reset() {

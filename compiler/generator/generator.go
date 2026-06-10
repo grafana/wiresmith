@@ -756,7 +756,15 @@ func (g *Generator) computeDests(results []protoreflect.FileDescriptor) error {
 	g.destinations = make(map[string]goDest)
 	type sighting struct{ relDir, path string }
 	seen := make(map[string]sighting)
-	importOwner := make(map[string]string)
+	// importOwner tracks which source directory first claimed each Go
+	// import path. Two proto packages MAY share one import path when they
+	// live in the same directory (protoc parity — Loki's indexgateway.proto
+	// cohabits pkg/logproto with `package logproto` files); the
+	// uncompilable case is one import path written from two different
+	// directories. Package-name agreement inside a directory is enforced
+	// by validateDestinations, which sees the resolved pkgName.
+	type pathClaim struct{ protoPkg, relDir, path string }
+	importOwner := make(map[string]pathClaim)
 
 	// inResults marks each file we'll consider an emit candidate.
 	inResults := make(map[string]bool, len(results))
@@ -793,11 +801,11 @@ func (g *Generator) computeDests(results []protoreflect.FileDescriptor) error {
 		// claims its import path below so a different proto package can't
 		// silently share it.
 		if override, ok := g.Overrides[fd.Path()]; ok && override != "" {
-			if owner, exists := importOwner[dest.importPath]; exists && owner != protoPkg {
-				return fmt.Errorf("import path %q is claimed by both proto packages %q and %q (check go_package options and -M overrides)",
-					dest.importPath, owner, protoPkg)
+			if owner, exists := importOwner[dest.importPath]; exists && owner.relDir != relDir {
+				return fmt.Errorf("import path %q is claimed from two directories: %s (package %q) and %s (package %q) — one Go import path cannot span directories (check go_package options and -M overrides)",
+					dest.importPath, owner.path, owner.protoPkg, fd.Path(), protoPkg)
 			}
-			importOwner[dest.importPath] = protoPkg
+			importOwner[dest.importPath] = pathClaim{protoPkg: protoPkg, relDir: relDir, path: fd.Path()}
 			g.destinations[fd.Path()] = dest
 			continue
 		}
@@ -813,11 +821,11 @@ func (g *Generator) computeDests(results []protoreflect.FileDescriptor) error {
 			continue
 		}
 		seen[protoPkg] = sighting{relDir: relDir, path: fd.Path()}
-		if owner, exists := importOwner[dest.importPath]; exists && owner != protoPkg {
-			return fmt.Errorf("import path %q is claimed by both proto packages %q and %q (check go_package options)",
-				dest.importPath, owner, protoPkg)
+		if owner, exists := importOwner[dest.importPath]; exists && owner.relDir != relDir {
+			return fmt.Errorf("import path %q is claimed from two directories: %s (package %q) and %s (package %q) — one Go import path cannot span directories (check go_package options)",
+				dest.importPath, owner.path, owner.protoPkg, fd.Path(), protoPkg)
 		}
-		importOwner[dest.importPath] = protoPkg
+		importOwner[dest.importPath] = pathClaim{protoPkg: protoPkg, relDir: relDir, path: fd.Path()}
 		g.destinations[fd.Path()] = dest
 	}
 	return nil
@@ -855,33 +863,36 @@ func destForReachable(fd protoreflect.FileDescriptor) goDest {
 // with a non-empty proto resolving to the same Go dir, because it writes
 // nothing there. Including it would produce a false-positive collision error.
 //
-// The same directory-equals-package rule also rejects two files in one
-// directory whose *resolved* Go import paths disagree — possible only when
-// an -M override pins one file of a directory somewhere its dir-mates don't
-// go. Both files would still be written into the same output directory with
-// different package clauses, which Go cannot compile.
+// The unit of agreement is the file's RESOLVED Go identity — import path
+// and package name — not its proto package: two proto packages may
+// legitimately cohabit one directory when their go_package options agree
+// (protoc parity; Loki's indexgateway.proto shares pkg/logproto with
+// `package logproto` files). What one directory cannot hold is two import
+// paths (an -M override pinning one file away from its dir-mates) or two
+// package clauses (e.g. neither file declares go_package, so the names
+// derive from the differing proto packages) — Go's directory-equals-package
+// rule rejects both, just later and less clearly.
 func (g *Generator) validateDestinations(results []protoreflect.FileDescriptor) error {
-	type claim struct{ protoPkg, importPath, path string }
+	type claim struct{ importPath, pkgName, path string }
 	dirOwner := make(map[string]claim)
 	for _, fd := range results {
 		if !g.shouldEmit(fd) {
 			continue
 		}
-		protoPkg := string(fd.Package())
 		relDir := sourceRelDir(fd.Path())
-		importPath := g.destinations[fd.Path()].importPath
+		dest := g.destinations[fd.Path()]
 		if owner, ok := dirOwner[relDir]; ok {
-			if owner.protoPkg != protoPkg {
-				return fmt.Errorf("destination %q is claimed by both proto packages %q and %q (two proto packages cannot share one source-relative directory)",
-					relDir, owner.protoPkg, protoPkg)
+			if owner.importPath != dest.importPath {
+				return fmt.Errorf("destination %q has conflicting Go import paths: %s resolves to %q but %s resolves to %q (check go_package options and -M overrides — one directory must map to one Go package)",
+					relDir, owner.path, owner.importPath, fd.Path(), dest.importPath)
 			}
-			if owner.importPath != importPath {
-				return fmt.Errorf("destination %q has conflicting Go import paths: %s resolves to %q but %s resolves to %q (check -M overrides — one directory must map to one Go package)",
-					relDir, owner.path, owner.importPath, fd.Path(), importPath)
+			if owner.pkgName != dest.pkgName {
+				return fmt.Errorf("destination %q has conflicting Go package names: %s resolves to %q but %s resolves to %q (files sharing a directory must agree on the Go package name — set matching go_package options)",
+					relDir, owner.path, owner.pkgName, fd.Path(), dest.pkgName)
 			}
 			continue
 		}
-		dirOwner[relDir] = claim{protoPkg: protoPkg, importPath: importPath, path: fd.Path()}
+		dirOwner[relDir] = claim{importPath: dest.importPath, pkgName: dest.pkgName, path: fd.Path()}
 	}
 	return nil
 }

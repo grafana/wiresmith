@@ -156,7 +156,7 @@ type TestAllTypesProto3_NestedMessage struct {
 	A           int32               `protobuf:"varint,1,opt,name=a,proto3" json:"a,omitempty"`
 	Corecursive *TestAllTypesProto3 `protobuf:"bytes,2,opt,name=corecursive,proto3,oneof" json:"corecursive,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 type TestAllTypesProto3 struct {
@@ -280,13 +280,13 @@ type TestAllTypesProto3 struct {
 	FieldName17 int32 `protobuf:"varint,417,opt,name=field_name17__,json=fieldName17,proto3" json:"field_name17__,omitempty"`
 	FieldName18 int32 `protobuf:"varint,418,opt,name=Field_name18__,json=FieldName18,proto3" json:"Field_name18__,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 type ForeignMessage struct {
 	C int32 `protobuf:"varint,1,opt,name=c,proto3" json:"c,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // Empty message used in conformance tests.

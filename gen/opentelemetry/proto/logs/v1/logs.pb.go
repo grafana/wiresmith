@@ -177,7 +177,7 @@ type ResourceLogs struct {
 	// to the data in the "scope_logs" field which have their own schema_url field.
 	SchemaUrl string `protobuf:"bytes,3,opt,name=schema_url,json=schemaUrl,proto3" json:"schema_url,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // A collection of Logs produced by a Scope.
@@ -196,7 +196,7 @@ type ScopeLogs struct {
 	// "log_records" field.
 	SchemaUrl string `protobuf:"bytes,3,opt,name=schema_url,json=schemaUrl,proto3" json:"schema_url,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // A log record according to OpenTelemetry Log Data Model:
@@ -281,7 +281,7 @@ type LogRecord struct {
 	// [Optional].
 	EventName string `protobuf:"bytes,12,opt,name=event_name,json=eventName,proto3" json:"event_name,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 func (m *LogsData) Reset() {

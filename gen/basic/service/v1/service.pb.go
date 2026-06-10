@@ -69,14 +69,14 @@ type Payload struct {
 	Nested   Nested            `protobuf:"bytes,7,opt,name=nested,proto3" json:"nested,omitempty"`
 	Status   Payload_Status    `protobuf:"varint,8,opt,name=status,proto3,enum=basic.service.v1.Payload.Status" json:"status,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 type Nested struct {
 	Name  string  `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	Value float64 `protobuf:"fixed64,2,opt,name=value,proto3" json:"value,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 func (m *Payload) Reset() {

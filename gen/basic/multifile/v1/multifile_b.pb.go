@@ -17,7 +17,7 @@ type BetaHolder struct {
 	Entries []AlphaEntry `protobuf:"bytes,1,rep,name=entries,proto3" json:"entries,omitempty"`
 	Note    string       `protobuf:"bytes,2,opt,name=note,proto3" json:"note,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 func (m *BetaHolder) Reset() {

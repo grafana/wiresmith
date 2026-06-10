@@ -156,7 +156,7 @@ type AllScalars struct {
 	FieldString   string  `protobuf:"bytes,14,opt,name=field_string,json=fieldString,proto3" json:"field_string,omitempty"`
 	FieldBytes    []byte  `protobuf:"bytes,15,opt,name=field_bytes,json=fieldBytes,proto3" json:"field_bytes,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // Message with every optional scalar type
@@ -208,7 +208,7 @@ type Outer struct {
 	Middles []Middle `protobuf:"bytes,2,rep,name=middles,proto3" json:"middles,omitempty"`
 	Name    string   `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 type Middle struct {
@@ -216,7 +216,7 @@ type Middle struct {
 	Inners []Inner `protobuf:"bytes,2,rep,name=inners,proto3" json:"inners,omitempty"`
 	Value  int64   `protobuf:"varint,3,opt,name=value,proto3" json:"value,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 type Inner struct {
@@ -225,7 +225,7 @@ type Inner struct {
 	SignedVal int64  `protobuf:"zigzag64,3,opt,name=signed_val,json=signedVal,proto3" json:"signed_val,omitempty"`
 	FixedVal  int32  `protobuf:"fixed32,4,opt,name=fixed_val,json=fixedVal,proto3" json:"fixed_val,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // High field numbers (multi-byte tags)
@@ -236,14 +236,14 @@ type HighFieldNumbers struct {
 	Field2048  string `protobuf:"bytes,2048,opt,name=field_2048,json=field2048,proto3" json:"field_2048,omitempty"`
 	Field16384 string `protobuf:"bytes,16384,opt,name=field_16384,json=field16384,proto3" json:"field_16384,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 type WithEnum struct {
 	Color  Color   `protobuf:"varint,1,opt,name=color,proto3,enum=test.kitchensink.v1.Color" json:"color,omitempty"`
 	Colors []Color `protobuf:"varint,2,rep,packed,name=colors,proto3,enum=test.kitchensink.v1.Color" json:"colors,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // Empty message
@@ -263,7 +263,7 @@ type Container struct {
 	Scalars  AllScalars      `protobuf:"bytes,2,opt,name=scalars,proto3" json:"scalars,omitempty"`
 	Variants []OneofVariants `protobuf:"bytes,3,rep,name=variants,proto3" json:"variants,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // Maps with all supported key/value type combinations

@@ -32,7 +32,7 @@ type Leaf struct {
 	Id   int64  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // CustomNameHolder exercises (wiresmith.options.customname) across every
@@ -54,7 +54,7 @@ type CustomNameHolder struct {
 	// Control: no annotation, keeps the default `PlainField`.
 	PlainField string `protobuf:"bytes,6,opt,name=plain_field,json=plainField,proto3" json:"plain_field,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 func (m *Leaf) Reset() {
