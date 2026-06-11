@@ -1673,6 +1673,51 @@ message B { string s = 1; }`)
 	}
 }
 
+// TestGenerateOverridesCollideAcrossDirsRejected pins the -M misuse flagged
+// on PR #125: two files in DIFFERENT source-relative directories both pinned
+// to the SAME Go import path would make one import path span two directories.
+// isSelfDest compares import paths only, so it would then treat the two
+// directories as one Go package and emit unqualified cross-directory
+// references — uncompilable code. computeDests' importOwner check (keyed by
+// import path, recording the claiming relDir) must reject it up front, naming
+// both files. Distinct from TestGenerateOverrideSplittingDirRejected, which
+// covers the inverse (one dir split to two import paths).
+func TestGenerateOverridesCollideAcrossDirsRejected(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "dira/a.proto", `
+syntax = "proto3";
+package pkga;
+option go_package = "example.com/mod/gen/dira";
+message A { string s = 1; }`)
+	writeProto(t, protoDir, "dirb/b.proto", `
+syntax = "proto3";
+package pkgb;
+option go_package = "example.com/mod/gen/dirb";
+message B { string s = 1; }`)
+
+	gen := &Generator{
+		Module:   "example.com/mod",
+		OutDir:   testOutDir(t),
+		ProtoDir: protoDir,
+		Overrides: map[string]string{
+			"dira/a.proto": "example.com/shared",
+			"dirb/b.proto": "example.com/shared",
+		},
+	}
+	err := gen.Generate(context.Background())
+	if err == nil {
+		t.Fatal("expected import-path-claimed-from-two-directories error, got nil")
+	}
+	if !strings.Contains(err.Error(), "claimed from two directories") {
+		t.Errorf("expected 'claimed from two directories' error, got: %v", err)
+	}
+	// Both files are pinned, so this must surface through the -M override
+	// branch of computeDests (which appends the -M hint), not the plain path.
+	if !strings.Contains(err.Error(), "-M overrides") {
+		t.Errorf("expected the -M-override variant of the error, got: %v", err)
+	}
+}
+
 // TestGenerateSharedGoPackageAcrossProtoPackages pins the protoc-parity
 // case Loki's indexgateway.proto needs: two .proto files in one directory
 // with DIFFERENT proto packages but the SAME resolved go_package compile
