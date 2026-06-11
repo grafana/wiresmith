@@ -68,7 +68,7 @@ message M {
 	body := fg.body.String()
 	assertContains(t, body, "func (m *M) HasX() bool {")
 	assertContains(t, body, "if m == nil {")
-	assertContains(t, body, "return m.fieldsPresent[0]&(1<<0) != 0")
+	assertContains(t, body, "return m.XXX_fieldsPresent[0]&(1<<0) != 0")
 }
 
 // TestEmitHas_BitmapWordCount_BoundaryAt65 pins the (n+63)/64 rounding:
@@ -102,7 +102,7 @@ func TestEmitHas_BitmapWordCount_BoundaryAt65(t *testing.T) {
 			// bit (n-1)%64 — cross-checking the helper alongside the word count
 			// catches the off-by-one that pure word-count assertions miss.
 			fg.emitHasMethods(md)
-			wantLast := fmt.Sprintf("return m.fieldsPresent[%d]&(1<<%d) != 0", (tc.nFields-1)/64, (tc.nFields-1)%64)
+			wantLast := fmt.Sprintf("return m.XXX_fieldsPresent[%d]&(1<<%d) != 0", (tc.nFields-1)/64, (tc.nFields-1)%64)
 			assertContains(t, fg.body.String(), wantLast)
 		})
 	}

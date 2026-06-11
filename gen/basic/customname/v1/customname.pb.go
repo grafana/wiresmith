@@ -32,7 +32,7 @@ type Leaf struct {
 	Id   int64  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // CustomNameHolder exercises (wiresmith.options.customname) across every
@@ -54,7 +54,7 @@ type CustomNameHolder struct {
 	// Control: no annotation, keeps the default `PlainField`.
 	PlainField string `protobuf:"bytes,6,opt,name=plain_field,json=plainField,proto3" json:"plain_field,omitempty"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 func (m *Leaf) Reset() {
@@ -89,35 +89,35 @@ func (m *Leaf) HasId() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Leaf) HasName() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<1) != 0
+	return m.XXX_fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *CustomNameHolder) HasBlockID() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *CustomNameHolder) HasHeadLeaf() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<1) != 0
+	return m.XXX_fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *CustomNameHolder) HasPlainField() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<2) != 0
+	return m.XXX_fieldsPresent[0]&(1<<2) != 0
 }
 
 func (m *Leaf) GetId() int64 {
@@ -142,7 +142,7 @@ func (m *CustomNameHolder) GetBlockID() string {
 }
 
 func (m *CustomNameHolder) GetHeadLeaf() *Leaf {
-	if m != nil && m.fieldsPresent[0]&(1<<1) != 0 {
+	if m != nil && m.XXX_fieldsPresent[0]&(1<<1) != 0 {
 		return &m.HeadLeaf
 	}
 	return nil
@@ -209,7 +209,7 @@ func (m *CustomNameHolder) Size() int {
 		s := m.HeadLeaf.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
-		} else if m.fieldsPresent[0]&(1<<1) != 0 {
+		} else if m.XXX_fieldsPresent[0]&(1<<1) != 0 {
 			n += 2
 		}
 	}
@@ -345,7 +345,7 @@ func (m *CustomNameHolder) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 			i--
 			dAtA[i] = 0x12
-		} else if m.fieldsPresent[0]&(1<<1) != 0 {
+		} else if m.XXX_fieldsPresent[0]&(1<<1) != 0 {
 			i--
 			dAtA[i] = 0
 			i--
@@ -434,7 +434,7 @@ func (m *Leaf) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.Id = int64(v)
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		case 2: // name
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -480,7 +480,7 @@ func (m *Leaf) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Name = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 1
+			m.XXX_fieldsPresent[0] |= 1 << 1
 		default:
 			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
@@ -584,7 +584,7 @@ func (m *CustomNameHolder) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.BlockID = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		case 2: // head_leaf
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -632,7 +632,7 @@ func (m *CustomNameHolder) unmarshal(dAtA []byte, depth int) error {
 				return err
 			}
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 1
+			m.XXX_fieldsPresent[0] |= 1 << 1
 		case 3: // byte_sizes
 			if wireType == 2 {
 				var byteLen uint64
@@ -848,7 +848,7 @@ func (m *CustomNameHolder) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.PlainField = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 2
+			m.XXX_fieldsPresent[0] |= 1 << 2
 		default:
 			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {

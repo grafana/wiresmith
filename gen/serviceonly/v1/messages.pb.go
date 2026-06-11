@@ -18,7 +18,7 @@ type Request struct {
 	Id      string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Payload []byte `protobuf:"bytes,2,opt,name=payload,proto3" json:"payload,omitempty"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // Response is the output type. Carries the request id back unchanged plus
@@ -29,7 +29,7 @@ type Response struct {
 	Id           string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	PayloadBytes int64  `protobuf:"varint,2,opt,name=payload_bytes,json=payloadBytes,proto3" json:"payload_bytes,omitempty"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 func (m *Request) Reset() {
@@ -64,28 +64,28 @@ func (m *Request) HasId() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Request) HasPayload() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<1) != 0
+	return m.XXX_fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *Response) HasId() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Response) HasPayloadBytes() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<1) != 0
+	return m.XXX_fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *Request) GetId() string {
@@ -323,7 +323,7 @@ func (m *Request) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Id = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		case 2: // payload
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -369,7 +369,7 @@ func (m *Request) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Payload = append(m.Payload[:0], dAtA[iNdEx:postIndex]...)
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 1
+			m.XXX_fieldsPresent[0] |= 1 << 1
 		default:
 			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
@@ -473,7 +473,7 @@ func (m *Response) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Id = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		case 2: // payload_bytes
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -502,7 +502,7 @@ func (m *Response) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.PayloadBytes = int64(v)
-			m.fieldsPresent[0] |= 1 << 1
+			m.XXX_fieldsPresent[0] |= 1 << 1
 		default:
 			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {

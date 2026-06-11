@@ -29,7 +29,7 @@ type Resource struct {
 	// Status: [Development]
 	EntityRefs []commonv1.EntityRef `protobuf:"bytes,3,rep,name=entity_refs,json=entityRefs,proto3" json:"entity_refs,omitempty"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 func (m *Resource) Reset() {
@@ -50,7 +50,7 @@ func (m *Resource) HasDroppedAttributesCount() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Resource) GetAttributes() []commonv1.KeyValue {
@@ -230,20 +230,20 @@ func (m *Resource) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Attributes) < c {
-				m.Attributes = make([]commonv1.KeyValue, 0, c)
-			} else {
-				m.Attributes = m.Attributes[:0]
+			if need := len(m.Attributes) + c; cap(m.Attributes) < need {
+				grown := make([]commonv1.KeyValue, len(m.Attributes), need)
+				copy(grown, m.Attributes)
+				m.Attributes = grown
 			}
 		}
 		if c := field3count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.EntityRefs) < c {
-				m.EntityRefs = make([]commonv1.EntityRef, 0, c)
-			} else {
-				m.EntityRefs = m.EntityRefs[:0]
+			if need := len(m.EntityRefs) + c; cap(m.EntityRefs) < need {
+				grown := make([]commonv1.EntityRef, len(m.EntityRefs), need)
+				copy(grown, m.EntityRefs)
+				m.EntityRefs = grown
 			}
 		}
 	}
@@ -350,7 +350,7 @@ func (m *Resource) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.DroppedAttributesCount = uint32(v)
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		case 3: // entity_refs
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)

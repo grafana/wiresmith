@@ -111,7 +111,7 @@ type WithNestedEnum struct {
 	Priorities []WithNestedEnum_Priority `protobuf:"varint,2,rep,packed,name=priorities,proto3,enum=basic.enum.v1.WithNestedEnum.Priority" json:"priorities,omitempty"`
 	Name       string                    `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // Message using enums in various contexts.
@@ -122,7 +122,7 @@ type EnumContainer struct {
 	RepeatedAliased []AliasedPriority     `protobuf:"varint,4,rep,packed,name=repeated_aliased,json=repeatedAliased,proto3,enum=basic.enum.v1.AliasedPriority" json:"repeated_aliased,omitempty"`
 	SignedMap       map[string]SignedEnum `protobuf:"bytes,5,rep,name=signed_map,json=signedMap,proto3" json:"signed_map,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value,enum=basic.enum.v1.SignedEnum"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 func (m *WithNestedEnum) Reset() {
@@ -157,28 +157,28 @@ func (m *WithNestedEnum) HasPriority() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *WithNestedEnum) HasName() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<1) != 0
+	return m.XXX_fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *EnumContainer) HasAliased() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *EnumContainer) HasSigned() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<1) != 0
+	return m.XXX_fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *EnumContainer) HasOptionalSigned() bool {
@@ -489,7 +489,7 @@ func (m *WithNestedEnum) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.Priority = WithNestedEnum_Priority(v)
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		case 2: // priorities
 			if wireType == 2 {
 				var byteLen uint64
@@ -632,7 +632,7 @@ func (m *WithNestedEnum) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Name = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 1
+			m.XXX_fieldsPresent[0] |= 1 << 1
 		default:
 			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
@@ -724,7 +724,9 @@ func (m *EnumContainer) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.SignedMap = make(map[string]SignedEnum, c)
+			if m.SignedMap == nil {
+				m.SignedMap = make(map[string]SignedEnum, c)
+			}
 		}
 	}
 	for iNdEx < l {
@@ -782,7 +784,7 @@ func (m *EnumContainer) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.Aliased = AliasedPriority(v)
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		case 2: // signed
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -811,7 +813,7 @@ func (m *EnumContainer) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.Signed = SignedEnum(v)
-			m.fieldsPresent[0] |= 1 << 1
+			m.XXX_fieldsPresent[0] |= 1 << 1
 		case 3: // optional_signed
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)

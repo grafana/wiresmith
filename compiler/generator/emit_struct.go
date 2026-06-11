@@ -52,7 +52,11 @@ func (fg *FileGenerator) emitStruct(md protoreflect.MessageDescriptor) {
 	}
 
 	if words := fg.presenceBitmapWords(md); words > 0 {
-		fmt.Fprintf(fg.body, "\n\tfieldsPresent [%d]uint64\n", words)
+		// json:"-" because the field is exported (for the gogo-reflection
+		// XXX_ skip convention) and would otherwise leak into every
+		// encoding/json marshal of the message — caught by Loki's stats
+		// HTTP-API golden test (N1).
+		fmt.Fprintf(fg.body, "\n\tXXX_fieldsPresent [%d]uint64 `json:\"-\"`\n", words)
 	}
 
 	fmt.Fprintf(fg.body, "}\n\n")

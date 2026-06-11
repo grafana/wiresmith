@@ -156,7 +156,7 @@ type TestAllTypesProto3_NestedMessage struct {
 	A           int32               `protobuf:"varint,1,opt,name=a,proto3" json:"a,omitempty"`
 	Corecursive *TestAllTypesProto3 `protobuf:"bytes,2,opt,name=corecursive,proto3,oneof" json:"corecursive,omitempty"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 type TestAllTypesProto3 struct {
@@ -280,13 +280,13 @@ type TestAllTypesProto3 struct {
 	FieldName17 int32 `protobuf:"varint,417,opt,name=field_name17__,json=fieldName17,proto3" json:"field_name17__,omitempty"`
 	FieldName18 int32 `protobuf:"varint,418,opt,name=Field_name18__,json=FieldName18,proto3" json:"Field_name18__,omitempty"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 type ForeignMessage struct {
 	C int32 `protobuf:"varint,1,opt,name=c,proto3" json:"c,omitempty"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // Empty message used in conformance tests.
@@ -370,7 +370,7 @@ func (m *TestAllTypesProto3_NestedMessage) HasA() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *TestAllTypesProto3_NestedMessage) HasCorecursive() bool {
@@ -381,273 +381,273 @@ func (m *TestAllTypesProto3) HasOptionalInt32() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalInt64() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<1) != 0
+	return m.XXX_fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalUint32() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<2) != 0
+	return m.XXX_fieldsPresent[0]&(1<<2) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalUint64() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<3) != 0
+	return m.XXX_fieldsPresent[0]&(1<<3) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalSint32() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<4) != 0
+	return m.XXX_fieldsPresent[0]&(1<<4) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalSint64() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<5) != 0
+	return m.XXX_fieldsPresent[0]&(1<<5) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalFixed32() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<6) != 0
+	return m.XXX_fieldsPresent[0]&(1<<6) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalFixed64() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<7) != 0
+	return m.XXX_fieldsPresent[0]&(1<<7) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalSfixed32() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<8) != 0
+	return m.XXX_fieldsPresent[0]&(1<<8) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalSfixed64() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<9) != 0
+	return m.XXX_fieldsPresent[0]&(1<<9) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalFloat() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<10) != 0
+	return m.XXX_fieldsPresent[0]&(1<<10) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalDouble() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<11) != 0
+	return m.XXX_fieldsPresent[0]&(1<<11) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalBool() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<12) != 0
+	return m.XXX_fieldsPresent[0]&(1<<12) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalString() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<13) != 0
+	return m.XXX_fieldsPresent[0]&(1<<13) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalBytes() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<14) != 0
+	return m.XXX_fieldsPresent[0]&(1<<14) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalNestedMessage() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<15) != 0
+	return m.XXX_fieldsPresent[0]&(1<<15) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalForeignMessage() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<16) != 0
+	return m.XXX_fieldsPresent[0]&(1<<16) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalNestedEnum() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<17) != 0
+	return m.XXX_fieldsPresent[0]&(1<<17) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalForeignEnum() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<18) != 0
+	return m.XXX_fieldsPresent[0]&(1<<18) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalStringPiece() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<19) != 0
+	return m.XXX_fieldsPresent[0]&(1<<19) != 0
 }
 
 func (m *TestAllTypesProto3) HasOptionalCord() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<20) != 0
+	return m.XXX_fieldsPresent[0]&(1<<20) != 0
 }
 
 func (m *TestAllTypesProto3) HasFieldname1() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<21) != 0
+	return m.XXX_fieldsPresent[0]&(1<<21) != 0
 }
 
 func (m *TestAllTypesProto3) HasFieldName2() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<22) != 0
+	return m.XXX_fieldsPresent[0]&(1<<22) != 0
 }
 
 func (m *TestAllTypesProto3) HasFieldName3() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<23) != 0
+	return m.XXX_fieldsPresent[0]&(1<<23) != 0
 }
 
 func (m *TestAllTypesProto3) HasFieldName4() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<24) != 0
+	return m.XXX_fieldsPresent[0]&(1<<24) != 0
 }
 
 func (m *TestAllTypesProto3) HasField0name5() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<25) != 0
+	return m.XXX_fieldsPresent[0]&(1<<25) != 0
 }
 
 func (m *TestAllTypesProto3) HasField0Name6() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<26) != 0
+	return m.XXX_fieldsPresent[0]&(1<<26) != 0
 }
 
 func (m *TestAllTypesProto3) HasFieldName7() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<27) != 0
+	return m.XXX_fieldsPresent[0]&(1<<27) != 0
 }
 
 func (m *TestAllTypesProto3) HasFieldName8() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<28) != 0
+	return m.XXX_fieldsPresent[0]&(1<<28) != 0
 }
 
 func (m *TestAllTypesProto3) HasFieldName9() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<29) != 0
+	return m.XXX_fieldsPresent[0]&(1<<29) != 0
 }
 
 func (m *TestAllTypesProto3) HasFieldName10() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<30) != 0
+	return m.XXX_fieldsPresent[0]&(1<<30) != 0
 }
 
 func (m *TestAllTypesProto3) HasFIELDNAME11() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<31) != 0
+	return m.XXX_fieldsPresent[0]&(1<<31) != 0
 }
 
 func (m *TestAllTypesProto3) HasFIELDName12() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<32) != 0
+	return m.XXX_fieldsPresent[0]&(1<<32) != 0
 }
 
 func (m *TestAllTypesProto3) HasFieldName13() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<33) != 0
+	return m.XXX_fieldsPresent[0]&(1<<33) != 0
 }
 
 func (m *TestAllTypesProto3) HasFieldName14() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<34) != 0
+	return m.XXX_fieldsPresent[0]&(1<<34) != 0
 }
 
 func (m *TestAllTypesProto3) HasFieldName15() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<35) != 0
+	return m.XXX_fieldsPresent[0]&(1<<35) != 0
 }
 
 func (m *TestAllTypesProto3) HasFieldName16() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<36) != 0
+	return m.XXX_fieldsPresent[0]&(1<<36) != 0
 }
 
 func (m *TestAllTypesProto3) HasFieldName17() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<37) != 0
+	return m.XXX_fieldsPresent[0]&(1<<37) != 0
 }
 
 func (m *TestAllTypesProto3) HasFieldName18() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<38) != 0
+	return m.XXX_fieldsPresent[0]&(1<<38) != 0
 }
 
 func (m *TestAllTypesProto3) HasRecursiveMessage() bool {
@@ -658,7 +658,7 @@ func (m *ForeignMessage) HasC() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *TestAllTypesProto3_NestedMessage) GetA() int32 {
@@ -781,14 +781,14 @@ func (m *TestAllTypesProto3) GetOptionalBytes() []byte {
 }
 
 func (m *TestAllTypesProto3) GetOptionalNestedMessage() *TestAllTypesProto3_NestedMessage {
-	if m != nil && m.fieldsPresent[0]&(1<<15) != 0 {
+	if m != nil && m.XXX_fieldsPresent[0]&(1<<15) != 0 {
 		return &m.OptionalNestedMessage
 	}
 	return nil
 }
 
 func (m *TestAllTypesProto3) GetOptionalForeignMessage() *ForeignMessage {
-	if m != nil && m.fieldsPresent[0]&(1<<16) != 0 {
+	if m != nil && m.XXX_fieldsPresent[0]&(1<<16) != 0 {
 		return &m.OptionalForeignMessage
 	}
 	return nil
@@ -1577,7 +1577,7 @@ func (m *TestAllTypesProto3) Size() int {
 		s := m.OptionalNestedMessage.Size()
 		if s > 0 {
 			n += 2 + protowire.SizeVarint(uint64(s)) + s
-		} else if m.fieldsPresent[0]&(1<<15) != 0 {
+		} else if m.XXX_fieldsPresent[0]&(1<<15) != 0 {
 			n += 3
 		}
 	}
@@ -1585,7 +1585,7 @@ func (m *TestAllTypesProto3) Size() int {
 		s := m.OptionalForeignMessage.Size()
 		if s > 0 {
 			n += 2 + protowire.SizeVarint(uint64(s)) + s
-		} else if m.fieldsPresent[0]&(1<<16) != 0 {
+		} else if m.XXX_fieldsPresent[0]&(1<<16) != 0 {
 			n += 3
 		}
 	}
@@ -3197,7 +3197,7 @@ func (m *TestAllTypesProto3) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			dAtA[i] = 0x01
 			i--
 			dAtA[i] = 0x9a
-		} else if m.fieldsPresent[0]&(1<<16) != 0 {
+		} else if m.XXX_fieldsPresent[0]&(1<<16) != 0 {
 			i--
 			dAtA[i] = 0
 			i--
@@ -3218,7 +3218,7 @@ func (m *TestAllTypesProto3) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			dAtA[i] = 0x01
 			i--
 			dAtA[i] = 0x92
-		} else if m.fieldsPresent[0]&(1<<15) != 0 {
+		} else if m.XXX_fieldsPresent[0]&(1<<15) != 0 {
 			i--
 			dAtA[i] = 0
 			i--
@@ -3493,7 +3493,7 @@ func (m *TestAllTypesProto3_NestedMessage) unmarshal(dAtA []byte, depth int) err
 				}
 			}
 			m.A = int32(v)
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		case 2: // corecursive
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -3707,175 +3707,213 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.RepeatedString) < c {
-				m.RepeatedString = make([]string, 0, c)
-			} else {
-				m.RepeatedString = m.RepeatedString[:0]
+			if need := len(m.RepeatedString) + c; cap(m.RepeatedString) < need {
+				grown := make([]string, len(m.RepeatedString), need)
+				copy(grown, m.RepeatedString)
+				m.RepeatedString = grown
 			}
 		}
 		if c := field45count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.RepeatedBytes) < c {
-				m.RepeatedBytes = make([][]byte, 0, c)
-			} else {
-				m.RepeatedBytes = m.RepeatedBytes[:0]
+			if need := len(m.RepeatedBytes) + c; cap(m.RepeatedBytes) < need {
+				grown := make([][]byte, len(m.RepeatedBytes), need)
+				copy(grown, m.RepeatedBytes)
+				m.RepeatedBytes = grown
 			}
 		}
 		if c := field48count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.RepeatedNestedMessage) < c {
-				m.RepeatedNestedMessage = make([]TestAllTypesProto3_NestedMessage, 0, c)
-			} else {
-				m.RepeatedNestedMessage = m.RepeatedNestedMessage[:0]
+			if need := len(m.RepeatedNestedMessage) + c; cap(m.RepeatedNestedMessage) < need {
+				grown := make([]TestAllTypesProto3_NestedMessage, len(m.RepeatedNestedMessage), need)
+				copy(grown, m.RepeatedNestedMessage)
+				m.RepeatedNestedMessage = grown
 			}
 		}
 		if c := field49count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.RepeatedForeignMessage) < c {
-				m.RepeatedForeignMessage = make([]ForeignMessage, 0, c)
-			} else {
-				m.RepeatedForeignMessage = m.RepeatedForeignMessage[:0]
+			if need := len(m.RepeatedForeignMessage) + c; cap(m.RepeatedForeignMessage) < need {
+				grown := make([]ForeignMessage, len(m.RepeatedForeignMessage), need)
+				copy(grown, m.RepeatedForeignMessage)
+				m.RepeatedForeignMessage = grown
 			}
 		}
 		if c := field54count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.RepeatedStringPiece) < c {
-				m.RepeatedStringPiece = make([]string, 0, c)
-			} else {
-				m.RepeatedStringPiece = m.RepeatedStringPiece[:0]
+			if need := len(m.RepeatedStringPiece) + c; cap(m.RepeatedStringPiece) < need {
+				grown := make([]string, len(m.RepeatedStringPiece), need)
+				copy(grown, m.RepeatedStringPiece)
+				m.RepeatedStringPiece = grown
 			}
 		}
 		if c := field55count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.RepeatedCord) < c {
-				m.RepeatedCord = make([]string, 0, c)
-			} else {
-				m.RepeatedCord = m.RepeatedCord[:0]
+			if need := len(m.RepeatedCord) + c; cap(m.RepeatedCord) < need {
+				grown := make([]string, len(m.RepeatedCord), need)
+				copy(grown, m.RepeatedCord)
+				m.RepeatedCord = grown
 			}
 		}
 		if c := field56count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MapInt32Int32 = make(map[int32]int32, c)
+			if m.MapInt32Int32 == nil {
+				m.MapInt32Int32 = make(map[int32]int32, c)
+			}
 		}
 		if c := field57count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MapInt64Int64 = make(map[int64]int64, c)
+			if m.MapInt64Int64 == nil {
+				m.MapInt64Int64 = make(map[int64]int64, c)
+			}
 		}
 		if c := field58count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MapUint32Uint32 = make(map[uint32]uint32, c)
+			if m.MapUint32Uint32 == nil {
+				m.MapUint32Uint32 = make(map[uint32]uint32, c)
+			}
 		}
 		if c := field59count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MapUint64Uint64 = make(map[uint64]uint64, c)
+			if m.MapUint64Uint64 == nil {
+				m.MapUint64Uint64 = make(map[uint64]uint64, c)
+			}
 		}
 		if c := field60count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MapSint32Sint32 = make(map[int32]int32, c)
+			if m.MapSint32Sint32 == nil {
+				m.MapSint32Sint32 = make(map[int32]int32, c)
+			}
 		}
 		if c := field61count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MapSint64Sint64 = make(map[int64]int64, c)
+			if m.MapSint64Sint64 == nil {
+				m.MapSint64Sint64 = make(map[int64]int64, c)
+			}
 		}
 		if c := field62count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MapFixed32Fixed32 = make(map[uint32]uint32, c)
+			if m.MapFixed32Fixed32 == nil {
+				m.MapFixed32Fixed32 = make(map[uint32]uint32, c)
+			}
 		}
 		if c := field63count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MapFixed64Fixed64 = make(map[uint64]uint64, c)
+			if m.MapFixed64Fixed64 == nil {
+				m.MapFixed64Fixed64 = make(map[uint64]uint64, c)
+			}
 		}
 		if c := field64count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MapSfixed32Sfixed32 = make(map[int32]int32, c)
+			if m.MapSfixed32Sfixed32 == nil {
+				m.MapSfixed32Sfixed32 = make(map[int32]int32, c)
+			}
 		}
 		if c := field65count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MapSfixed64Sfixed64 = make(map[int64]int64, c)
+			if m.MapSfixed64Sfixed64 == nil {
+				m.MapSfixed64Sfixed64 = make(map[int64]int64, c)
+			}
 		}
 		if c := field66count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MapInt32Float = make(map[int32]float32, c)
+			if m.MapInt32Float == nil {
+				m.MapInt32Float = make(map[int32]float32, c)
+			}
 		}
 		if c := field67count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MapInt32Double = make(map[int32]float64, c)
+			if m.MapInt32Double == nil {
+				m.MapInt32Double = make(map[int32]float64, c)
+			}
 		}
 		if c := field68count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MapBoolBool = make(map[bool]bool, c)
+			if m.MapBoolBool == nil {
+				m.MapBoolBool = make(map[bool]bool, c)
+			}
 		}
 		if c := field69count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MapStringString = make(map[string]string, c)
+			if m.MapStringString == nil {
+				m.MapStringString = make(map[string]string, c)
+			}
 		}
 		if c := field70count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MapStringBytes = make(map[string][]byte, c)
+			if m.MapStringBytes == nil {
+				m.MapStringBytes = make(map[string][]byte, c)
+			}
 		}
 		if c := field71count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MapStringNestedMessage = make(map[string]TestAllTypesProto3_NestedMessage, c)
+			if m.MapStringNestedMessage == nil {
+				m.MapStringNestedMessage = make(map[string]TestAllTypesProto3_NestedMessage, c)
+			}
 		}
 		if c := field72count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MapStringForeignMessage = make(map[string]ForeignMessage, c)
+			if m.MapStringForeignMessage == nil {
+				m.MapStringForeignMessage = make(map[string]ForeignMessage, c)
+			}
 		}
 		if c := field73count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MapStringNestedEnum = make(map[string]TestAllTypesProto3_NestedEnum, c)
+			if m.MapStringNestedEnum == nil {
+				m.MapStringNestedEnum = make(map[string]TestAllTypesProto3_NestedEnum, c)
+			}
 		}
 		if c := field74count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MapStringForeignEnum = make(map[string]ForeignEnum, c)
+			if m.MapStringForeignEnum == nil {
+				m.MapStringForeignEnum = make(map[string]ForeignEnum, c)
+			}
 		}
 	}
 	for iNdEx < l {
@@ -3933,7 +3971,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.OptionalInt32 = int32(v)
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		case 2: // optional_int64
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -3962,7 +4000,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.OptionalInt64 = int64(v)
-			m.fieldsPresent[0] |= 1 << 1
+			m.XXX_fieldsPresent[0] |= 1 << 1
 		case 3: // optional_uint32
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -3991,7 +4029,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.OptionalUint32 = uint32(v)
-			m.fieldsPresent[0] |= 1 << 2
+			m.XXX_fieldsPresent[0] |= 1 << 2
 		case 4: // optional_uint64
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4020,7 +4058,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.OptionalUint64 = v
-			m.fieldsPresent[0] |= 1 << 3
+			m.XXX_fieldsPresent[0] |= 1 << 3
 		case 5: // optional_sint32
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4049,7 +4087,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.OptionalSint32 = int32(uint32(v)>>1) ^ int32(uint32(v))<<31>>31
-			m.fieldsPresent[0] |= 1 << 4
+			m.XXX_fieldsPresent[0] |= 1 << 4
 		case 6: // optional_sint64
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4078,7 +4116,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.OptionalSint64 = int64(v>>1) ^ int64(v)<<63>>63
-			m.fieldsPresent[0] |= 1 << 5
+			m.XXX_fieldsPresent[0] |= 1 << 5
 		case 7: // optional_fixed32
 			if wireType != 5 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4094,7 +4132,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint32(dAtA[iNdEx:])
 			iNdEx += 4
 			m.OptionalFixed32 = v
-			m.fieldsPresent[0] |= 1 << 6
+			m.XXX_fieldsPresent[0] |= 1 << 6
 		case 8: // optional_fixed64
 			if wireType != 1 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4110,7 +4148,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.OptionalFixed64 = v
-			m.fieldsPresent[0] |= 1 << 7
+			m.XXX_fieldsPresent[0] |= 1 << 7
 		case 9: // optional_sfixed32
 			if wireType != 5 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4126,7 +4164,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint32(dAtA[iNdEx:])
 			iNdEx += 4
 			m.OptionalSfixed32 = int32(v)
-			m.fieldsPresent[0] |= 1 << 8
+			m.XXX_fieldsPresent[0] |= 1 << 8
 		case 10: // optional_sfixed64
 			if wireType != 1 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4142,7 +4180,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.OptionalSfixed64 = int64(v)
-			m.fieldsPresent[0] |= 1 << 9
+			m.XXX_fieldsPresent[0] |= 1 << 9
 		case 11: // optional_float
 			if wireType != 5 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4158,7 +4196,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint32(dAtA[iNdEx:])
 			iNdEx += 4
 			m.OptionalFloat = math.Float32frombits(v)
-			m.fieldsPresent[0] |= 1 << 10
+			m.XXX_fieldsPresent[0] |= 1 << 10
 		case 12: // optional_double
 			if wireType != 1 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4174,7 +4212,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			v := binary.LittleEndian.Uint64(dAtA[iNdEx:])
 			iNdEx += 8
 			m.OptionalDouble = math.Float64frombits(v)
-			m.fieldsPresent[0] |= 1 << 11
+			m.XXX_fieldsPresent[0] |= 1 << 11
 		case 13: // optional_bool
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4203,7 +4241,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.OptionalBool = v != 0
-			m.fieldsPresent[0] |= 1 << 12
+			m.XXX_fieldsPresent[0] |= 1 << 12
 		case 14: // optional_string
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4249,7 +4287,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.OptionalString = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 13
+			m.XXX_fieldsPresent[0] |= 1 << 13
 		case 15: // optional_bytes
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4295,7 +4333,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.OptionalBytes = append(m.OptionalBytes[:0], dAtA[iNdEx:postIndex]...)
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 14
+			m.XXX_fieldsPresent[0] |= 1 << 14
 		case 18: // optional_nested_message
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4343,7 +4381,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				return err
 			}
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 15
+			m.XXX_fieldsPresent[0] |= 1 << 15
 		case 19: // optional_foreign_message
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4391,7 +4429,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				return err
 			}
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 16
+			m.XXX_fieldsPresent[0] |= 1 << 16
 		case 21: // optional_nested_enum
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4420,7 +4458,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.OptionalNestedEnum = TestAllTypesProto3_NestedEnum(v)
-			m.fieldsPresent[0] |= 1 << 17
+			m.XXX_fieldsPresent[0] |= 1 << 17
 		case 22: // optional_foreign_enum
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4449,7 +4487,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.OptionalForeignEnum = ForeignEnum(v)
-			m.fieldsPresent[0] |= 1 << 18
+			m.XXX_fieldsPresent[0] |= 1 << 18
 		case 24: // optional_string_piece
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4495,7 +4533,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.OptionalStringPiece = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 19
+			m.XXX_fieldsPresent[0] |= 1 << 19
 		case 25: // optional_cord
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -4541,7 +4579,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.OptionalCord = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 20
+			m.XXX_fieldsPresent[0] |= 1 << 20
 		case 27: // recursive_message
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -11406,7 +11444,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.Fieldname1 = int32(v)
-			m.fieldsPresent[0] |= 1 << 21
+			m.XXX_fieldsPresent[0] |= 1 << 21
 		case 402: // field_name2
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -11435,7 +11473,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.FieldName2 = int32(v)
-			m.fieldsPresent[0] |= 1 << 22
+			m.XXX_fieldsPresent[0] |= 1 << 22
 		case 403: // _field_name3
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -11464,7 +11502,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.FieldName3 = int32(v)
-			m.fieldsPresent[0] |= 1 << 23
+			m.XXX_fieldsPresent[0] |= 1 << 23
 		case 404: // field__name4_
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -11493,7 +11531,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.FieldName4 = int32(v)
-			m.fieldsPresent[0] |= 1 << 24
+			m.XXX_fieldsPresent[0] |= 1 << 24
 		case 405: // field0name5
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -11522,7 +11560,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.Field0name5 = int32(v)
-			m.fieldsPresent[0] |= 1 << 25
+			m.XXX_fieldsPresent[0] |= 1 << 25
 		case 406: // field_0_name6
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -11551,7 +11589,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.Field0Name6 = int32(v)
-			m.fieldsPresent[0] |= 1 << 26
+			m.XXX_fieldsPresent[0] |= 1 << 26
 		case 407: // fieldName7
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -11580,7 +11618,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.FieldName7 = int32(v)
-			m.fieldsPresent[0] |= 1 << 27
+			m.XXX_fieldsPresent[0] |= 1 << 27
 		case 408: // FieldName8
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -11609,7 +11647,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.FieldName8 = int32(v)
-			m.fieldsPresent[0] |= 1 << 28
+			m.XXX_fieldsPresent[0] |= 1 << 28
 		case 409: // field_Name9
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -11638,7 +11676,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.FieldName9 = int32(v)
-			m.fieldsPresent[0] |= 1 << 29
+			m.XXX_fieldsPresent[0] |= 1 << 29
 		case 410: // Field_Name10
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -11667,7 +11705,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.FieldName10 = int32(v)
-			m.fieldsPresent[0] |= 1 << 30
+			m.XXX_fieldsPresent[0] |= 1 << 30
 		case 411: // FIELD_NAME11
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -11696,7 +11734,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.FIELDNAME11 = int32(v)
-			m.fieldsPresent[0] |= 1 << 31
+			m.XXX_fieldsPresent[0] |= 1 << 31
 		case 412: // FIELD_name12
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -11725,7 +11763,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.FIELDName12 = int32(v)
-			m.fieldsPresent[0] |= 1 << 32
+			m.XXX_fieldsPresent[0] |= 1 << 32
 		case 413: // _field_name13
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -11754,7 +11792,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.FieldName13 = int32(v)
-			m.fieldsPresent[0] |= 1 << 33
+			m.XXX_fieldsPresent[0] |= 1 << 33
 		case 414: // __field_name14
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -11783,7 +11821,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.FieldName14 = int32(v)
-			m.fieldsPresent[0] |= 1 << 34
+			m.XXX_fieldsPresent[0] |= 1 << 34
 		case 415: // field__name15
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -11812,7 +11850,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.FieldName15 = int32(v)
-			m.fieldsPresent[0] |= 1 << 35
+			m.XXX_fieldsPresent[0] |= 1 << 35
 		case 416: // field__Name16
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -11841,7 +11879,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.FieldName16 = int32(v)
-			m.fieldsPresent[0] |= 1 << 36
+			m.XXX_fieldsPresent[0] |= 1 << 36
 		case 417: // field_name17__
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -11870,7 +11908,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.FieldName17 = int32(v)
-			m.fieldsPresent[0] |= 1 << 37
+			m.XXX_fieldsPresent[0] |= 1 << 37
 		case 418: // Field_name18__
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -11899,7 +11937,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.FieldName18 = int32(v)
-			m.fieldsPresent[0] |= 1 << 38
+			m.XXX_fieldsPresent[0] |= 1 << 38
 		default:
 			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
@@ -11986,7 +12024,7 @@ func (m *ForeignMessage) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.C = int32(v)
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		default:
 			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {

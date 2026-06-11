@@ -116,7 +116,7 @@ type KeyValue struct {
 	// Status: [Alpha]
 	KeyStrindex int32 `protobuf:"varint,3,opt,name=key_strindex,json=keyStrindex,proto3" json:"key_strindex,omitempty"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // InstrumentationScope is a message representing the instrumentation scope information
@@ -138,7 +138,7 @@ type InstrumentationScope struct {
 	// attributes. If this value is 0, then no attributes were dropped.
 	DroppedAttributesCount uint32 `protobuf:"varint,4,opt,name=dropped_attributes_count,json=droppedAttributesCount,proto3" json:"dropped_attributes_count,omitempty"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // A reference to an Entity.
@@ -171,7 +171,7 @@ type EntityRef struct {
 	// These keys MUST exist in the containing {message}.attributes.
 	DescriptionKeys []string `protobuf:"bytes,4,rep,name=description_keys,json=descriptionKeys,proto3" json:"description_keys,omitempty"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 func (m *AnyValue) Reset() {
@@ -262,56 +262,56 @@ func (m *KeyValue) HasKey() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *KeyValue) HasValue() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<1) != 0
+	return m.XXX_fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *KeyValue) HasKeyStrindex() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<2) != 0
+	return m.XXX_fieldsPresent[0]&(1<<2) != 0
 }
 
 func (m *InstrumentationScope) HasName() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *InstrumentationScope) HasVersion() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<1) != 0
+	return m.XXX_fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *InstrumentationScope) HasDroppedAttributesCount() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<2) != 0
+	return m.XXX_fieldsPresent[0]&(1<<2) != 0
 }
 
 func (m *EntityRef) HasSchemaUrl() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *EntityRef) HasType() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<1) != 0
+	return m.XXX_fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *AnyValue) GetValue() AnyValue_Value {
@@ -399,7 +399,7 @@ func (m *KeyValue) GetKey() string {
 }
 
 func (m *KeyValue) GetValue() *AnyValue {
-	if m != nil && m.fieldsPresent[0]&(1<<1) != 0 {
+	if m != nil && m.XXX_fieldsPresent[0]&(1<<1) != 0 {
 		return &m.Value
 	}
 	return nil
@@ -536,7 +536,7 @@ func (m *KeyValue) Size() int {
 		s := m.Value.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
-		} else if m.fieldsPresent[0]&(1<<1) != 0 {
+		} else if m.XXX_fieldsPresent[0]&(1<<1) != 0 {
 			n += 2
 		}
 	}
@@ -801,7 +801,7 @@ func (m *KeyValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 			i--
 			dAtA[i] = 0x12
-		} else if m.fieldsPresent[0]&(1<<1) != 0 {
+		} else if m.XXX_fieldsPresent[0]&(1<<1) != 0 {
 			i--
 			dAtA[i] = 0
 			i--
@@ -1367,10 +1367,10 @@ func (m *ArrayValue) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Values) < c {
-				m.Values = make([]AnyValue, 0, c)
-			} else {
-				m.Values = m.Values[:0]
+			if need := len(m.Values) + c; cap(m.Values) < need {
+				grown := make([]AnyValue, len(m.Values), need)
+				copy(grown, m.Values)
+				m.Values = grown
 			}
 		}
 	}
@@ -1540,10 +1540,10 @@ func (m *KeyValueList) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Values) < c {
-				m.Values = make([]KeyValue, 0, c)
-			} else {
-				m.Values = m.Values[:0]
+			if need := len(m.Values) + c; cap(m.Values) < need {
+				grown := make([]KeyValue, len(m.Values), need)
+				copy(grown, m.Values)
+				m.Values = grown
 			}
 		}
 	}
@@ -1725,7 +1725,7 @@ func (m *KeyValue) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Key = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		case 2: // value
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1773,7 +1773,7 @@ func (m *KeyValue) unmarshal(dAtA []byte, depth int) error {
 				return err
 			}
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 1
+			m.XXX_fieldsPresent[0] |= 1 << 1
 		case 3: // key_strindex
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1802,7 +1802,7 @@ func (m *KeyValue) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.KeyStrindex = int32(v)
-			m.fieldsPresent[0] |= 1 << 2
+			m.XXX_fieldsPresent[0] |= 1 << 2
 		default:
 			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
@@ -1894,10 +1894,10 @@ func (m *InstrumentationScope) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Attributes) < c {
-				m.Attributes = make([]KeyValue, 0, c)
-			} else {
-				m.Attributes = m.Attributes[:0]
+			if need := len(m.Attributes) + c; cap(m.Attributes) < need {
+				grown := make([]KeyValue, len(m.Attributes), need)
+				copy(grown, m.Attributes)
+				m.Attributes = grown
 			}
 		}
 	}
@@ -1973,7 +1973,7 @@ func (m *InstrumentationScope) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Name = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		case 2: // version
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2019,7 +2019,7 @@ func (m *InstrumentationScope) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Version = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 1
+			m.XXX_fieldsPresent[0] |= 1 << 1
 		case 3: // attributes
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2096,7 +2096,7 @@ func (m *InstrumentationScope) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.DroppedAttributesCount = uint32(v)
-			m.fieldsPresent[0] |= 1 << 2
+			m.XXX_fieldsPresent[0] |= 1 << 2
 		default:
 			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
@@ -2191,20 +2191,20 @@ func (m *EntityRef) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.IdKeys) < c {
-				m.IdKeys = make([]string, 0, c)
-			} else {
-				m.IdKeys = m.IdKeys[:0]
+			if need := len(m.IdKeys) + c; cap(m.IdKeys) < need {
+				grown := make([]string, len(m.IdKeys), need)
+				copy(grown, m.IdKeys)
+				m.IdKeys = grown
 			}
 		}
 		if c := field4count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.DescriptionKeys) < c {
-				m.DescriptionKeys = make([]string, 0, c)
-			} else {
-				m.DescriptionKeys = m.DescriptionKeys[:0]
+			if need := len(m.DescriptionKeys) + c; cap(m.DescriptionKeys) < need {
+				grown := make([]string, len(m.DescriptionKeys), need)
+				copy(grown, m.DescriptionKeys)
+				m.DescriptionKeys = grown
 			}
 		}
 	}
@@ -2280,7 +2280,7 @@ func (m *EntityRef) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.SchemaUrl = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		case 2: // type
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -2326,7 +2326,7 @@ func (m *EntityRef) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Type = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 1
+			m.XXX_fieldsPresent[0] |= 1 << 1
 		case 3: // id_keys
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)

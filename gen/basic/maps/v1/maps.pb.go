@@ -22,7 +22,7 @@ type Inner struct {
 	Value int64  `protobuf:"varint,2,opt,name=value,proto3" json:"value,omitempty"`
 	Data  []byte `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 func (m *MapBench) Reset() {
@@ -57,21 +57,21 @@ func (m *Inner) HasName() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Inner) HasValue() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<1) != 0
+	return m.XXX_fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *Inner) HasData() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<2) != 0
+	return m.XXX_fieldsPresent[0]&(1<<2) != 0
 }
 
 func (m *MapBench) GetStringMap() map[string]string {
@@ -373,19 +373,25 @@ func (m *MapBench) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.StringMap = make(map[string]string, c)
+			if m.StringMap == nil {
+				m.StringMap = make(map[string]string, c)
+			}
 		}
 		if c := field2count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.IntMap = make(map[int64]int64, c)
+			if m.IntMap == nil {
+				m.IntMap = make(map[int64]int64, c)
+			}
 		}
 		if c := field3count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MessageMap = make(map[string]Inner, c)
+			if m.MessageMap == nil {
+				m.MessageMap = make(map[string]Inner, c)
+			}
 		}
 	}
 	for iNdEx < l {
@@ -1005,7 +1011,7 @@ func (m *Inner) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Name = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		case 2: // value
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1034,7 +1040,7 @@ func (m *Inner) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.Value = int64(v)
-			m.fieldsPresent[0] |= 1 << 1
+			m.XXX_fieldsPresent[0] |= 1 << 1
 		case 3: // data
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -1080,7 +1086,7 @@ func (m *Inner) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Data = append(m.Data[:0], dAtA[iNdEx:postIndex]...)
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 2
+			m.XXX_fieldsPresent[0] |= 1 << 2
 		default:
 			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {

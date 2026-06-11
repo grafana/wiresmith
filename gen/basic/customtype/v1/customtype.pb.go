@@ -27,7 +27,7 @@ type CustomTypeHolder struct {
 	PlainBytes  []byte `protobuf:"bytes,3,opt,name=plain_bytes,json=plainBytes,proto3" json:"plain_bytes,omitempty"`
 	PlainString string `protobuf:"bytes,4,opt,name=plain_string,json=plainString,proto3" json:"plain_string,omitempty"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // RepeatedCustomTypeHolder exercises (wiresmith.options.customtype) on the
@@ -79,28 +79,28 @@ func (m *CustomTypeHolder) HasLabels() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *CustomTypeHolder) HasTenantId() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<1) != 0
+	return m.XXX_fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *CustomTypeHolder) HasPlainBytes() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<2) != 0
+	return m.XXX_fieldsPresent[0]&(1<<2) != 0
 }
 
 func (m *CustomTypeHolder) HasPlainString() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<3) != 0
+	return m.XXX_fieldsPresent[0]&(1<<3) != 0
 }
 
 func (m *CustomTypeHolder) GetLabels() customtypes.LabelPairs {
@@ -444,7 +444,7 @@ func (m *CustomTypeHolder) unmarshal(dAtA []byte, depth int) error {
 				return err
 			}
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		case 2: // tenant_id
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -492,7 +492,7 @@ func (m *CustomTypeHolder) unmarshal(dAtA []byte, depth int) error {
 				return err
 			}
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 1
+			m.XXX_fieldsPresent[0] |= 1 << 1
 		case 3: // plain_bytes
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -538,7 +538,7 @@ func (m *CustomTypeHolder) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.PlainBytes = append(m.PlainBytes[:0], dAtA[iNdEx:postIndex]...)
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 2
+			m.XXX_fieldsPresent[0] |= 1 << 2
 		case 4: // plain_string
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -584,7 +584,7 @@ func (m *CustomTypeHolder) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.PlainString = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 3
+			m.XXX_fieldsPresent[0] |= 1 << 3
 		default:
 			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
@@ -685,40 +685,40 @@ func (m *RepeatedCustomTypeHolder) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Ids) < c {
-				m.Ids = make([]customtypes.UUID, 0, c)
-			} else {
-				m.Ids = m.Ids[:0]
+			if need := len(m.Ids) + c; cap(m.Ids) < need {
+				grown := make([]customtypes.UUID, len(m.Ids), need)
+				copy(grown, m.Ids)
+				m.Ids = grown
 			}
 		}
 		if c := field2count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Tags) < c {
-				m.Tags = make([]customtypes.Tag, 0, c)
-			} else {
-				m.Tags = m.Tags[:0]
+			if need := len(m.Tags) + c; cap(m.Tags) < need {
+				grown := make([]customtypes.Tag, len(m.Tags), need)
+				copy(grown, m.Tags)
+				m.Tags = grown
 			}
 		}
 		if c := field3count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.PlainIds) < c {
-				m.PlainIds = make([][]byte, 0, c)
-			} else {
-				m.PlainIds = m.PlainIds[:0]
+			if need := len(m.PlainIds) + c; cap(m.PlainIds) < need {
+				grown := make([][]byte, len(m.PlainIds), need)
+				copy(grown, m.PlainIds)
+				m.PlainIds = grown
 			}
 		}
 		if c := field4count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.PlainTags) < c {
-				m.PlainTags = make([]string, 0, c)
-			} else {
-				m.PlainTags = m.PlainTags[:0]
+			if need := len(m.PlainTags) + c; cap(m.PlainTags) < need {
+				grown := make([]string, len(m.PlainTags), need)
+				copy(grown, m.PlainTags)
+				m.PlainTags = grown
 			}
 		}
 	}

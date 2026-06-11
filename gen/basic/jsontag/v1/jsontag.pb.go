@@ -32,7 +32,7 @@ type Leaf struct {
 	Id   int64  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // JsonTagHolder exercises (wiresmith.options.jsontag) across the field kinds
@@ -63,7 +63,7 @@ type JsonTagHolder struct {
 	// emit_oneof.go call site that consults fg.fieldTag.
 	Source JsonTagHolder_Source `protobuf_oneof:"source"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 func (m *Leaf) Reset() {
@@ -98,49 +98,49 @@ func (m *Leaf) HasId() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Leaf) HasName() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<1) != 0
+	return m.XXX_fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *JsonTagHolder) HasBlockId() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *JsonTagHolder) HasPlainName() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<1) != 0
+	return m.XXX_fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *JsonTagHolder) HasTotalObjects() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<2) != 0
+	return m.XXX_fieldsPresent[0]&(1<<2) != 0
 }
 
 func (m *JsonTagHolder) HasHead() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<3) != 0
+	return m.XXX_fieldsPresent[0]&(1<<3) != 0
 }
 
 func (m *JsonTagHolder) HasInternalOnly() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<4) != 0
+	return m.XXX_fieldsPresent[0]&(1<<4) != 0
 }
 
 func (m *Leaf) GetId() int64 {
@@ -179,7 +179,7 @@ func (m *JsonTagHolder) GetTotalObjects() uint64 {
 }
 
 func (m *JsonTagHolder) GetHead() *Leaf {
-	if m != nil && m.fieldsPresent[0]&(1<<3) != 0 {
+	if m != nil && m.XXX_fieldsPresent[0]&(1<<3) != 0 {
 		return &m.Head
 	}
 	return nil
@@ -259,7 +259,7 @@ func (m *JsonTagHolder) Size() int {
 		s := m.Head.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
-		} else if m.fieldsPresent[0]&(1<<3) != 0 {
+		} else if m.XXX_fieldsPresent[0]&(1<<3) != 0 {
 			n += 2
 		}
 	}
@@ -418,7 +418,7 @@ func (m *JsonTagHolder) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 			i--
 			dAtA[i] = 0x22
-		} else if m.fieldsPresent[0]&(1<<3) != 0 {
+		} else if m.XXX_fieldsPresent[0]&(1<<3) != 0 {
 			i--
 			dAtA[i] = 0
 			i--
@@ -519,7 +519,7 @@ func (m *Leaf) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.Id = int64(v)
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		case 2: // name
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -565,7 +565,7 @@ func (m *Leaf) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Name = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 1
+			m.XXX_fieldsPresent[0] |= 1 << 1
 		default:
 			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
@@ -657,7 +657,9 @@ func (m *JsonTagHolder) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.Counters = make(map[string]int64, c)
+			if m.Counters == nil {
+				m.Counters = make(map[string]int64, c)
+			}
 		}
 	}
 	for iNdEx < l {
@@ -732,7 +734,7 @@ func (m *JsonTagHolder) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.BlockId = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		case 2: // plain_name
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -778,7 +780,7 @@ func (m *JsonTagHolder) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.PlainName = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 1
+			m.XXX_fieldsPresent[0] |= 1 << 1
 		case 3: // total_objects
 			if wireType != 0 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -807,7 +809,7 @@ func (m *JsonTagHolder) unmarshal(dAtA []byte, depth int) error {
 				}
 			}
 			m.TotalObjects = v
-			m.fieldsPresent[0] |= 1 << 2
+			m.XXX_fieldsPresent[0] |= 1 << 2
 		case 4: // head
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
@@ -855,7 +857,7 @@ func (m *JsonTagHolder) unmarshal(dAtA []byte, depth int) error {
 				return err
 			}
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 3
+			m.XXX_fieldsPresent[0] |= 1 << 3
 		case 5: // sizes
 			if wireType == 2 {
 				var byteLen uint64
@@ -1154,7 +1156,7 @@ func (m *JsonTagHolder) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.InternalOnly = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 4
+			m.XXX_fieldsPresent[0] |= 1 << 4
 		case 8: // source_id
 			if wireType != 2 {
 				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
