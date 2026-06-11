@@ -23,19 +23,38 @@ wiresmith [flags] [files...]
 When one or more `.proto` file paths are given as positional arguments,
 only those files are emitted. Their imports are still resolved against the
 full `--proto_path` walk, so cross-file references in the unemitted set
-keep working. When no files are given, wiresmith walks `--proto_path` and
-emits every `.proto` it finds (the default).
+keep working. When no files are given, wiresmith walks every
+`--proto_path` root and emits every `.proto` it finds (the default).
 
-Positional paths must live under `--proto_path`; passing a `.proto` from
-outside that tree is rejected so a typo doesn't silently produce an empty
-generation run. This matches the positional-argument convention used by
-`protoc`, `protoc-gen-go-vtproto`, and `protoc-gen-gogofast`.
+Positional paths must live under some `--proto_path` root; passing a
+`.proto` from outside every walked tree is rejected so a typo doesn't
+silently produce an empty generation run. This matches the
+positional-argument convention used by `protoc`,
+`protoc-gen-go-vtproto`, and `protoc-gen-gogofast`.
+
+`--proto_path` is repeatable for multi-root layouts (vendored protos
+alongside project-local protos, etc.) and matches
+`protoc -I=root1 -I=root2`. A single occurrence may also carry
+list-separated entries using the OS path-list separator
+(`--proto_path=root1:root2` on Unix, `--proto_path=root1;root2` on
+Windows — Go's `os.PathListSeparator`). `-I` is accepted as a short
+alias. Using the OS separator rather than a fixed `:` keeps Windows
+drive-letter paths like `C:\proto` from being split into `C` and
+`\proto`.
+
+When the same import key would resolve to two different files across
+the configured roots, wiresmith fails with a `duplicate import key`
+error that names both candidate absolute paths. This is stricter than
+`protoc`'s first-wins behaviour — the goal is to make accidental
+shadowing (an older copy in one root masking a newer copy in another)
+visible up front rather than as a downstream wire-format or build
+mismatch.
 
 ## Flags
 
 | Flag           | Default       | Description                                                |
 |----------------|---------------|------------------------------------------------------------|
-| `--proto_path` | `proto`       | Directory containing `.proto` files (walked recursively).  |
+| `--proto_path`, `-I` | `proto` | Directory containing `.proto` files (walked recursively). Repeatable; a single occurrence may carry list-separated entries using `os.PathListSeparator` (`:` on Unix, `;` on Windows). |
 | `--out`        | `gen`         | Output directory for generated Go packages.                |
 | `--module`     | `wiresmith`   | Go module name used as the prefix when emitting imports.   |
 | `-M`           | _(repeatable)_| Override the Go import path for one `.proto` (see below).  |
@@ -84,6 +103,25 @@ Scoped mode emits only the listed file(s) while keeping the import graph:
 produces only `gen/example/v1/greeter.pb.go`. Any imports from `greeter.proto`
 into `notes.proto` (or any other file under `proto/`) still resolve, the
 output file just isn't generated.
+
+Multi-root mode pulls `.proto` sources from several trees that share an
+import namespace. Given a layout like:
+
+```
+vendor/proto/
+  lib/v1/foo.proto
+internal/proto/
+  app/v1/bar.proto         # imports "lib/v1/foo.proto"
+```
+
+both files compile in one run:
+
+```sh
+./wiresmith --proto_path=vendor/proto --proto_path=internal/proto --out=gen --module=example.com/myproject
+# or equivalently with the list-separator shorthand and the -I alias
+# (':' on Unix, ';' on Windows):
+./wiresmith -I=vendor/proto:internal/proto --out=gen --module=example.com/myproject
+```
 
 To opt a field into pointer-shaped codegen, import `wiresmith/options.proto` from the `.proto` source — see [extensions.md](extensions.md) for the option's effect and the worked example in [`proto/basic/pointer.proto`](../proto/basic/pointer.proto).
 
