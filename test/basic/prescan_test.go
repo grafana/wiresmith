@@ -145,7 +145,7 @@ func TestPreScanCapBoundedByPayload(t *testing.T) {
 //	(a) round-trip correctness: element count grows by exactly perCallCount each
 //	    call (append/merge semantics preserved); and
 //	(b) capacity does NOT grow exact-fit per call: after several no-reset
-//	    unmarshals, cap is bounded by amortized append growth (< 2*len), not the
+//	    unmarshals, cap is bounded by amortized append growth (< 4*len), not the
 //	    n*perCallCount exact-fit the old code would have produced.
 //
 // On the OLD code path this would FAIL: each call reallocated to exactly
@@ -191,7 +191,7 @@ func TestPreScanNoExactFitGrowOnMergeUnmarshal(t *testing.T) {
 	// leaves headroom (cap > len) on the final state. Asserting cap > len is
 	// the discriminating check: the old code path cannot satisfy it because
 	// its last action was an exact-fit make to len+c with len == final length.
-	// The upper bound (cap < 2*len) confirms growth is amortized, not unbounded.
+	// The upper bound (cap < 4*len) confirms growth is amortized, not unbounded.
 	finalLen := calls * perCallCount
 	assert.Greater(t, cap(m.RepeatedString), finalLen,
 		"merge-unmarshal must leave amortized-append headroom, not exact-fit cap==len (old O(n²) path)")
