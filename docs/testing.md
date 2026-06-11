@@ -56,7 +56,7 @@ Every pull request runs these jobs (`.github/workflows/ci.yml`):
 - **Build & Test** — `make build` then `make test`. `make test` covers `./test/...`, `./cmd/...`, and `./compiler/...`, so the generator and type-dispatch unit tests run on every PR (previously they only ran under `make coverage`, which CI never invoked).
 - **Race** — `make test-race`, which runs the race detector over `./test/peer/`, `./test/basic/`, and `./test/differential/`. These are the packages with concurrency-sensitive coverage (e.g. `TestConcurrentMarshalSafety`); the fuzz and bench packages are deliberately excluded (no concurrency to find, high runtime cost).
 - **Fuzz** — `make fuzz` (30s per target).
-- **Conformance** — the Google conformance suite in Docker (`make conformance`).
+- **Conformance** — builds the `test/conformance/Dockerfile` image and runs it directly (`docker run … wiresmith-conformance`), executing the Google conformance suite. `make conformance` is the local equivalent.
 
 ## Known runtime conflict
 
