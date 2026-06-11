@@ -15,7 +15,7 @@ func generateEnumProto(t *testing.T, protoBody string) string {
 	protoDir := t.TempDir()
 	outDir := testOutDir(t)
 	writeProto(t, protoDir, "test.proto", protoBody)
-	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDir: protoDir}
+	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDirs: []string{protoDir}}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)
 	}

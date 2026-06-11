@@ -1854,9 +1854,9 @@ message QueryResponse { Stream stream = 1; }`)
 
 	outDir := testOutDir(t)
 	gen := &Generator{
-		Module:   "example.com/loki",
-		OutDir:   outDir,
-		ProtoDir: protoDir,
+		Module:    "example.com/loki",
+		OutDir:    outDir,
+		ProtoDirs: []string{protoDir},
 		Overrides: map[string]string{
 			"push/push.proto": "example.com/loki/pkg/push",
 		},
@@ -1905,9 +1905,9 @@ import "push/push.proto";
 message QueryResponse { Stream stream = 1; }`)
 
 	gen := &Generator{
-		Module:   "example.com/loki",
-		OutDir:   testOutDir(t),
-		ProtoDir: protoDir,
+		Module:    "example.com/loki",
+		OutDir:    testOutDir(t),
+		ProtoDirs: []string{protoDir},
 	}
 	err := gen.Generate(context.Background())
 	if err == nil {
@@ -1937,9 +1937,9 @@ option go_package = "example.com/mod/gen/samedir";
 message B { string s = 1; }`)
 
 	gen := &Generator{
-		Module:   "example.com/mod",
-		OutDir:   testOutDir(t),
-		ProtoDir: protoDir,
+		Module:    "example.com/mod",
+		OutDir:    testOutDir(t),
+		ProtoDirs: []string{protoDir},
 		Overrides: map[string]string{
 			"pkg/b.proto": "example.com/elsewhere/bpkg",
 		},
@@ -1976,9 +1976,9 @@ option go_package = "example.com/mod/gen/dirb";
 message B { string s = 1; }`)
 
 	gen := &Generator{
-		Module:   "example.com/mod",
-		OutDir:   testOutDir(t),
-		ProtoDir: protoDir,
+		Module:    "example.com/mod",
+		OutDir:    testOutDir(t),
+		ProtoDirs: []string{protoDir},
 		Overrides: map[string]string{
 			"dira/a.proto": "example.com/shared",
 			"dirb/b.proto": "example.com/shared",
@@ -2018,7 +2018,7 @@ import "shared/a.proto";
 message BetaMsg { alpha.v1.AlphaMsg a = 1; }`)
 
 	outDir := testOutDir(t)
-	gen := &Generator{Module: "example.com/mod", OutDir: outDir, ProtoDir: protoDir}
+	gen := &Generator{Module: "example.com/mod", OutDir: outDir, ProtoDirs: []string{protoDir}}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)
 	}
@@ -2053,7 +2053,7 @@ syntax = "proto3";
 package beta.v1;
 message BetaMsg { string s = 1; }`)
 
-	gen := &Generator{Module: "example.com/mod", OutDir: testOutDir(t), ProtoDir: protoDir}
+	gen := &Generator{Module: "example.com/mod", OutDir: testOutDir(t), ProtoDirs: []string{protoDir}}
 	err := gen.Generate(context.Background())
 	if err == nil {
 		t.Fatal("expected error for one dir with two Go package names, got nil")
@@ -2094,10 +2094,10 @@ message L { string s = 1; }`)
 
 	outDir := testOutDir(t)
 	gen := &Generator{
-		Module:   "example.com/mod",
-		OutDir:   outDir,
-		ProtoDir: protoDir,
-		Files:    []string{filepath.Join(protoDir, "good", "good.proto")},
+		Module:    "example.com/mod",
+		OutDir:    outDir,
+		ProtoDirs: []string{protoDir},
+		Files:     []string{filepath.Join(protoDir, "good", "good.proto")},
 	}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate with positional file must ignore unrelated broken sibling: %v", err)
@@ -2133,10 +2133,10 @@ import "gogoproto/gogo.proto";
 message L { string s = 1; }`)
 
 	gen := &Generator{
-		Module:   "example.com/mod",
-		OutDir:   testOutDir(t),
-		ProtoDir: protoDir,
-		Files:    []string{filepath.Join(protoDir, "good", "good.proto")},
+		Module:    "example.com/mod",
+		OutDir:    testOutDir(t),
+		ProtoDirs: []string{protoDir},
+		Files:     []string{filepath.Join(protoDir, "good", "good.proto")},
 	}
 	if err := gen.Generate(context.Background()); err == nil {
 		t.Fatal("expected error when the positional file imports a broken proto")
@@ -2168,7 +2168,7 @@ message Outer {
 }`)
 
 	outDir := testOutDir(t)
-	gen := &Generator{Module: "example.com/mod", OutDir: outDir, ProtoDir: protoDir}
+	gen := &Generator{Module: "example.com/mod", OutDir: outDir, ProtoDirs: []string{protoDir}}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)
 	}
