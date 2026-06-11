@@ -1739,11 +1739,11 @@ message Bar { vendored.a.Foo foo = 1; }`)
 	}
 }
 
-// TestGenerateScopedMOverrideTransitiveImport is a FAILING regression test for
-// the P2 bug: a scoped (positional-file) generation run ignores a -M override
-// when the overridden file is reached only as a TRANSITIVE IMPORT of the
-// positional root, so the emitted cross-file reference uses the dep's own
-// go_package instead of the override.
+// TestGenerateScopedMOverrideTransitiveImport is a regression test for the P2 bug:
+// a scoped (positional-file) generation run must honor a -M override even when
+// the overridden file is reached only as a transitive import of the positional
+// root, so the emitted cross-file reference uses the override (not the dep's
+// own go_package).
 //
 // ─── How to reproduce on the CLI ────────────────────────────────────────────
 //
