@@ -26,7 +26,7 @@ type StdtimeHolder struct {
 	// Generated Go: Created time.Time
 	Created time.Time `protobuf:"bytes,3,opt,name=created,proto3" json:"created,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // StdDurationHolder exercises (wiresmith.options.stdduration) on a singular
@@ -44,7 +44,7 @@ type StdDurationHolder struct {
 	// Generated Go: Lookback time.Duration
 	Lookback time.Duration `protobuf:"bytes,3,opt,name=lookback,proto3" json:"lookback,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 func (m *StdtimeHolder) Reset() {

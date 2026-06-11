@@ -129,21 +129,26 @@ func (fg *FileGenerator) emitPreScan(md protoreflect.MessageDescriptor) {
 		fmt.Fprintf(fg.body, "\t\tif c := field%dcount; c > 0 {\n", fd.Number())
 		fmt.Fprintf(fg.body, "\t\t\tif c > preCapMax {\n\t\t\t\tc = preCapMax\n\t\t\t}\n")
 		if fd.IsMap() {
-			fmt.Fprintf(fg.body, "\t\t\tm.%s = make(%s, c)\n", goName, goType)
+			// Merge semantics: an existing map keeps its entries (the main
+			// decode loop overwrites same-key entries, last-write-wins);
+			// only a nil map gets the count-sized allocation.
+			fmt.Fprintf(fg.body, "\t\t\tif m.%s == nil {\n", goName)
+			fmt.Fprintf(fg.body, "\t\t\t\tm.%s = make(%s, c)\n", goName, goType)
+			fmt.Fprintf(fg.body, "\t\t\t}\n")
 		} else {
-			// Reuse a caller-provided backing array when it already fits the
-			// counted elements — the pooled-message pattern (Mimir resets a
-			// message from a sync.Pool and unmarshals into it; an
-			// unconditional make() here would discard the pooled capacity on
-			// every decode). The cap test is against the *uncapped* need:
-			// when count was clamped by preCapMax the true element count may
-			// exceed c, but it can never exceed the legitimate-payload bound
-			// the cap encodes, so reuse stays safe — append() grows past c
-			// the same way it does on the fresh-make path.
-			fmt.Fprintf(fg.body, "\t\t\tif cap(m.%s) < c {\n", goName)
-			fmt.Fprintf(fg.body, "\t\t\t\tm.%s = make(%s, 0, c)\n", goName, goType)
-			fmt.Fprintf(fg.body, "\t\t\t} else {\n")
-			fmt.Fprintf(fg.body, "\t\t\t\tm.%s = m.%s[:0]\n", goName, goName)
+			// Grow to len+count, preserving existing elements: Unmarshal
+			// appends to repeated fields (gogo merge parity) regardless of
+			// whether the pre-scan ran. When the existing capacity already
+			// fits, the backing array is reused as-is — the pooled-message
+			// pattern (Mimir resets a message from a sync.Pool to len 0 and
+			// unmarshals into it; an unconditional make() here would discard
+			// the pooled capacity on every decode). A true element count
+			// beyond the preCapMax clamp just grows via append, same as the
+			// fresh-make path.
+			fmt.Fprintf(fg.body, "\t\t\tif need := len(m.%s) + c; cap(m.%s) < need {\n", goName, goName)
+			fmt.Fprintf(fg.body, "\t\t\t\tgrown := make(%s, len(m.%s), need)\n", goType, goName)
+			fmt.Fprintf(fg.body, "\t\t\t\tcopy(grown, m.%s)\n", goName)
+			fmt.Fprintf(fg.body, "\t\t\t\tm.%s = grown\n", goName)
 			fmt.Fprintf(fg.body, "\t\t\t}\n")
 		}
 		fmt.Fprintf(fg.body, "\t\t}\n")

@@ -45,7 +45,7 @@ type MixedModifiers struct {
 	OptionalBytes  []byte    `protobuf:"bytes,11,opt,name=optional_bytes,json=optionalBytes,proto3,oneof" json:"optional_bytes,omitempty"`
 	RepeatedBytes  [][]byte  `protobuf:"bytes,12,rep,name=repeated_bytes,json=repeatedBytes,proto3" json:"repeated_bytes,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // 70 singular fields to force fieldsPresent [2]uint64 (bitmap word boundary at 64).
@@ -121,7 +121,7 @@ type WideFields struct {
 	F69 bool    `protobuf:"varint,69,opt,name=f69,proto3" json:"f69,omitempty"`
 	F70 bool    `protobuf:"varint,70,opt,name=f70,proto3" json:"f70,omitempty"`
 
-	XXX_fieldsPresent [2]uint64
+	XXX_fieldsPresent [2]uint64 `json:"-"`
 }
 
 func (m *UnpackedScalars) Reset() {
@@ -3669,20 +3669,20 @@ func (m *MixedModifiers) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.RepeatedString) < c {
-				m.RepeatedString = make([]string, 0, c)
-			} else {
-				m.RepeatedString = m.RepeatedString[:0]
+			if need := len(m.RepeatedString) + c; cap(m.RepeatedString) < need {
+				grown := make([]string, len(m.RepeatedString), need)
+				copy(grown, m.RepeatedString)
+				m.RepeatedString = grown
 			}
 		}
 		if c := field12count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.RepeatedBytes) < c {
-				m.RepeatedBytes = make([][]byte, 0, c)
-			} else {
-				m.RepeatedBytes = m.RepeatedBytes[:0]
+			if need := len(m.RepeatedBytes) + c; cap(m.RepeatedBytes) < need {
+				grown := make([][]byte, len(m.RepeatedBytes), need)
+				copy(grown, m.RepeatedBytes)
+				m.RepeatedBytes = grown
 			}
 		}
 	}

@@ -93,7 +93,7 @@ type AllScalars struct {
 	FieldBytes    []byte  `protobuf:"bytes,15,opt,name=field_bytes,json=fieldBytes,proto3" json:"field_bytes,omitempty"`
 	FieldEnum     Color   `protobuf:"varint,16,opt,name=field_enum,json=fieldEnum,proto3,enum=basic.compare.v1.Color" json:"field_enum,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // Tag-ascending ordering check: declaration order intentionally puts the
@@ -105,7 +105,7 @@ type OutOfOrderTags struct {
 	First  int32 `protobuf:"varint,1,opt,name=first,proto3" json:"first,omitempty"`
 	Third  int32 `protobuf:"varint,3,opt,name=third,proto3" json:"third,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 type OptionalScalars struct {
@@ -118,14 +118,14 @@ type OptionalScalars struct {
 type Inner struct {
 	Value int32 `protobuf:"varint,1,opt,name=value,proto3" json:"value,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 type WithMessage struct {
 	Inner Inner  `protobuf:"bytes,1,opt,name=inner,proto3" json:"inner,omitempty"`
 	Name  string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 type WithPointerMessage struct {
@@ -150,7 +150,7 @@ type WithOneof struct {
 	Value WithOneof_Value `protobuf_oneof:"value"`
 	After string          `protobuf:"bytes,5,opt,name=after,proto3" json:"after,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 func (m *AllScalars) Reset() {
@@ -2810,30 +2810,30 @@ func (m *Repeated) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Strs) < c {
-				m.Strs = make([]string, 0, c)
-			} else {
-				m.Strs = m.Strs[:0]
+			if need := len(m.Strs) + c; cap(m.Strs) < need {
+				grown := make([]string, len(m.Strs), need)
+				copy(grown, m.Strs)
+				m.Strs = grown
 			}
 		}
 		if c := field3count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Inners) < c {
-				m.Inners = make([]Inner, 0, c)
-			} else {
-				m.Inners = m.Inners[:0]
+			if need := len(m.Inners) + c; cap(m.Inners) < need {
+				grown := make([]Inner, len(m.Inners), need)
+				copy(grown, m.Inners)
+				m.Inners = grown
 			}
 		}
 		if c := field4count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Blobs) < c {
-				m.Blobs = make([][]byte, 0, c)
-			} else {
-				m.Blobs = m.Blobs[:0]
+			if need := len(m.Blobs) + c; cap(m.Blobs) < need {
+				grown := make([][]byte, len(m.Blobs), need)
+				copy(grown, m.Blobs)
+				m.Blobs = grown
 			}
 		}
 	}
@@ -3199,25 +3199,33 @@ func (m *WithMap) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MStringString = make(map[string]string, c)
+			if m.MStringString == nil {
+				m.MStringString = make(map[string]string, c)
+			}
 		}
 		if c := field2count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MInt32String = make(map[int32]string, c)
+			if m.MInt32String == nil {
+				m.MInt32String = make(map[int32]string, c)
+			}
 		}
 		if c := field3count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MStringInner = make(map[string]Inner, c)
+			if m.MStringInner == nil {
+				m.MStringInner = make(map[string]Inner, c)
+			}
 		}
 		if c := field4count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MBoolString = make(map[bool]string, c)
+			if m.MBoolString == nil {
+				m.MBoolString = make(map[bool]string, c)
+			}
 		}
 	}
 	for iNdEx < l {

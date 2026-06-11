@@ -185,7 +185,9 @@ func (m *CrossMapOuter) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.Entries = make(map[string]recursivev1.LinkedList, c)
+			if m.Entries == nil {
+				m.Entries = make(map[string]recursivev1.LinkedList, c)
+			}
 		}
 	}
 	for iNdEx < l {

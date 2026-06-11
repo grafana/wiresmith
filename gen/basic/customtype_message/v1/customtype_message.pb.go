@@ -22,7 +22,7 @@ type Label struct {
 	Name  string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	Value string `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // CustomTypeMessageHolder exercises (wiresmith.options.customtype) on the
@@ -43,7 +43,7 @@ type CustomTypeMessageHolder struct {
 	ControlSingular Label   `protobuf:"bytes,3,opt,name=control_singular,json=controlSingular,proto3" json:"control_singular,omitempty"`
 	ControlRepeated []Label `protobuf:"bytes,4,rep,name=control_repeated,json=controlRepeated,proto3" json:"control_repeated,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 func (m *Label) Reset() {
@@ -543,20 +543,20 @@ func (m *CustomTypeMessageHolder) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Labels) < c {
-				m.Labels = make([]customtypes.LabelAdapter, 0, c)
-			} else {
-				m.Labels = m.Labels[:0]
+			if need := len(m.Labels) + c; cap(m.Labels) < need {
+				grown := make([]customtypes.LabelAdapter, len(m.Labels), need)
+				copy(grown, m.Labels)
+				m.Labels = grown
 			}
 		}
 		if c := field4count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.ControlRepeated) < c {
-				m.ControlRepeated = make([]Label, 0, c)
-			} else {
-				m.ControlRepeated = m.ControlRepeated[:0]
+			if need := len(m.ControlRepeated) + c; cap(m.ControlRepeated) < need {
+				grown := make([]Label, len(m.ControlRepeated), need)
+				copy(grown, m.ControlRepeated)
+				m.ControlRepeated = grown
 			}
 		}
 	}

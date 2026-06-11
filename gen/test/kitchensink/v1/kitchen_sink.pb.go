@@ -156,7 +156,7 @@ type AllScalars struct {
 	FieldString   string  `protobuf:"bytes,14,opt,name=field_string,json=fieldString,proto3" json:"field_string,omitempty"`
 	FieldBytes    []byte  `protobuf:"bytes,15,opt,name=field_bytes,json=fieldBytes,proto3" json:"field_bytes,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // Message with every optional scalar type
@@ -208,7 +208,7 @@ type Outer struct {
 	Middles []Middle `protobuf:"bytes,2,rep,name=middles,proto3" json:"middles,omitempty"`
 	Name    string   `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 type Middle struct {
@@ -216,7 +216,7 @@ type Middle struct {
 	Inners []Inner `protobuf:"bytes,2,rep,name=inners,proto3" json:"inners,omitempty"`
 	Value  int64   `protobuf:"varint,3,opt,name=value,proto3" json:"value,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 type Inner struct {
@@ -225,7 +225,7 @@ type Inner struct {
 	SignedVal int64  `protobuf:"zigzag64,3,opt,name=signed_val,json=signedVal,proto3" json:"signed_val,omitempty"`
 	FixedVal  int32  `protobuf:"fixed32,4,opt,name=fixed_val,json=fixedVal,proto3" json:"fixed_val,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // High field numbers (multi-byte tags)
@@ -236,14 +236,14 @@ type HighFieldNumbers struct {
 	Field2048  string `protobuf:"bytes,2048,opt,name=field_2048,json=field2048,proto3" json:"field_2048,omitempty"`
 	Field16384 string `protobuf:"bytes,16384,opt,name=field_16384,json=field16384,proto3" json:"field_16384,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 type WithEnum struct {
 	Color  Color   `protobuf:"varint,1,opt,name=color,proto3,enum=test.kitchensink.v1.Color" json:"color,omitempty"`
 	Colors []Color `protobuf:"varint,2,rep,packed,name=colors,proto3,enum=test.kitchensink.v1.Color" json:"colors,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // Empty message
@@ -263,7 +263,7 @@ type Container struct {
 	Scalars  AllScalars      `protobuf:"bytes,2,opt,name=scalars,proto3" json:"scalars,omitempty"`
 	Variants []OneofVariants `protobuf:"bytes,3,rep,name=variants,proto3" json:"variants,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // Maps with all supported key/value type combinations
@@ -4232,20 +4232,20 @@ func (m *AllRepeatedScalars) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.FieldString) < c {
-				m.FieldString = make([]string, 0, c)
-			} else {
-				m.FieldString = m.FieldString[:0]
+			if need := len(m.FieldString) + c; cap(m.FieldString) < need {
+				grown := make([]string, len(m.FieldString), need)
+				copy(grown, m.FieldString)
+				m.FieldString = grown
 			}
 		}
 		if c := field15count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.FieldBytes) < c {
-				m.FieldBytes = make([][]byte, 0, c)
-			} else {
-				m.FieldBytes = m.FieldBytes[:0]
+			if need := len(m.FieldBytes) + c; cap(m.FieldBytes) < need {
+				grown := make([][]byte, len(m.FieldBytes), need)
+				copy(grown, m.FieldBytes)
+				m.FieldBytes = grown
 			}
 		}
 	}
@@ -5942,10 +5942,10 @@ func (m *Outer) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Middles) < c {
-				m.Middles = make([]Middle, 0, c)
-			} else {
-				m.Middles = m.Middles[:0]
+			if need := len(m.Middles) + c; cap(m.Middles) < need {
+				grown := make([]Middle, len(m.Middles), need)
+				copy(grown, m.Middles)
+				m.Middles = grown
 			}
 		}
 	}
@@ -6209,10 +6209,10 @@ func (m *Middle) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Inners) < c {
-				m.Inners = make([]Inner, 0, c)
-			} else {
-				m.Inners = m.Inners[:0]
+			if need := len(m.Inners) + c; cap(m.Inners) < need {
+				grown := make([]Inner, len(m.Inners), need)
+				copy(grown, m.Inners)
+				m.Inners = grown
 			}
 		}
 	}
@@ -7187,20 +7187,20 @@ func (m *OnlyRepeated) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Names) < c {
-				m.Names = make([]string, 0, c)
-			} else {
-				m.Names = m.Names[:0]
+			if need := len(m.Names) + c; cap(m.Names) < need {
+				grown := make([]string, len(m.Names), need)
+				copy(grown, m.Names)
+				m.Names = grown
 			}
 		}
 		if c := field3count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Items) < c {
-				m.Items = make([]Inner, 0, c)
-			} else {
-				m.Items = m.Items[:0]
+			if need := len(m.Items) + c; cap(m.Items) < need {
+				grown := make([]Inner, len(m.Items), need)
+				copy(grown, m.Items)
+				m.Items = grown
 			}
 		}
 	}
@@ -7512,10 +7512,10 @@ func (m *Container) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Variants) < c {
-				m.Variants = make([]OneofVariants, 0, c)
-			} else {
-				m.Variants = m.Variants[:0]
+			if need := len(m.Variants) + c; cap(m.Variants) < need {
+				grown := make([]OneofVariants, len(m.Variants), need)
+				copy(grown, m.Variants)
+				m.Variants = grown
 			}
 		}
 	}
@@ -7829,103 +7829,137 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MapInt32Int32 = make(map[int32]int32, c)
+			if m.MapInt32Int32 == nil {
+				m.MapInt32Int32 = make(map[int32]int32, c)
+			}
 		}
 		if c := field2count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MapInt64Int64 = make(map[int64]int64, c)
+			if m.MapInt64Int64 == nil {
+				m.MapInt64Int64 = make(map[int64]int64, c)
+			}
 		}
 		if c := field3count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MapUint32Uint32 = make(map[uint32]uint32, c)
+			if m.MapUint32Uint32 == nil {
+				m.MapUint32Uint32 = make(map[uint32]uint32, c)
+			}
 		}
 		if c := field4count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MapUint64Uint64 = make(map[uint64]uint64, c)
+			if m.MapUint64Uint64 == nil {
+				m.MapUint64Uint64 = make(map[uint64]uint64, c)
+			}
 		}
 		if c := field5count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MapSint32Sint32 = make(map[int32]int32, c)
+			if m.MapSint32Sint32 == nil {
+				m.MapSint32Sint32 = make(map[int32]int32, c)
+			}
 		}
 		if c := field6count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MapSint64Sint64 = make(map[int64]int64, c)
+			if m.MapSint64Sint64 == nil {
+				m.MapSint64Sint64 = make(map[int64]int64, c)
+			}
 		}
 		if c := field7count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MapFixed32Fixed32 = make(map[uint32]uint32, c)
+			if m.MapFixed32Fixed32 == nil {
+				m.MapFixed32Fixed32 = make(map[uint32]uint32, c)
+			}
 		}
 		if c := field8count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MapFixed64Fixed64 = make(map[uint64]uint64, c)
+			if m.MapFixed64Fixed64 == nil {
+				m.MapFixed64Fixed64 = make(map[uint64]uint64, c)
+			}
 		}
 		if c := field9count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MapSfixed32Sfixed32 = make(map[int32]int32, c)
+			if m.MapSfixed32Sfixed32 == nil {
+				m.MapSfixed32Sfixed32 = make(map[int32]int32, c)
+			}
 		}
 		if c := field10count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MapSfixed64Sfixed64 = make(map[int64]int64, c)
+			if m.MapSfixed64Sfixed64 == nil {
+				m.MapSfixed64Sfixed64 = make(map[int64]int64, c)
+			}
 		}
 		if c := field11count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MapBoolBool = make(map[bool]bool, c)
+			if m.MapBoolBool == nil {
+				m.MapBoolBool = make(map[bool]bool, c)
+			}
 		}
 		if c := field12count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MapStringString = make(map[string]string, c)
+			if m.MapStringString == nil {
+				m.MapStringString = make(map[string]string, c)
+			}
 		}
 		if c := field13count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MapStringBytes = make(map[string][]byte, c)
+			if m.MapStringBytes == nil {
+				m.MapStringBytes = make(map[string][]byte, c)
+			}
 		}
 		if c := field14count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MapInt32Float = make(map[int32]float32, c)
+			if m.MapInt32Float == nil {
+				m.MapInt32Float = make(map[int32]float32, c)
+			}
 		}
 		if c := field15count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MapInt32Double = make(map[int32]float64, c)
+			if m.MapInt32Double == nil {
+				m.MapInt32Double = make(map[int32]float64, c)
+			}
 		}
 		if c := field16count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MapStringMessage = make(map[string]Inner, c)
+			if m.MapStringMessage == nil {
+				m.MapStringMessage = make(map[string]Inner, c)
+			}
 		}
 		if c := field17count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.MapStringEnum = make(map[string]Color, c)
+			if m.MapStringEnum == nil {
+				m.MapStringEnum = make(map[string]Color, c)
+			}
 		}
 	}
 	for iNdEx < l {
