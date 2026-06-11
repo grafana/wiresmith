@@ -78,7 +78,9 @@ func TestNoPresence_EmptyChildDropsFromWire(t *testing.T) {
 // fields keep their pointer-based Has accessor.
 func TestNoPresence_Accessors(t *testing.T) {
 	bare := &np.BareHolder{Child: np.Leaf{Id: 7}}
-	var got np.Leaf = bare.GetChild()
+	// Explicit np.Leaf type is a compile-time assertion that GetChild returns
+	// the value, not *np.Leaf — the no_presence value-getter contract.
+	var got np.Leaf = bare.GetChild() //nolint:staticcheck // QF1011: type is intentional, see above
 	assert.Equal(t, int64(7), got.Id, "GetChild must return the value under no_presence")
 	assert.False(t, bare.HasMaybe())
 	maybe := int64(0)
