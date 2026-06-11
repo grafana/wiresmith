@@ -379,3 +379,36 @@ Same caveat as stdtime: the `*_reflect.pb.go` describes the field as `google.pro
 ### Worked example
 
 [`proto/basic/stdtime.proto`](../proto/basic/stdtime.proto) (shared with stdtime) declares a `StdDurationHolder` message with an annotated `lookback` field, and [`test/basic/stdduration_test.go`](../test/basic/stdduration_test.go) pins the round-trip / zero-presence / negative / truncation-boundary / cross-library wire-format invariants documented above.
+
+## `(wiresmith.options.no_presence) = true` (message) / `(wiresmith.options.no_presence_all) = true` (file)
+
+Unlike the options above, this pair annotates **messages and files**, not fields.
+
+By default every generated message tracks wire-presence of its singular value-typed fields in a `XXX_fieldsPresent [N]uint64` bitmap. The bitmap powers `Has<Name>()`, lets `Get<MsgField>()` return `nil` for an unset field, and preserves a present-but-empty nested message across a round-trip. It also changes the struct's memory layout and makes two structurally-equal values potentially differ under `reflect.DeepEqual`.
+
+`no_presence = true` on a message omits the bitmap for that message:
+
+- The struct contains exactly the declared fields — layout parity with gogoproto `nullable=false` structs. This is the property consumers need for unsafe casts between generated and domain types (e.g. Mimir's `[]Sample` ↔ `[]promql.FPoint`) and for `require.Equal(literal, unmarshalled)` tests.
+- `Has<Name>()` is **not emitted** for bitmap-tracked fields. proto3 `optional` fields keep their pointer-based `Has<Name>()`.
+- `Get<MsgField>()` returns the **value** (`m.Field`, zero value on a nil receiver) — gogoproto `nullable=false` getter parity, so gogo-era value-getter-shaped interfaces are satisfied directly.
+- A present-but-empty nested message does **not** survive a round-trip: marshal emits nothing for an empty child, so absent and empty are indistinguishable — exactly the gogoproto value-type trade-off.
+
+`no_presence_all = true` at file level applies the same to every message in the file (nested ones included). A per-message `no_presence` value — `true` or `false` — overrides the file default, same layering as gogoproto's `*_all` options. Nested messages do not inherit from their containing message; annotate them individually or use the file option.
+
+For deep-equality between hand-built and decoded values, every transitively-embedded message must drop its bitmap too — a single annotated message embedding an unannotated one still decodes with bits set in the inner value.
+
+### Worked example
+
+[`proto/basic/no_presence.proto`](../proto/basic/no_presence.proto) declares an annotated `BareHolder` next to an unannotated `TrackedHolder` control, and [`test/basic/no_presence_test.go`](../test/basic/no_presence_test.go) pins the layout, round-trip, empty-child-drop, and accessor semantics.
+
+## `(wiresmith.options.enum_no_prefix) = true` (enum) / `(wiresmith.options.enum_no_prefix_all) = true` (file)
+
+Annotates **enums and files**, not fields. The gogoproto `goproto_enum_prefix = false` equivalent: value constants are emitted as bare identifiers (`UNKNOWN`) instead of prefixed ones (`MetricType_UNKNOWN`). Only the constant identifiers change — the `<Type>_name` / `<Type>_value` maps and `String()` use bare proto names either way, and the wire format is untouched.
+
+The file-level `enum_no_prefix_all` applies to every enum in the file (nested included); a per-enum `enum_no_prefix` value — `true` or `false` — overrides the file default.
+
+Unprefixed constants live at Go package scope: two enums in one package declaring the same value name fail at `go build` with a duplicate-declaration error. Choosing non-colliding names is the proto author's responsibility, exactly as with gogoproto.
+
+### Worked example
+
+[`proto/basic/enum_no_prefix.proto`](../proto/basic/enum_no_prefix.proto) declares an annotated `MetricType` next to a prefixed `PrefixedColor` control; [`test/basic/enum_no_prefix_test.go`](../test/basic/enum_no_prefix_test.go) pins the identifiers, maps, String(), and round-trip.

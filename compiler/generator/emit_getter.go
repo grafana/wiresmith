@@ -114,6 +114,17 @@ func (fg *FileGenerator) emitGetters(md protoreflect.MessageDescriptor) {
 		// degrades to a plain nil-safe accessor if the predicates ever diverge.
 		if fd.Kind() == protoreflect.MessageKind {
 			msgType := fg.imports.goSingularType(fd)
+			// Under `(wiresmith.options.no_presence)` the getter returns the
+			// value, not a pointer — gogoproto nullable=false getter parity.
+			// Loki's queryrange Request/Response interfaces (and similar
+			// gogo-era interfaces elsewhere) are value-getter-shaped, so the
+			// pointer shape forced per-field customname workarounds (N2).
+			if fg.hasNoPresence(md) {
+				fmt.Fprintf(fg.body, "func (m *%s) Get%s() %s {\n", name, goName, msgType)
+				fmt.Fprintf(fg.body, "\tif m != nil {\n\t\treturn m.%s\n\t}\n", goName)
+				fmt.Fprintf(fg.body, "\treturn %s{}\n}\n\n", msgType)
+				continue
+			}
 			bitIndex, hasBit := pm[fd.Number()]
 			fmt.Fprintf(fg.body, "func (m *%s) Get%s() *%s {\n", name, goName, msgType)
 			if hasBit {

@@ -22,7 +22,7 @@ type Label struct {
 	Name  string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	Value string `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // CustomTypeMessageHolder exercises (wiresmith.options.customtype) on the
@@ -43,7 +43,7 @@ type CustomTypeMessageHolder struct {
 	ControlSingular Label   `protobuf:"bytes,3,opt,name=control_singular,json=controlSingular,proto3" json:"control_singular,omitempty"`
 	ControlRepeated []Label `protobuf:"bytes,4,rep,name=control_repeated,json=controlRepeated,proto3" json:"control_repeated,omitempty"`
 
-	fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 func (m *Label) Reset() {
@@ -78,21 +78,21 @@ func (m *Label) HasName() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Label) HasValue() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<1) != 0
+	return m.XXX_fieldsPresent[0]&(1<<1) != 0
 }
 
 func (m *CustomTypeMessageHolder) HasControlSingular() bool {
 	if m == nil {
 		return false
 	}
-	return m.fieldsPresent[0]&(1<<0) != 0
+	return m.XXX_fieldsPresent[0]&(1<<0) != 0
 }
 
 func (m *Label) GetName() string {
@@ -125,7 +125,7 @@ func (m *CustomTypeMessageHolder) GetLabels() []customtypes.LabelAdapter {
 }
 
 func (m *CustomTypeMessageHolder) GetControlSingular() *Label {
-	if m != nil && m.fieldsPresent[0]&(1<<0) != 0 {
+	if m != nil && m.XXX_fieldsPresent[0]&(1<<0) != 0 {
 		return &m.ControlSingular
 	}
 	return nil
@@ -168,7 +168,7 @@ func (m *CustomTypeMessageHolder) Size() int {
 		s := m.ControlSingular.Size()
 		if s > 0 {
 			n += 1 + protowire.SizeVarint(uint64(s)) + s
-		} else if m.fieldsPresent[0]&(1<<0) != 0 {
+		} else if m.XXX_fieldsPresent[0]&(1<<0) != 0 {
 			n += 2
 		}
 	}
@@ -274,7 +274,7 @@ func (m *CustomTypeMessageHolder) MarshalToSizedBuffer(dAtA []byte) (int, error)
 			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 			i--
 			dAtA[i] = 0x1a
-		} else if m.fieldsPresent[0]&(1<<0) != 0 {
+		} else if m.XXX_fieldsPresent[0]&(1<<0) != 0 {
 			i--
 			dAtA[i] = 0
 			i--
@@ -313,73 +313,6 @@ func (m *CustomTypeMessageHolder) MarshalToSizedBuffer(dAtA []byte) (int, error)
 	return len(dAtA) - i, nil
 }
 
-const maxUnmarshalDepth = 10000
-
-func skipValue(dAtA []byte, wireType int, fieldNum int32) (int, error) {
-	iNdEx := 0
-	l := len(dAtA)
-	switch wireType {
-	case 0:
-		for shift := 0; ; shift++ {
-			if shift >= 10 {
-				return 0, fmt.Errorf("invalid varint")
-			}
-			if iNdEx >= l {
-				return 0, fmt.Errorf("invalid varint")
-			}
-			iNdEx++
-			if dAtA[iNdEx-1] < 0x80 {
-				break
-			}
-		}
-	case 1:
-		if (iNdEx + 8) > l {
-			return 0, fmt.Errorf("truncated fixed64")
-		}
-		iNdEx += 8
-	case 2:
-		var length uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return 0, fmt.Errorf("invalid bytes")
-			}
-			if iNdEx >= l {
-				return 0, fmt.Errorf("invalid bytes")
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			length |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				if shift == 63 && b > 1 {
-					return 0, fmt.Errorf("invalid bytes")
-				}
-				break
-			}
-		}
-		if length > uint64(math.MaxInt) {
-			return 0, fmt.Errorf("invalid bytes")
-		}
-		iNdEx += int(length)
-		if iNdEx < 0 || iNdEx > l {
-			return 0, fmt.Errorf("invalid bytes")
-		}
-	case 3:
-		_, n := protowire.ConsumeGroup(protowire.Number(fieldNum), dAtA[iNdEx:])
-		if n < 0 {
-			return 0, fmt.Errorf("invalid group")
-		}
-		iNdEx += n
-	case 5:
-		if (iNdEx + 4) > l {
-			return 0, fmt.Errorf("truncated fixed32")
-		}
-		iNdEx += 4
-	default:
-		return 0, fmt.Errorf("unknown wire type %d", wireType)
-	}
-	return iNdEx, nil
-}
-
 func (m *Label) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -392,7 +325,7 @@ func (m *Label) UnmarshalWithDepth(b []byte, depth int) error {
 }
 
 func (m *Label) unmarshal(dAtA []byte, depth int) error {
-	if depth > maxUnmarshalDepth {
+	if depth > protohelpers.MaxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
 	}
 	l := len(dAtA)
@@ -426,7 +359,7 @@ func (m *Label) unmarshal(dAtA []byte, depth int) error {
 		switch fieldNum {
 		case 1: // name
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -469,10 +402,10 @@ func (m *Label) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Name = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		case 2: // value
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -515,9 +448,9 @@ func (m *Label) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Value = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 1
+			m.XXX_fieldsPresent[0] |= 1 << 1
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}
@@ -542,7 +475,7 @@ func (m *CustomTypeMessageHolder) UnmarshalWithDepth(b []byte, depth int) error 
 }
 
 func (m *CustomTypeMessageHolder) unmarshal(dAtA []byte, depth int) error {
-	if depth > maxUnmarshalDepth {
+	if depth > protohelpers.MaxUnmarshalDepth {
 		return fmt.Errorf("exceeded max recursion depth")
 	}
 	l := len(dAtA)
@@ -610,13 +543,21 @@ func (m *CustomTypeMessageHolder) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.Labels = make([]customtypes.LabelAdapter, 0, c)
+			if need := len(m.Labels) + c; cap(m.Labels) < need {
+				grown := make([]customtypes.LabelAdapter, len(m.Labels), need)
+				copy(grown, m.Labels)
+				m.Labels = grown
+			}
 		}
 		if c := field4count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			m.ControlRepeated = make([]Label, 0, c)
+			if need := len(m.ControlRepeated) + c; cap(m.ControlRepeated) < need {
+				grown := make([]Label, len(m.ControlRepeated), need)
+				copy(grown, m.ControlRepeated)
+				m.ControlRepeated = grown
+			}
 		}
 	}
 	for iNdEx < l {
@@ -648,7 +589,7 @@ func (m *CustomTypeMessageHolder) unmarshal(dAtA []byte, depth int) error {
 		switch fieldNum {
 		case 1: // primary
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -695,7 +636,7 @@ func (m *CustomTypeMessageHolder) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 2: // labels
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -744,7 +685,7 @@ func (m *CustomTypeMessageHolder) unmarshal(dAtA []byte, depth int) error {
 			iNdEx = postIndex
 		case 3: // control_singular
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -789,10 +730,10 @@ func (m *CustomTypeMessageHolder) unmarshal(dAtA []byte, depth int) error {
 				return err
 			}
 			iNdEx = postIndex
-			m.fieldsPresent[0] |= 1 << 0
+			m.XXX_fieldsPresent[0] |= 1 << 0
 		case 4: // control_repeated
 			if wireType != 2 {
-				n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 				if err != nil {
 					return err
 				}
@@ -839,7 +780,7 @@ func (m *CustomTypeMessageHolder) unmarshal(dAtA []byte, depth int) error {
 			}
 			iNdEx = postIndex
 		default:
-			n, err := skipValue(dAtA[iNdEx:], wireType, fieldNum)
+			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
 				return err
 			}

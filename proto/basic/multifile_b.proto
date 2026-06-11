@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package basic.multifile.v1;
+
+option go_package = "github.com/grafana/wiresmith/gen/basic/multifile/v1";
+
+import "basic/multifile/v1/multifile_a.proto";
+
+// Second file in the same Go package — see multifile_a.proto. The
+// cross-file same-package reference must come out unqualified.
+message BetaHolder {
+  repeated AlphaEntry entries = 1;
+  string              note    = 2;
+}
