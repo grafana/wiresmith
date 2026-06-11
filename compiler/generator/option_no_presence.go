@@ -1,9 +1,7 @@
 package generator
 
 import (
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
-	"google.golang.org/protobuf/types/descriptorpb"
 )
 
 // The no_presence option pair lives outside the FieldOption registry: it
@@ -25,48 +23,13 @@ const (
 // A per-message no_presence value (true or false) wins; otherwise the
 // file-level no_presence_all default applies — the same override layering
 // as gogoproto's *_all options. Nested messages are independent: each
-// consults its own MessageOptions, not its parent's.
+// consults its own MessageOptions, not its parent's. The two scopes share
+// readBoolExt (see option.go); the explicit-false-vs-unset distinction is
+// what lets a message flip the file default in either direction.
 func (fg *FileGenerator) hasNoPresence(md protoreflect.MessageDescriptor) bool {
-	if v, ok := boolMessageOption(fg.noPresenceExt, md); ok {
+	if v, ok := readBoolExt(fg.noPresenceExt, md.Options()); ok {
 		return v
 	}
-	v, _ := boolFileOption(fg.noPresenceAllExt, md.ParentFile())
+	v, _ := readBoolExt(fg.noPresenceAllExt, md.ParentFile().Options())
 	return v
-}
-
-// boolMessageOption returns the bool-valued extension on md's
-// MessageOptions plus a presence flag. Same shape as hasBoolOption, but an
-// explicit `false` is distinguishable from "unset" so a message can
-// override a file-level default in either direction.
-func boolMessageOption(ext protoreflect.FieldDescriptor, md protoreflect.MessageDescriptor) (value, ok bool) {
-	if ext == nil {
-		return false, false
-	}
-	opts, k := md.Options().(*descriptorpb.MessageOptions)
-	if !k || opts == nil {
-		return false, false
-	}
-	xt := extensionType(ext)
-	if !proto.HasExtension(opts, xt) {
-		return false, false
-	}
-	v, _ := proto.GetExtension(opts, xt).(bool)
-	return v, true
-}
-
-// boolFileOption is boolMessageOption for FileOptions.
-func boolFileOption(ext protoreflect.FieldDescriptor, fd protoreflect.FileDescriptor) (value, ok bool) {
-	if ext == nil {
-		return false, false
-	}
-	opts, k := fd.Options().(*descriptorpb.FileOptions)
-	if !k || opts == nil {
-		return false, false
-	}
-	xt := extensionType(ext)
-	if !proto.HasExtension(opts, xt) {
-		return false, false
-	}
-	v, _ := proto.GetExtension(opts, xt).(bool)
-	return v, true
 }

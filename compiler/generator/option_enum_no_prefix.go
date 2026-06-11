@@ -1,9 +1,7 @@
 package generator
 
 import (
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
-	"google.golang.org/protobuf/types/descriptorpb"
 )
 
 // The enum_no_prefix option pair sits outside the FieldOption registry for
@@ -19,28 +17,12 @@ const (
 // hasEnumNoPrefix reports whether ed's value constants drop the
 // `EnumName_` prefix. A per-enum value (true or false) wins; otherwise the
 // file-level enum_no_prefix_all default applies — same layering as
-// no_presence / gogoproto's *_all options.
+// no_presence / gogoproto's *_all options, and the same shared readBoolExt
+// primitive (see option.go).
 func (fg *FileGenerator) hasEnumNoPrefix(ed protoreflect.EnumDescriptor) bool {
-	if v, ok := boolEnumOption(fg.enumNoPrefixExt, ed); ok {
+	if v, ok := readBoolExt(fg.enumNoPrefixExt, ed.Options()); ok {
 		return v
 	}
-	v, _ := boolFileOption(fg.enumNoPrefixAllExt, ed.ParentFile())
+	v, _ := readBoolExt(fg.enumNoPrefixAllExt, ed.ParentFile().Options())
 	return v
-}
-
-// boolEnumOption is boolMessageOption for EnumOptions.
-func boolEnumOption(ext protoreflect.FieldDescriptor, ed protoreflect.EnumDescriptor) (value, ok bool) {
-	if ext == nil {
-		return false, false
-	}
-	opts, k := ed.Options().(*descriptorpb.EnumOptions)
-	if !k || opts == nil {
-		return false, false
-	}
-	xt := extensionType(ext)
-	if !proto.HasExtension(opts, xt) {
-		return false, false
-	}
-	v, _ := proto.GetExtension(opts, xt).(bool)
-	return v, true
 }

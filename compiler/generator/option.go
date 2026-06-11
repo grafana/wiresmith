@@ -123,6 +123,30 @@ func hasBoolOption(ext, fd protoreflect.FieldDescriptor) bool {
 	return v
 }
 
+// readBoolExt returns the bool-valued extension ext on the descriptor
+// options message opts plus a presence flag. It is the shared primitive
+// behind the message-, file-, and enum-scoped bool option lookups
+// (no_presence / no_presence_all, enum_no_prefix / enum_no_prefix_all):
+// unlike hasBoolOption it distinguishes an explicit `false` — read back as
+// (false, true) — from "unset" (false, false), so a per-scope value can
+// override a file-level *_all default in either direction. A nil ext or a
+// nil/invalid opts message (the descriptor carries no options of the
+// expected type) reports (false, false); ProtoReflect().IsValid() is the
+// canonical nil-check that also catches a typed-nil *descriptorpb.*Options.
+// Callers must pair ext with the options type it extends — proto.HasExtension
+// panics on an extendee mismatch.
+func readBoolExt(ext protoreflect.FieldDescriptor, opts protoreflect.ProtoMessage) (value, ok bool) {
+	if ext == nil || opts == nil || !opts.ProtoReflect().IsValid() {
+		return false, false
+	}
+	xt := extensionType(ext)
+	if !proto.HasExtension(opts, xt) {
+		return false, false
+	}
+	v, _ := proto.GetExtension(opts, xt).(bool)
+	return v, true
+}
+
 // stringOption returns the string-valued extension on fd plus a presence
 // flag. Empty string with ok=true is a legal explicit value (jsontag uses
 // "" verbatim to suppress the default json tag); callers must rely on the
