@@ -74,7 +74,11 @@ Not supported (not needed for OTel protos): services/RPCs, extensions, well-know
 
 ## Install
 
-The module path is bare `wiresmith` (no host prefix), so a remote `go install wiresmith/cmd/wiresmith@latest` can't resolve — build from a checkout instead:
+```sh
+go install github.com/grafana/wiresmith/cmd/wiresmith@latest
+```
+
+Or build from a checkout:
 
 ```sh
 git clone https://github.com/grafana/wiresmith.git
@@ -92,13 +96,15 @@ go install ./cmd/wiresmith
 ./wiresmith --proto_path=proto --out=gen --module=github.com/your/module
 ```
 
-`--proto_path` walks the .proto tree, `--out` is the destination for generated `.pb.go` files (source-relative under that root), and `--module` is the **Go module prefix used in cross-file imports** — set it to your own module's path. Inside this repo, that's `wiresmith`; in your project, it's whatever your `go.mod` declares.
+`--proto_path` walks the .proto tree, `--out` is the destination for generated `.pb.go` files (source-relative under that root), and `--module` is the **Go module prefix used in cross-file imports** — set it to your own module's path. Inside this repo, that's `github.com/grafana/wiresmith`; in your project, it's whatever your `go.mod` declares.
 
 Passing one or more `.proto` paths as positional arguments scopes emission to just those files; the paths must live under `--proto_path` (a path outside that tree is rejected up front). Their imports are still resolved against the full `--proto_path` walk, but only the listed files and their transitive imports are actually compiled — unrelated siblings in the tree are never parsed, so a tree that still contains protos wiresmith can't compile (e.g. gogo-annotated ones mid-migration) doesn't block a scoped run.
 
 `./wiresmith --help` lists every flag; `./wiresmith --version` prints the build version. Drop the `./` once the binary is on `$PATH`.
 
 See [docs/cli.md](docs/cli.md) for the full CLI reference and a worked example.
+
+wiresmith also ships as a `protoc` plugin (`protoc-gen-wiresmith`) for `protoc` and `buf generate` pipelines — see [docs/buf.md](docs/buf.md).
 
 ## Development
 
@@ -116,6 +122,7 @@ See `Makefile` for all targets.
 ## Documentation
 
 - [CLI reference](docs/cli.md)
+- [`protoc` / `buf` plugin](docs/buf.md)
 - [Design and tradeoffs](docs/design.md)
 - [Comparison with vtproto, gogoproto, and official protobuf](docs/comparison.md)
 - [Custom proto extensions](docs/extensions.md)
