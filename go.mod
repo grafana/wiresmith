@@ -5,11 +5,6 @@ go 1.26.4
 require (
 	github.com/bufbuild/protocompile v0.14.1
 	github.com/gogo/protobuf v1.3.2
-	// Post-v0.6.0 pseudo-version, pulled in transitively via
-	// google.golang.org/grpc's go.mod. wiresmith only uses vtprotobuf's
-	// `protohelpers` package, which is unchanged between v0.6.0 and this
-	// commit, so the bump is a benign dependency update. No `replace` is
-	// used, which keeps the module `go install`-able.
 	github.com/planetscale/vtprotobuf v0.6.1-0.20250313105119-ba97887b0a25
 	github.com/stretchr/testify v1.11.1
 	go.opentelemetry.io/collector/pdata v1.59.0
