@@ -239,13 +239,19 @@ func (fg *FileGenerator) goFieldType(fd protoreflect.FieldDescriptor) string {
 // same way.
 //
 // stdtime and stdduration both substitute the Timestamp/Duration message
-// for a stdlib value type; customtype substitutes for a scalar
-// (bytes/string), so the MessageType branch never reaches it.
+// for a stdlib value type. customtype on a message field substitutes a
+// user-supplied type that owns its own wire encoding — its emitters never
+// touch the natural message type, so looking it up would only register an
+// import the generated file never references (a compile error when that
+// field was the file's only use of the import).
 func (fg *FileGenerator) suppressMessageType(fd protoreflect.FieldDescriptor) bool {
 	if opt := findOption[*stdtimeOption](fg.options); opt != nil && opt.Has(fd) {
 		return true
 	}
 	if opt := findOption[*stddurationOption](fg.options); opt != nil && opt.Has(fd) {
+		return true
+	}
+	if opt := findOption[*customtypeOption](fg.options); opt != nil && opt.Has(fd) {
 		return true
 	}
 	return false

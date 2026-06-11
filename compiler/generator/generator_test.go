@@ -1831,6 +1831,357 @@ message Bar { string s = 1; }`)
 	}
 }
 
+// TestGenerateSplitPackageWithOverrides pins the -M escape hatch for proto
+// packages that legitimately span multiple Go packages (Loki's `package
+// logproto` lives in both pkg/push — a separate Go module — and
+// pkg/logproto). A file pinned via Overrides opts out of the
+// one-go_package-per-proto-package agreement: the remaining files still
+// agree among themselves, the pinned file resolves to its override, and
+// cross-Go-package references between the two halves come out qualified.
+func TestGenerateSplitPackageWithOverrides(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "push/push.proto", `
+syntax = "proto3";
+package logproto;
+option go_package = "example.com/loki/pkg/push";
+message Stream { string labels = 1; }`)
+	writeProto(t, protoDir, "logproto/logproto.proto", `
+syntax = "proto3";
+package logproto;
+option go_package = "example.com/loki/v3/pkg/logproto";
+import "push/push.proto";
+message QueryResponse { Stream stream = 1; }`)
+
+	outDir := testOutDir(t)
+	gen := &Generator{
+		Module:    "example.com/loki",
+		OutDir:    outDir,
+		ProtoDirs: []string{protoDir},
+		Overrides: map[string]string{
+			"push/push.proto": "example.com/loki/pkg/push",
+		},
+	}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate with -M override: %v", err)
+	}
+
+	pushSrc := mustReadFile(t, filepath.Join(outDir, "push", "push.pb.go"))
+	logSrc := mustReadFile(t, filepath.Join(outDir, "logproto", "logproto.pb.go"))
+
+	if !strings.Contains(pushSrc, "package push\n") {
+		t.Errorf("push.pb.go must declare 'package push' (from the override), got:\n%.300s", pushSrc)
+	}
+	if !strings.Contains(logSrc, "package logproto\n") {
+		t.Errorf("logproto.pb.go must declare 'package logproto', got:\n%.300s", logSrc)
+	}
+	// The reference into the pinned half must be a qualified import, not a
+	// bare same-package identifier.
+	if !strings.Contains(logSrc, `"example.com/loki/pkg/push"`) {
+		t.Errorf("logproto.pb.go must import the pinned push package")
+	}
+	if !strings.Contains(logSrc, "push.Stream") {
+		t.Errorf("logproto.pb.go must reference Stream as push.Stream")
+	}
+	if strings.Contains(logSrc, "type Stream struct") {
+		t.Errorf("logproto.pb.go must not redeclare Stream locally")
+	}
+}
+
+// TestGenerateSplitPackageWithoutOverridesRejected pins that the same
+// split-package layout WITHOUT -M pins still fails the consistency check —
+// the override is an explicit opt-in, not a relaxation of the default rule.
+func TestGenerateSplitPackageWithoutOverridesRejected(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "push/push.proto", `
+syntax = "proto3";
+package logproto;
+option go_package = "example.com/loki/pkg/push";
+message Stream { string labels = 1; }`)
+	writeProto(t, protoDir, "logproto/logproto.proto", `
+syntax = "proto3";
+package logproto;
+option go_package = "example.com/loki/v3/pkg/logproto";
+import "push/push.proto";
+message QueryResponse { Stream stream = 1; }`)
+
+	gen := &Generator{
+		Module:    "example.com/loki",
+		OutDir:    testOutDir(t),
+		ProtoDirs: []string{protoDir},
+	}
+	err := gen.Generate(context.Background())
+	if err == nil {
+		t.Fatal("expected inconsistent go_package error, got nil")
+	}
+	if !strings.Contains(err.Error(), "inconsistent go_package") {
+		t.Errorf("expected 'inconsistent go_package' error, got: %v", err)
+	}
+}
+
+// TestGenerateOverrideSplittingDirRejected guards against -M misuse: pinning
+// one file of a directory to a different Go import path than its dir-mates
+// would put two Go packages in one output directory — Go's
+// directory-equals-package rule makes that uncompilable, so reject it up
+// front with an error naming both files.
+func TestGenerateOverrideSplittingDirRejected(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "pkg/a.proto", `
+syntax = "proto3";
+package samedir;
+option go_package = "example.com/mod/gen/samedir";
+message A { string s = 1; }`)
+	writeProto(t, protoDir, "pkg/b.proto", `
+syntax = "proto3";
+package samedir;
+option go_package = "example.com/mod/gen/samedir";
+message B { string s = 1; }`)
+
+	gen := &Generator{
+		Module:    "example.com/mod",
+		OutDir:    testOutDir(t),
+		ProtoDirs: []string{protoDir},
+		Overrides: map[string]string{
+			"pkg/b.proto": "example.com/elsewhere/bpkg",
+		},
+	}
+	err := gen.Generate(context.Background())
+	if err == nil {
+		t.Fatal("expected conflicting-import-path error, got nil")
+	}
+	if !strings.Contains(err.Error(), "conflicting Go import paths") {
+		t.Errorf("expected 'conflicting Go import paths' error, got: %v", err)
+	}
+}
+
+// TestGenerateOverridesCollideAcrossDirsRejected pins the -M misuse flagged
+// on PR #125: two files in DIFFERENT source-relative directories both pinned
+// to the SAME Go import path would make one import path span two directories.
+// isSelfDest compares import paths only, so it would then treat the two
+// directories as one Go package and emit unqualified cross-directory
+// references — uncompilable code. computeDests' importOwner check (keyed by
+// import path, recording the claiming relDir) must reject it up front, naming
+// both files. Distinct from TestGenerateOverrideSplittingDirRejected, which
+// covers the inverse (one dir split to two import paths).
+func TestGenerateOverridesCollideAcrossDirsRejected(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "dira/a.proto", `
+syntax = "proto3";
+package pkga;
+option go_package = "example.com/mod/gen/dira";
+message A { string s = 1; }`)
+	writeProto(t, protoDir, "dirb/b.proto", `
+syntax = "proto3";
+package pkgb;
+option go_package = "example.com/mod/gen/dirb";
+message B { string s = 1; }`)
+
+	gen := &Generator{
+		Module:    "example.com/mod",
+		OutDir:    testOutDir(t),
+		ProtoDirs: []string{protoDir},
+		Overrides: map[string]string{
+			"dira/a.proto": "example.com/shared",
+			"dirb/b.proto": "example.com/shared",
+		},
+	}
+	err := gen.Generate(context.Background())
+	if err == nil {
+		t.Fatal("expected import-path-claimed-from-two-directories error, got nil")
+	}
+	if !strings.Contains(err.Error(), "claimed from two directories") {
+		t.Errorf("expected 'claimed from two directories' error, got: %v", err)
+	}
+	// Both files are pinned, so this must surface through the -M override
+	// branch of computeDests (which appends the -M hint), not the plain path.
+	if !strings.Contains(err.Error(), "-M overrides") {
+		t.Errorf("expected the -M-override variant of the error, got: %v", err)
+	}
+}
+
+// TestGenerateSharedGoPackageAcrossProtoPackages pins the protoc-parity
+// case Loki's indexgateway.proto needs: two .proto files in one directory
+// with DIFFERENT proto packages but the SAME resolved go_package compile
+// into one Go package. References between them are same-Go-package
+// unqualified identifiers.
+func TestGenerateSharedGoPackageAcrossProtoPackages(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "shared/a.proto", `
+syntax = "proto3";
+package alpha.v1;
+option go_package = "example.com/mod/gen/shared";
+message AlphaMsg { string s = 1; }`)
+	writeProto(t, protoDir, "shared/b.proto", `
+syntax = "proto3";
+package beta.v1;
+option go_package = "example.com/mod/gen/shared";
+import "shared/a.proto";
+message BetaMsg { alpha.v1.AlphaMsg a = 1; }`)
+
+	outDir := testOutDir(t)
+	gen := &Generator{Module: "example.com/mod", OutDir: outDir, ProtoDirs: []string{protoDir}}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
+	}
+
+	aSrc := mustReadFile(t, filepath.Join(outDir, "shared", "a.pb.go"))
+	bSrc := mustReadFile(t, filepath.Join(outDir, "shared", "b.pb.go"))
+	if !strings.Contains(aSrc, "package shared\n") || !strings.Contains(bSrc, "package shared\n") {
+		t.Errorf("both files must declare 'package shared'")
+	}
+	// Same Go package: the cross-proto-package reference is unqualified.
+	if !strings.Contains(bSrc, "A AlphaMsg ") && !strings.Contains(bSrc, "A AlphaMsg\t") {
+		t.Errorf("BetaMsg must reference AlphaMsg unqualified, got:\n%.600s", bSrc)
+	}
+	if strings.Contains(bSrc, `"example.com/mod/gen/shared"`) {
+		t.Errorf("b.pb.go must not import its own package")
+	}
+}
+
+// TestGenerateSharedDirDifferentPackageNamesRejected is the guard that
+// stays: two proto packages in one directory whose resolved Go package
+// names disagree (here: no go_package, so the names derive from the proto
+// packages) cannot form one compilable Go package and must be rejected
+// up front.
+func TestGenerateSharedDirDifferentPackageNamesRejected(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "shared/a.proto", `
+syntax = "proto3";
+package alpha.v1;
+message AlphaMsg { string s = 1; }`)
+	writeProto(t, protoDir, "shared/b.proto", `
+syntax = "proto3";
+package beta.v1;
+message BetaMsg { string s = 1; }`)
+
+	gen := &Generator{Module: "example.com/mod", OutDir: testOutDir(t), ProtoDirs: []string{protoDir}}
+	err := gen.Generate(context.Background())
+	if err == nil {
+		t.Fatal("expected error for one dir with two Go package names, got nil")
+	}
+	if !strings.Contains(err.Error(), "package name") {
+		t.Errorf("expected a package-name conflict error, got: %v", err)
+	}
+}
+
+// TestGenerateFilesSkipsUnrelatedBrokenSiblings pins the lazy compile set:
+// positional files compile only themselves plus transitive imports, so an
+// unrelated sibling .proto that doesn't compile (gogo annotations without
+// the gogo schema on the path, syntax errors, unresolvable imports) must
+// not fail the run. This is what lets a staged migration generate one file
+// from a tree that still contains gogo-annotated protos, without copying
+// the target into a staging directory first.
+func TestGenerateFilesSkipsUnrelatedBrokenSiblings(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "good/good.proto", `
+syntax = "proto3";
+package good.v1;
+option go_package = "example.com/mod/gen/good";
+import "dep/dep.proto";
+message G { dep.v1.D d = 1; }`)
+	writeProto(t, protoDir, "dep/dep.proto", `
+syntax = "proto3";
+package dep.v1;
+option go_package = "example.com/mod/gen/dep";
+message D { string s = 1; }`)
+	// Unrelated sibling that cannot compile: imports a file that's nowhere
+	// on the path (the shape a gogo-annotated proto has when gogoproto's
+	// schema isn't provided).
+	writeProto(t, protoDir, "legacy/legacy.proto", `
+syntax = "proto3";
+package legacy.v1;
+import "gogoproto/gogo.proto";
+message L { string s = 1; }`)
+
+	outDir := testOutDir(t)
+	gen := &Generator{
+		Module:    "example.com/mod",
+		OutDir:    outDir,
+		ProtoDirs: []string{protoDir},
+		Files:     []string{filepath.Join(protoDir, "good", "good.proto")},
+	}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate with positional file must ignore unrelated broken sibling: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(outDir, "good", "good.pb.go")); err != nil {
+		t.Errorf("expected good.pb.go: %v", err)
+	}
+	// The transitive import is compiled (for destinations) but not emitted.
+	if _, err := os.Stat(filepath.Join(outDir, "dep", "dep.pb.go")); err == nil {
+		t.Errorf("dep.pb.go must not be emitted (not in the positional set)")
+	}
+	if _, err := os.Stat(filepath.Join(outDir, "legacy", "legacy.pb.go")); err == nil {
+		t.Errorf("legacy.pb.go must not exist")
+	}
+}
+
+// TestGenerateFilesBrokenImportStillFails is the counterpart: when the
+// positional file actually imports the broken proto, the failure must
+// surface — lazy compilation narrows the compile set, it doesn't swallow
+// real errors.
+func TestGenerateFilesBrokenImportStillFails(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "good/good.proto", `
+syntax = "proto3";
+package good.v1;
+option go_package = "example.com/mod/gen/good";
+import "legacy/legacy.proto";
+message G { legacy.v1.L l = 1; }`)
+	writeProto(t, protoDir, "legacy/legacy.proto", `
+syntax = "proto3";
+package legacy.v1;
+import "gogoproto/gogo.proto";
+message L { string s = 1; }`)
+
+	gen := &Generator{
+		Module:    "example.com/mod",
+		OutDir:    testOutDir(t),
+		ProtoDirs: []string{protoDir},
+		Files:     []string{filepath.Join(protoDir, "good", "good.proto")},
+	}
+	if err := gen.Generate(context.Background()); err == nil {
+		t.Fatal("expected error when the positional file imports a broken proto")
+	}
+}
+
+// TestGenerateCustomtypeSuppressesUnusedCrossFileImport pins that a
+// customtype-annotated message field does not register an import for the
+// natural (replaced) message type. When such a field is the file's only
+// reference into the imported proto, the stale registration emitted an
+// import that nothing used — a compile error in the generated code.
+// (Same mechanism as the stdtime/stdduration suppression in fieldContext.)
+func TestGenerateCustomtypeSuppressesUnusedCrossFileImport(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "dep/dep.proto", `
+syntax = "proto3";
+package dep.v1;
+option go_package = "example.com/mod/gen/dep";
+message Inner { string s = 1; }`)
+	writeProto(t, protoDir, "main/main.proto", `
+syntax = "proto3";
+package main.v1;
+option go_package = "example.com/mod/gen/mainpb";
+import "wiresmith/options.proto";
+import "dep/dep.proto";
+message Outer {
+  dep.v1.Inner x = 1 [(wiresmith.options.customtype) = "example.com/mod/custom.MyType"];
+  repeated dep.v1.Inner xs = 2 [(wiresmith.options.customtype) = "example.com/mod/custom.MyType"];
+}`)
+
+	outDir := testOutDir(t)
+	gen := &Generator{Module: "example.com/mod", OutDir: outDir, ProtoDirs: []string{protoDir}}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
+	}
+
+	mainSrc := mustReadFile(t, filepath.Join(outDir, "main", "main.pb.go"))
+	if strings.Contains(mainSrc, `"example.com/mod/gen/dep"`) {
+		t.Errorf("main.pb.go imports the replaced type's package but never references it:\n%.600s", mainSrc)
+	}
+	if !strings.Contains(mainSrc, "custom.MyType") {
+		t.Errorf("main.pb.go must use the customtype custom.MyType")
+	}
+}
+
 // TestGenerateGoPackageShadowsStdlibAlias forces a proto's go_package pkgName
 // to equal a stdlib name wiresmith always uses ("fmt"). The pre-reserved
 // stdlib entry in newImportTracker keeps the alias pool aware of "fmt", so

@@ -21,7 +21,10 @@ wiresmith [flags] [files...]
 ```
 
 When one or more `.proto` file paths are given as positional arguments,
-only those files are emitted. Their imports are still resolved against the
+only those files are emitted. Only the listed files and their transitive
+imports are compiled — unrelated siblings in the tree are never parsed, so
+gogo-annotated protos elsewhere in a mid-migration tree don't block a
+scoped run. Their imports are still resolved against the
 full `--proto_path` walk, so cross-file references in the unemitted set
 keep working. When no files are given, wiresmith walks every
 `--proto_path` root and emits every `.proto` it finds (the default).
@@ -73,6 +76,10 @@ The Go import path of a generated file is resolved in this order, matching `prot
 The on-disk write location is always `<out>/<source-relative path>` regardless of which step above produced the import path, matching `paths=source_relative`. `-M` and `go_package` only influence the import-path string in the generated file, not where the file is written.
 
 `-M` is the documented escape hatch when a vendored `.proto` declares a `go_package` that doesn't match the consumer's tree — for example wiresmith's own OTel build, where the upstream `go_package = "go.opentelemetry.io/proto/otlp/..."` is overridden to `github.com/grafana/wiresmith/gen/opentelemetry/proto/...;...` so the generated imports resolve under the local module.
+
+Two proto packages may share one Go package when they live in the same directory and their resolved `go_package` (import path **and** package name) agree — protoc parity; e.g. Loki's `indexgateway.proto` (`package indexgatewaypb`) cohabits `pkg/logproto` with the `package logproto` files. What a directory cannot hold is two import paths or two package clauses; both are rejected up front.
+
+An `-M`-pinned file is also exempt from the one-`go_package`-per-proto-package consistency check, so `-M` is the way to compile a proto package that legitimately spans multiple Go packages (e.g. Loki's `package logproto`, split between the standalone `pkg/push` module and `pkg/logproto`): pin the odd files out with `-M` and the rest of the package must still agree among itself. References between the two halves are emitted as qualified imports. An override that would split one output *directory* across two Go packages is still rejected — one directory maps to one Go package.
 
 ## Examples
 

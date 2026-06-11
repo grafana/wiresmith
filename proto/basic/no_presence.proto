@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package basic.nopresence.v1;
+
+option go_package = "github.com/grafana/wiresmith/gen/basic/nopresence/v1";
+
+import "wiresmith/options.proto";
+
+// Leaf is the inner message referenced by the fields below. Annotated too:
+// deep-equality between a hand-built BareHolder and its decoded round-trip
+// (the property consumers migrate for) requires every transitively-embedded
+// message to drop its bitmap as well.
+message Leaf {
+  option (wiresmith.options.no_presence) = true;
+
+  int64  id   = 1;
+  string name = 2;
+}
+
+// BareHolder exercises (wiresmith.options.no_presence) = true: no
+// fieldsPresent bitmap in the struct, no Has<F>() for the value-typed
+// fields below, and gogoproto-style "absent == empty" round-trip semantics
+// for the nested message.
+message BareHolder {
+  option (wiresmith.options.no_presence) = true;
+
+  Leaf   child = 1;
+  int64  num   = 2;
+  string label = 3;
+  // optional keeps its pointer-based Has<F>() even under no_presence.
+  optional int64 maybe = 4;
+}
+
+// TrackedHolder is the unannotated control: same shape, default bitmap
+// behavior — proving the option is local to the annotated message.
+message TrackedHolder {
+  Leaf  child = 1;
+  int64 num   = 2;
+}

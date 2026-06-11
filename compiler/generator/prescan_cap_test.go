@@ -62,7 +62,10 @@ message Container {
 		"if c := field1count; c > 0 {", // scoped local + zero-guard, per pre-scan field
 		"if c > preCapMax {",           // the clamp itself
 		"c = preCapMax",                // clamp assignment
-		"make([]Item, 0, c)",           // make() uses the clamped capacity, not the raw count
+		// The merge-preserving grow allocates len+clamped-count, never the
+		// raw count (gogo append parity, DB-13).
+		"if need := len(m.Items) + c; cap(m.Items) < need {",
+		"make([]Item, len(m.Items), need)",
 	}
 	for _, want := range required {
 		if !strings.Contains(src, want) {
@@ -71,9 +74,9 @@ message Container {
 	}
 
 	// Also assert the raw count is *not* fed into make(): an accidental
-	// fall-back to `make([]Item, 0, field1count)` would re-introduce the
-	// vulnerability without tripping any of the substrings above.
-	if strings.Contains(src, "make([]Item, 0, field1count)") {
+	// fall-back to `make([]Item, ..., field1count)` would re-introduce the
+	// SEC-1 amplification without tripping any of the substrings above.
+	if strings.Contains(src, ", field1count)") {
 		t.Errorf("generated pre-scan uses raw count in make() — SEC-1 cap was bypassed\n\nfull source:\n%s", src)
 	}
 }

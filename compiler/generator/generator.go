@@ -87,6 +87,22 @@ type Generator struct {
 	// run as two inline calls in Generate.
 	jsontagExt protoreflect.FieldDescriptor
 
+	// noPresenceExt / noPresenceAllExt are the linked extension descriptors
+	// for the message-level `(wiresmith.options.no_presence)` and the
+	// file-level `(wiresmith.options.no_presence_all)` options. Like
+	// jsontag they sit outside the FieldOption registry (they annotate
+	// messages and files, not fields). Consulted by
+	// FileGenerator.hasNoPresence via fieldsForPresence.
+	noPresenceExt    protoreflect.FieldDescriptor
+	noPresenceAllExt protoreflect.FieldDescriptor
+
+	// enumNoPrefixExt / enumNoPrefixAllExt are the linked extension
+	// descriptors for the enum-level `(wiresmith.options.enum_no_prefix)`
+	// and file-level `enum_no_prefix_all` options. Same shape as the
+	// no_presence pair. Consulted by FileGenerator.hasEnumNoPrefix.
+	enumNoPrefixExt    protoreflect.FieldDescriptor
+	enumNoPrefixAllExt protoreflect.FieldDescriptor
+
 	// outputs accumulates the formatted Go files produced by writeFormatted
 	// during a Generate run. Two callers harvest it: Generate writes them
 	// to disk; GenerateFromDescriptors returns them to a protoc plugin
@@ -170,6 +186,18 @@ type FileGenerator struct {
 	// GoFieldType behavior), so the descriptor still rides through as a
 	// dedicated field rather than via the registry.
 	jsontagExt protoreflect.FieldDescriptor
+
+	// noPresenceExt / noPresenceAllExt are the cached message-level and
+	// file-level no_presence extension descriptors — non-field options, so
+	// outside the registry for the same reason as jsontagExt. Consulted by
+	// hasNoPresence (option_no_presence.go).
+	noPresenceExt    protoreflect.FieldDescriptor
+	noPresenceAllExt protoreflect.FieldDescriptor
+
+	// enumNoPrefixExt / enumNoPrefixAllExt — same shape, for the
+	// enum_no_prefix pair (option_enum_no_prefix.go).
+	enumNoPrefixExt    protoreflect.FieldDescriptor
+	enumNoPrefixAllExt protoreflect.FieldDescriptor
 
 	// compareBody / compareImports hold a second companion `_compare.pb.go`
 	// file: just the per-message Compare(other interface{}) int methods.
@@ -394,7 +422,25 @@ func (g *Generator) compileSources(ctx context.Context) ([]protoreflect.FileDesc
 		),
 	}
 
-	linked, err := compiler.Compile(ctx, importPaths...)
+	// With positional files, compile only those (plus the embedded options
+	// schema); the resolver pulls transitive imports from the full mapping
+	// on demand. Unrelated siblings in the walked tree are never parsed —
+	// a staged migration can generate one file from a tree whose other
+	// protos don't compile (gogo annotations without the gogo schema on
+	// the path). Without positional files, the whole walk compiles, as
+	// before. Validation (go_package consistency, destination collisions)
+	// therefore covers the compiled subgraph only in scoped runs — the
+	// same trade protoc makes.
+	roots := importPaths
+	if len(emit) > 0 {
+		roots = make([]string, 0, len(emit)+1)
+		for key := range emit {
+			roots = append(roots, key)
+		}
+		sort.Strings(roots)
+		roots = append(roots, embeddedOptionsPath)
+	}
+	linked, err := compiler.Compile(ctx, roots...)
 	if err != nil {
 		return nil, nil, fmt.Errorf("compiling protos: %w", err)
 	}
@@ -442,6 +488,10 @@ func (g *Generator) generateFromFiles(results []protoreflect.FileDescriptor, emi
 	if err := g.resolveJsontagExtension(results); err != nil {
 		return nil, err
 	}
+	g.noPresenceExt = findExtension(results, noPresenceExtName)
+	g.noPresenceAllExt = findExtension(results, noPresenceAllExtName)
+	g.enumNoPrefixExt = findExtension(results, enumNoPrefixExtName)
+	g.enumNoPrefixAllExt = findExtension(results, enumNoPrefixAllExtName)
 	if err := g.validateJsontagOptions(results); err != nil {
 		return nil, err
 	}
@@ -599,6 +649,18 @@ func (g *Generator) collectGoPackages(results []protoreflect.FileDescriptor) err
 		if isInternalSchemaFile(fd) {
 			continue
 		}
+		// A file pinned via -M resolves its destination from the override
+		// (destForPath checks Overrides first), so it neither seeds the
+		// agreement map nor conflicts with it. This is the escape hatch for
+		// proto packages that legitimately span multiple Go packages (e.g.
+		// Loki's `package logproto` split between a standalone push module
+		// and pkg/logproto): pin the odd files out with -M and the rest of
+		// the package still has to agree among itself. validateDestinations
+		// separately rejects an override that would split a single output
+		// directory across two Go packages.
+		if override, ok := g.Overrides[fd.Path()]; ok && override != "" {
+			continue
+		}
 		// GetGoPackage is nil-safe — it returns "" if the cast fails or
 		// the option is unset.
 		opts, _ := fd.Options().(*descriptorpb.FileOptions)
@@ -709,7 +771,15 @@ func (g *Generator) computeDests(results []protoreflect.FileDescriptor) error {
 	g.destinations = make(map[string]goDest)
 	type sighting struct{ relDir, path string }
 	seen := make(map[string]sighting)
-	importOwner := make(map[string]string)
+	// importOwner tracks which source directory first claimed each Go
+	// import path. Two proto packages MAY share one import path when they
+	// live in the same directory (protoc parity — Loki's indexgateway.proto
+	// cohabits pkg/logproto with `package logproto` files); the
+	// uncompilable case is one import path written from two different
+	// directories. Package-name agreement inside a directory is enforced
+	// by validateDestinations, which sees the resolved pkgName.
+	type pathClaim struct{ protoPkg, relDir, path string }
+	importOwner := make(map[string]pathClaim)
 
 	// inResults marks each file we'll consider an emit candidate.
 	inResults := make(map[string]bool, len(results))
@@ -739,6 +809,21 @@ func (g *Generator) computeDests(results []protoreflect.FileDescriptor) error {
 		protoPkg := string(fd.Package())
 		relDir := sourceRelDir(fd.Path())
 		dest := g.destFor(fd)
+		// An -M-pinned file opts out of the package-wide agreement (same
+		// rationale as in collectGoPackages): its destination is explicit,
+		// so it must not seed the seen-map (which would force dir agreement
+		// on its unpinned package-mates) nor be checked against it. It still
+		// claims its import path below so a different proto package can't
+		// silently share it.
+		if override, ok := g.Overrides[fd.Path()]; ok && override != "" {
+			if owner, exists := importOwner[dest.importPath]; exists && owner.relDir != relDir {
+				return fmt.Errorf("import path %q is claimed from two directories: %s (package %q) and %s (package %q) — one Go import path cannot span directories (check go_package options and -M overrides)",
+					dest.importPath, owner.path, owner.protoPkg, fd.Path(), protoPkg)
+			}
+			importOwner[dest.importPath] = pathClaim{protoPkg: protoPkg, relDir: relDir, path: fd.Path()}
+			g.destinations[fd.Path()] = dest
+			continue
+		}
 		if prev, ok := seen[protoPkg]; ok {
 			if prev.relDir != relDir {
 				return fmt.Errorf("proto package %q spans multiple source-relative directories: %s declares %q but %s declares %q",
@@ -751,11 +836,11 @@ func (g *Generator) computeDests(results []protoreflect.FileDescriptor) error {
 			continue
 		}
 		seen[protoPkg] = sighting{relDir: relDir, path: fd.Path()}
-		if owner, exists := importOwner[dest.importPath]; exists && owner != protoPkg {
-			return fmt.Errorf("import path %q is claimed by both proto packages %q and %q (check go_package options)",
-				dest.importPath, owner, protoPkg)
+		if owner, exists := importOwner[dest.importPath]; exists && owner.relDir != relDir {
+			return fmt.Errorf("import path %q is claimed from two directories: %s (package %q) and %s (package %q) — one Go import path cannot span directories (check go_package options)",
+				dest.importPath, owner.path, owner.protoPkg, fd.Path(), protoPkg)
 		}
-		importOwner[dest.importPath] = protoPkg
+		importOwner[dest.importPath] = pathClaim{protoPkg: protoPkg, relDir: relDir, path: fd.Path()}
 		g.destinations[fd.Path()] = dest
 	}
 	return nil
@@ -792,19 +877,37 @@ func destForReachable(fd protoreflect.FileDescriptor) goDest {
 // Files that won't emit are skipped: an empty .proto cannot collide on disk
 // with a non-empty proto resolving to the same Go dir, because it writes
 // nothing there. Including it would produce a false-positive collision error.
+//
+// The unit of agreement is the file's RESOLVED Go identity — import path
+// and package name — not its proto package: two proto packages may
+// legitimately cohabit one directory when their go_package options agree
+// (protoc parity; Loki's indexgateway.proto shares pkg/logproto with
+// `package logproto` files). What one directory cannot hold is two import
+// paths (an -M override pinning one file away from its dir-mates) or two
+// package clauses (e.g. neither file declares go_package, so the names
+// derive from the differing proto packages) — Go's directory-equals-package
+// rule rejects both, just later and less clearly.
 func (g *Generator) validateDestinations(results []protoreflect.FileDescriptor) error {
-	dirOwner := make(map[string]string)
+	type claim struct{ importPath, pkgName, path string }
+	dirOwner := make(map[string]claim)
 	for _, fd := range results {
 		if !g.shouldEmit(fd) {
 			continue
 		}
-		protoPkg := string(fd.Package())
 		relDir := sourceRelDir(fd.Path())
-		if owner, ok := dirOwner[relDir]; ok && owner != protoPkg {
-			return fmt.Errorf("destination %q is claimed by both proto packages %q and %q (two proto packages cannot share one source-relative directory)",
-				relDir, owner, protoPkg)
+		dest := g.destinations[fd.Path()]
+		if owner, ok := dirOwner[relDir]; ok {
+			if owner.importPath != dest.importPath {
+				return fmt.Errorf("destination %q has conflicting Go import paths: %s resolves to %q but %s resolves to %q (check go_package options and -M overrides — one directory must map to one Go package)",
+					relDir, owner.path, owner.importPath, fd.Path(), dest.importPath)
+			}
+			if owner.pkgName != dest.pkgName {
+				return fmt.Errorf("destination %q has conflicting Go package names: %s resolves to %q but %s resolves to %q (files sharing a directory must agree on the Go package name — set matching go_package options)",
+					relDir, owner.path, owner.pkgName, fd.Path(), dest.pkgName)
+			}
+			continue
 		}
-		dirOwner[relDir] = protoPkg
+		dirOwner[relDir] = claim{importPath: dest.importPath, pkgName: dest.pkgName, path: fd.Path()}
 	}
 	return nil
 }
@@ -812,19 +915,23 @@ func (g *Generator) validateDestinations(results []protoreflect.FileDescriptor) 
 func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 	selfDest := g.destinations[fd.Path()]
 	fg := &FileGenerator{
-		fd:             fd,
-		module:         g.Module,
-		imports:        newImportTracker(g.Module, selfDest, g.destinations),
-		body:           &bytes.Buffer{},
-		reflectImports: newImportTracker(g.Module, selfDest, g.destinations),
-		reflectBody:    &bytes.Buffer{},
-		compareImports: newImportTracker(g.Module, selfDest, g.destinations),
-		compareBody:    &bytes.Buffer{},
-		equalImports:   newImportTracker(g.Module, selfDest, g.destinations),
-		equalBody:      &bytes.Buffer{},
-		fileVarName:    sanitizeFileVarName(fd.Path()),
-		options:        g.options,
-		jsontagExt:     g.jsontagExt,
+		fd:                 fd,
+		module:             g.Module,
+		imports:            newImportTracker(g.Module, selfDest, g.destinations),
+		body:               &bytes.Buffer{},
+		reflectImports:     newImportTracker(g.Module, selfDest, g.destinations),
+		reflectBody:        &bytes.Buffer{},
+		compareImports:     newImportTracker(g.Module, selfDest, g.destinations),
+		compareBody:        &bytes.Buffer{},
+		equalImports:       newImportTracker(g.Module, selfDest, g.destinations),
+		equalBody:          &bytes.Buffer{},
+		fileVarName:        sanitizeFileVarName(fd.Path()),
+		options:            g.options,
+		jsontagExt:         g.jsontagExt,
+		noPresenceExt:      g.noPresenceExt,
+		noPresenceAllExt:   g.noPresenceAllExt,
+		enumNoPrefixExt:    g.enumNoPrefixExt,
+		enumNoPrefixAllExt: g.enumNoPrefixAllExt,
 	}
 
 	// Hot-path emitters target the main .pb.go: structs, oneof variants,
@@ -1143,16 +1250,10 @@ func (fg *FileGenerator) emitAllMarshalMethods(fd protoreflect.FileDescriptor) {
 }
 
 func (fg *FileGenerator) emitAllUnmarshalMethods(fd protoreflect.FileDescriptor) {
-	// Emit nothing for a file with no messages — the maxUnmarshalDepth
-	// constant and skipValue helper exist only to be referenced by the
-	// per-message Unmarshal methods, so emitting them in a service-only
-	// or enums-only file would push fg.body across the "skip empty main
-	// .pb.go" threshold that generateFile uses to drop header-only output.
-	if fd.Messages().Len() == 0 {
-		return
-	}
-	fmt.Fprintf(fg.body, "const maxUnmarshalDepth = 10000\n\n")
-	fg.emitSkipValueHelper()
+	// The depth constant and skip helper live in protohelpers
+	// (MaxUnmarshalDepth / SkipValue) rather than being emitted per file:
+	// package-level declarations would collide when multiple .proto files
+	// generate into one Go package (Tempo's tempopb, Loki's logproto).
 	forEachMessage(fd, fg.emitUnmarshal)
 }
 
