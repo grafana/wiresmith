@@ -235,28 +235,46 @@ func TestGenerateMatchesCheckedIn(t *testing.T) {
 				t.Fatal("generator produced no files")
 			}
 
-			// Reverse check: for each directory that contains generated files,
-			// verify the matching checked-in directory has no extra .go files
-			// the generator didn't produce. We scope to exact directories
-			// because gen/ also contains protoc-generated files in sibling dirs.
-			genDirs := make(map[string]struct{})
+			// Reverse check: every checked-in .pb.go under the gen roots this
+			// case owns must have been produced by this run. We scope to the
+			// case's own top-level roots (e.g. "opentelemetry", "basic")
+			// rather than all of gen/ because gen/ also holds protoc-generated
+			// siblings (gen/vtpb, gen/gogopb) that this generator never emits.
+			//
+			// We walk each owned root *recursively* — not just the directories
+			// that produced output. A per-genDir loop only inspects directories
+			// the generator wrote into, so dropping an entire package directory
+			// (e.g. gen/basic/oneof/v1) makes it vanish from genDirs and the
+			// check passes silently. Walking the whole root catches the dropped
+			// directory because its checked-in files still live on disk.
+			genRoots := make(map[string]struct{})
 			for rel := range generatedFiles {
-				genDirs[filepath.Dir(rel)] = struct{}{}
-			}
-			for dir := range genDirs {
-				checkedInDir := filepath.Join(genDir, dir)
-				entries, err := os.ReadDir(checkedInDir)
-				if err != nil {
-					t.Fatalf("reading checked-in directory %s: %v", dir, err)
+				root := rel
+				for filepath.Dir(root) != "." {
+					root = filepath.Dir(root)
 				}
-				for _, e := range entries {
-					if e.IsDir() || !strings.HasSuffix(e.Name(), ".pb.go") {
-						continue
+				genRoots[root] = struct{}{}
+			}
+			for root := range genRoots {
+				rootDir := filepath.Join(genDir, root)
+				err := filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {
+					if err != nil {
+						return err
 					}
-					rel := filepath.Join(dir, e.Name())
+					if info.IsDir() || !strings.HasSuffix(path, ".pb.go") {
+						return nil
+					}
+					rel, err := filepath.Rel(genDir, path)
+					if err != nil {
+						return err
+					}
 					if _, ok := generatedFiles[rel]; !ok {
-						t.Errorf("checked-in %s was not generated; run 'make generate-ours'", rel)
+						t.Errorf("checked-in %s was not generated; run 'make generate-ours' (an entire package directory may have been dropped)", rel)
 					}
+					return nil
+				})
+				if err != nil {
+					t.Fatalf("walking gen root %s: %v", rootDir, err)
 				}
 			}
 		})
