@@ -705,10 +705,8 @@ func (m *TreeNode) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.Children) + c; cap(m.Children) < need {
-				grown := make([]TreeNode, len(m.Children), need)
-				copy(grown, m.Children)
-				m.Children = grown
+			if len(m.Children) == 0 && cap(m.Children) < c {
+				m.Children = make([]TreeNode, 0, c)
 			}
 		}
 	}
@@ -953,10 +951,8 @@ func (m *NodeA) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.Peers) + c; cap(m.Peers) < need {
-				grown := make([]NodeB, len(m.Peers), need)
-				copy(grown, m.Peers)
-				m.Peers = grown
+			if len(m.Peers) == 0 && cap(m.Peers) < c {
+				m.Peers = make([]NodeB, 0, c)
 			}
 		}
 	}

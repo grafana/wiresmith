@@ -1367,10 +1367,8 @@ func (m *ArrayValue) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.Values) + c; cap(m.Values) < need {
-				grown := make([]AnyValue, len(m.Values), need)
-				copy(grown, m.Values)
-				m.Values = grown
+			if len(m.Values) == 0 && cap(m.Values) < c {
+				m.Values = make([]AnyValue, 0, c)
 			}
 		}
 	}
@@ -1540,10 +1538,8 @@ func (m *KeyValueList) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.Values) + c; cap(m.Values) < need {
-				grown := make([]KeyValue, len(m.Values), need)
-				copy(grown, m.Values)
-				m.Values = grown
+			if len(m.Values) == 0 && cap(m.Values) < c {
+				m.Values = make([]KeyValue, 0, c)
 			}
 		}
 	}
@@ -1894,10 +1890,8 @@ func (m *InstrumentationScope) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.Attributes) + c; cap(m.Attributes) < need {
-				grown := make([]KeyValue, len(m.Attributes), need)
-				copy(grown, m.Attributes)
-				m.Attributes = grown
+			if len(m.Attributes) == 0 && cap(m.Attributes) < c {
+				m.Attributes = make([]KeyValue, 0, c)
 			}
 		}
 	}
@@ -2191,20 +2185,16 @@ func (m *EntityRef) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.IdKeys) + c; cap(m.IdKeys) < need {
-				grown := make([]string, len(m.IdKeys), need)
-				copy(grown, m.IdKeys)
-				m.IdKeys = grown
+			if len(m.IdKeys) == 0 && cap(m.IdKeys) < c {
+				m.IdKeys = make([]string, 0, c)
 			}
 		}
 		if c := field4count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.DescriptionKeys) + c; cap(m.DescriptionKeys) < need {
-				grown := make([]string, len(m.DescriptionKeys), need)
-				copy(grown, m.DescriptionKeys)
-				m.DescriptionKeys = grown
+			if len(m.DescriptionKeys) == 0 && cap(m.DescriptionKeys) < c {
+				m.DescriptionKeys = make([]string, 0, c)
 			}
 		}
 	}

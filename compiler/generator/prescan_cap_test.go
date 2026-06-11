@@ -40,8 +40,8 @@ message Container {
 	}
 
 	g := &Generator{
-		Module:   "wiresmith",
-		OutDir:   outDir,
+		Module:    "wiresmith",
+		OutDir:    outDir,
 		ProtoDirs: []string{protoDir},
 	}
 	if err := g.Generate(context.Background()); err != nil {
@@ -62,10 +62,12 @@ message Container {
 		"if c := field1count; c > 0 {", // scoped local + zero-guard, per pre-scan field
 		"if c > preCapMax {",           // the clamp itself
 		"c = preCapMax",                // clamp assignment
-		// The merge-preserving grow allocates len+clamped-count, never the
-		// raw count (gogo append parity, DB-13).
-		"if need := len(m.Items) + c; cap(m.Items) < need {",
-		"make([]Item, len(m.Items), need)",
+		// Option A (wiresmith-zlce): reserve the clamped count ONLY for a
+		// fresh/empty slice. A populated slice is left to the main loop's
+		// amortized append, so repeated unmarshal into a non-reset message
+		// stays O(n) instead of the O(n²) exact-fit grow it replaced.
+		"if len(m.Items) == 0 && cap(m.Items) < c {",
+		"make([]Item, 0, c)",
 	}
 	for _, want := range required {
 		if !strings.Contains(src, want) {

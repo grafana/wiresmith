@@ -543,20 +543,16 @@ func (m *CustomTypeMessageHolder) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.Labels) + c; cap(m.Labels) < need {
-				grown := make([]customtypes.LabelAdapter, len(m.Labels), need)
-				copy(grown, m.Labels)
-				m.Labels = grown
+			if len(m.Labels) == 0 && cap(m.Labels) < c {
+				m.Labels = make([]customtypes.LabelAdapter, 0, c)
 			}
 		}
 		if c := field4count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.ControlRepeated) + c; cap(m.ControlRepeated) < need {
-				grown := make([]Label, len(m.ControlRepeated), need)
-				copy(grown, m.ControlRepeated)
-				m.ControlRepeated = grown
+			if len(m.ControlRepeated) == 0 && cap(m.ControlRepeated) < c {
+				m.ControlRepeated = make([]Label, 0, c)
 			}
 		}
 	}

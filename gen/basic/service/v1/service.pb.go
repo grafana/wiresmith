@@ -507,10 +507,8 @@ func (m *Payload) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.Chunks) + c; cap(m.Chunks) < need {
-				grown := make([][]byte, len(m.Chunks), need)
-				copy(grown, m.Chunks)
-				m.Chunks = grown
+			if len(m.Chunks) == 0 && cap(m.Chunks) < c {
+				m.Chunks = make([][]byte, 0, c)
 			}
 		}
 		if c := field4count; c > 0 {

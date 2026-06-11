@@ -4232,20 +4232,16 @@ func (m *AllRepeatedScalars) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.FieldString) + c; cap(m.FieldString) < need {
-				grown := make([]string, len(m.FieldString), need)
-				copy(grown, m.FieldString)
-				m.FieldString = grown
+			if len(m.FieldString) == 0 && cap(m.FieldString) < c {
+				m.FieldString = make([]string, 0, c)
 			}
 		}
 		if c := field15count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.FieldBytes) + c; cap(m.FieldBytes) < need {
-				grown := make([][]byte, len(m.FieldBytes), need)
-				copy(grown, m.FieldBytes)
-				m.FieldBytes = grown
+			if len(m.FieldBytes) == 0 && cap(m.FieldBytes) < c {
+				m.FieldBytes = make([][]byte, 0, c)
 			}
 		}
 	}
@@ -5942,10 +5938,8 @@ func (m *Outer) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.Middles) + c; cap(m.Middles) < need {
-				grown := make([]Middle, len(m.Middles), need)
-				copy(grown, m.Middles)
-				m.Middles = grown
+			if len(m.Middles) == 0 && cap(m.Middles) < c {
+				m.Middles = make([]Middle, 0, c)
 			}
 		}
 	}
@@ -6209,10 +6203,8 @@ func (m *Middle) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.Inners) + c; cap(m.Inners) < need {
-				grown := make([]Inner, len(m.Inners), need)
-				copy(grown, m.Inners)
-				m.Inners = grown
+			if len(m.Inners) == 0 && cap(m.Inners) < c {
+				m.Inners = make([]Inner, 0, c)
 			}
 		}
 	}
@@ -7187,20 +7179,16 @@ func (m *OnlyRepeated) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.Names) + c; cap(m.Names) < need {
-				grown := make([]string, len(m.Names), need)
-				copy(grown, m.Names)
-				m.Names = grown
+			if len(m.Names) == 0 && cap(m.Names) < c {
+				m.Names = make([]string, 0, c)
 			}
 		}
 		if c := field3count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.Items) + c; cap(m.Items) < need {
-				grown := make([]Inner, len(m.Items), need)
-				copy(grown, m.Items)
-				m.Items = grown
+			if len(m.Items) == 0 && cap(m.Items) < c {
+				m.Items = make([]Inner, 0, c)
 			}
 		}
 	}
@@ -7512,10 +7500,8 @@ func (m *Container) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.Variants) + c; cap(m.Variants) < need {
-				grown := make([]OneofVariants, len(m.Variants), need)
-				copy(grown, m.Variants)
-				m.Variants = grown
+			if len(m.Variants) == 0 && cap(m.Variants) < c {
+				m.Variants = make([]OneofVariants, 0, c)
 			}
 		}
 	}

@@ -230,20 +230,16 @@ func (m *Resource) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.Attributes) + c; cap(m.Attributes) < need {
-				grown := make([]commonv1.KeyValue, len(m.Attributes), need)
-				copy(grown, m.Attributes)
-				m.Attributes = grown
+			if len(m.Attributes) == 0 && cap(m.Attributes) < c {
+				m.Attributes = make([]commonv1.KeyValue, 0, c)
 			}
 		}
 		if c := field3count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.EntityRefs) + c; cap(m.EntityRefs) < need {
-				grown := make([]commonv1.EntityRef, len(m.EntityRefs), need)
-				copy(grown, m.EntityRefs)
-				m.EntityRefs = grown
+			if len(m.EntityRefs) == 0 && cap(m.EntityRefs) < c {
+				m.EntityRefs = make([]commonv1.EntityRef, 0, c)
 			}
 		}
 	}

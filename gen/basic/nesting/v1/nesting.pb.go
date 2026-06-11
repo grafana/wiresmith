@@ -1040,10 +1040,8 @@ func (m *Level0_Level1) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.Extras) + c; cap(m.Extras) < need {
-				grown := make([]Level0_Level1_Level2, len(m.Extras), need)
-				copy(grown, m.Extras)
-				m.Extras = grown
+			if len(m.Extras) == 0 && cap(m.Extras) < c {
+				m.Extras = make([]Level0_Level1_Level2, 0, c)
 			}
 		}
 	}

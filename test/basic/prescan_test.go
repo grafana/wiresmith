@@ -2,6 +2,7 @@ package basic
 
 import (
 	"testing"
+	"unsafe"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -123,6 +124,79 @@ func TestPreScanCapBoundedByPayload(t *testing.T) {
 	// hundreds of MB of capacity.
 	assert.LessOrEqual(t, cap(m.RepeatedString), len(payload)/2,
 		"SEC-1: pre-scan capacity must be bounded by payload/2")
+}
+
+// TestPreScanNoExactFitGrowOnMergeUnmarshal is a regression test for
+// wiresmith-zlce. Unmarshal appends to repeated fields (gogo merge parity), so
+// calling Unmarshal repeatedly into the SAME message value WITHOUT resetting it
+// merges each payload's elements onto the existing slice. The old pre-scan
+// emitted an exact-fit grow (`grown := make([]T, len, len+c); copy(...)`) that
+// fired on every such call: because len grows by ~c each call, `cap < len+c`
+// always held, so the entire (growing) backing array was reallocated and copied
+// every call — O(n²) total work and bytes. Tempo's pkg/ingest BenchmarkEncodeDecode
+// (Decoder.Decode reuses one message, no Reset) blew up to +2197% time / 89 MiB/op.
+//
+// The fix (Option A) reserves the count-sized capacity only when the slice is
+// empty (len==0, fresh/pooled decode); once populated, the pre-scan does not
+// reserve and the main decode loop's append grows the slice with amortized
+// doubling — O(n) total, matching gogo (which has no pre-scan).
+//
+// We assert both halves of the contract:
+//
+//	(a) round-trip correctness: element count grows by exactly perCallCount each
+//	    call (append/merge semantics preserved); and
+//	(b) the backing array is reused across at least one call — i.e. some call
+//	    does NOT reallocate. The OLD exact-fit pre-scan reallocated on EVERY
+//	    call (it made a fresh len+c array each time), so every call produced a
+//	    distinct backing array. With the fix, append only grows when capacity is
+//	    exceeded, so consecutive calls share a backing array at least once.
+//
+// We track the backing-array pointer per call rather than asserting on cap
+// values: slice growth factor is intentionally unspecified by the language, so
+// any cap-magnitude bound is brittle across Go versions. "append does not
+// reallocate when cap suffices" IS a specified guarantee, so detecting a reused
+// backing array is a stable discriminator for amortized- vs exact-fit growth.
+func TestPreScanNoExactFitGrowOnMergeUnmarshal(t *testing.T) {
+	// Build a payload with several repeated_string (field 9, wire type 2)
+	// entries whose total wire size exceeds the 256-byte pre-scan threshold.
+	const perCallCount = 8
+	const strLen = 40 // each entry: 1-byte tag + 1-byte len + 40 bytes = 42 bytes
+	str := make([]byte, strLen)
+	for i := range str {
+		str[i] = 'a'
+	}
+	payload := make([]byte, 0, perCallCount*(strLen+2))
+	for range perCallCount {
+		payload = append(payload, 0x4A, byte(strLen)) // tag field 9 wt 2, len
+		payload = append(payload, str...)
+	}
+	require.GreaterOrEqual(t, len(payload), 256, "payload must exceed preScanMinBytes")
+
+	const calls = 5
+
+	var m numericv1.MixedModifiers
+	backingArrays := make(map[*string]struct{}, calls)
+	for call := 1; call <= calls; call++ {
+		require.NoError(t, m.Unmarshal(payload), "unmarshal call %d", call)
+
+		// (a) merge/append semantics: each no-reset call adds perCallCount more.
+		require.Equal(t, call*perCallCount, len(m.RepeatedString),
+			"element count must grow by perCallCount each merge call")
+		for _, s := range m.RepeatedString {
+			require.Equal(t, string(str), s, "round-trip correctness of merged element")
+		}
+
+		// Record the backing array this call left behind.
+		backingArrays[unsafe.SliceData(m.RepeatedString)] = struct{}{}
+	}
+
+	// (b) The backing array must be reused across at least one call: the number
+	// of distinct backing arrays observed must be strictly less than the number
+	// of calls. The OLD exact-fit pre-scan reallocated a fresh len+c array on
+	// every call (distinct == calls, O(n²) realloc+copy churn); the fix lets
+	// append reuse the backing array whenever capacity suffices.
+	assert.Less(t, len(backingArrays), calls,
+		"merge-unmarshal must reuse the backing array at least once (no exact-fit realloc on every call)")
 }
 
 // TestPreScanAmplificationThroughGroupTag confirms the abort fires for every
