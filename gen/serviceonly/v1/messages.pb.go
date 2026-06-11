@@ -18,7 +18,7 @@ type Request struct {
 	Id      string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Payload []byte `protobuf:"bytes,2,opt,name=payload,proto3" json:"payload,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // Response is the output type. Carries the request id back unchanged plus
@@ -29,7 +29,7 @@ type Response struct {
 	Id           string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	PayloadBytes int64  `protobuf:"varint,2,opt,name=payload_bytes,json=payloadBytes,proto3" json:"payload_bytes,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 func (m *Request) Reset() {

@@ -258,7 +258,7 @@ type ResourceMetrics struct {
 	// to the data in the "scope_metrics" field which have their own schema_url field.
 	SchemaUrl string `protobuf:"bytes,3,opt,name=schema_url,json=schemaUrl,proto3" json:"schema_url,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // A collection of Metrics produced by an Scope.
@@ -277,7 +277,7 @@ type ScopeMetrics struct {
 	// "metrics" field.
 	SchemaUrl string `protobuf:"bytes,3,opt,name=schema_url,json=schemaUrl,proto3" json:"schema_url,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // Defines a Metric which has one or more timeseries.  The following is a
@@ -386,7 +386,7 @@ type Metric struct {
 	// The behavior of software that receives duplicated keys can be unpredictable.
 	Metadata []commonv1.KeyValue `protobuf:"bytes,12,rep,name=metadata,proto3" json:"metadata,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // Gauge represents the type of a scalar metric that always exports the
@@ -416,7 +416,7 @@ type Sum struct {
 	// Represents whether the sum is monotonic.
 	IsMonotonic bool `protobuf:"varint,3,opt,name=is_monotonic,json=isMonotonic,proto3" json:"is_monotonic,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // Histogram represents the type of a metric that is calculated by aggregating
@@ -429,7 +429,7 @@ type Histogram struct {
 	// since last report time, or cumulative changes since a fixed start time.
 	AggregationTemporality AggregationTemporality `protobuf:"varint,2,opt,name=aggregation_temporality,json=aggregationTemporality,proto3,enum=opentelemetry.proto.metrics.v1.AggregationTemporality" json:"aggregation_temporality,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // ExponentialHistogram represents the type of a metric that is calculated by aggregating
@@ -442,7 +442,7 @@ type ExponentialHistogram struct {
 	// since last report time, or cumulative changes since a fixed start time.
 	AggregationTemporality AggregationTemporality `protobuf:"varint,2,opt,name=aggregation_temporality,json=aggregationTemporality,proto3,enum=opentelemetry.proto.metrics.v1.AggregationTemporality" json:"aggregation_temporality,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // Summary metric data are used to convey quantile summaries,
@@ -490,7 +490,7 @@ type NumberDataPoint struct {
 	// for the available flags and their meaning.
 	Flags uint32 `protobuf:"varint,8,opt,name=flags,proto3" json:"flags,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // HistogramDataPoint is a single data point in a timeseries that describes the
@@ -572,7 +572,7 @@ type HistogramDataPoint struct {
 	// max is the maximum value over (start_time, end_time].
 	Max *float64 `protobuf:"fixed64,12,opt,name=max,proto3,oneof" json:"max,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // Buckets are a set of bucket counts, encoded in a contiguous array
@@ -593,7 +593,7 @@ type ExponentialHistogramDataPoint_Buckets struct {
 	// varint encoding.
 	BucketCounts []uint64 `protobuf:"varint,2,rep,packed,name=bucket_counts,json=bucketCounts,proto3" json:"bucket_counts,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // ExponentialHistogramDataPoint is a single data point in a timeseries that describes the
@@ -678,7 +678,7 @@ type ExponentialHistogramDataPoint struct {
 	// have been rounded to zero.
 	ZeroThreshold float64 `protobuf:"fixed64,14,opt,name=zero_threshold,json=zeroThreshold,proto3" json:"zero_threshold,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // Represents the value at a given quantile of a distribution.
@@ -698,7 +698,7 @@ type SummaryDataPoint_ValueAtQuantile struct {
 	// Quantile values must NOT be negative.
 	Value float64 `protobuf:"fixed64,2,opt,name=value,proto3" json:"value,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // SummaryDataPoint is a single data point in a timeseries that describes the
@@ -740,7 +740,7 @@ type SummaryDataPoint struct {
 	// for the available flags and their meaning.
 	Flags uint32 `protobuf:"varint,8,opt,name=flags,proto3" json:"flags,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // A representation of an exemplar, which is a sample input measurement.
@@ -770,7 +770,7 @@ type Exemplar struct {
 	// or if the trace is not sampled.
 	TraceId []byte `protobuf:"bytes,5,opt,name=trace_id,json=traceId,proto3" json:"trace_id,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 func (m *MetricsData) Reset() {
@@ -3404,10 +3404,10 @@ func (m *MetricsData) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.ResourceMetrics) < c {
-				m.ResourceMetrics = make([]ResourceMetrics, 0, c)
-			} else {
-				m.ResourceMetrics = m.ResourceMetrics[:0]
+			if need := len(m.ResourceMetrics) + c; cap(m.ResourceMetrics) < need {
+				grown := make([]ResourceMetrics, len(m.ResourceMetrics), need)
+				copy(grown, m.ResourceMetrics)
+				m.ResourceMetrics = grown
 			}
 		}
 	}
@@ -3577,10 +3577,10 @@ func (m *ResourceMetrics) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.ScopeMetrics) < c {
-				m.ScopeMetrics = make([]ScopeMetrics, 0, c)
-			} else {
-				m.ScopeMetrics = m.ScopeMetrics[:0]
+			if need := len(m.ScopeMetrics) + c; cap(m.ScopeMetrics) < need {
+				grown := make([]ScopeMetrics, len(m.ScopeMetrics), need)
+				copy(grown, m.ScopeMetrics)
+				m.ScopeMetrics = grown
 			}
 		}
 	}
@@ -3844,10 +3844,10 @@ func (m *ScopeMetrics) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Metrics) < c {
-				m.Metrics = make([]Metric, 0, c)
-			} else {
-				m.Metrics = m.Metrics[:0]
+			if need := len(m.Metrics) + c; cap(m.Metrics) < need {
+				grown := make([]Metric, len(m.Metrics), need)
+				copy(grown, m.Metrics)
+				m.Metrics = grown
 			}
 		}
 	}
@@ -4111,10 +4111,10 @@ func (m *Metric) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Metadata) < c {
-				m.Metadata = make([]commonv1.KeyValue, 0, c)
-			} else {
-				m.Metadata = m.Metadata[:0]
+			if need := len(m.Metadata) + c; cap(m.Metadata) < need {
+				grown := make([]commonv1.KeyValue, len(m.Metadata), need)
+				copy(grown, m.Metadata)
+				m.Metadata = grown
 			}
 		}
 	}
@@ -4682,10 +4682,10 @@ func (m *Gauge) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.DataPoints) < c {
-				m.DataPoints = make([]NumberDataPoint, 0, c)
-			} else {
-				m.DataPoints = m.DataPoints[:0]
+			if need := len(m.DataPoints) + c; cap(m.DataPoints) < need {
+				grown := make([]NumberDataPoint, len(m.DataPoints), need)
+				copy(grown, m.DataPoints)
+				m.DataPoints = grown
 			}
 		}
 	}
@@ -4855,10 +4855,10 @@ func (m *Sum) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.DataPoints) < c {
-				m.DataPoints = make([]NumberDataPoint, 0, c)
-			} else {
-				m.DataPoints = m.DataPoints[:0]
+			if need := len(m.DataPoints) + c; cap(m.DataPoints) < need {
+				grown := make([]NumberDataPoint, len(m.DataPoints), need)
+				copy(grown, m.DataPoints)
+				m.DataPoints = grown
 			}
 		}
 	}
@@ -5086,10 +5086,10 @@ func (m *Histogram) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.DataPoints) < c {
-				m.DataPoints = make([]HistogramDataPoint, 0, c)
-			} else {
-				m.DataPoints = m.DataPoints[:0]
+			if need := len(m.DataPoints) + c; cap(m.DataPoints) < need {
+				grown := make([]HistogramDataPoint, len(m.DataPoints), need)
+				copy(grown, m.DataPoints)
+				m.DataPoints = grown
 			}
 		}
 	}
@@ -5288,10 +5288,10 @@ func (m *ExponentialHistogram) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.DataPoints) < c {
-				m.DataPoints = make([]ExponentialHistogramDataPoint, 0, c)
-			} else {
-				m.DataPoints = m.DataPoints[:0]
+			if need := len(m.DataPoints) + c; cap(m.DataPoints) < need {
+				grown := make([]ExponentialHistogramDataPoint, len(m.DataPoints), need)
+				copy(grown, m.DataPoints)
+				m.DataPoints = grown
 			}
 		}
 	}
@@ -5490,10 +5490,10 @@ func (m *Summary) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.DataPoints) < c {
-				m.DataPoints = make([]SummaryDataPoint, 0, c)
-			} else {
-				m.DataPoints = m.DataPoints[:0]
+			if need := len(m.DataPoints) + c; cap(m.DataPoints) < need {
+				grown := make([]SummaryDataPoint, len(m.DataPoints), need)
+				copy(grown, m.DataPoints)
+				m.DataPoints = grown
 			}
 		}
 	}
@@ -5666,20 +5666,20 @@ func (m *NumberDataPoint) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Attributes) < c {
-				m.Attributes = make([]commonv1.KeyValue, 0, c)
-			} else {
-				m.Attributes = m.Attributes[:0]
+			if need := len(m.Attributes) + c; cap(m.Attributes) < need {
+				grown := make([]commonv1.KeyValue, len(m.Attributes), need)
+				copy(grown, m.Attributes)
+				m.Attributes = grown
 			}
 		}
 		if c := field5count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Exemplars) < c {
-				m.Exemplars = make([]Exemplar, 0, c)
-			} else {
-				m.Exemplars = m.Exemplars[:0]
+			if need := len(m.Exemplars) + c; cap(m.Exemplars) < need {
+				grown := make([]Exemplar, len(m.Exemplars), need)
+				copy(grown, m.Exemplars)
+				m.Exemplars = grown
 			}
 		}
 	}
@@ -5991,20 +5991,20 @@ func (m *HistogramDataPoint) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Attributes) < c {
-				m.Attributes = make([]commonv1.KeyValue, 0, c)
-			} else {
-				m.Attributes = m.Attributes[:0]
+			if need := len(m.Attributes) + c; cap(m.Attributes) < need {
+				grown := make([]commonv1.KeyValue, len(m.Attributes), need)
+				copy(grown, m.Attributes)
+				m.Attributes = grown
 			}
 		}
 		if c := field8count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Exemplars) < c {
-				m.Exemplars = make([]Exemplar, 0, c)
-			} else {
-				m.Exemplars = m.Exemplars[:0]
+			if need := len(m.Exemplars) + c; cap(m.Exemplars) < need {
+				grown := make([]Exemplar, len(m.Exemplars), need)
+				copy(grown, m.Exemplars)
+				m.Exemplars = grown
 			}
 		}
 	}
@@ -6660,20 +6660,20 @@ func (m *ExponentialHistogramDataPoint) unmarshal(dAtA []byte, depth int) error 
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Attributes) < c {
-				m.Attributes = make([]commonv1.KeyValue, 0, c)
-			} else {
-				m.Attributes = m.Attributes[:0]
+			if need := len(m.Attributes) + c; cap(m.Attributes) < need {
+				grown := make([]commonv1.KeyValue, len(m.Attributes), need)
+				copy(grown, m.Attributes)
+				m.Attributes = grown
 			}
 		}
 		if c := field11count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Exemplars) < c {
-				m.Exemplars = make([]Exemplar, 0, c)
-			} else {
-				m.Exemplars = m.Exemplars[:0]
+			if need := len(m.Exemplars) + c; cap(m.Exemplars) < need {
+				grown := make([]Exemplar, len(m.Exemplars), need)
+				copy(grown, m.Exemplars)
+				m.Exemplars = grown
 			}
 		}
 	}
@@ -7266,20 +7266,20 @@ func (m *SummaryDataPoint) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Attributes) < c {
-				m.Attributes = make([]commonv1.KeyValue, 0, c)
-			} else {
-				m.Attributes = m.Attributes[:0]
+			if need := len(m.Attributes) + c; cap(m.Attributes) < need {
+				grown := make([]commonv1.KeyValue, len(m.Attributes), need)
+				copy(grown, m.Attributes)
+				m.Attributes = grown
 			}
 		}
 		if c := field6count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.QuantileValues) < c {
-				m.QuantileValues = make([]SummaryDataPoint_ValueAtQuantile, 0, c)
-			} else {
-				m.QuantileValues = m.QuantileValues[:0]
+			if need := len(m.QuantileValues) + c; cap(m.QuantileValues) < need {
+				grown := make([]SummaryDataPoint_ValueAtQuantile, len(m.QuantileValues), need)
+				copy(grown, m.QuantileValues)
+				m.QuantileValues = grown
 			}
 		}
 	}
@@ -7590,10 +7590,10 @@ func (m *Exemplar) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.FilteredAttributes) < c {
-				m.FilteredAttributes = make([]commonv1.KeyValue, 0, c)
-			} else {
-				m.FilteredAttributes = m.FilteredAttributes[:0]
+			if need := len(m.FilteredAttributes) + c; cap(m.FilteredAttributes) < need {
+				grown := make([]commonv1.KeyValue, len(m.FilteredAttributes), need)
+				copy(grown, m.FilteredAttributes)
+				m.FilteredAttributes = grown
 			}
 		}
 	}

@@ -16,7 +16,7 @@ type Leaf struct {
 	Id   int64  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // PointerHolder exercises (wiresmith.options.pointer) = true in three positions:
@@ -33,7 +33,7 @@ type PointerHolder struct {
 	// Control: default value-type singular message — `Leaf` (no pointer).
 	Tail Leaf `protobuf:"bytes,4,opt,name=tail,proto3" json:"tail,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 func (m *Leaf) Reset() {
@@ -511,10 +511,10 @@ func (m *PointerHolder) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Items) < c {
-				m.Items = make([]*Leaf, 0, c)
-			} else {
-				m.Items = m.Items[:0]
+			if need := len(m.Items) + c; cap(m.Items) < need {
+				grown := make([]*Leaf, len(m.Items), need)
+				copy(grown, m.Items)
+				m.Items = grown
 			}
 		}
 	}

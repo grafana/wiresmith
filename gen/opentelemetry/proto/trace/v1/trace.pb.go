@@ -184,7 +184,7 @@ type ResourceSpans struct {
 	// to the data in the "scope_spans" field which have their own schema_url field.
 	SchemaUrl string `protobuf:"bytes,3,opt,name=schema_url,json=schemaUrl,proto3" json:"schema_url,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // A collection of Spans produced by an InstrumentationScope.
@@ -203,7 +203,7 @@ type ScopeSpans struct {
 	// events in the "spans" field.
 	SchemaUrl string `protobuf:"bytes,3,opt,name=schema_url,json=schemaUrl,proto3" json:"schema_url,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // Event is a time-stamped annotation of the span, consisting of user-supplied
@@ -223,7 +223,7 @@ type Span_Event struct {
 	// then no attributes were dropped.
 	DroppedAttributesCount uint32 `protobuf:"varint,4,opt,name=dropped_attributes_count,json=droppedAttributesCount,proto3" json:"dropped_attributes_count,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // A pointer from the current span to another span in the same trace or in a
@@ -265,7 +265,7 @@ type Span_Link struct {
 	// [Optional].
 	Flags uint32 `protobuf:"fixed32,6,opt,name=flags,proto3" json:"flags,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // A Span represents a single operation performed by a single component of the system.
@@ -376,7 +376,7 @@ type Span struct {
 	// span's status code is unset, i.e. assume STATUS_CODE_UNSET (code = 0).
 	Status Status `protobuf:"bytes,15,opt,name=status,proto3" json:"status,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // The Status type defines a logical error model that is suitable for different
@@ -387,7 +387,7 @@ type Status struct {
 	// The status code.
 	Code Status_StatusCode `protobuf:"varint,3,opt,name=code,proto3,enum=opentelemetry.proto.trace.v1.Status.StatusCode" json:"code,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 func (m *TracesData) Reset() {
@@ -1689,10 +1689,10 @@ func (m *TracesData) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.ResourceSpans) < c {
-				m.ResourceSpans = make([]ResourceSpans, 0, c)
-			} else {
-				m.ResourceSpans = m.ResourceSpans[:0]
+			if need := len(m.ResourceSpans) + c; cap(m.ResourceSpans) < need {
+				grown := make([]ResourceSpans, len(m.ResourceSpans), need)
+				copy(grown, m.ResourceSpans)
+				m.ResourceSpans = grown
 			}
 		}
 	}
@@ -1862,10 +1862,10 @@ func (m *ResourceSpans) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.ScopeSpans) < c {
-				m.ScopeSpans = make([]ScopeSpans, 0, c)
-			} else {
-				m.ScopeSpans = m.ScopeSpans[:0]
+			if need := len(m.ScopeSpans) + c; cap(m.ScopeSpans) < need {
+				grown := make([]ScopeSpans, len(m.ScopeSpans), need)
+				copy(grown, m.ScopeSpans)
+				m.ScopeSpans = grown
 			}
 		}
 	}
@@ -2129,10 +2129,10 @@ func (m *ScopeSpans) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Spans) < c {
-				m.Spans = make([]Span, 0, c)
-			} else {
-				m.Spans = m.Spans[:0]
+			if need := len(m.Spans) + c; cap(m.Spans) < need {
+				grown := make([]Span, len(m.Spans), need)
+				copy(grown, m.Spans)
+				m.Spans = grown
 			}
 		}
 	}
@@ -2396,10 +2396,10 @@ func (m *Span_Event) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Attributes) < c {
-				m.Attributes = make([]commonv1.KeyValue, 0, c)
-			} else {
-				m.Attributes = m.Attributes[:0]
+			if need := len(m.Attributes) + c; cap(m.Attributes) < need {
+				grown := make([]commonv1.KeyValue, len(m.Attributes), need)
+				copy(grown, m.Attributes)
+				m.Attributes = grown
 			}
 		}
 	}
@@ -2660,10 +2660,10 @@ func (m *Span_Link) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Attributes) < c {
-				m.Attributes = make([]commonv1.KeyValue, 0, c)
-			} else {
-				m.Attributes = m.Attributes[:0]
+			if need := len(m.Attributes) + c; cap(m.Attributes) < need {
+				grown := make([]commonv1.KeyValue, len(m.Attributes), need)
+				copy(grown, m.Attributes)
+				m.Attributes = grown
 			}
 		}
 	}
@@ -3022,30 +3022,30 @@ func (m *Span) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Attributes) < c {
-				m.Attributes = make([]commonv1.KeyValue, 0, c)
-			} else {
-				m.Attributes = m.Attributes[:0]
+			if need := len(m.Attributes) + c; cap(m.Attributes) < need {
+				grown := make([]commonv1.KeyValue, len(m.Attributes), need)
+				copy(grown, m.Attributes)
+				m.Attributes = grown
 			}
 		}
 		if c := field11count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Events) < c {
-				m.Events = make([]Span_Event, 0, c)
-			} else {
-				m.Events = m.Events[:0]
+			if need := len(m.Events) + c; cap(m.Events) < need {
+				grown := make([]Span_Event, len(m.Events), need)
+				copy(grown, m.Events)
+				m.Events = grown
 			}
 		}
 		if c := field13count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if cap(m.Links) < c {
-				m.Links = make([]Span_Link, 0, c)
-			} else {
-				m.Links = m.Links[:0]
+			if need := len(m.Links) + c; cap(m.Links) < need {
+				grown := make([]Span_Link, len(m.Links), need)
+				copy(grown, m.Links)
+				m.Links = grown
 			}
 		}
 	}
