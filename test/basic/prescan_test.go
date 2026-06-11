@@ -2,6 +2,7 @@ package basic
 
 import (
 	"testing"
+	"unsafe"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -144,14 +145,17 @@ func TestPreScanCapBoundedByPayload(t *testing.T) {
 //
 //	(a) round-trip correctness: element count grows by exactly perCallCount each
 //	    call (append/merge semantics preserved); and
-//	(b) capacity does NOT grow exact-fit per call: after several no-reset
-//	    unmarshals, cap is bounded by amortized append growth (< 4*len), not the
-//	    n*perCallCount exact-fit the old code would have produced.
+//	(b) the backing array is reused across at least one call — i.e. some call
+//	    does NOT reallocate. The OLD exact-fit pre-scan reallocated on EVERY
+//	    call (it made a fresh len+c array each time), so every call produced a
+//	    distinct backing array. With the fix, append only grows when capacity is
+//	    exceeded, so consecutive calls share a backing array at least once.
 //
-// On the OLD code path this would FAIL: each call reallocated to exactly
-// len+perCallCount, so after the final call cap == len (exact-fit, no headroom),
-// while the intermediate per-call realloc+copy is the O(n²) blowup. With the fix
-// cap is amortized-bounded and the realloc churn is gone.
+// We track the backing-array pointer per call rather than asserting on cap
+// values: slice growth factor is intentionally unspecified by the language, so
+// any cap-magnitude bound is brittle across Go versions. "append does not
+// reallocate when cap suffices" IS a specified guarantee, so detecting a reused
+// backing array is a stable discriminator for amortized- vs exact-fit growth.
 func TestPreScanNoExactFitGrowOnMergeUnmarshal(t *testing.T) {
 	// Build a payload with several repeated_string (field 9, wire type 2)
 	// entries whose total wire size exceeds the 256-byte pre-scan threshold.
@@ -171,6 +175,7 @@ func TestPreScanNoExactFitGrowOnMergeUnmarshal(t *testing.T) {
 	const calls = 5
 
 	var m numericv1.MixedModifiers
+	backingArrays := make(map[*string]struct{}, calls)
 	for call := 1; call <= calls; call++ {
 		require.NoError(t, m.Unmarshal(payload), "unmarshal call %d", call)
 
@@ -180,23 +185,18 @@ func TestPreScanNoExactFitGrowOnMergeUnmarshal(t *testing.T) {
 		for _, s := range m.RepeatedString {
 			require.Equal(t, string(str), s, "round-trip correctness of merged element")
 		}
+
+		// Record the backing array this call left behind.
+		backingArrays[unsafe.SliceData(m.RepeatedString)] = struct{}{}
 	}
 
-	// (b) Capacity must reflect amortized append growth, NOT n*perCallCount
-	// exact-fit reallocation. The OLD exact-fit pre-scan grow reallocated to
-	// exactly len+c on every call, so the final slice always ended with
-	// cap == len (zero headroom) — and paid an O(n) realloc+copy each call,
-	// O(n²) overall. With the fix the pre-scan leaves the populated slice
-	// alone and the main loop's append grows it with amortized doubling, which
-	// leaves headroom (cap > len) on the final state. Asserting cap > len is
-	// the discriminating check: the old code path cannot satisfy it because
-	// its last action was an exact-fit make to len+c with len == final length.
-	// The upper bound (cap < 4*len) confirms growth is amortized, not unbounded.
-	finalLen := calls * perCallCount
-	assert.Greater(t, cap(m.RepeatedString), finalLen,
-		"merge-unmarshal must leave amortized-append headroom, not exact-fit cap==len (old O(n²) path)")
-	assert.Less(t, cap(m.RepeatedString), 4*finalLen,
-		"merge-unmarshal growth must stay amortized-bounded, not over-allocate")
+	// (b) The backing array must be reused across at least one call: the number
+	// of distinct backing arrays observed must be strictly less than the number
+	// of calls. The OLD exact-fit pre-scan reallocated a fresh len+c array on
+	// every call (distinct == calls, O(n²) realloc+copy churn); the fix lets
+	// append reuse the backing array whenever capacity suffices.
+	assert.Less(t, len(backingArrays), calls,
+		"merge-unmarshal must reuse the backing array at least once (no exact-fit realloc on every call)")
 }
 
 // TestPreScanAmplificationThroughGroupTag confirms the abort fires for every
