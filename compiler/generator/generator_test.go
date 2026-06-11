@@ -1790,27 +1790,12 @@ message Bar { vendored.a.Foo foo = 1; }`)
 // `results`, takes the in-results branch, and resolves through g.destFor →
 // destForPath, which checks g.Overrides first.
 //
-// ─── Expected fix (not applied here — left for the implementer) ─────────────
+// ─── Fix ────────────────────────────────────────────────────────────────────
 //
-// In the !inResults branch, route -M-pinned deps through the override-aware
-// path while keeping destForReachable for everything else (so the well-known-
-// type special case is preserved):
-//
-//	if !inResults[fd.Path()] {
-//	    if override, ok := g.Overrides[fd.Path()]; ok && override != "" {
-//	        g.destinations[fd.Path()] = g.destFor(fd)   // override wins
-//	    } else {
-//	        g.destinations[fd.Path()] = destForReachable(fd)
-//	    }
-//	    continue
-//	}
-//
-// destFor → destForPath returns the override immediately (keyed by fd.Path()),
-// so the g.goPackages table that destForReachable avoids is never consulted for
-// the pinned file — the well-known-type concern doesn't apply to an explicitly
-// overridden path.
-//
-// This test fails until that fix lands.
+// computeDests must consult g.Overrides even for transitively imported files in
+// scoped runs. Pinned files are routed through g.destFor (override-aware, keyed
+// by fd.Path()); everything else continues to use destForReachable to preserve
+// the well-known-type special case.
 func TestGenerateScopedMOverrideTransitiveImport(t *testing.T) {
 	protoDir := t.TempDir()
 	// a.proto declares an "external" go_package; the -M override should
