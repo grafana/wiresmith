@@ -792,7 +792,21 @@ func (g *Generator) computeDests(results []protoreflect.FileDescriptor) error {
 			continue
 		}
 		if !inResults[fd.Path()] {
-			g.destinations[fd.Path()] = destForReachable(fd)
+			// A -M override is an explicit "this file's Go code lives here"
+			// instruction keyed by fd.Path(); it must win even when the file
+			// enters only as a transitive import of a scoped (positional)
+			// root. destForReachable resolves purely from the file's own
+			// go_package and would silently drop the override — it exists to
+			// bypass the shared g.goPackages table for well-known types that
+			// share one proto package across many Go destinations, a concern
+			// that doesn't apply to an explicitly pinned path. destFor →
+			// destForPath checks g.Overrides first (keyed by fd.Path()), so
+			// the goPackages table is never consulted for the pinned file.
+			if override, ok := g.Overrides[fd.Path()]; ok && override != "" {
+				g.destinations[fd.Path()] = g.destFor(fd)
+			} else {
+				g.destinations[fd.Path()] = destForReachable(fd)
+			}
 			continue
 		}
 		// Files in results but excluded from emission (positional Files
