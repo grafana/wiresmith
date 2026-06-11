@@ -119,6 +119,25 @@ func TestProtoPathsFlag_RejectsEmptyEntry(t *testing.T) {
 	}
 }
 
+// TestProtoPathsFlag_SeedReplacedByUser pins the default-seeding contract:
+// main() seeds the flag with the historical "proto" root so `-h` reports a
+// meaningful default, and the first user-supplied --proto_path/-I must *replace*
+// that seed rather than append to it (otherwise every explicit invocation would
+// silently also walk "proto").
+func TestProtoPathsFlag_SeedReplacedByUser(t *testing.T) {
+	p := &protoPathsFlag{dirs: []string{"proto"}}
+	if got := p.String(); got != "proto" {
+		t.Errorf("seeded String() = %q, want %q (must surface as the -h default)", got, "proto")
+	}
+	if err := p.Set("custom"); err != nil {
+		t.Fatalf("Set: %v", err)
+	}
+	want := []string{"custom"}
+	if !reflect.DeepEqual(p.dirs, want) {
+		t.Errorf("dirs = %v, want %v (seed must be replaced, not appended)", p.dirs, want)
+	}
+}
+
 // TestProtoPathsFlag_String_RoundTrips pins that String() echoes the
 // accumulated entries in a form the user can paste back as a single
 // flag value (using the OS list separator). This is what

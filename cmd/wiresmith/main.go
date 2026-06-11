@@ -50,7 +50,14 @@ func (o *overridesFlag) Set(v string) error {
 // stay intact. Order is preserved — it doesn't affect import resolution
 // (collisions are errors, not first-wins) but it does show up in error
 // messages.
-type protoPathsFlag struct{ dirs []string }
+//
+// The slice is seeded with the historical "proto" default so flag.PrintDefaults
+// (`-h`) shows it; the first user-supplied occurrence replaces that seed rather
+// than appending to it, tracked via `userSet`.
+type protoPathsFlag struct {
+	dirs    []string
+	userSet bool
+}
 
 func (p *protoPathsFlag) String() string {
 	if p == nil || len(p.dirs) == 0 {
@@ -62,6 +69,11 @@ func (p *protoPathsFlag) String() string {
 func (p *protoPathsFlag) Set(v string) error {
 	if v == "" {
 		return fmt.Errorf("--proto_path: empty value")
+	}
+	if !p.userSet {
+		// Drop the seeded default so the user's roots fully replace it.
+		p.dirs = nil
+		p.userSet = true
 	}
 	for part := range strings.SplitSeq(v, string(os.PathListSeparator)) {
 		if part == "" {
@@ -108,7 +120,9 @@ Flags:
 		flag.PrintDefaults()
 	}
 
-	protoPaths := &protoPathsFlag{}
+	// Seed with the historical default ("proto") so `-h` reports it; the first
+	// user-supplied --proto_path/-I replaces it (see protoPathsFlag.Set).
+	protoPaths := &protoPathsFlag{dirs: []string{"proto"}}
 	flag.Var(protoPaths, "proto_path",
 		`directory containing .proto files (walked recursively). Repeatable; a single occurrence may carry list-separated entries (':' on Unix, ';' on Windows, via os.PathListSeparator). Defaults to "proto" when omitted.`)
 	flag.Var(protoPaths, "I", `alias for --proto_path.`)
@@ -125,18 +139,10 @@ Flags:
 		return
 	}
 
-	protoDirs := protoPaths.dirs
-	if len(protoDirs) == 0 {
-		// Preserve the historical default — wiresmith without flags
-		// compiled the local "proto" tree — so existing invocations
-		// don't regress when the flag turns into a repeatable list.
-		protoDirs = []string{"proto"}
-	}
-
 	g := &generator.Generator{
 		Module:    *module,
 		OutDir:    *outDir,
-		ProtoDirs: protoDirs,
+		ProtoDirs: protoPaths.dirs,
 		Files:     flag.Args(),
 		Overrides: overrides.m,
 	}
