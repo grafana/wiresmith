@@ -139,8 +139,8 @@ message Bare {
   Inner child = 1;
 }`)
 
-	if strings.Contains(src, "m.fieldsPresent") {
-		t.Errorf("generated code for a no_presence-only file must never touch m.fieldsPresent:\n%s", src)
+	if strings.Contains(src, "XXX_fieldsPresent") {
+		t.Errorf("generated code for a no_presence-only file must never touch the presence bitmap:\n%s", src)
 	}
 }
 

@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/encoding/protowire"
@@ -29,7 +30,9 @@ func mapRoundTrip[T interface {
 
 	dst := newZero(src)
 	require.NoError(t, dst.Unmarshal(b))
-	assert.EqualExportedValues(t, src, dst, "unmarshal must reproduce original")
+	if diff := cmp.Diff(src, dst, ignoreBitmaps); diff != "" {
+		t.Errorf("unmarshal must reproduce original (-src +dst):\n%s", diff)
+	}
 	assert.True(t, src.Equal(dst), "Equal() must agree with assert.Equal")
 }
 

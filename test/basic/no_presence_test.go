@@ -72,18 +72,20 @@ func TestNoPresence_EmptyChildDropsFromWire(t *testing.T) {
 	assert.Empty(t, b3)
 }
 
-// Get<MsgField> on a no_presence message returns the field address
-// unconditionally (there is no bitmap to consult); optional fields keep
-// their pointer-based Has accessor.
+// Get<MsgField> on a no_presence message returns the VALUE — gogoproto
+// nullable=false getter parity, so gogo-era value-getter-shaped interfaces
+// (Loki's queryrange Request/Response) are satisfied directly. Optional
+// fields keep their pointer-based Has accessor.
 func TestNoPresence_Accessors(t *testing.T) {
-	bare := &np.BareHolder{}
-	require.NotNil(t, bare.GetChild(), "GetChild must return &m.Child unconditionally under no_presence")
+	bare := &np.BareHolder{Child: np.Leaf{Id: 7}}
+	var got np.Leaf = bare.GetChild()
+	assert.Equal(t, int64(7), got.Id, "GetChild must return the value under no_presence")
 	assert.False(t, bare.HasMaybe())
 	maybe := int64(0)
 	bare.Maybe = &maybe
 	assert.True(t, bare.HasMaybe(), "optional presence is the pointer's nil-ness, unaffected by no_presence")
 
 	var nilHolder *np.BareHolder
-	assert.Nil(t, nilHolder.GetChild(), "nil-receiver safety must hold without the bitmap")
+	assert.Equal(t, np.Leaf{}, nilHolder.GetChild(), "nil receiver returns the zero value")
 	assert.Zero(t, nilHolder.GetNum())
 }

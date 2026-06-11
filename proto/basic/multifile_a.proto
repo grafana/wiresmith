@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package basic.multifile.v1;
+
+option go_package = "github.com/grafana/wiresmith/gen/basic/multifile/v1";
+
+// First of two files generated into ONE Go package. Each file's messages
+// get Unmarshal methods referencing protohelpers.SkipValue /
+// MaxUnmarshalDepth — previously these were per-file package-level
+// declarations, so the second file failed to compile (Tempo's tempopb,
+// Loki's logproto layout).
+message AlphaEntry {
+  string key   = 1;
+  int64  count = 2;
+}

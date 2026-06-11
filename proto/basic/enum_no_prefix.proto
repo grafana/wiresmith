@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package basic.enumnopfx.v1;
+
+option go_package = "github.com/grafana/wiresmith/gen/basic/enumnopfx/v1";
+
+import "wiresmith/options.proto";
+
+// MetricType exercises (wiresmith.options.enum_no_prefix) = true: value
+// constants are emitted bare (UNKNOWN, COUNTER) instead of prefixed
+// (MetricType_UNKNOWN) — gogoproto goproto_enum_prefix=false parity.
+enum MetricType {
+  option (wiresmith.options.enum_no_prefix) = true;
+
+  UNKNOWN = 0;
+  COUNTER = 1;
+  GAUGE   = 2;
+}
+
+// PrefixedColor is the unannotated control in the same file.
+enum PrefixedColor {
+  PREFIXED_COLOR_RED  = 0;
+  PREFIXED_COLOR_BLUE = 1;
+}
+
+message MetricInfo {
+  MetricType type  = 1;
+  string     name  = 2;
+}
