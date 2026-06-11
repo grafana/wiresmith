@@ -42,9 +42,3 @@ require (
 // either way — but the require-line bump shows as unexplained churn in
 // the PR diff.
 //
-// We can't lower the require line itself: MVS rejects a require below
-// the transitively-required pseudo, and `go mod tidy` re-bumps it to
-// pseudo on every run. The `replace` below overrides the *effective*
-// version Go resolves at build time. Result: require = pseudo (MVS-
-// compliant), build = v0.6.0 (matches main).
-replace github.com/planetscale/vtprotobuf => github.com/planetscale/vtprotobuf v0.6.0
