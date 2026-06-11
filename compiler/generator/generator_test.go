@@ -1739,6 +1739,125 @@ message Bar { vendored.a.Foo foo = 1; }`)
 	}
 }
 
+// TestGenerateScopedMOverrideTransitiveImport is a FAILING regression test for
+// the P2 bug: a scoped (positional-file) generation run ignores a -M override
+// when the overridden file is reached only as a TRANSITIVE IMPORT of the
+// positional root, so the emitted cross-file reference uses the dep's own
+// go_package instead of the override.
+//
+// ─── How to reproduce on the CLI ────────────────────────────────────────────
+//
+//	wiresmith -proto_path tree \
+//	  -M dep/dep.proto=example.com/OVERRIDE/dep \
+//	  tree/app/app.proto
+//
+// app.proto imports dep/dep.proto. The generated app.pb.go imports
+// "example.com/orig/dep" (dep.proto's own go_package) instead of the pinned
+// "example.com/OVERRIDE/dep". The -M flag — the user's explicit "this vendored
+// dep actually lives here" instruction — is silently dropped.
+//
+// ─── Why it happens ─────────────────────────────────────────────────────────
+//
+// In scoped mode (Generator.Files non-empty → emit set non-empty), compileSources
+// passes only the positional files (+ the embedded options schema) as the
+// protocompile roots:
+//
+//	roots = [<emit keys>..., embeddedOptionsPath]
+//	linked, _ := compiler.Compile(ctx, roots...)
+//	results = linked    // ← ONE FileDescriptor per requested root, NOT its deps
+//
+// protocompile.Compiler.Compile returns one linker.File per *requested* name;
+// transitive imports are linked into each root's .Imports() but are NOT
+// returned as their own top-level entries. So `results` (and therefore the
+// `inResults` set in computeDests) contains only the roots.
+//
+// computeDests then walks walkReachableFiles(results) — roots PLUS their
+// transitive imports — and for the transitive dep takes the !inResults branch:
+//
+//	if !inResults[fd.Path()] {
+//	    g.destinations[fd.Path()] = destForReachable(fd)   // ← bug
+//	    continue
+//	}
+//
+// destForReachable resolves purely from the file's own go_package option and
+// never consults g.Overrides — by design, because it must bypass the
+// g.goPackages table for well-known types (google.protobuf.* share one proto
+// package across many Go destinations). But that same blindness drops the -M
+// override for ordinary user deps.
+//
+// The non-scoped sibling TestGenerateWithMOverride PASSES because without
+// positional files every file in the walk is a compile root, so the dep IS in
+// `results`, takes the in-results branch, and resolves through g.destFor →
+// destForPath, which checks g.Overrides first.
+//
+// ─── Expected fix (not applied here — left for the implementer) ─────────────
+//
+// In the !inResults branch, route -M-pinned deps through the override-aware
+// path while keeping destForReachable for everything else (so the well-known-
+// type special case is preserved):
+//
+//	if !inResults[fd.Path()] {
+//	    if override, ok := g.Overrides[fd.Path()]; ok && override != "" {
+//	        g.destinations[fd.Path()] = g.destFor(fd)   // override wins
+//	    } else {
+//	        g.destinations[fd.Path()] = destForReachable(fd)
+//	    }
+//	    continue
+//	}
+//
+// destFor → destForPath returns the override immediately (keyed by fd.Path()),
+// so the g.goPackages table that destForReachable avoids is never consulted for
+// the pinned file — the well-known-type concern doesn't apply to an explicitly
+// overridden path.
+//
+// This test fails until that fix lands.
+func TestGenerateScopedMOverrideTransitiveImport(t *testing.T) {
+	protoDir := t.TempDir()
+	// a.proto declares an "external" go_package; the -M override should
+	// redirect references to it back into the consumer's tree.
+	writeProto(t, protoDir, "vendored/a/a.proto", `
+syntax = "proto3";
+package vendored.a;
+option go_package = "go.example.com/upstream/a";
+message Foo { string name = 1; }`)
+	// b.proto is the positional root; a.proto enters only as its transitive
+	// import (so a.proto is NOT in `results`).
+	writeProto(t, protoDir, "b/b.proto", `
+syntax = "proto3";
+package myapp.b;
+option go_package = "example.com/mod/gen/b";
+import "vendored/a/a.proto";
+message Bar { vendored.a.Foo foo = 1; }`)
+
+	outDir := testOutDir(t)
+	gen := &Generator{
+		Module:    "example.com/mod",
+		OutDir:    outDir,
+		ProtoDirs: []string{protoDir},
+		// Scoped run: only b.proto is a positional root.
+		Files: []string{filepath.Join(protoDir, "b", "b.proto")},
+		Overrides: map[string]string{
+			"vendored/a/a.proto": "example.com/mod/gen/a;aliased",
+		},
+	}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
+	}
+
+	bContent, err := os.ReadFile(filepath.Join(outDir, "b", "b.pb.go"))
+	if err != nil {
+		t.Fatalf("b.pb.go: %v", err)
+	}
+	// The cross-file import in b.pb.go must use the override's import path even
+	// though a.proto was reached only as a transitive import of the scoped root.
+	if !strings.Contains(string(bContent), `"example.com/mod/gen/a"`) {
+		t.Errorf("scoped run dropped the -M override for a transitive import; b.pb.go should import the override path, got:\n%s", string(bContent))
+	}
+	if strings.Contains(string(bContent), `"go.example.com/upstream/a"`) {
+		t.Errorf("override ignored — b.pb.go still imports the upstream path (P2 bug):\n%s", string(bContent))
+	}
+}
+
 // TestGenerateGoPackageWithSemicolon verifies the semicolon form
 // "import/path;name" lets the proto author choose a Go package name that
 // differs from the last component of the import path.
