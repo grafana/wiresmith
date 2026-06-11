@@ -3707,60 +3707,48 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.RepeatedString) + c; cap(m.RepeatedString) < need {
-				grown := make([]string, len(m.RepeatedString), need)
-				copy(grown, m.RepeatedString)
-				m.RepeatedString = grown
+			if len(m.RepeatedString) == 0 && cap(m.RepeatedString) < c {
+				m.RepeatedString = make([]string, 0, c)
 			}
 		}
 		if c := field45count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.RepeatedBytes) + c; cap(m.RepeatedBytes) < need {
-				grown := make([][]byte, len(m.RepeatedBytes), need)
-				copy(grown, m.RepeatedBytes)
-				m.RepeatedBytes = grown
+			if len(m.RepeatedBytes) == 0 && cap(m.RepeatedBytes) < c {
+				m.RepeatedBytes = make([][]byte, 0, c)
 			}
 		}
 		if c := field48count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.RepeatedNestedMessage) + c; cap(m.RepeatedNestedMessage) < need {
-				grown := make([]TestAllTypesProto3_NestedMessage, len(m.RepeatedNestedMessage), need)
-				copy(grown, m.RepeatedNestedMessage)
-				m.RepeatedNestedMessage = grown
+			if len(m.RepeatedNestedMessage) == 0 && cap(m.RepeatedNestedMessage) < c {
+				m.RepeatedNestedMessage = make([]TestAllTypesProto3_NestedMessage, 0, c)
 			}
 		}
 		if c := field49count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.RepeatedForeignMessage) + c; cap(m.RepeatedForeignMessage) < need {
-				grown := make([]ForeignMessage, len(m.RepeatedForeignMessage), need)
-				copy(grown, m.RepeatedForeignMessage)
-				m.RepeatedForeignMessage = grown
+			if len(m.RepeatedForeignMessage) == 0 && cap(m.RepeatedForeignMessage) < c {
+				m.RepeatedForeignMessage = make([]ForeignMessage, 0, c)
 			}
 		}
 		if c := field54count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.RepeatedStringPiece) + c; cap(m.RepeatedStringPiece) < need {
-				grown := make([]string, len(m.RepeatedStringPiece), need)
-				copy(grown, m.RepeatedStringPiece)
-				m.RepeatedStringPiece = grown
+			if len(m.RepeatedStringPiece) == 0 && cap(m.RepeatedStringPiece) < c {
+				m.RepeatedStringPiece = make([]string, 0, c)
 			}
 		}
 		if c := field55count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.RepeatedCord) + c; cap(m.RepeatedCord) < need {
-				grown := make([]string, len(m.RepeatedCord), need)
-				copy(grown, m.RepeatedCord)
-				m.RepeatedCord = grown
+			if len(m.RepeatedCord) == 0 && cap(m.RepeatedCord) < c {
+				m.RepeatedCord = make([]string, 0, c)
 			}
 		}
 		if c := field56count; c > 0 {

@@ -2810,30 +2810,24 @@ func (m *Repeated) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.Strs) + c; cap(m.Strs) < need {
-				grown := make([]string, len(m.Strs), need)
-				copy(grown, m.Strs)
-				m.Strs = grown
+			if len(m.Strs) == 0 && cap(m.Strs) < c {
+				m.Strs = make([]string, 0, c)
 			}
 		}
 		if c := field3count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.Inners) + c; cap(m.Inners) < need {
-				grown := make([]Inner, len(m.Inners), need)
-				copy(grown, m.Inners)
-				m.Inners = grown
+			if len(m.Inners) == 0 && cap(m.Inners) < c {
+				m.Inners = make([]Inner, 0, c)
 			}
 		}
 		if c := field4count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.Blobs) + c; cap(m.Blobs) < need {
-				grown := make([][]byte, len(m.Blobs), need)
-				copy(grown, m.Blobs)
-				m.Blobs = grown
+			if len(m.Blobs) == 0 && cap(m.Blobs) < c {
+				m.Blobs = make([][]byte, 0, c)
 			}
 		}
 	}

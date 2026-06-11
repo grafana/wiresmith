@@ -685,40 +685,32 @@ func (m *RepeatedCustomTypeHolder) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.Ids) + c; cap(m.Ids) < need {
-				grown := make([]customtypes.UUID, len(m.Ids), need)
-				copy(grown, m.Ids)
-				m.Ids = grown
+			if len(m.Ids) == 0 && cap(m.Ids) < c {
+				m.Ids = make([]customtypes.UUID, 0, c)
 			}
 		}
 		if c := field2count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.Tags) + c; cap(m.Tags) < need {
-				grown := make([]customtypes.Tag, len(m.Tags), need)
-				copy(grown, m.Tags)
-				m.Tags = grown
+			if len(m.Tags) == 0 && cap(m.Tags) < c {
+				m.Tags = make([]customtypes.Tag, 0, c)
 			}
 		}
 		if c := field3count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.PlainIds) + c; cap(m.PlainIds) < need {
-				grown := make([][]byte, len(m.PlainIds), need)
-				copy(grown, m.PlainIds)
-				m.PlainIds = grown
+			if len(m.PlainIds) == 0 && cap(m.PlainIds) < c {
+				m.PlainIds = make([][]byte, 0, c)
 			}
 		}
 		if c := field4count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.PlainTags) + c; cap(m.PlainTags) < need {
-				grown := make([]string, len(m.PlainTags), need)
-				copy(grown, m.PlainTags)
-				m.PlainTags = grown
+			if len(m.PlainTags) == 0 && cap(m.PlainTags) < c {
+				m.PlainTags = make([]string, 0, c)
 			}
 		}
 	}

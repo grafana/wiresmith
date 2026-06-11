@@ -136,19 +136,24 @@ func (fg *FileGenerator) emitPreScan(md protoreflect.MessageDescriptor) {
 			fmt.Fprintf(fg.body, "\t\t\t\tm.%s = make(%s, c)\n", goName, goType)
 			fmt.Fprintf(fg.body, "\t\t\t}\n")
 		} else {
-			// Grow to len+count, preserving existing elements: Unmarshal
-			// appends to repeated fields (gogo merge parity) regardless of
-			// whether the pre-scan ran. When the existing capacity already
-			// fits, the backing array is reused as-is — the pooled-message
-			// pattern (Mimir resets a message from a sync.Pool to len 0 and
-			// unmarshals into it; an unconditional make() here would discard
-			// the pooled capacity on every decode). A true element count
-			// beyond the preCapMax clamp just grows via append, same as the
-			// fresh-make path.
-			fmt.Fprintf(fg.body, "\t\t\tif need := len(m.%s) + c; cap(m.%s) < need {\n", goName, goName)
-			fmt.Fprintf(fg.body, "\t\t\t\tgrown := make(%s, len(m.%s), need)\n", goType, goName)
-			fmt.Fprintf(fg.body, "\t\t\t\tcopy(grown, m.%s)\n", goName)
-			fmt.Fprintf(fg.body, "\t\t\t\tm.%s = grown\n", goName)
+			// Option A: reserve the count-sized capacity ONLY for a fresh
+			// (empty) slice. Unmarshal appends to repeated fields (gogo merge
+			// parity) regardless of whether the pre-scan ran, so when the
+			// slice is empty this exact-fit make() is byte-identical to a
+			// fresh decode and still preserves the pooled-message pattern
+			// (Mimir resets a sync.Pool message to len 0 and unmarshals into
+			// it; len==0 with cap>=c reuses the backing array, no make()).
+			//
+			// When the slice is already populated (merge-by-unmarshal: repeated
+			// Unmarshal into a NON-reset message), we deliberately do NOT
+			// reserve. An exact-fit grow to len+c reallocates and copies the
+			// entire backing array on EVERY call (cap < len+c always holds when
+			// len grows by ~c each call), which is O(n²) total. Skipping the
+			// reserve lets the main decode loop's append grow the slice with
+			// amortized doubling — O(n) total, matching gogo, which has no
+			// pre-scan. The preCapMax clamp above keeps the SEC-1 cap bound.
+			fmt.Fprintf(fg.body, "\t\t\tif len(m.%s) == 0 && cap(m.%s) < c {\n", goName, goName)
+			fmt.Fprintf(fg.body, "\t\t\t\tm.%s = make(%s, 0, c)\n", goName, goType)
 			fmt.Fprintf(fg.body, "\t\t\t}\n")
 		}
 		fmt.Fprintf(fg.body, "\t\t}\n")

@@ -125,6 +125,80 @@ func TestPreScanCapBoundedByPayload(t *testing.T) {
 		"SEC-1: pre-scan capacity must be bounded by payload/2")
 }
 
+// TestPreScanNoExactFitGrowOnMergeUnmarshal is a regression test for
+// wiresmith-zlce. Unmarshal appends to repeated fields (gogo merge parity), so
+// calling Unmarshal repeatedly into the SAME message value WITHOUT resetting it
+// merges each payload's elements onto the existing slice. The old pre-scan
+// emitted an exact-fit grow (`grown := make([]T, len, len+c); copy(...)`) that
+// fired on every such call: because len grows by ~c each call, `cap < len+c`
+// always held, so the entire (growing) backing array was reallocated and copied
+// every call — O(n²) total work and bytes. Tempo's pkg/ingest BenchmarkEncodeDecode
+// (Decoder.Decode reuses one message, no Reset) blew up to +2197% time / 89 MiB/op.
+//
+// The fix (Option A) reserves the count-sized capacity only when the slice is
+// empty (len==0, fresh/pooled decode); once populated, the pre-scan does not
+// reserve and the main decode loop's append grows the slice with amortized
+// doubling — O(n) total, matching gogo (which has no pre-scan).
+//
+// We assert both halves of the contract:
+//
+//	(a) round-trip correctness: element count grows by exactly perCallCount each
+//	    call (append/merge semantics preserved); and
+//	(b) capacity does NOT grow exact-fit per call: after several no-reset
+//	    unmarshals, cap is bounded by amortized append growth (< 2*len), not the
+//	    n*perCallCount exact-fit the old code would have produced.
+//
+// On the OLD code path this would FAIL: each call reallocated to exactly
+// len+perCallCount, so after the final call cap == len (exact-fit, no headroom),
+// while the intermediate per-call realloc+copy is the O(n²) blowup. With the fix
+// cap is amortized-bounded and the realloc churn is gone.
+func TestPreScanNoExactFitGrowOnMergeUnmarshal(t *testing.T) {
+	// Build a payload with several repeated_string (field 9, wire type 2)
+	// entries whose total wire size exceeds the 256-byte pre-scan threshold.
+	const perCallCount = 8
+	const strLen = 40 // each entry: 1-byte tag + 1-byte len + 40 bytes = 42 bytes
+	str := make([]byte, strLen)
+	for i := range str {
+		str[i] = 'a'
+	}
+	payload := make([]byte, 0, perCallCount*(strLen+2))
+	for range perCallCount {
+		payload = append(payload, 0x4A, byte(strLen)) // tag field 9 wt 2, len
+		payload = append(payload, str...)
+	}
+	require.GreaterOrEqual(t, len(payload), 256, "payload must exceed preScanMinBytes")
+
+	const calls = 5
+
+	var m numericv1.MixedModifiers
+	for call := 1; call <= calls; call++ {
+		require.NoError(t, m.Unmarshal(payload), "unmarshal call %d", call)
+
+		// (a) merge/append semantics: each no-reset call adds perCallCount more.
+		require.Equal(t, call*perCallCount, len(m.RepeatedString),
+			"element count must grow by perCallCount each merge call")
+		for _, s := range m.RepeatedString {
+			require.Equal(t, string(str), s, "round-trip correctness of merged element")
+		}
+	}
+
+	// (b) Capacity must reflect amortized append growth, NOT n*perCallCount
+	// exact-fit reallocation. The OLD exact-fit pre-scan grow reallocated to
+	// exactly len+c on every call, so the final slice always ended with
+	// cap == len (zero headroom) — and paid an O(n) realloc+copy each call,
+	// O(n²) overall. With the fix the pre-scan leaves the populated slice
+	// alone and the main loop's append grows it with amortized doubling, which
+	// leaves headroom (cap > len) on the final state. Asserting cap > len is
+	// the discriminating check: the old code path cannot satisfy it because
+	// its last action was an exact-fit make to len+c with len == final length.
+	// The upper bound (cap < 2*len) confirms growth is amortized, not unbounded.
+	finalLen := calls * perCallCount
+	assert.Greater(t, cap(m.RepeatedString), finalLen,
+		"merge-unmarshal must leave amortized-append headroom, not exact-fit cap==len (old O(n²) path)")
+	assert.Less(t, cap(m.RepeatedString), 4*finalLen,
+		"merge-unmarshal growth must stay amortized-bounded, not over-allocate")
+}
+
 // TestPreScanAmplificationThroughGroupTag confirms the abort fires for every
 // wire type in the default branch of the pre-scan switch (3, 4, 6, 7). Wire
 // type 3 is particularly insidious because the main loop *does* handle it

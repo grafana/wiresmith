@@ -3404,10 +3404,8 @@ func (m *MetricsData) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.ResourceMetrics) + c; cap(m.ResourceMetrics) < need {
-				grown := make([]ResourceMetrics, len(m.ResourceMetrics), need)
-				copy(grown, m.ResourceMetrics)
-				m.ResourceMetrics = grown
+			if len(m.ResourceMetrics) == 0 && cap(m.ResourceMetrics) < c {
+				m.ResourceMetrics = make([]ResourceMetrics, 0, c)
 			}
 		}
 	}
@@ -3577,10 +3575,8 @@ func (m *ResourceMetrics) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.ScopeMetrics) + c; cap(m.ScopeMetrics) < need {
-				grown := make([]ScopeMetrics, len(m.ScopeMetrics), need)
-				copy(grown, m.ScopeMetrics)
-				m.ScopeMetrics = grown
+			if len(m.ScopeMetrics) == 0 && cap(m.ScopeMetrics) < c {
+				m.ScopeMetrics = make([]ScopeMetrics, 0, c)
 			}
 		}
 	}
@@ -3844,10 +3840,8 @@ func (m *ScopeMetrics) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.Metrics) + c; cap(m.Metrics) < need {
-				grown := make([]Metric, len(m.Metrics), need)
-				copy(grown, m.Metrics)
-				m.Metrics = grown
+			if len(m.Metrics) == 0 && cap(m.Metrics) < c {
+				m.Metrics = make([]Metric, 0, c)
 			}
 		}
 	}
@@ -4111,10 +4105,8 @@ func (m *Metric) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.Metadata) + c; cap(m.Metadata) < need {
-				grown := make([]commonv1.KeyValue, len(m.Metadata), need)
-				copy(grown, m.Metadata)
-				m.Metadata = grown
+			if len(m.Metadata) == 0 && cap(m.Metadata) < c {
+				m.Metadata = make([]commonv1.KeyValue, 0, c)
 			}
 		}
 	}
@@ -4682,10 +4674,8 @@ func (m *Gauge) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.DataPoints) + c; cap(m.DataPoints) < need {
-				grown := make([]NumberDataPoint, len(m.DataPoints), need)
-				copy(grown, m.DataPoints)
-				m.DataPoints = grown
+			if len(m.DataPoints) == 0 && cap(m.DataPoints) < c {
+				m.DataPoints = make([]NumberDataPoint, 0, c)
 			}
 		}
 	}
@@ -4855,10 +4845,8 @@ func (m *Sum) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.DataPoints) + c; cap(m.DataPoints) < need {
-				grown := make([]NumberDataPoint, len(m.DataPoints), need)
-				copy(grown, m.DataPoints)
-				m.DataPoints = grown
+			if len(m.DataPoints) == 0 && cap(m.DataPoints) < c {
+				m.DataPoints = make([]NumberDataPoint, 0, c)
 			}
 		}
 	}
@@ -5086,10 +5074,8 @@ func (m *Histogram) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.DataPoints) + c; cap(m.DataPoints) < need {
-				grown := make([]HistogramDataPoint, len(m.DataPoints), need)
-				copy(grown, m.DataPoints)
-				m.DataPoints = grown
+			if len(m.DataPoints) == 0 && cap(m.DataPoints) < c {
+				m.DataPoints = make([]HistogramDataPoint, 0, c)
 			}
 		}
 	}
@@ -5288,10 +5274,8 @@ func (m *ExponentialHistogram) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.DataPoints) + c; cap(m.DataPoints) < need {
-				grown := make([]ExponentialHistogramDataPoint, len(m.DataPoints), need)
-				copy(grown, m.DataPoints)
-				m.DataPoints = grown
+			if len(m.DataPoints) == 0 && cap(m.DataPoints) < c {
+				m.DataPoints = make([]ExponentialHistogramDataPoint, 0, c)
 			}
 		}
 	}
@@ -5490,10 +5474,8 @@ func (m *Summary) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.DataPoints) + c; cap(m.DataPoints) < need {
-				grown := make([]SummaryDataPoint, len(m.DataPoints), need)
-				copy(grown, m.DataPoints)
-				m.DataPoints = grown
+			if len(m.DataPoints) == 0 && cap(m.DataPoints) < c {
+				m.DataPoints = make([]SummaryDataPoint, 0, c)
 			}
 		}
 	}
@@ -5666,20 +5648,16 @@ func (m *NumberDataPoint) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.Attributes) + c; cap(m.Attributes) < need {
-				grown := make([]commonv1.KeyValue, len(m.Attributes), need)
-				copy(grown, m.Attributes)
-				m.Attributes = grown
+			if len(m.Attributes) == 0 && cap(m.Attributes) < c {
+				m.Attributes = make([]commonv1.KeyValue, 0, c)
 			}
 		}
 		if c := field5count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.Exemplars) + c; cap(m.Exemplars) < need {
-				grown := make([]Exemplar, len(m.Exemplars), need)
-				copy(grown, m.Exemplars)
-				m.Exemplars = grown
+			if len(m.Exemplars) == 0 && cap(m.Exemplars) < c {
+				m.Exemplars = make([]Exemplar, 0, c)
 			}
 		}
 	}
@@ -5991,20 +5969,16 @@ func (m *HistogramDataPoint) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.Attributes) + c; cap(m.Attributes) < need {
-				grown := make([]commonv1.KeyValue, len(m.Attributes), need)
-				copy(grown, m.Attributes)
-				m.Attributes = grown
+			if len(m.Attributes) == 0 && cap(m.Attributes) < c {
+				m.Attributes = make([]commonv1.KeyValue, 0, c)
 			}
 		}
 		if c := field8count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.Exemplars) + c; cap(m.Exemplars) < need {
-				grown := make([]Exemplar, len(m.Exemplars), need)
-				copy(grown, m.Exemplars)
-				m.Exemplars = grown
+			if len(m.Exemplars) == 0 && cap(m.Exemplars) < c {
+				m.Exemplars = make([]Exemplar, 0, c)
 			}
 		}
 	}
@@ -6660,20 +6634,16 @@ func (m *ExponentialHistogramDataPoint) unmarshal(dAtA []byte, depth int) error 
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.Attributes) + c; cap(m.Attributes) < need {
-				grown := make([]commonv1.KeyValue, len(m.Attributes), need)
-				copy(grown, m.Attributes)
-				m.Attributes = grown
+			if len(m.Attributes) == 0 && cap(m.Attributes) < c {
+				m.Attributes = make([]commonv1.KeyValue, 0, c)
 			}
 		}
 		if c := field11count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.Exemplars) + c; cap(m.Exemplars) < need {
-				grown := make([]Exemplar, len(m.Exemplars), need)
-				copy(grown, m.Exemplars)
-				m.Exemplars = grown
+			if len(m.Exemplars) == 0 && cap(m.Exemplars) < c {
+				m.Exemplars = make([]Exemplar, 0, c)
 			}
 		}
 	}
@@ -7266,20 +7236,16 @@ func (m *SummaryDataPoint) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.Attributes) + c; cap(m.Attributes) < need {
-				grown := make([]commonv1.KeyValue, len(m.Attributes), need)
-				copy(grown, m.Attributes)
-				m.Attributes = grown
+			if len(m.Attributes) == 0 && cap(m.Attributes) < c {
+				m.Attributes = make([]commonv1.KeyValue, 0, c)
 			}
 		}
 		if c := field6count; c > 0 {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.QuantileValues) + c; cap(m.QuantileValues) < need {
-				grown := make([]SummaryDataPoint_ValueAtQuantile, len(m.QuantileValues), need)
-				copy(grown, m.QuantileValues)
-				m.QuantileValues = grown
+			if len(m.QuantileValues) == 0 && cap(m.QuantileValues) < c {
+				m.QuantileValues = make([]SummaryDataPoint_ValueAtQuantile, 0, c)
 			}
 		}
 	}
@@ -7590,10 +7556,8 @@ func (m *Exemplar) unmarshal(dAtA []byte, depth int) error {
 			if c > preCapMax {
 				c = preCapMax
 			}
-			if need := len(m.FilteredAttributes) + c; cap(m.FilteredAttributes) < need {
-				grown := make([]commonv1.KeyValue, len(m.FilteredAttributes), need)
-				copy(grown, m.FilteredAttributes)
-				m.FilteredAttributes = grown
+			if len(m.FilteredAttributes) == 0 && cap(m.FilteredAttributes) < c {
+				m.FilteredAttributes = make([]commonv1.KeyValue, 0, c)
 			}
 		}
 	}
