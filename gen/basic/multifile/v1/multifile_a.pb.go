@@ -20,7 +20,7 @@ type AlphaEntry struct {
 	Key   string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
 	Count int64  `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 func (m *AlphaEntry) Reset() {

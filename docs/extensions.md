@@ -390,7 +390,7 @@ By default every generated message tracks wire-presence of its singular value-ty
 
 - The struct contains exactly the declared fields — layout parity with gogoproto `nullable=false` structs. This is the property consumers need for unsafe casts between generated and domain types (e.g. Mimir's `[]Sample` ↔ `[]promql.FPoint`) and for `require.Equal(literal, unmarshalled)` tests.
 - `Has<Name>()` is **not emitted** for bitmap-tracked fields. proto3 `optional` fields keep their pointer-based `Has<Name>()`.
-- `Get<MsgField>()` returns `&m.Field` unconditionally.
+- `Get<MsgField>()` returns the **value** (`m.Field`, zero value on a nil receiver) — gogoproto `nullable=false` getter parity, so gogo-era value-getter-shaped interfaces are satisfied directly.
 - A present-but-empty nested message does **not** survive a round-trip: marshal emits nothing for an empty child, so absent and empty are indistinguishable — exactly the gogoproto value-type trade-off.
 
 `no_presence_all = true` at file level applies the same to every message in the file (nested ones included). A per-message `no_presence` value — `true` or `false` — overrides the file default, same layering as gogoproto's `*_all` options. Nested messages do not inherit from their containing message; annotate them individually or use the file option.

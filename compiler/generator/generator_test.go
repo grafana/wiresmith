@@ -1673,6 +1673,71 @@ message B { string s = 1; }`)
 	}
 }
 
+// TestGenerateSharedGoPackageAcrossProtoPackages pins the protoc-parity
+// case Loki's indexgateway.proto needs: two .proto files in one directory
+// with DIFFERENT proto packages but the SAME resolved go_package compile
+// into one Go package. References between them are same-Go-package
+// unqualified identifiers.
+func TestGenerateSharedGoPackageAcrossProtoPackages(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "shared/a.proto", `
+syntax = "proto3";
+package alpha.v1;
+option go_package = "example.com/mod/gen/shared";
+message AlphaMsg { string s = 1; }`)
+	writeProto(t, protoDir, "shared/b.proto", `
+syntax = "proto3";
+package beta.v1;
+option go_package = "example.com/mod/gen/shared";
+import "shared/a.proto";
+message BetaMsg { alpha.v1.AlphaMsg a = 1; }`)
+
+	outDir := testOutDir(t)
+	gen := &Generator{Module: "example.com/mod", OutDir: outDir, ProtoDir: protoDir}
+	if err := gen.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate: %v", err)
+	}
+
+	aSrc := mustReadFile(t, filepath.Join(outDir, "shared", "a.pb.go"))
+	bSrc := mustReadFile(t, filepath.Join(outDir, "shared", "b.pb.go"))
+	if !strings.Contains(aSrc, "package shared\n") || !strings.Contains(bSrc, "package shared\n") {
+		t.Errorf("both files must declare 'package shared'")
+	}
+	// Same Go package: the cross-proto-package reference is unqualified.
+	if !strings.Contains(bSrc, "A AlphaMsg ") && !strings.Contains(bSrc, "A AlphaMsg\t") {
+		t.Errorf("BetaMsg must reference AlphaMsg unqualified, got:\n%.600s", bSrc)
+	}
+	if strings.Contains(bSrc, `"example.com/mod/gen/shared"`) {
+		t.Errorf("b.pb.go must not import its own package")
+	}
+}
+
+// TestGenerateSharedDirDifferentPackageNamesRejected is the guard that
+// stays: two proto packages in one directory whose resolved Go package
+// names disagree (here: no go_package, so the names derive from the proto
+// packages) cannot form one compilable Go package and must be rejected
+// up front.
+func TestGenerateSharedDirDifferentPackageNamesRejected(t *testing.T) {
+	protoDir := t.TempDir()
+	writeProto(t, protoDir, "shared/a.proto", `
+syntax = "proto3";
+package alpha.v1;
+message AlphaMsg { string s = 1; }`)
+	writeProto(t, protoDir, "shared/b.proto", `
+syntax = "proto3";
+package beta.v1;
+message BetaMsg { string s = 1; }`)
+
+	gen := &Generator{Module: "example.com/mod", OutDir: testOutDir(t), ProtoDir: protoDir}
+	err := gen.Generate(context.Background())
+	if err == nil {
+		t.Fatal("expected error for one dir with two Go package names, got nil")
+	}
+	if !strings.Contains(err.Error(), "package name") {
+		t.Errorf("expected a package-name conflict error, got: %v", err)
+	}
+}
+
 // TestGenerateFilesSkipsUnrelatedBrokenSiblings pins the lazy compile set:
 // positional files compile only themselves plus transitive imports, so an
 // unrelated sibling .proto that doesn't compile (gogo annotations without

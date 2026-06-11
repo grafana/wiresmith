@@ -184,7 +184,7 @@ type ResourceSpans struct {
 	// to the data in the "scope_spans" field which have their own schema_url field.
 	SchemaUrl string `protobuf:"bytes,3,opt,name=schema_url,json=schemaUrl,proto3" json:"schema_url,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // A collection of Spans produced by an InstrumentationScope.
@@ -203,7 +203,7 @@ type ScopeSpans struct {
 	// events in the "spans" field.
 	SchemaUrl string `protobuf:"bytes,3,opt,name=schema_url,json=schemaUrl,proto3" json:"schema_url,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // Event is a time-stamped annotation of the span, consisting of user-supplied
@@ -223,7 +223,7 @@ type Span_Event struct {
 	// then no attributes were dropped.
 	DroppedAttributesCount uint32 `protobuf:"varint,4,opt,name=dropped_attributes_count,json=droppedAttributesCount,proto3" json:"dropped_attributes_count,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // A pointer from the current span to another span in the same trace or in a
@@ -265,7 +265,7 @@ type Span_Link struct {
 	// [Optional].
 	Flags uint32 `protobuf:"fixed32,6,opt,name=flags,proto3" json:"flags,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // A Span represents a single operation performed by a single component of the system.
@@ -376,7 +376,7 @@ type Span struct {
 	// span's status code is unset, i.e. assume STATUS_CODE_UNSET (code = 0).
 	Status Status `protobuf:"bytes,15,opt,name=status,proto3" json:"status,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // The Status type defines a logical error model that is suitable for different
@@ -387,7 +387,7 @@ type Status struct {
 	// The status code.
 	Code Status_StatusCode `protobuf:"varint,3,opt,name=code,proto3,enum=opentelemetry.proto.trace.v1.Status.StatusCode" json:"code,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 func (m *TracesData) Reset() {

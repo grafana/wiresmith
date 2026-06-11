@@ -141,7 +141,7 @@ type Payload struct {
 	Data   string `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
 	Number int64  `protobuf:"varint,2,opt,name=number,proto3" json:"number,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // Two oneofs in the same message.
@@ -150,7 +150,7 @@ type MultiOneof struct {
 	Secondary    MultiOneof_Secondary `protobuf_oneof:"secondary"`
 	RegularField string               `protobuf:"bytes,7,opt,name=regular_field,json=regularField,proto3" json:"regular_field,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // Oneof with message and enum variant types.
@@ -166,7 +166,7 @@ type OneofPlusEverything struct {
 	Labels  map[string]string           `protobuf:"bytes,4,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	Payload OneofPlusEverything_Payload `protobuf_oneof:"payload"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 func (m *Payload) Reset() {

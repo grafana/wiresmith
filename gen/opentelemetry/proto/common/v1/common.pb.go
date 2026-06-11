@@ -116,7 +116,7 @@ type KeyValue struct {
 	// Status: [Alpha]
 	KeyStrindex int32 `protobuf:"varint,3,opt,name=key_strindex,json=keyStrindex,proto3" json:"key_strindex,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // InstrumentationScope is a message representing the instrumentation scope information
@@ -138,7 +138,7 @@ type InstrumentationScope struct {
 	// attributes. If this value is 0, then no attributes were dropped.
 	DroppedAttributesCount uint32 `protobuf:"varint,4,opt,name=dropped_attributes_count,json=droppedAttributesCount,proto3" json:"dropped_attributes_count,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // A reference to an Entity.
@@ -171,7 +171,7 @@ type EntityRef struct {
 	// These keys MUST exist in the containing {message}.attributes.
 	DescriptionKeys []string `protobuf:"bytes,4,rep,name=description_keys,json=descriptionKeys,proto3" json:"description_keys,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 func (m *AnyValue) Reset() {

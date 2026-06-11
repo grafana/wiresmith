@@ -30,7 +30,7 @@ type CastTypeHolder struct {
 	PlainTag   string `protobuf:"bytes,5,opt,name=plain_tag,json=plainTag,proto3" json:"plain_tag,omitempty"`
 	PlainBytes []byte `protobuf:"bytes,6,opt,name=plain_bytes,json=plainBytes,proto3" json:"plain_bytes,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 func (m *CastTypeHolder) Reset() {

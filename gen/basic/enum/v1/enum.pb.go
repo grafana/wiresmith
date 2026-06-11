@@ -111,7 +111,7 @@ type WithNestedEnum struct {
 	Priorities []WithNestedEnum_Priority `protobuf:"varint,2,rep,packed,name=priorities,proto3,enum=basic.enum.v1.WithNestedEnum.Priority" json:"priorities,omitempty"`
 	Name       string                    `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 // Message using enums in various contexts.
@@ -122,7 +122,7 @@ type EnumContainer struct {
 	RepeatedAliased []AliasedPriority     `protobuf:"varint,4,rep,packed,name=repeated_aliased,json=repeatedAliased,proto3,enum=basic.enum.v1.AliasedPriority" json:"repeated_aliased,omitempty"`
 	SignedMap       map[string]SignedEnum `protobuf:"bytes,5,rep,name=signed_map,json=signedMap,proto3" json:"signed_map,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value,enum=basic.enum.v1.SignedEnum"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 func (m *WithNestedEnum) Reset() {

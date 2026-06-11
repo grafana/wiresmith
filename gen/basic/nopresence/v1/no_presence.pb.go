@@ -38,7 +38,7 @@ type TrackedHolder struct {
 	Child Leaf  `protobuf:"bytes,1,opt,name=child,proto3" json:"child,omitempty"`
 	Num   int64 `protobuf:"varint,2,opt,name=num,proto3" json:"num,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 func (m *Leaf) Reset() {
@@ -115,11 +115,11 @@ func (m *Leaf) GetName() string {
 	return ""
 }
 
-func (m *BareHolder) GetChild() *Leaf {
+func (m *BareHolder) GetChild() Leaf {
 	if m != nil {
-		return &m.Child
+		return m.Child
 	}
-	return nil
+	return Leaf{}
 }
 
 func (m *BareHolder) GetNum() int64 {

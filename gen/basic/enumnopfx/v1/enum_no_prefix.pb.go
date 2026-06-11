@@ -71,7 +71,7 @@ type MetricInfo struct {
 	Type MetricType `protobuf:"varint,1,opt,name=type,proto3,enum=basic.enumnopfx.v1.MetricType" json:"type,omitempty"`
 	Name string     `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 
-	XXX_fieldsPresent [1]uint64
+	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
 
 func (m *MetricInfo) Reset() {
