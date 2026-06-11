@@ -47,6 +47,17 @@ The benchmark suite lives in [`bench/`](../bench/) — comparative against the o
 
 For changes that touch marshal/unmarshal/size hot paths, the project requires a baseline-vs-after `benchstat` comparison before merge. The detailed workflow (filter, `-count=20 -benchtime=1s`, noise-control benchmark) lives in [`AGENTS.md`](../AGENTS.md) under "Benchmarking before/after any change" — that section is the source of truth and changes there propagate to reviewers.
 
+## What CI runs
+
+Every pull request runs these jobs (`.github/workflows/ci.yml`):
+
+- **Lint** — `golangci-lint`.
+- **Generated Code** — `make generate-ours` then a `git diff` check that the checked-in generated code is up to date.
+- **Build & Test** — `make build` then `make test`. `make test` covers `./test/...`, `./cmd/...`, and `./compiler/...`, so the generator and type-dispatch unit tests run on every PR (previously they only ran under `make coverage`, which CI never invoked).
+- **Race** — `make test-race`, which runs the race detector over `./test/peer/`, `./test/basic/`, and `./test/differential/`. These are the packages with concurrency-sensitive coverage (e.g. `TestConcurrentMarshalSafety`); the fuzz and bench packages are deliberately excluded (no concurrency to find, high runtime cost).
+- **Fuzz** — `make fuzz` (30s per target).
+- **Conformance** — the Google conformance suite in Docker (`make conformance`).
+
 ## Known runtime conflict
 
 `go test ./...` panics with `proto: file ... is already registered` because three independently generated packages (`gen/bench/official`, `gen/bench/vtpb`, `gen/bench/gogopb`) plus wiresmith all register the same OpenTelemetry proto descriptors with `protoregistry.GlobalFiles`. The fix is upstream — `google.golang.org/protobuf` reads the `GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn` env var to downgrade the panic to a log line:
