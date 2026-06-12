@@ -9,7 +9,7 @@ The sibling binary at `cmd/protoc-gen-wiresmith` is built on
 and `buf generate` invoke it the same way they invoke `protoc-gen-go`:
 
 ```sh
-go build -o /usr/local/bin/protoc-gen-wiresmith ./cmd/protoc-gen-wiresmith
+go install github.com/grafana/wiresmith/cmd/protoc-gen-wiresmith@latest
 
 protoc \
   --proto_path=proto \
