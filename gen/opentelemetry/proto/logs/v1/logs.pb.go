@@ -975,7 +975,7 @@ func (m *LogsData) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field1count int
 		for preIdx < l {
@@ -1129,6 +1129,10 @@ func (m *LogsData) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *LogsData) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *ResourceLogs) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -1146,7 +1150,7 @@ func (m *ResourceLogs) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field2count int
 		for preIdx < l {
@@ -1394,6 +1398,10 @@ func (m *ResourceLogs) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *ResourceLogs) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *ScopeLogs) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -1411,7 +1419,7 @@ func (m *ScopeLogs) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field2count int
 		for preIdx < l {
@@ -1659,6 +1667,10 @@ func (m *ScopeLogs) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *ScopeLogs) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *LogRecord) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -1676,7 +1688,7 @@ func (m *LogRecord) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field6count int
 		for preIdx < l {
@@ -2166,4 +2178,8 @@ func (m *LogRecord) unmarshal(dAtA []byte, depth int) error {
 		return io.ErrUnexpectedEOF
 	}
 	return nil
+}
+
+func (m *LogRecord) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
 }

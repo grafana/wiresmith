@@ -2508,7 +2508,7 @@ func (m *ProfilesDictionary) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field1count int
 		var field2count int
@@ -3013,6 +3013,10 @@ func (m *ProfilesDictionary) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *ProfilesDictionary) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *ProfilesData) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -3030,7 +3034,7 @@ func (m *ProfilesData) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field1count int
 		for preIdx < l {
@@ -3232,6 +3236,10 @@ func (m *ProfilesData) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *ProfilesData) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *ResourceProfiles) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -3249,7 +3257,7 @@ func (m *ResourceProfiles) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field2count int
 		for preIdx < l {
@@ -3497,6 +3505,10 @@ func (m *ResourceProfiles) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *ResourceProfiles) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *ScopeProfiles) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -3514,7 +3526,7 @@ func (m *ScopeProfiles) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field2count int
 		for preIdx < l {
@@ -3762,6 +3774,10 @@ func (m *ScopeProfiles) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *ScopeProfiles) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *Profile) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -3779,7 +3795,7 @@ func (m *Profile) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field2count int
 		for preIdx < l {
@@ -4365,6 +4381,10 @@ func (m *Profile) unmarshal(dAtA []byte, depth int) error {
 		return io.ErrUnexpectedEOF
 	}
 	return nil
+}
+
+func (m *Profile) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
 }
 
 func (m *Link) Unmarshal(b []byte) error {
@@ -5449,7 +5469,7 @@ func (m *Location) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field3count int
 		for preIdx < l {
@@ -5756,6 +5776,10 @@ func (m *Location) unmarshal(dAtA []byte, depth int) error {
 		return io.ErrUnexpectedEOF
 	}
 	return nil
+}
+
+func (m *Location) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
 }
 
 func (m *Line) Unmarshal(b []byte) error {

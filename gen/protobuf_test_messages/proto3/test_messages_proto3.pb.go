@@ -3575,7 +3575,7 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field44count int
 		var field45count int
@@ -11938,6 +11938,10 @@ func (m *TestAllTypesProto3) unmarshal(dAtA []byte, depth int) error {
 		return io.ErrUnexpectedEOF
 	}
 	return nil
+}
+
+func (m *TestAllTypesProto3) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
 }
 
 func (m *ForeignMessage) Unmarshal(b []byte) error {

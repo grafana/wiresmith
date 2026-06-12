@@ -3344,7 +3344,7 @@ func (m *MetricsData) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field1count int
 		for preIdx < l {
@@ -3498,6 +3498,10 @@ func (m *MetricsData) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *MetricsData) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *ResourceMetrics) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -3515,7 +3519,7 @@ func (m *ResourceMetrics) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field2count int
 		for preIdx < l {
@@ -3763,6 +3767,10 @@ func (m *ResourceMetrics) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *ResourceMetrics) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *ScopeMetrics) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -3780,7 +3788,7 @@ func (m *ScopeMetrics) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field2count int
 		for preIdx < l {
@@ -4028,6 +4036,10 @@ func (m *ScopeMetrics) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *ScopeMetrics) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *Metric) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -4045,7 +4057,7 @@ func (m *Metric) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field12count int
 		for preIdx < l {
@@ -4597,6 +4609,10 @@ func (m *Metric) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *Metric) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *Gauge) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -4614,7 +4630,7 @@ func (m *Gauge) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field1count int
 		for preIdx < l {
@@ -4768,6 +4784,10 @@ func (m *Gauge) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *Gauge) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *Sum) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -4785,7 +4805,7 @@ func (m *Sum) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field1count int
 		for preIdx < l {
@@ -4997,6 +5017,10 @@ func (m *Sum) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *Sum) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *Histogram) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -5014,7 +5038,7 @@ func (m *Histogram) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field1count int
 		for preIdx < l {
@@ -5197,6 +5221,10 @@ func (m *Histogram) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *Histogram) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *ExponentialHistogram) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -5214,7 +5242,7 @@ func (m *ExponentialHistogram) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field1count int
 		for preIdx < l {
@@ -5397,6 +5425,10 @@ func (m *ExponentialHistogram) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *ExponentialHistogram) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *Summary) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -5414,7 +5446,7 @@ func (m *Summary) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field1count int
 		for preIdx < l {
@@ -5568,6 +5600,10 @@ func (m *Summary) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *Summary) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *NumberDataPoint) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -5585,7 +5621,7 @@ func (m *NumberDataPoint) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field7count int
 		var field5count int
@@ -5889,6 +5925,10 @@ func (m *NumberDataPoint) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *NumberDataPoint) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *HistogramDataPoint) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -5906,7 +5946,7 @@ func (m *HistogramDataPoint) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field9count int
 		var field8count int
@@ -6370,6 +6410,10 @@ func (m *HistogramDataPoint) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *HistogramDataPoint) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *ExponentialHistogramDataPoint_Buckets) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -6571,7 +6615,7 @@ func (m *ExponentialHistogramDataPoint) unmarshal(dAtA []byte, depth int) error 
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field1count int
 		var field11count int
@@ -7066,6 +7110,10 @@ func (m *ExponentialHistogramDataPoint) unmarshal(dAtA []byte, depth int) error 
 	return nil
 }
 
+func (m *ExponentialHistogramDataPoint) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *SummaryDataPoint_ValueAtQuantile) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -7173,7 +7221,7 @@ func (m *SummaryDataPoint) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field7count int
 		var field6count int
@@ -7479,6 +7527,10 @@ func (m *SummaryDataPoint) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *SummaryDataPoint) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *Exemplar) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -7496,7 +7548,7 @@ func (m *Exemplar) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field7count int
 		for preIdx < l {
@@ -7786,4 +7838,8 @@ func (m *Exemplar) unmarshal(dAtA []byte, depth int) error {
 		return io.ErrUnexpectedEOF
 	}
 	return nil
+}
+
+func (m *Exemplar) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
 }

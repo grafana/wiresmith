@@ -125,7 +125,7 @@ func (m *CrossMapOuter) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field1count int
 		for preIdx < l {
@@ -404,4 +404,8 @@ func (m *CrossMapOuter) unmarshal(dAtA []byte, depth int) error {
 		return io.ErrUnexpectedEOF
 	}
 	return nil
+}
+
+func (m *CrossMapOuter) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
 }

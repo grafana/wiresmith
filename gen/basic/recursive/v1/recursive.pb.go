@@ -645,7 +645,7 @@ func (m *TreeNode) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field3count int
 		for preIdx < l {
@@ -874,6 +874,10 @@ func (m *TreeNode) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *TreeNode) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *NodeA) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -891,7 +895,7 @@ func (m *NodeA) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field3count int
 		for preIdx < l {
@@ -1139,6 +1143,10 @@ func (m *NodeA) unmarshal(dAtA []byte, depth int) error {
 		return io.ErrUnexpectedEOF
 	}
 	return nil
+}
+
+func (m *NodeA) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
 }
 
 func (m *NodeB) Unmarshal(b []byte) error {

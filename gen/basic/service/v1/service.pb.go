@@ -444,7 +444,7 @@ func (m *Payload) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field3count int
 		var field4count int
@@ -1002,6 +1002,10 @@ func (m *Payload) unmarshal(dAtA []byte, depth int) error {
 		return io.ErrUnexpectedEOF
 	}
 	return nil
+}
+
+func (m *Payload) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
 }
 
 func (m *Nested) Unmarshal(b []byte) error {

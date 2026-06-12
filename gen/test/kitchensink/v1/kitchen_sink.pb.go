@@ -4169,7 +4169,7 @@ func (m *AllRepeatedScalars) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field14count int
 		var field15count int
@@ -5427,6 +5427,10 @@ func (m *AllRepeatedScalars) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *AllRepeatedScalars) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *OneofVariants) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -5878,7 +5882,7 @@ func (m *Outer) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field2count int
 		for preIdx < l {
@@ -6126,6 +6130,10 @@ func (m *Outer) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *Outer) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *Middle) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -6143,7 +6151,7 @@ func (m *Middle) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field2count int
 		for preIdx < l {
@@ -6372,6 +6380,10 @@ func (m *Middle) unmarshal(dAtA []byte, depth int) error {
 		return io.ErrUnexpectedEOF
 	}
 	return nil
+}
+
+func (m *Middle) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
 }
 
 func (m *Inner) Unmarshal(b []byte) error {
@@ -7116,7 +7128,7 @@ func (m *OnlyRepeated) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field1count int
 		var field3count int
@@ -7423,6 +7435,10 @@ func (m *OnlyRepeated) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *OnlyRepeated) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *Container) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -7440,7 +7456,7 @@ func (m *Container) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field3count int
 		for preIdx < l {
@@ -7690,6 +7706,10 @@ func (m *Container) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *Container) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *AllMaps) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -7707,7 +7727,7 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field1count int
 		var field2count int
@@ -10341,4 +10361,8 @@ func (m *AllMaps) unmarshal(dAtA []byte, depth int) error {
 		return io.ErrUnexpectedEOF
 	}
 	return nil
+}
+
+func (m *AllMaps) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
 }

@@ -1307,7 +1307,7 @@ func (m *ArrayValue) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field1count int
 		for preIdx < l {
@@ -1461,6 +1461,10 @@ func (m *ArrayValue) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *ArrayValue) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *KeyValueList) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -1478,7 +1482,7 @@ func (m *KeyValueList) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field1count int
 		for preIdx < l {
@@ -1630,6 +1634,10 @@ func (m *KeyValueList) unmarshal(dAtA []byte, depth int) error {
 		return io.ErrUnexpectedEOF
 	}
 	return nil
+}
+
+func (m *KeyValueList) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
 }
 
 func (m *KeyValue) Unmarshal(b []byte) error {
@@ -1830,7 +1838,7 @@ func (m *InstrumentationScope) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field3count int
 		for preIdx < l {
@@ -2105,6 +2113,10 @@ func (m *InstrumentationScope) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *InstrumentationScope) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *EntityRef) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -2122,7 +2134,7 @@ func (m *EntityRef) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field3count int
 		var field4count int
@@ -2419,4 +2431,8 @@ func (m *EntityRef) unmarshal(dAtA []byte, depth int) error {
 		return io.ErrUnexpectedEOF
 	}
 	return nil
+}
+
+func (m *EntityRef) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
 }
