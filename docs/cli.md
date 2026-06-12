@@ -13,7 +13,7 @@ go install github.com/grafana/wiresmith/cmd/wiresmith@latest
 Or build from a checkout:
 
 ```sh
-git clone git@github.com:grafana/wiresmith.git
+git clone https://github.com/grafana/wiresmith.git
 cd wiresmith
 go build -o wiresmith ./cmd/wiresmith
 ```
