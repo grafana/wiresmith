@@ -192,14 +192,24 @@ func (m *CastTypeHolder) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.PlainBytes) > 0 {
 		i -= len(m.PlainBytes)
 		copy(dAtA[i:], m.PlainBytes)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.PlainBytes)))
+		if len(m.PlainBytes) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.PlainBytes))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.PlainBytes)))
+		}
 		i--
 		dAtA[i] = 0x32
 	}
 	if len(m.PlainTag) > 0 {
 		i -= len(m.PlainTag)
 		copy(dAtA[i:], m.PlainTag)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.PlainTag)))
+		if len(m.PlainTag) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.PlainTag))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.PlainTag)))
+		}
 		i--
 		dAtA[i] = 0x2a
 	}
@@ -211,14 +221,24 @@ func (m *CastTypeHolder) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.Payload) > 0 {
 		i -= len(m.Payload)
 		copy(dAtA[i:], m.Payload)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Payload)))
+		if len(m.Payload) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.Payload))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Payload)))
+		}
 		i--
 		dAtA[i] = 0x1a
 	}
 	if len(m.TenantTag) > 0 {
 		i -= len(m.TenantTag)
 		copy(dAtA[i:], m.TenantTag)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.TenantTag)))
+		if len(m.TenantTag) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.TenantTag))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.TenantTag)))
+		}
 		i--
 		dAtA[i] = 0x12
 	}

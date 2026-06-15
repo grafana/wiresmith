@@ -164,6 +164,28 @@ func AddTypeImports(e Emitter, ft FieldType) {
 	}
 }
 
+// emitLenPrefixFastPath emits the reverse-write of a length-delimited length
+// prefix with a one-byte fast path for the common case (length <= 0x7F encodes
+// to a single varint byte). The fallback to EncodeVarint produces byte-for-byte
+// identical output; this only peels the dominant single-byte case so the SSA
+// backend can branch-predict it and skip the EncodeVarint call/loop. lenExpr is
+// a Go expression yielding the length (e.g. "size", "baseI-i", "len(m.S)").
+//
+// The byte store writes dAtA[i-1] and decrements i afterwards rather than
+// decrementing first: lenExpr may itself reference i (e.g. "baseI-i",
+// "pStart-i"), so it must be evaluated before i is mutated.
+func emitLenPrefixFastPath(e Emitter, indent, lenExpr string) {
+	// The protohelpers import is registered unconditionally by the generator's
+	// emitMarshal (compiler/generator/emit_marshal.go), so the else-branch
+	// reference to protohelpers.EncodeVarint resolves without an extra add here.
+	e.Writef("%sif %s <= 0x7F {\n", indent, lenExpr)
+	e.Writef("%s\tdAtA[i-1] = uint8(%s)\n", indent, lenExpr)
+	e.Writef("%s\ti--\n", indent)
+	e.Writef("%s} else {\n", indent)
+	e.Writef("%s\ti = protohelpers.EncodeVarint(dAtA, i, uint64(%s))\n", indent, lenExpr)
+	e.Writef("%s}\n", indent)
+}
+
 // --- Inline consume helpers ---
 // These emit inline decoding using the iNdEx/dAtA/l variables that are
 // in scope in the generated unmarshal method. They replace the old

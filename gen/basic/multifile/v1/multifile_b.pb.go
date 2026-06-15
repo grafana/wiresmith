@@ -102,7 +102,12 @@ func (m *BetaHolder) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.Note) > 0 {
 		i -= len(m.Note)
 		copy(dAtA[i:], m.Note)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Note)))
+		if len(m.Note) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.Note))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Note)))
+		}
 		i--
 		dAtA[i] = 0x12
 	}
@@ -112,7 +117,12 @@ func (m *BetaHolder) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			return 0, err
 		}
 		i -= size
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		if size <= 0x7F {
+			dAtA[i-1] = uint8(size)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		}
 		i--
 		dAtA[i] = 0x0a
 	}

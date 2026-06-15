@@ -112,7 +112,14 @@ func (fg *FileGenerator) emitMessageMarshalWithPresence(fd protoreflect.FieldDes
 	fmt.Fprintf(fg.body, "\t\tif err != nil {\n\t\t\treturn 0, err\n\t\t}\n")
 	fmt.Fprintf(fg.body, "\t\tif size > 0 {\n")
 	fmt.Fprintf(fg.body, "\t\t\ti -= size\n")
-	fmt.Fprintf(fg.body, "\t\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(size))\n")
+	// One-byte fast path for the common small length prefix (wiresmith-usn);
+	// the else-branch is byte-for-byte identical to the unconditional EncodeVarint.
+	fmt.Fprintf(fg.body, "\t\t\tif size <= 0x7F {\n")
+	fmt.Fprintf(fg.body, "\t\t\t\ti--\n")
+	fmt.Fprintf(fg.body, "\t\t\t\tdAtA[i] = uint8(size)\n")
+	fmt.Fprintf(fg.body, "\t\t\t} else {\n")
+	fmt.Fprintf(fg.body, "\t\t\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(size))\n")
+	fmt.Fprintf(fg.body, "\t\t\t}\n")
 	fg.reverseTag("\t\t\t", num, protowire.BytesType)
 	fmt.Fprintf(fg.body, "\t\t} else if %s {\n", presenceCheck(bitIndex))
 	fmt.Fprintf(fg.body, "\t\t\ti--\n")

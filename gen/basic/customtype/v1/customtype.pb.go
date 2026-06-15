@@ -235,14 +235,24 @@ func (m *CustomTypeHolder) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.PlainString) > 0 {
 		i -= len(m.PlainString)
 		copy(dAtA[i:], m.PlainString)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.PlainString)))
+		if len(m.PlainString) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.PlainString))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.PlainString)))
+		}
 		i--
 		dAtA[i] = 0x22
 	}
 	if len(m.PlainBytes) > 0 {
 		i -= len(m.PlainBytes)
 		copy(dAtA[i:], m.PlainBytes)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.PlainBytes)))
+		if len(m.PlainBytes) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.PlainBytes))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.PlainBytes)))
+		}
 		i--
 		dAtA[i] = 0x1a
 	}
@@ -307,14 +317,24 @@ func (m *RepeatedCustomTypeHolder) MarshalToSizedBuffer(dAtA []byte) (int, error
 	for iNdEx := len(m.PlainTags) - 1; iNdEx >= 0; iNdEx-- {
 		i -= len(m.PlainTags[iNdEx])
 		copy(dAtA[i:], m.PlainTags[iNdEx])
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.PlainTags[iNdEx])))
+		if len(m.PlainTags[iNdEx]) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.PlainTags[iNdEx]))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.PlainTags[iNdEx])))
+		}
 		i--
 		dAtA[i] = 0x22
 	}
 	for iNdEx := len(m.PlainIds) - 1; iNdEx >= 0; iNdEx-- {
 		i -= len(m.PlainIds[iNdEx])
 		copy(dAtA[i:], m.PlainIds[iNdEx])
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.PlainIds[iNdEx])))
+		if len(m.PlainIds[iNdEx]) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.PlainIds[iNdEx]))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.PlainIds[iNdEx])))
+		}
 		i--
 		dAtA[i] = 0x1a
 	}
