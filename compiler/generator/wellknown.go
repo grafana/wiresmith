@@ -19,7 +19,7 @@ import (
 // — already registers `google/protobuf/any.proto` and the
 // `google.protobuf.Any` message, and a second registration of the same file /
 // message panics at init. The shipped package therefore omits the generated
-// `_reflect.pb.go` and hand-writes a `ProtoReflect()` that delegates to the
+// `_util.pb.go` and hand-writes a `ProtoReflect()` that delegates to the
 // already-registered official descriptor (see types/known/anypb/helpers.go).
 
 // anyProtoImportPath is the canonical import path of Google's well-known Any

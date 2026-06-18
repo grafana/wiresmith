@@ -74,7 +74,7 @@ func TestFloat_EmitEqual_BitExact(t *testing.T) {
 		t.Errorf("EmitEqual:\n got: %q\nwant: %q", got, want)
 	}
 	// The Equal body names math.Float32bits, so the math import must be
-	// registered with the emitter — the companion _equal.pb.go file does
+	// registered with the emitter — the companion _compare.pb.go file does
 	// not share imports with the main .pb.go and would fail to compile
 	// without this lazy registration.
 	if !slices.Contains(e.imports, "math") {

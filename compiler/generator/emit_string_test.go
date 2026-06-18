@@ -25,7 +25,7 @@ message M {
 `))
 	fg.emitString(messageByName(t, fg.fd, "M"))
 
-	body := fg.stringBody.String()
+	body := fg.utilBody.String()
 	assertContains(t, body, "func (m *M) String() string {")
 	assertContains(t, body, "if m == nil {")
 	assertContains(t, body, `return "<nil>"`)
@@ -65,7 +65,7 @@ message M { Color c = 1; }
 `))
 	fg.emitString(messageByName(t, fg.fd, "M"))
 
-	body := fg.stringBody.String()
+	body := fg.utilBody.String()
 	assertContains(t, body, `b.WriteString("c: ")`)
 	assertContains(t, body, "b.WriteString(m.C.String())")
 }
@@ -86,7 +86,7 @@ message M {
 `))
 	fg.emitString(messageByName(t, fg.fd, "M"))
 
-	body := fg.stringBody.String()
+	body := fg.utilBody.String()
 	assertContains(t, body, "switch v := m.Value.(type) {")
 	assertContains(t, body, "case *M_S:")
 	assertContains(t, body, "case *M_N:")
@@ -108,7 +108,7 @@ message M { Inner inner = 1; }
 `))
 	fg.emitString(messageByName(t, fg.fd, "M"))
 
-	body := fg.stringBody.String()
+	body := fg.utilBody.String()
 	assertContains(t, body, "if m.Inner.Size() > 0")
 	assertContains(t, body, `b.WriteString("inner: ")`)
 	assertContains(t, body, `b.WriteString("{")`)
@@ -142,7 +142,7 @@ message M {
 	fg := newFixtureGeneratorWith(t, fd, files)
 	fg.emitString(messageByName(t, fg.fd, "M"))
 
-	body := fg.stringBody.String()
+	body := fg.utilBody.String()
 	assertContains(t, body, "if m.Head != nil {")
 	assertContains(t, body, "b.WriteString(m.Head.String())")
 }

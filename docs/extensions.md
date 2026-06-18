@@ -316,7 +316,7 @@ Rejected (combined compile-time error from `validateStdtimeOptions`):
 
 ### Protoreflect compatibility caveat
 
-The generated `*_reflect.pb.go` still describes the field as `google.protobuf.Timestamp` (via the file descriptor's `rawDesc`) and references `google.golang.org/protobuf/types/known/timestamppb` for the goTypes table. The Go struct field is `time.Time`, so any code that introspects this field via `protoreflect.Message.Get`/`Set` or routes through google.golang.org/protobuf's reflection machinery will not see a normal `*Timestamp` slot — the field is opaque from protoreflect's perspective. Same trade-off `gogoproto.stdtime` makes; for Mimir/Tempo's marshal-focused usage this is fine, and for protoreflect-driven code the field should stay un-annotated.
+The generated `*_util.pb.go` still describes the field as `google.protobuf.Timestamp` (via the file descriptor's `rawDesc`) and references `google.golang.org/protobuf/types/known/timestamppb` for the goTypes table. The Go struct field is `time.Time`, so any code that introspects this field via `protoreflect.Message.Get`/`Set` or routes through google.golang.org/protobuf's reflection machinery will not see a normal `*Timestamp` slot — the field is opaque from protoreflect's perspective. Same trade-off `gogoproto.stdtime` makes; for Mimir/Tempo's marshal-focused usage this is fine, and for protoreflect-driven code the field should stay un-annotated.
 
 ### Worked example
 
@@ -374,7 +374,7 @@ Rejected (combined compile-time error from `stddurationOption.Validate`):
 
 ### Protoreflect compatibility caveat
 
-Same caveat as stdtime: the `*_reflect.pb.go` describes the field as `google.protobuf.Duration` (referencing `google.golang.org/protobuf/types/known/durationpb`) while the Go struct field is `time.Duration`. Code routing through `protoreflect.Message.Get`/`Set` will not see a normal `*Duration` slot — the field is opaque from protoreflect's perspective. Matches the `gogoproto.stdduration` trade-off.
+Same caveat as stdtime: the `*_util.pb.go` describes the field as `google.protobuf.Duration` (referencing `google.golang.org/protobuf/types/known/durationpb`) while the Go struct field is `time.Duration`. Code routing through `protoreflect.Message.Get`/`Set` will not see a normal `*Duration` slot — the field is opaque from protoreflect's perspective. Matches the `gogoproto.stdduration` trade-off.
 
 ### Worked example
 

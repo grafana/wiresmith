@@ -7,23 +7,112 @@ import (
 	"bytes"
 )
 
-// Per-message Compare() methods for basic/customtype/v1/customtype.proto.
+// Per-message value-comparison methods (Equal + Compare) for basic/customtype/v1/customtype.proto.
 //
-// Compare returns -1/0/+1 like bytes.Compare with the gogoproto.compare
-// nil/wrong-type preamble. Always emitted on every message; callers that
-// don't use it can rely on Go's dead-code elimination to drop the body.
+// Equal returns bool; Compare returns -1/0/+1 like bytes.Compare with the
+// gogoproto.compare nil/wrong-type preamble. Both are emitted on every
+// message; callers that don't use one can rely on Go's dead-code
+// elimination to drop the body.
 //
-// Why a separate file? Compare is never called from Marshal/Unmarshal/Size,
-// but emitting it next to those hot functions in the main .pb.go pushed
-// them onto different cache sets and produced a measured ~9% geomean
+// Why a separate file? Equal/Compare are never called from Marshal/Unmarshal/
+// Size, but emitting them next to those hot functions in the main .pb.go
+// pushed them onto different cache sets and produced a measured ~9% geomean
 // regression on OTel benchmarks (UnmarshalMap +14%, MarshalSingleSpan +13%)
-// purely from icache / iTLB / BTB pressure. Splitting Compare into its own
+// purely from icache / iTLB / BTB pressure. Splitting them into their own
 // compilation unit gives the linker freedom to place the cold half away
-// from the hot half — same trick the _reflect.pb.go split uses.
+// from the hot half — same trick the _util.pb.go split uses.
 //
-// See compiler/generator/emit_compare.go for the full rationale and the
-// benchmark methodology. DO NOT inline this file's contents back into
-// the main .pb.go without re-measuring.
+// See compiler/generator/emit_compare.go / emit_equal.go for the full
+// rationale and the benchmark methodology. DO NOT inline this file's
+// contents back into the main .pb.go without re-measuring.
+
+func (this *CustomTypeHolder) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*CustomTypeHolder)
+	if !ok {
+		that2, ok := that.(CustomTypeHolder)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Labels.EqualWiresmith(that1.Labels) {
+		return false
+	}
+	if !this.TenantId.EqualWiresmith(that1.TenantId) {
+		return false
+	}
+	if !bytes.Equal(this.PlainBytes, that1.PlainBytes) {
+		return false
+	}
+	if this.PlainString != that1.PlainString {
+		return false
+	}
+	return true
+}
+
+func (this *RepeatedCustomTypeHolder) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*RepeatedCustomTypeHolder)
+	if !ok {
+		that2, ok := that.(RepeatedCustomTypeHolder)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if len(this.Ids) != len(that1.Ids) {
+		return false
+	}
+	for i := range this.Ids {
+		if !this.Ids[i].EqualWiresmith(that1.Ids[i]) {
+			return false
+		}
+	}
+	if len(this.Tags) != len(that1.Tags) {
+		return false
+	}
+	for i := range this.Tags {
+		if !this.Tags[i].EqualWiresmith(that1.Tags[i]) {
+			return false
+		}
+	}
+	if len(this.PlainIds) != len(that1.PlainIds) {
+		return false
+	}
+	for i := range this.PlainIds {
+		if !bytes.Equal(this.PlainIds[i], that1.PlainIds[i]) {
+			return false
+		}
+	}
+	if len(this.PlainTags) != len(that1.PlainTags) {
+		return false
+	}
+	for i := range this.PlainTags {
+		if this.PlainTags[i] != that1.PlainTags[i] {
+			return false
+		}
+	}
+	return true
+}
 
 func (this *CustomTypeHolder) Compare(that interface{}) int {
 	if that == nil {

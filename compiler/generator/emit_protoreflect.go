@@ -7,7 +7,7 @@ import (
 )
 
 // emitAllProtoReflectMethods writes a `ProtoReflect() protoreflect.Message`
-// method for every (non-map-entry) message into the companion _reflect.pb.go
+// method for every (non-map-entry) message into the companion _util.pb.go
 // file.
 //
 // These methods are the bridge between wiresmith's value-type-fields shape
@@ -40,11 +40,11 @@ func (fg *FileGenerator) emitProtoReflect(md protoreflect.MessageDescriptor) {
 	idx := fg.nextMsgIndex
 	fg.nextMsgIndex++
 
-	fmt.Fprintf(fg.reflectBody, "func (x *%s) ProtoReflect() protoreflect.Message {\n", name)
-	fmt.Fprintf(fg.reflectBody, "\t%s_init()\n", fg.fileVarName)
-	fmt.Fprintf(fg.reflectBody, "\treturn protohelpers.NewMessageReflect(&%s_msgTypes[%d], x)\n",
+	fmt.Fprintf(fg.utilBody, "func (x *%s) ProtoReflect() protoreflect.Message {\n", name)
+	fmt.Fprintf(fg.utilBody, "\t%s_init()\n", fg.fileVarName)
+	fmt.Fprintf(fg.utilBody, "\treturn protohelpers.NewMessageReflect(&%s_msgTypes[%d], x)\n",
 		fg.fileVarName, idx)
-	fmt.Fprintf(fg.reflectBody, "}\n\n")
-	fg.reflectImports.addImport("google.golang.org/protobuf/reflect/protoreflect", "")
-	fg.reflectImports.addImport(protohelpersImport, "")
+	fmt.Fprintf(fg.utilBody, "}\n\n")
+	fg.utilImports.addImport("google.golang.org/protobuf/reflect/protoreflect", "")
+	fg.utilImports.addImport(protohelpersImport, "")
 }

@@ -8,23 +8,478 @@ import (
 	"math"
 )
 
-// Per-message Compare() methods for basic/numeric/v1/numeric.proto.
+// Per-message value-comparison methods (Equal + Compare) for basic/numeric/v1/numeric.proto.
 //
-// Compare returns -1/0/+1 like bytes.Compare with the gogoproto.compare
-// nil/wrong-type preamble. Always emitted on every message; callers that
-// don't use it can rely on Go's dead-code elimination to drop the body.
+// Equal returns bool; Compare returns -1/0/+1 like bytes.Compare with the
+// gogoproto.compare nil/wrong-type preamble. Both are emitted on every
+// message; callers that don't use one can rely on Go's dead-code
+// elimination to drop the body.
 //
-// Why a separate file? Compare is never called from Marshal/Unmarshal/Size,
-// but emitting it next to those hot functions in the main .pb.go pushed
-// them onto different cache sets and produced a measured ~9% geomean
+// Why a separate file? Equal/Compare are never called from Marshal/Unmarshal/
+// Size, but emitting them next to those hot functions in the main .pb.go
+// pushed them onto different cache sets and produced a measured ~9% geomean
 // regression on OTel benchmarks (UnmarshalMap +14%, MarshalSingleSpan +13%)
-// purely from icache / iTLB / BTB pressure. Splitting Compare into its own
+// purely from icache / iTLB / BTB pressure. Splitting them into their own
 // compilation unit gives the linker freedom to place the cold half away
-// from the hot half — same trick the _reflect.pb.go split uses.
+// from the hot half — same trick the _util.pb.go split uses.
 //
-// See compiler/generator/emit_compare.go for the full rationale and the
-// benchmark methodology. DO NOT inline this file's contents back into
-// the main .pb.go without re-measuring.
+// See compiler/generator/emit_compare.go / emit_equal.go for the full
+// rationale and the benchmark methodology. DO NOT inline this file's
+// contents back into the main .pb.go without re-measuring.
+
+func (this *UnpackedScalars) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*UnpackedScalars)
+	if !ok {
+		that2, ok := that.(UnpackedScalars)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if len(this.FieldDouble) != len(that1.FieldDouble) {
+		return false
+	}
+	for i := range this.FieldDouble {
+		if math.Float64bits(this.FieldDouble[i]) != math.Float64bits(that1.FieldDouble[i]) {
+			return false
+		}
+	}
+	if len(this.FieldFloat) != len(that1.FieldFloat) {
+		return false
+	}
+	for i := range this.FieldFloat {
+		if math.Float32bits(this.FieldFloat[i]) != math.Float32bits(that1.FieldFloat[i]) {
+			return false
+		}
+	}
+	if len(this.FieldInt32) != len(that1.FieldInt32) {
+		return false
+	}
+	for i := range this.FieldInt32 {
+		if this.FieldInt32[i] != that1.FieldInt32[i] {
+			return false
+		}
+	}
+	if len(this.FieldInt64) != len(that1.FieldInt64) {
+		return false
+	}
+	for i := range this.FieldInt64 {
+		if this.FieldInt64[i] != that1.FieldInt64[i] {
+			return false
+		}
+	}
+	if len(this.FieldUint32) != len(that1.FieldUint32) {
+		return false
+	}
+	for i := range this.FieldUint32 {
+		if this.FieldUint32[i] != that1.FieldUint32[i] {
+			return false
+		}
+	}
+	if len(this.FieldUint64) != len(that1.FieldUint64) {
+		return false
+	}
+	for i := range this.FieldUint64 {
+		if this.FieldUint64[i] != that1.FieldUint64[i] {
+			return false
+		}
+	}
+	if len(this.FieldSint32) != len(that1.FieldSint32) {
+		return false
+	}
+	for i := range this.FieldSint32 {
+		if this.FieldSint32[i] != that1.FieldSint32[i] {
+			return false
+		}
+	}
+	if len(this.FieldSint64) != len(that1.FieldSint64) {
+		return false
+	}
+	for i := range this.FieldSint64 {
+		if this.FieldSint64[i] != that1.FieldSint64[i] {
+			return false
+		}
+	}
+	if len(this.FieldFixed32) != len(that1.FieldFixed32) {
+		return false
+	}
+	for i := range this.FieldFixed32 {
+		if this.FieldFixed32[i] != that1.FieldFixed32[i] {
+			return false
+		}
+	}
+	if len(this.FieldFixed64) != len(that1.FieldFixed64) {
+		return false
+	}
+	for i := range this.FieldFixed64 {
+		if this.FieldFixed64[i] != that1.FieldFixed64[i] {
+			return false
+		}
+	}
+	if len(this.FieldSfixed32) != len(that1.FieldSfixed32) {
+		return false
+	}
+	for i := range this.FieldSfixed32 {
+		if this.FieldSfixed32[i] != that1.FieldSfixed32[i] {
+			return false
+		}
+	}
+	if len(this.FieldSfixed64) != len(that1.FieldSfixed64) {
+		return false
+	}
+	for i := range this.FieldSfixed64 {
+		if this.FieldSfixed64[i] != that1.FieldSfixed64[i] {
+			return false
+		}
+	}
+	if len(this.FieldBool) != len(that1.FieldBool) {
+		return false
+	}
+	for i := range this.FieldBool {
+		if this.FieldBool[i] != that1.FieldBool[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func (this *MixedModifiers) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*MixedModifiers)
+	if !ok {
+		that2, ok := that.(MixedModifiers)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.RegularInt != that1.RegularInt {
+		return false
+	}
+	if this.OptionalInt != that1.OptionalInt {
+		if this.OptionalInt == nil || that1.OptionalInt == nil {
+			return false
+		}
+		if *this.OptionalInt != *that1.OptionalInt {
+			return false
+		}
+	}
+	if len(this.RepeatedInt) != len(that1.RepeatedInt) {
+		return false
+	}
+	for i := range this.RepeatedInt {
+		if this.RepeatedInt[i] != that1.RepeatedInt[i] {
+			return false
+		}
+	}
+	if math.Float64bits(this.RegularDouble) != math.Float64bits(that1.RegularDouble) {
+		return false
+	}
+	if this.OptionalDouble != that1.OptionalDouble {
+		if this.OptionalDouble == nil || that1.OptionalDouble == nil {
+			return false
+		}
+		if *this.OptionalDouble != *that1.OptionalDouble {
+			return false
+		}
+	}
+	if len(this.RepeatedDouble) != len(that1.RepeatedDouble) {
+		return false
+	}
+	for i := range this.RepeatedDouble {
+		if math.Float64bits(this.RepeatedDouble[i]) != math.Float64bits(that1.RepeatedDouble[i]) {
+			return false
+		}
+	}
+	if this.RegularString != that1.RegularString {
+		return false
+	}
+	if this.OptionalString != that1.OptionalString {
+		if this.OptionalString == nil || that1.OptionalString == nil {
+			return false
+		}
+		if *this.OptionalString != *that1.OptionalString {
+			return false
+		}
+	}
+	if len(this.RepeatedString) != len(that1.RepeatedString) {
+		return false
+	}
+	for i := range this.RepeatedString {
+		if this.RepeatedString[i] != that1.RepeatedString[i] {
+			return false
+		}
+	}
+	if !bytes.Equal(this.RegularBytes, that1.RegularBytes) {
+		return false
+	}
+	if (this.OptionalBytes == nil) != (that1.OptionalBytes == nil) {
+		return false
+	}
+	if !bytes.Equal(this.OptionalBytes, that1.OptionalBytes) {
+		return false
+	}
+	if len(this.RepeatedBytes) != len(that1.RepeatedBytes) {
+		return false
+	}
+	for i := range this.RepeatedBytes {
+		if !bytes.Equal(this.RepeatedBytes[i], that1.RepeatedBytes[i]) {
+			return false
+		}
+	}
+	return true
+}
+
+func (this *WideFields) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*WideFields)
+	if !ok {
+		that2, ok := that.(WideFields)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.F1 != that1.F1 {
+		return false
+	}
+	if this.F2 != that1.F2 {
+		return false
+	}
+	if this.F3 != that1.F3 {
+		return false
+	}
+	if this.F4 != that1.F4 {
+		return false
+	}
+	if this.F5 != that1.F5 {
+		return false
+	}
+	if this.F6 != that1.F6 {
+		return false
+	}
+	if this.F7 != that1.F7 {
+		return false
+	}
+	if this.F8 != that1.F8 {
+		return false
+	}
+	if this.F9 != that1.F9 {
+		return false
+	}
+	if this.F10 != that1.F10 {
+		return false
+	}
+	if this.F11 != that1.F11 {
+		return false
+	}
+	if this.F12 != that1.F12 {
+		return false
+	}
+	if this.F13 != that1.F13 {
+		return false
+	}
+	if this.F14 != that1.F14 {
+		return false
+	}
+	if this.F15 != that1.F15 {
+		return false
+	}
+	if this.F16 != that1.F16 {
+		return false
+	}
+	if this.F17 != that1.F17 {
+		return false
+	}
+	if this.F18 != that1.F18 {
+		return false
+	}
+	if this.F19 != that1.F19 {
+		return false
+	}
+	if this.F20 != that1.F20 {
+		return false
+	}
+	if this.F21 != that1.F21 {
+		return false
+	}
+	if this.F22 != that1.F22 {
+		return false
+	}
+	if this.F23 != that1.F23 {
+		return false
+	}
+	if this.F24 != that1.F24 {
+		return false
+	}
+	if this.F25 != that1.F25 {
+		return false
+	}
+	if this.F26 != that1.F26 {
+		return false
+	}
+	if this.F27 != that1.F27 {
+		return false
+	}
+	if this.F28 != that1.F28 {
+		return false
+	}
+	if this.F29 != that1.F29 {
+		return false
+	}
+	if this.F30 != that1.F30 {
+		return false
+	}
+	if this.F31 != that1.F31 {
+		return false
+	}
+	if this.F32 != that1.F32 {
+		return false
+	}
+	if this.F33 != that1.F33 {
+		return false
+	}
+	if this.F34 != that1.F34 {
+		return false
+	}
+	if this.F35 != that1.F35 {
+		return false
+	}
+	if this.F36 != that1.F36 {
+		return false
+	}
+	if this.F37 != that1.F37 {
+		return false
+	}
+	if this.F38 != that1.F38 {
+		return false
+	}
+	if this.F39 != that1.F39 {
+		return false
+	}
+	if this.F40 != that1.F40 {
+		return false
+	}
+	if this.F41 != that1.F41 {
+		return false
+	}
+	if this.F42 != that1.F42 {
+		return false
+	}
+	if this.F43 != that1.F43 {
+		return false
+	}
+	if this.F44 != that1.F44 {
+		return false
+	}
+	if this.F45 != that1.F45 {
+		return false
+	}
+	if this.F46 != that1.F46 {
+		return false
+	}
+	if this.F47 != that1.F47 {
+		return false
+	}
+	if this.F48 != that1.F48 {
+		return false
+	}
+	if this.F49 != that1.F49 {
+		return false
+	}
+	if this.F50 != that1.F50 {
+		return false
+	}
+	if math.Float64bits(this.F51) != math.Float64bits(that1.F51) {
+		return false
+	}
+	if math.Float64bits(this.F52) != math.Float64bits(that1.F52) {
+		return false
+	}
+	if math.Float64bits(this.F53) != math.Float64bits(that1.F53) {
+		return false
+	}
+	if math.Float64bits(this.F54) != math.Float64bits(that1.F54) {
+		return false
+	}
+	if math.Float64bits(this.F55) != math.Float64bits(that1.F55) {
+		return false
+	}
+	if math.Float64bits(this.F56) != math.Float64bits(that1.F56) {
+		return false
+	}
+	if math.Float64bits(this.F57) != math.Float64bits(that1.F57) {
+		return false
+	}
+	if math.Float64bits(this.F58) != math.Float64bits(that1.F58) {
+		return false
+	}
+	if math.Float64bits(this.F59) != math.Float64bits(that1.F59) {
+		return false
+	}
+	if math.Float64bits(this.F60) != math.Float64bits(that1.F60) {
+		return false
+	}
+	if this.F61 != that1.F61 {
+		return false
+	}
+	if this.F62 != that1.F62 {
+		return false
+	}
+	if this.F63 != that1.F63 {
+		return false
+	}
+	if this.F64 != that1.F64 {
+		return false
+	}
+	if this.F65 != that1.F65 {
+		return false
+	}
+	if this.F66 != that1.F66 {
+		return false
+	}
+	if this.F67 != that1.F67 {
+		return false
+	}
+	if this.F68 != that1.F68 {
+		return false
+	}
+	if this.F69 != that1.F69 {
+		return false
+	}
+	if this.F70 != that1.F70 {
+		return false
+	}
+	return true
+}
 
 func (this *UnpackedScalars) Compare(that interface{}) int {
 	if that == nil {

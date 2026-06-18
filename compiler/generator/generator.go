@@ -122,7 +122,7 @@ type GeneratedFile struct {
 }
 
 // FileGenerator collects emitted code for one proto source file. It owns
-// TWO output buffers, not one — see the long comment on `reflectBody` for the
+// TWO output buffers, not one — see the long comment on `utilBody` for the
 // performance reason. Emitters route their output to one or the other based
 // on whether the code they emit is part of the marshal/unmarshal hot path or
 // part of the (cold) protoreflect-registration scaffolding.
@@ -137,37 +137,35 @@ type FileGenerator struct {
 	imports *ImportTracker
 	body    *bytes.Buffer
 
-	// reflectBody / reflectImports hold the companion `_reflect.pb.go` file:
-	// per-message ProtoReflect() methods, per-enum Descriptor()/Type()/Number()
-	// methods, the embedded `file_*_rawDesc` byte blob, MessageInfo/EnumInfo
-	// arrays, and the init() that wires everything into
-	// google.golang.org/protobuf's global registries.
+	// utilBody / utilImports hold the consolidated companion `_util.pb.go`
+	// file. It carries TWO cold concerns merged into one compilation unit:
 	//
-	// Why split? google.golang.org/protobuf/types/descriptorpb,
-	// google.golang.org/protobuf/reflect/protoreflect, and the descriptor
-	// blobs together add ~377KB to __TEXT and ~144KB of new symbols (with
-	// descriptorpb alone contributing ~64KB of code never touched by a hot
-	// Marshal/Unmarshal call). Co-mingling that code with the hot paths in a
-	// single .pb.go file pushed the hot functions onto different cache sets
-	// / pages in the linked binary and produced a measured +7-14% slowdown on
-	// otlp Marshal/Unmarshal benchmarks (UnmarshalProfiles regressed by
-	// +12.6%; benchmark numbers in compiler/generator/emit_registration.go).
+	//   - reflection / registration glue: per-message ProtoReflect() methods,
+	//     per-enum Descriptor()/Type()/Number() methods, the embedded
+	//     `file_*_rawDesc` byte blob, MessageInfo/EnumInfo arrays, and the
+	//     init() that wires everything into google.golang.org/protobuf's
+	//     global registries (emitted only when !skipReflectEmission(fd));
+	//   - per-message String() debug dumps (emit_string.go).
 	//
-	// By emitting the reflection glue into a SEPARATE compilation unit, we
-	// give the linker freedom to place the rarely-called scaffolding away from
-	// the hot Marshal/Unmarshal code. Same code, same binary size, same
-	// exported API — but the hot inner loops keep their icache/iTLB locality.
-	reflectImports *ImportTracker
-	reflectBody    *bytes.Buffer
-
-	// equalBody / equalImports hold the companion `_equal.pb.go` file:
-	// per-message Equal() methods. Equal is never called from
-	// Marshal/Unmarshal/Size, so moving it out of the main .pb.go follows the
-	// same icache/iTLB-locality rationale as the reflect split — see the
-	// long comment on reflectBody above and the benchmark numbers in the
-	// header comment of emit_equal.go.
-	equalImports *ImportTracker
-	equalBody    *bytes.Buffer
+	// Why split from the main .pb.go? google.golang.org/protobuf/types/
+	// descriptorpb, .../reflect/protoreflect, and the descriptor blobs together
+	// add ~377KB to __TEXT and ~144KB of new symbols (descriptorpb alone ~64KB
+	// of code never touched by a hot Marshal/Unmarshal call). Co-mingling that
+	// (plus the sizeable per-field String() bodies) with the hot paths in a
+	// single .pb.go file pushed the hot functions onto different cache sets /
+	// pages in the linked binary and produced a measured +7-14% slowdown on
+	// otlp Marshal/Unmarshal benchmarks (UnmarshalProfiles regressed by +12.6%;
+	// benchmark numbers in compiler/generator/emit_registration.go).
+	//
+	// Why merge reflect + string into ONE companion (wiresmith-2r4i)? Both are
+	// cold and were already separate compilation units from the hot main file,
+	// so merging cold→cold preserves the icache rationale (the hot half is
+	// untouched) while halving the companion-file count. _grpc.pb.go stays its
+	// own file — it is produced by the vendored protoc-gen-go-grpc bridge as
+	// pre-formatted bytes with its own import block, so folding it in would
+	// need an AST-level import merge that isn't worth the risk.
+	utilImports *ImportTracker
+	utilBody    *bytes.Buffer
 
 	// fileVarName is a sanitized proto file path used as prefix for
 	// file-level variables (descriptor, MessageInfo/EnumInfo arrays).
@@ -199,35 +197,20 @@ type FileGenerator struct {
 	enumNoPrefixExt    protoreflect.FieldDescriptor
 	enumNoPrefixAllExt protoreflect.FieldDescriptor
 
-	// compareBody / compareImports hold a second companion `_compare.pb.go`
-	// file: just the per-message Compare(other interface{}) int methods.
+	// compareBody / compareImports hold the value-comparison companion
+	// `_compare.pb.go` file: the per-message Equal(other interface{}) bool and
+	// Compare(other interface{}) int methods (wiresmith-2r4i co-located them).
 	//
-	// Why split? Compare is never called on the marshal/unmarshal/size hot
-	// path, but emitting it next to the hot functions in the main `.pb.go`
-	// pushes them onto different cache sets and produced a measured +9%
-	// geomean regression on OTel benchmarks (UnmarshalMap +14%,
-	// MarshalSingleSpan +13%) — same icache-pressure failure mode as the
-	// reflectBody split documented above. Keeping Compare in its own
-	// compilation unit gives the linker freedom to place the cold half
-	// away from the hot half and restores baseline throughput. We pay for
-	// it once, and callers don't have to opt in.
+	// Why split? Neither is called on the marshal/unmarshal/size hot path, but
+	// emitting them next to the hot functions in the main `.pb.go` pushes those
+	// onto different cache sets and produced a measured +9% geomean regression
+	// on OTel benchmarks (UnmarshalMap +14%, MarshalSingleSpan +13%) — same
+	// icache-pressure failure mode as the utilBody split documented above.
+	// Keeping them in their own compilation unit gives the linker freedom to
+	// place the cold half away from the hot half and restores baseline
+	// throughput. We pay for it once, and callers don't have to opt in.
 	compareImports *ImportTracker
 	compareBody    *bytes.Buffer
-
-	// stringBody / stringImports hold the companion `<name>_string.pb.go`
-	// file: per-message String() methods. String() is a debug method, never
-	// called from Marshal/Unmarshal/Size, so it follows the same icache/iTLB
-	// split as _compare/_equal — it can be large (one append per field) and
-	// would otherwise bloat the hot main .pb.go. Unlike the old
-	// fmt.Sprintf("%v", *m) form, the generated body walks fields explicitly,
-	// dereferencing pointers (so optional scalars / oneofs / pointer-option /
-	// recursive fields render their VALUE, never a heap address) and sorting
-	// map keys, so the output is content- and byte-deterministic. It needs
-	// only fmt/sort/strings, not protoimpl/prototext, so no reflection bridge
-	// is involved (the official protoreflect path panics on wiresmith's
-	// value-typed message fields — see protohelpers/message.go).
-	stringImports *ImportTracker
-	stringBody    *bytes.Buffer
 }
 
 // Emitter interface implementation for FileGenerator.
@@ -265,17 +248,20 @@ func (ce *compareEmitter) AddImport(path, alias string) {
 }
 
 // equalEmitter wraps a FileGenerator so that types.EmitEqual callbacks route
-// their writes and import registrations into the companion `_equal.pb.go`
-// file instead of the main .pb.go. Equal paths never emit wire tags, so
-// ReverseTag is unreachable and panics if anything ever reaches it.
+// their writes and import registrations into the companion `_compare.pb.go`
+// file instead of the main .pb.go. Equal and Compare are co-located there
+// (wiresmith-2r4i: the value-comparison companion) — both are cold and were
+// already separate from the hot main file, so merging them keeps the icache
+// rationale while halving the companion count. Equal paths never emit wire
+// tags, so ReverseTag is unreachable and panics if anything ever reaches it.
 type equalEmitter struct{ fg *FileGenerator }
 
 func (e equalEmitter) Writef(format string, args ...any) {
-	fmt.Fprintf(e.fg.equalBody, format, args...)
+	fmt.Fprintf(e.fg.compareBody, format, args...)
 }
 
 func (e equalEmitter) AddImport(path, alias string) {
-	e.fg.equalImports.addImport(path, alias)
+	e.fg.compareImports.addImport(path, alias)
 }
 
 func (e equalEmitter) ReverseTag(indent string, num protowire.Number, wt protowire.Type) {
@@ -533,18 +519,17 @@ func (g *Generator) generateFromFiles(results []protoreflect.FileDescriptor, emi
 	// internal schemas and empty protos that emit no output, so they can't
 	// clobber a neighbour).
 	//
-	// Each proto emits up to six outputs (the main .pb.go and the companion
-	// _reflect.pb.go, _compare.pb.go, _equal.pb.go, _string.pb.go, and — when
-	// the proto declares services — _grpc.pb.go), so an input like
-	// foo_reflect.proto / foo_compare.proto / foo_equal.proto / foo_string.proto /
+	// Each proto emits up to four outputs (the main .pb.go and the companion
+	// _util.pb.go, _compare.pb.go, and — when the proto declares services —
+	// _grpc.pb.go), so an input like foo_util.proto / foo_compare.proto /
 	// foo_grpc.proto would generate a file that collides with foo.proto's
-	// companion. Check all six paths against the same map.
-	outputs := make(map[string]string, 6*len(results))
+	// companion. Check all four paths against the same map.
+	outputs := make(map[string]string, 4*len(results))
 	for _, fd := range results {
 		if !g.shouldEmit(fd) {
 			continue
 		}
-		for _, outPath := range []string{g.outputPathFor(fd), g.outputReflectPathFor(fd), g.outputComparePathFor(fd), g.outputEqualPathFor(fd), g.outputStringPathFor(fd), g.outputGrpcPathFor(fd)} {
+		for _, outPath := range []string{g.outputPathFor(fd), g.outputUtilPathFor(fd), g.outputComparePathFor(fd), g.outputGrpcPathFor(fd)} {
 			if prev, exists := outputs[outPath]; exists {
 				return nil, fmt.Errorf("output collision at %s: %q and %q both write to this path (proto package %q)",
 					outPath, prev, fd.Path(), fd.Package())
@@ -597,11 +582,11 @@ func (g *Generator) shouldEmit(fd protoreflect.FileDescriptor) bool {
 // shouldGenerateFile reports whether fd contributes any Go output. Internal
 // schema files (wiresmith.options) are always skipped. Files with no
 // messages, enums, or services emit nothing — the main .pb.go would be
-// header-only, the reflect/compare/equal companions have nothing to write,
+// header-only, the util/compare companions have nothing to write,
 // and the gRPC stub generator has nothing to do.
 //
 // Service-only files (no messages, no enums, but `service` declarations)
-// produce both the FileDescriptor-registration companion (`_reflect.pb.go`)
+// produce both the FileDescriptor-registration companion (`_util.pb.go`)
 // and the gRPC stub companion (`_grpc.pb.go`); without them the gRPC bridge
 // would never reach a file whose only Go output is its stub set.
 func shouldGenerateFile(fd protoreflect.FileDescriptor) bool {
@@ -956,14 +941,10 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 		module:             g.Module,
 		imports:            newImportTracker(g.Module, selfDest, g.destinations),
 		body:               &bytes.Buffer{},
-		reflectImports:     newImportTracker(g.Module, selfDest, g.destinations),
-		reflectBody:        &bytes.Buffer{},
+		utilImports:        newImportTracker(g.Module, selfDest, g.destinations),
+		utilBody:           &bytes.Buffer{},
 		compareImports:     newImportTracker(g.Module, selfDest, g.destinations),
 		compareBody:        &bytes.Buffer{},
-		equalImports:       newImportTracker(g.Module, selfDest, g.destinations),
-		equalBody:          &bytes.Buffer{},
-		stringImports:      newImportTracker(g.Module, selfDest, g.destinations),
-		stringBody:         &bytes.Buffer{},
 		fileVarName:        sanitizeFileVarName(fd.Path()),
 		options:            g.options,
 		jsontagExt:         g.jsontagExt,
@@ -975,11 +956,12 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 
 	// Hot-path emitters target the main .pb.go: structs, oneof variants,
 	// Reset/Has/Get/Size/Marshal/Unmarshal all write to fg.body / fg.imports.
-	// emitAllEqualMethods and emitAllCompareMethods are intentionally driven
-	// from this same pass, but route their output into fg.equalBody /
-	// fg.compareBody (via equalEmitter / compareEmitter) so Equal and Compare
-	// land in their own companion files for the same icache/iTLB rationale as
-	// the reflect split — see the FileGenerator field comments for details.
+	// emitAllEqualMethods, emitAllCompareMethods and emitAllStringMethods are
+	// intentionally driven from this same pass, but route their output into the
+	// cold companion buffers (Equal + Compare → fg.compareBody via equalEmitter /
+	// compareEmitter; String → fg.utilBody) so they land in their own companion
+	// files for the same icache/iTLB rationale as the reflect split — see the
+	// FileGenerator field comments for details.
 	fg.emitAllEnums(fd)
 	fg.emitAllOneofs(fd)
 	fg.emitAllStructs(fd)
@@ -994,7 +976,8 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 	fg.emitAllStringMethods(fd)
 
 	// Companion file: reflection/registration glue. These emitters write to
-	// fg.reflectBody / fg.reflectImports. The two passes below MUST iterate
+	// fg.utilBody / fg.utilImports (the same buffer the String() methods above
+	// already wrote into — _util.pb.go carries both). The two passes below MUST iterate
 	// in TypeBuilder's flattened ordering (via flattenedEnums and
 	// flattenedMessages), because they assign the same indices that
 	// emitRegistration uses for the per-file _enumTypes / _msgTypes arrays.
@@ -1014,7 +997,7 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 	// service-only case (no enums, oneofs, structs, accessors, or marshal
 	// methods to emit), and emitting a header-only file would just produce
 	// unused imports / no useful Go output. Mirrors the per-companion
-	// conditional writes for _reflect / _compare / _equal below.
+	// conditional writes for _util / _compare below.
 	if fg.body.Len() > 0 {
 		var mainOut bytes.Buffer
 		fg.emitHeader(&mainOut, fg.imports)
@@ -1022,49 +1005,31 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 		g.writeFormatted(g.outputPathFor(fd), mainOut.Bytes(), fd.Path())
 	}
 
-	// Record the companion _reflect.pb.go file. Skip if the proto declared no
-	// messages and no enums — there's nothing to register and emitting a file
-	// with just a package clause would be misleading.
-	if fg.reflectBody.Len() > 0 {
-		var reflOut bytes.Buffer
-		fg.emitHeader(&reflOut, fg.reflectImports)
-		fg.emitReflectFileBanner(&reflOut)
-		reflOut.Write(fg.reflectBody.Bytes())
-		g.writeFormatted(g.outputReflectPathFor(fd), reflOut.Bytes(), fd.Path())
+	// Record the consolidated companion _util.pb.go file: the reflection /
+	// registration glue (skipped for WKT replacements) plus the per-message
+	// String() methods. Skip when the buffer stayed empty — an enum-less,
+	// message-less file (or a WKT replacement with no String contributions)
+	// has nothing to write and a package-clause-only file would be misleading.
+	if fg.utilBody.Len() > 0 {
+		var utilOut bytes.Buffer
+		fg.emitHeader(&utilOut, fg.utilImports)
+		fg.emitUtilFileBanner(&utilOut)
+		utilOut.Write(fg.utilBody.Bytes())
+		g.writeFormatted(g.outputUtilPathFor(fd), utilOut.Bytes(), fd.Path())
 	}
 
-	// Record the companion _compare.pb.go file. Same split rationale as
-	// _reflect.pb.go: Compare is a cold method but emitting it next to the
-	// hot Marshal/Unmarshal in the main file shifts hot code onto different
-	// cache sets (measured: +9% geomean on OTel hot paths). Skip when the
-	// proto declared no messages — Compare is per-message so an enum-only
-	// or empty file has nothing to emit.
+	// Record the companion _compare.pb.go file: the value-comparison methods
+	// Equal() and Compare(). Same split rationale as _util.pb.go: both are cold
+	// but emitting them next to the hot Marshal/Unmarshal in the main file
+	// shifts hot code onto different cache sets (measured: +9% geomean on OTel
+	// hot paths for Compare alone). Skip when the proto declared no messages —
+	// both methods are per-message, so an enum-only or empty file emits nothing.
 	if fg.compareBody.Len() > 0 {
 		var cmpOut bytes.Buffer
 		fg.emitHeader(&cmpOut, fg.compareImports)
 		fg.emitCompareFileBanner(&cmpOut)
 		cmpOut.Write(fg.compareBody.Bytes())
 		g.writeFormatted(g.outputComparePathFor(fd), cmpOut.Bytes(), fd.Path())
-	}
-
-	// Record the companion _equal.pb.go file. Skip if no messages contributed
-	// an Equal method (file with only enums, or filtered to none).
-	if fg.equalBody.Len() > 0 {
-		var eqOut bytes.Buffer
-		fg.emitHeader(&eqOut, fg.equalImports)
-		fg.emitEqualFileBanner(&eqOut)
-		eqOut.Write(fg.equalBody.Bytes())
-		g.writeFormatted(g.outputEqualPathFor(fd), eqOut.Bytes(), fd.Path())
-	}
-
-	// Record the companion _string.pb.go file. Skip if no messages contributed
-	// a String method (enum-only or empty file).
-	if fg.stringBody.Len() > 0 {
-		var strOut bytes.Buffer
-		fg.emitHeader(&strOut, fg.stringImports)
-		fg.emitStringFileBanner(&strOut)
-		strOut.Write(fg.stringBody.Bytes())
-		g.writeFormatted(g.outputStringPathFor(fd), strOut.Bytes(), fd.Path())
 	}
 
 	// Record the companion _grpc.pb.go file. Skip when fd declares no
@@ -1088,13 +1053,13 @@ func (g *Generator) writeFormatted(outPath string, src []byte, sourceProto strin
 	g.outputs = append(g.outputs, GeneratedFile{Path: outPath, Content: formatted})
 }
 
-// outputReflectPathFor returns the path for the companion `_reflect.pb.go`
-// file. It sits next to the main `.pb.go` so callers find both files in the
-// same package directory; the `_reflect` suffix is conventional and matches
-// the protoc-gen-go-impl convention where extra generated material lives in
-// `<name>_<flavor>.pb.go`.
-func (g *Generator) outputReflectPathFor(fd protoreflect.FileDescriptor) string {
-	base := strings.TrimSuffix(filepath.Base(fd.Path()), ".proto") + "_reflect.pb.go"
+// outputUtilPathFor returns the path for the consolidated companion
+// `_util.pb.go` file (reflection/registration glue + String() methods). It
+// sits next to the main `.pb.go` so callers find both files in the same
+// package directory; the `_util` suffix follows the protoc-gen-go-impl
+// convention where extra generated material lives in `<name>_<flavor>.pb.go`.
+func (g *Generator) outputUtilPathFor(fd protoreflect.FileDescriptor) string {
+	base := strings.TrimSuffix(filepath.Base(fd.Path()), ".proto") + "_util.pb.go"
 	return filepath.Join(g.OutDir, sourceRelDir(fd.Path()), base)
 }
 
@@ -1103,22 +1068,6 @@ func (g *Generator) outputReflectPathFor(fd protoreflect.FileDescriptor) string 
 // Same source-relative directory as the main and reflect files.
 func (g *Generator) outputComparePathFor(fd protoreflect.FileDescriptor) string {
 	base := strings.TrimSuffix(filepath.Base(fd.Path()), ".proto") + "_compare.pb.go"
-	return filepath.Join(g.OutDir, sourceRelDir(fd.Path()), base)
-}
-
-// outputEqualPathFor returns the path for the companion `_equal.pb.go` file
-// that holds per-message Equal() methods, split out for the same icache /
-// iTLB locality reasons as `_reflect.pb.go`.
-func (g *Generator) outputEqualPathFor(fd protoreflect.FileDescriptor) string {
-	base := strings.TrimSuffix(filepath.Base(fd.Path()), ".proto") + "_equal.pb.go"
-	return filepath.Join(g.OutDir, sourceRelDir(fd.Path()), base)
-}
-
-// outputStringPathFor returns the path for the companion `<name>_string.pb.go`
-// file that holds per-message String() methods, split out for the same icache /
-// iTLB locality reasons as `_compare.pb.go` / `_equal.pb.go`.
-func (g *Generator) outputStringPathFor(fd protoreflect.FileDescriptor) string {
-	base := strings.TrimSuffix(filepath.Base(fd.Path()), ".proto") + "_string.pb.go"
 	return filepath.Join(g.OutDir, sourceRelDir(fd.Path()), base)
 }
 
@@ -1137,7 +1086,7 @@ func (g *Generator) outputGrpcPathFor(fd protoreflect.FileDescriptor) string {
 // and the import block for one output file. The tracker argument selects
 // which set of imports gets emitted (main file vs. companion reflect file).
 // Each output file in the package needs its own import block — the Go
-// compiler can't deduce that a `protoreflect` symbol used in foo_reflect.pb.go
+// compiler can't deduce that a `protoreflect` symbol used in foo_util.pb.go
 // satisfies the import in foo.pb.go.
 func (fg *FileGenerator) emitHeader(out *bytes.Buffer, tracker *ImportTracker) {
 	fmt.Fprintf(out, "// Code generated by wiresmith. DO NOT EDIT.\n")
@@ -1180,21 +1129,29 @@ func (fg *FileGenerator) emitHeader(out *bytes.Buffer, tracker *ImportTracker) {
 	fmt.Fprintf(out, ")\n\n")
 }
 
-// emitReflectFileBanner writes a comment block below the standard generated
-// header in every `_reflect.pb.go` file explaining (a) what's in this file,
+// emitUtilFileBanner writes a comment block below the standard generated
+// header in every `_util.pb.go` file explaining (a) what's in this file,
 // (b) why it isn't just appended to the main `.pb.go`, and (c) what to grep for
 // if you want to undo the split. Documentation lives in the generated artifact
 // (not just in the generator) because future maintainers will encounter the
 // file before they encounter the generator.
-func (fg *FileGenerator) emitReflectFileBanner(out *bytes.Buffer) {
-	fmt.Fprintf(out, "// Reflection / registration glue for %s.\n", fg.fd.Path())
+//
+// _util.pb.go consolidates two cold concerns (wiresmith-2r4i): the reflection /
+// registration glue and the per-message String() debug dumps.
+func (fg *FileGenerator) emitUtilFileBanner(out *bytes.Buffer) {
+	fmt.Fprintf(out, "// Cold companion utilities for %s.\n", fg.fd.Path())
 	fmt.Fprintf(out, "//\n")
-	fmt.Fprintf(out, "// This file holds the per-message ProtoReflect() methods, the per-enum\n")
-	fmt.Fprintf(out, "// Descriptor()/Type()/Number() methods, the embedded FileDescriptorProto\n")
-	fmt.Fprintf(out, "// blob, the file_*_msgTypes / file_*_enumTypes arrays, and the init()\n")
-	fmt.Fprintf(out, "// that registers everything with protoregistry.GlobalFiles and\n")
-	fmt.Fprintf(out, "// protoregistry.GlobalTypes. None of these are called on the marshal /\n")
-	fmt.Fprintf(out, "// unmarshal / size hot path.\n")
+	fmt.Fprintf(out, "// This file holds two cold concerns merged into one compilation unit:\n")
+	fmt.Fprintf(out, "//\n")
+	fmt.Fprintf(out, "//   - Reflection / registration glue: the per-message ProtoReflect()\n")
+	fmt.Fprintf(out, "//     methods, the per-enum Descriptor()/Type()/Number() methods, the\n")
+	fmt.Fprintf(out, "//     embedded FileDescriptorProto blob, the file_*_msgTypes /\n")
+	fmt.Fprintf(out, "//     file_*_enumTypes arrays, and the init() that registers everything\n")
+	fmt.Fprintf(out, "//     with protoregistry.GlobalFiles and protoregistry.GlobalTypes.\n")
+	fmt.Fprintf(out, "//   - The per-message String() debug dumps (hand-rolled, deterministic,\n")
+	fmt.Fprintf(out, "//     non-reflection — see compiler/generator/emit_string.go).\n")
+	fmt.Fprintf(out, "//\n")
+	fmt.Fprintf(out, "// None of these are called on the marshal / unmarshal / size hot path.\n")
 	fmt.Fprintf(out, "//\n")
 	fmt.Fprintf(out, "// Why a separate file? Putting this code (plus its descriptorpb /\n")
 	fmt.Fprintf(out, "// protoreflect / protoimpl imports — ~64KB of descriptorpb alone, ~377KB\n")
@@ -1205,83 +1162,41 @@ func (fg *FileGenerator) emitReflectFileBanner(out *bytes.Buffer) {
 	fmt.Fprintf(out, "// in the same compilation unit shifted hot functions onto different\n")
 	fmt.Fprintf(out, "// cache sets and pushed them ~131KB further into the binary. Emitting\n")
 	fmt.Fprintf(out, "// the cold half here, in its own .o, lets the linker place it away\n")
-	fmt.Fprintf(out, "// from the hot half and recovers that throughput.\n")
+	fmt.Fprintf(out, "// from the hot half and recovers that throughput. reflect and String()\n")
+	fmt.Fprintf(out, "// are both cold and were already split out, so merging them (cold→cold)\n")
+	fmt.Fprintf(out, "// preserves the rationale while halving the companion-file count.\n")
 	fmt.Fprintf(out, "//\n")
 	fmt.Fprintf(out, "// See compiler/generator/emit_registration.go for the full rationale\n")
 	fmt.Fprintf(out, "// and the benchmark methodology. DO NOT inline this file's contents\n")
 	fmt.Fprintf(out, "// back into the main .pb.go without re-measuring.\n\n")
 }
 
-// emitCompareFileBanner is the parallel of emitReflectFileBanner for the
-// per-message Compare methods. Same icache-pressure rationale: Compare is
-// cold (never called from Marshal/Unmarshal/Size), so emitting it next to
-// the hot path was measured to cost ~9% geomean on OTel hot benchmarks
-// even though the hot code itself didn't change a byte. Splitting it into
-// its own compilation unit lets the linker keep the cold half away from
-// the hot half.
+// emitCompareFileBanner is the parallel of emitUtilFileBanner for the
+// value-comparison companion. `_compare.pb.go` holds BOTH the per-message
+// Equal() and Compare() methods (wiresmith-2r4i co-located them — both are
+// cold and were already split from the hot main file). Same icache-pressure
+// rationale: neither is called from Marshal/Unmarshal/Size, so emitting them
+// next to the hot path was measured to cost ~9% geomean on OTel hot benchmarks
+// (Compare alone) even though the hot code itself didn't change a byte.
 func (fg *FileGenerator) emitCompareFileBanner(out *bytes.Buffer) {
-	fmt.Fprintf(out, "// Per-message Compare() methods for %s.\n", fg.fd.Path())
+	fmt.Fprintf(out, "// Per-message value-comparison methods (Equal + Compare) for %s.\n", fg.fd.Path())
 	fmt.Fprintf(out, "//\n")
-	fmt.Fprintf(out, "// Compare returns -1/0/+1 like bytes.Compare with the gogoproto.compare\n")
-	fmt.Fprintf(out, "// nil/wrong-type preamble. Always emitted on every message; callers that\n")
-	fmt.Fprintf(out, "// don't use it can rely on Go's dead-code elimination to drop the body.\n")
+	fmt.Fprintf(out, "// Equal returns bool; Compare returns -1/0/+1 like bytes.Compare with the\n")
+	fmt.Fprintf(out, "// gogoproto.compare nil/wrong-type preamble. Both are emitted on every\n")
+	fmt.Fprintf(out, "// message; callers that don't use one can rely on Go's dead-code\n")
+	fmt.Fprintf(out, "// elimination to drop the body.\n")
 	fmt.Fprintf(out, "//\n")
-	fmt.Fprintf(out, "// Why a separate file? Compare is never called from Marshal/Unmarshal/Size,\n")
-	fmt.Fprintf(out, "// but emitting it next to those hot functions in the main .pb.go pushed\n")
-	fmt.Fprintf(out, "// them onto different cache sets and produced a measured ~9%% geomean\n")
+	fmt.Fprintf(out, "// Why a separate file? Equal/Compare are never called from Marshal/Unmarshal/\n")
+	fmt.Fprintf(out, "// Size, but emitting them next to those hot functions in the main .pb.go\n")
+	fmt.Fprintf(out, "// pushed them onto different cache sets and produced a measured ~9%% geomean\n")
 	fmt.Fprintf(out, "// regression on OTel benchmarks (UnmarshalMap +14%%, MarshalSingleSpan +13%%)\n")
-	fmt.Fprintf(out, "// purely from icache / iTLB / BTB pressure. Splitting Compare into its own\n")
+	fmt.Fprintf(out, "// purely from icache / iTLB / BTB pressure. Splitting them into their own\n")
 	fmt.Fprintf(out, "// compilation unit gives the linker freedom to place the cold half away\n")
-	fmt.Fprintf(out, "// from the hot half — same trick the _reflect.pb.go split uses.\n")
+	fmt.Fprintf(out, "// from the hot half — same trick the _util.pb.go split uses.\n")
 	fmt.Fprintf(out, "//\n")
-	fmt.Fprintf(out, "// See compiler/generator/emit_compare.go for the full rationale and the\n")
-	fmt.Fprintf(out, "// benchmark methodology. DO NOT inline this file's contents back into\n")
-	fmt.Fprintf(out, "// the main .pb.go without re-measuring.\n\n")
-}
-
-// emitEqualFileBanner writes a comment block at the top of every
-// `_equal.pb.go` file explaining what's here, why it isn't appended to the
-// main `.pb.go`, and what to do if a future maintainer wants to undo the
-// split. Mirrors emitReflectFileBanner — same rationale, smaller surface.
-func (fg *FileGenerator) emitEqualFileBanner(out *bytes.Buffer) {
-	fmt.Fprintf(out, "// Per-message Equal() methods for %s.\n", fg.fd.Path())
-	fmt.Fprintf(out, "//\n")
-	fmt.Fprintf(out, "// Equal is never called from Marshal / Unmarshal / Size on the hot path;\n")
-	fmt.Fprintf(out, "// emitting it next to those methods in the same compilation unit shifts\n")
-	fmt.Fprintf(out, "// the hot functions onto different cache lines / iTLB pages in the linked\n")
-	fmt.Fprintf(out, "// binary without buying anything for the (uncommon) Equal callers.\n")
-	fmt.Fprintf(out, "//\n")
-	fmt.Fprintf(out, "// Splitting Equal out into its own .o gives the linker freedom to place\n")
-	fmt.Fprintf(out, "// it away from the hot paths, mirroring the reflect/registration split\n")
-	fmt.Fprintf(out, "// documented in the companion _reflect.pb.go banner and in\n")
-	fmt.Fprintf(out, "// compiler/generator/emit_registration.go. DO NOT inline this file's\n")
+	fmt.Fprintf(out, "// See compiler/generator/emit_compare.go / emit_equal.go for the full\n")
+	fmt.Fprintf(out, "// rationale and the benchmark methodology. DO NOT inline this file's\n")
 	fmt.Fprintf(out, "// contents back into the main .pb.go without re-measuring.\n\n")
-}
-
-// emitStringFileBanner writes the header comment for every `_string.pb.go`
-// file. String() is a hand-rolled, deterministic, non-reflection debug dump
-// (it cannot use protoimpl.X.MessageStringOf — that walks fields via the
-// protoreflect bridge, which panics on wiresmith's value-typed message fields).
-// It is split out of the hot main .pb.go for the same cache-locality reason as
-// the _compare / _equal companions.
-func (fg *FileGenerator) emitStringFileBanner(out *bytes.Buffer) {
-	fmt.Fprintf(out, "// Per-message String() methods for %s.\n", fg.fd.Path())
-	fmt.Fprintf(out, "//\n")
-	fmt.Fprintf(out, "// String() is a hand-rolled, deterministic debug dump: pointer fields are\n")
-	fmt.Fprintf(out, "// dereferenced to their value (so optional scalars, oneof payloads,\n")
-	fmt.Fprintf(out, "// pointer-option, and recursive fields render content, never a heap\n")
-	fmt.Fprintf(out, "// address), nested messages recurse through their own String(), and map\n")
-	fmt.Fprintf(out, "// keys are sorted — so the output is content- and byte-deterministic.\n")
-	fmt.Fprintf(out, "// It does NOT use protoimpl.X.MessageStringOf / prototext: those walk\n")
-	fmt.Fprintf(out, "// fields via google.golang.org/protobuf reflection, which wiresmith's\n")
-	fmt.Fprintf(out, "// ProtoReflect bridge panics on (value-typed message fields are\n")
-	fmt.Fprintf(out, "// incompatible with the official field converters).\n")
-	fmt.Fprintf(out, "//\n")
-	fmt.Fprintf(out, "// Why a separate file? String() is never called from Marshal/Unmarshal/\n")
-	fmt.Fprintf(out, "// Size; emitting it next to those hot methods costs icache/iTLB locality\n")
-	fmt.Fprintf(out, "// for no benefit — same split rationale as _reflect / _compare / _equal.\n")
-	fmt.Fprintf(out, "// See compiler/generator/emit_string.go. DO NOT inline back into the main\n")
-	fmt.Fprintf(out, "// .pb.go without re-measuring.\n\n")
 }
 
 func (fg *FileGenerator) emitAllEnums(fd protoreflect.FileDescriptor) {

@@ -7,7 +7,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
-// String() methods are emitted into the companion `<name>_string.pb.go` file,
+// String() methods are emitted into the companion `<name>_util.pb.go` file,
 // not the main `.pb.go`. Same icache/iTLB rationale as the reflect/compare/equal
 // splits: String() is a debug method, never called from Marshal/Unmarshal/Size,
 // and the per-field body is sizeable, so co-locating it with the hot path only
@@ -48,8 +48,8 @@ const stringSep = " "
 
 func (fg *FileGenerator) emitString(md protoreflect.MessageDescriptor) {
 	name := goMessageTypeName(md)
-	out := fg.stringBody
-	fg.stringImports.addImport("strings", "")
+	out := fg.utilBody
+	fg.utilImports.addImport("strings", "")
 
 	fmt.Fprintf(out, "func (m *%s) String() string {\n", name)
 	fmt.Fprintf(out, "\tif m == nil {\n\t\treturn \"<nil>\"\n\t}\n")
@@ -190,7 +190,7 @@ func (fg *FileGenerator) emitScalarValueString(out *bytes.Buffer, indent string,
 	// scalar, so strconv.Quote/etc. don't typecheck. Format via %v on the VALUE
 	// — address-free, and honours any Stringer the type implements.
 	if _, isCast := fg.casttypeGoFieldType(fld); isCast || fg.suppressMessageType(fld) {
-		fg.stringImports.addImport("fmt", "")
+		fg.utilImports.addImport("fmt", "")
 		fmt.Fprintf(out, "%sfmt.Fprintf(&b, \"%%v\", %s)\n", indent, access)
 		return
 	}
@@ -201,16 +201,16 @@ func (fg *FileGenerator) emitScalarValueString(out *bytes.Buffer, indent string,
 		// does the _name lookup with an integer fallback for unknown values.
 		fmt.Fprintf(out, "%sb.WriteString(%s.String())\n", indent, access)
 	case protoreflect.StringKind:
-		fg.stringImports.addImport("strconv", "")
+		fg.utilImports.addImport("strconv", "")
 		fmt.Fprintf(out, "%sb.WriteString(strconv.Quote(%s))\n", indent, access)
 	case protoreflect.BytesKind:
 		// proto-text renders bytes as a quoted, escaped string.
-		fg.stringImports.addImport("strconv", "")
+		fg.utilImports.addImport("strconv", "")
 		fmt.Fprintf(out, "%sb.WriteString(strconv.Quote(string(%s)))\n", indent, access)
 	default:
 		// Integers, floats, bool: bare value. %v is address-free for these
 		// concrete value kinds and matches proto-text (true/false, decimals).
-		fg.stringImports.addImport("fmt", "")
+		fg.utilImports.addImport("fmt", "")
 		fmt.Fprintf(out, "%sfmt.Fprintf(&b, \"%%v\", %s)\n", indent, access)
 	}
 }
@@ -238,8 +238,8 @@ func (fg *FileGenerator) emitRepeatedString(out *bytes.Buffer, fld protoreflect.
 // rendered text (a total order that works for every key type, including bool,
 // where `<` is undefined). Message values recurse via String().
 func (fg *FileGenerator) emitMapString(out *bytes.Buffer, fld protoreflect.FieldDescriptor, protoName, access string) {
-	fg.stringImports.addImport("sort", "")
-	fg.stringImports.addImport("strings", "")
+	fg.utilImports.addImport("sort", "")
+	fg.utilImports.addImport("strings", "")
 
 	keyKind := fld.MapKey().Kind()
 	valKind := fld.MapValue().Kind()
@@ -274,15 +274,15 @@ func (fg *FileGenerator) emitMapScalar(out *bytes.Buffer, indent, builder, label
 	fmt.Fprintf(out, "%s%s.WriteString(%q)\n", indent, builder, label)
 	switch kind {
 	case protoreflect.StringKind:
-		fg.stringImports.addImport("strconv", "")
+		fg.utilImports.addImport("strconv", "")
 		fmt.Fprintf(out, "%s%s.WriteString(strconv.Quote(%s))\n", indent, builder, access)
 	case protoreflect.BytesKind:
-		fg.stringImports.addImport("strconv", "")
+		fg.utilImports.addImport("strconv", "")
 		fmt.Fprintf(out, "%s%s.WriteString(strconv.Quote(string(%s)))\n", indent, builder, access)
 	case protoreflect.EnumKind:
 		fmt.Fprintf(out, "%s%s.WriteString(%s.String())\n", indent, builder, access)
 	default:
-		fg.stringImports.addImport("fmt", "")
+		fg.utilImports.addImport("fmt", "")
 		fmt.Fprintf(out, "%sfmt.Fprintf(&%s, \"%%v\", %s)\n", indent, builder, access)
 	}
 	fmt.Fprintf(out, "%s%s.WriteString(%q)\n", indent, builder, stringSep)

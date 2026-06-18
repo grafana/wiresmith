@@ -9,8 +9,8 @@ import (
 )
 
 // TestEmitRegistration_EmptyFile pins the early-return: a proto with no
-// messages and no enums emits nothing into reflectBody. Without this guard,
-// the file writer in generateFile would emit a _reflect.pb.go containing
+// messages and no enums emits nothing into utilBody. Without this guard,
+// the file writer in generateFile would emit a _util.pb.go containing
 // just the package clause — an empty file that consumers cannot import or
 // link against.
 func TestEmitRegistration_EmptyFile(t *testing.T) {
@@ -20,8 +20,8 @@ package test.v1;
 option go_package = "github.com/grafana/wiresmith/gen/test/v1";
 `))
 	fg.emitRegistration(fg.fd)
-	if got := fg.reflectBody.String(); got != "" {
-		t.Errorf("expected reflectBody empty for empty proto, got:\n%s", got)
+	if got := fg.utilBody.String(); got != "" {
+		t.Errorf("expected utilBody empty for empty proto, got:\n%s", got)
 	}
 }
 
@@ -42,7 +42,7 @@ enum Color {
 }
 `))
 	fg.emitRegistration(fg.fd)
-	body := fg.reflectBody.String()
+	body := fg.utilBody.String()
 	assertContains(t, body, "func init() {")
 	assertContains(t, body, "_enumTypes = make([]protoimpl.EnumInfo, 1)")
 	assertNotContains(t, body, "_msgTypes = make([]protoimpl.MessageInfo")
