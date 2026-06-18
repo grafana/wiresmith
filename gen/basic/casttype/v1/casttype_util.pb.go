@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 	"unsafe"
@@ -81,6 +82,21 @@ func (m *CastTypeHolder) String() string {
 		b.WriteString(" ")
 	}
 	return strings.TrimSpace(b.String())
+}
+
+func (m *CastTypeHolder) Clone() *CastTypeHolder {
+	if m == nil {
+		return nil
+	}
+	out := &CastTypeHolder{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.UserId = m.UserId
+	out.TenantTag = m.TenantTag
+	out.Payload = slices.Clone(m.Payload)
+	out.PlainId = m.PlainId
+	out.PlainTag = m.PlainTag
+	out.PlainBytes = slices.Clone(m.PlainBytes)
+	return out
 }
 
 func (x *CastTypeHolder) ProtoReflect() protoreflect.Message {

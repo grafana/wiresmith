@@ -8,6 +8,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 	"unsafe"
@@ -62,6 +63,20 @@ func (m *BetaHolder) String() string {
 		b.WriteString(" ")
 	}
 	return strings.TrimSpace(b.String())
+}
+
+func (m *BetaHolder) Clone() *BetaHolder {
+	if m == nil {
+		return nil
+	}
+	out := &BetaHolder{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Entries = slices.Clone(m.Entries)
+	for i := range out.Entries {
+		out.Entries[i] = *m.Entries[i].Clone()
+	}
+	out.Note = m.Note
+	return out
 }
 
 func (x *BetaHolder) ProtoReflect() protoreflect.Message {

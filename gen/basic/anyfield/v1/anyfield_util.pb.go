@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"reflect"
+	"slices"
 	"strings"
 	"unsafe"
 )
@@ -64,6 +65,20 @@ func (m *Holder) String() string {
 		b.WriteString(" ")
 	}
 	return strings.TrimSpace(b.String())
+}
+
+func (m *Holder) Clone() *Holder {
+	if m == nil {
+		return nil
+	}
+	out := &Holder{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Payload = *m.Payload.Clone()
+	out.Items = slices.Clone(m.Items)
+	for i := range out.Items {
+		out.Items[i] = *m.Items[i].Clone()
+	}
+	return out
 }
 
 func (x *Holder) ProtoReflect() protoreflect.Message {

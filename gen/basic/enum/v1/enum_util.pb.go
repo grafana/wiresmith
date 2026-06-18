@@ -8,6 +8,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"reflect"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -114,6 +115,40 @@ func (m *EnumContainer) String() string {
 		}
 	}
 	return strings.TrimSpace(b.String())
+}
+
+func (m *WithNestedEnum) Clone() *WithNestedEnum {
+	if m == nil {
+		return nil
+	}
+	out := &WithNestedEnum{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Priority = m.Priority
+	out.Priorities = slices.Clone(m.Priorities)
+	out.Name = m.Name
+	return out
+}
+
+func (m *EnumContainer) Clone() *EnumContainer {
+	if m == nil {
+		return nil
+	}
+	out := &EnumContainer{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Aliased = m.Aliased
+	out.Signed = m.Signed
+	if m.OptionalSigned != nil {
+		tmp := *m.OptionalSigned
+		out.OptionalSigned = &tmp
+	}
+	out.RepeatedAliased = slices.Clone(m.RepeatedAliased)
+	if m.SignedMap != nil {
+		out.SignedMap = make(map[string]SignedEnum, len(m.SignedMap))
+		for k, v := range m.SignedMap {
+			out.SignedMap[k] = v
+		}
+	}
+	return out
 }
 
 func (x AliasedPriority) Descriptor() protoreflect.EnumDescriptor {

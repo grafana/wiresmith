@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 	"unsafe"
@@ -542,6 +543,139 @@ func (m *WideFields) String() string {
 		b.WriteString(" ")
 	}
 	return strings.TrimSpace(b.String())
+}
+
+func (m *UnpackedScalars) Clone() *UnpackedScalars {
+	if m == nil {
+		return nil
+	}
+	out := &UnpackedScalars{}
+	out.FieldDouble = slices.Clone(m.FieldDouble)
+	out.FieldFloat = slices.Clone(m.FieldFloat)
+	out.FieldInt32 = slices.Clone(m.FieldInt32)
+	out.FieldInt64 = slices.Clone(m.FieldInt64)
+	out.FieldUint32 = slices.Clone(m.FieldUint32)
+	out.FieldUint64 = slices.Clone(m.FieldUint64)
+	out.FieldSint32 = slices.Clone(m.FieldSint32)
+	out.FieldSint64 = slices.Clone(m.FieldSint64)
+	out.FieldFixed32 = slices.Clone(m.FieldFixed32)
+	out.FieldFixed64 = slices.Clone(m.FieldFixed64)
+	out.FieldSfixed32 = slices.Clone(m.FieldSfixed32)
+	out.FieldSfixed64 = slices.Clone(m.FieldSfixed64)
+	out.FieldBool = slices.Clone(m.FieldBool)
+	return out
+}
+
+func (m *MixedModifiers) Clone() *MixedModifiers {
+	if m == nil {
+		return nil
+	}
+	out := &MixedModifiers{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.RegularInt = m.RegularInt
+	if m.OptionalInt != nil {
+		tmp := *m.OptionalInt
+		out.OptionalInt = &tmp
+	}
+	out.RepeatedInt = slices.Clone(m.RepeatedInt)
+	out.RegularDouble = m.RegularDouble
+	if m.OptionalDouble != nil {
+		tmp := *m.OptionalDouble
+		out.OptionalDouble = &tmp
+	}
+	out.RepeatedDouble = slices.Clone(m.RepeatedDouble)
+	out.RegularString = m.RegularString
+	if m.OptionalString != nil {
+		tmp := *m.OptionalString
+		out.OptionalString = &tmp
+	}
+	out.RepeatedString = slices.Clone(m.RepeatedString)
+	out.RegularBytes = slices.Clone(m.RegularBytes)
+	out.OptionalBytes = slices.Clone(m.OptionalBytes)
+	out.RepeatedBytes = slices.Clone(m.RepeatedBytes)
+	for i := range out.RepeatedBytes {
+		out.RepeatedBytes[i] = slices.Clone(m.RepeatedBytes[i])
+	}
+	return out
+}
+
+func (m *WideFields) Clone() *WideFields {
+	if m == nil {
+		return nil
+	}
+	out := &WideFields{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.F1 = m.F1
+	out.F2 = m.F2
+	out.F3 = m.F3
+	out.F4 = m.F4
+	out.F5 = m.F5
+	out.F6 = m.F6
+	out.F7 = m.F7
+	out.F8 = m.F8
+	out.F9 = m.F9
+	out.F10 = m.F10
+	out.F11 = m.F11
+	out.F12 = m.F12
+	out.F13 = m.F13
+	out.F14 = m.F14
+	out.F15 = m.F15
+	out.F16 = m.F16
+	out.F17 = m.F17
+	out.F18 = m.F18
+	out.F19 = m.F19
+	out.F20 = m.F20
+	out.F21 = m.F21
+	out.F22 = m.F22
+	out.F23 = m.F23
+	out.F24 = m.F24
+	out.F25 = m.F25
+	out.F26 = m.F26
+	out.F27 = m.F27
+	out.F28 = m.F28
+	out.F29 = m.F29
+	out.F30 = m.F30
+	out.F31 = m.F31
+	out.F32 = m.F32
+	out.F33 = m.F33
+	out.F34 = m.F34
+	out.F35 = m.F35
+	out.F36 = m.F36
+	out.F37 = m.F37
+	out.F38 = m.F38
+	out.F39 = m.F39
+	out.F40 = m.F40
+	out.F41 = m.F41
+	out.F42 = m.F42
+	out.F43 = m.F43
+	out.F44 = m.F44
+	out.F45 = m.F45
+	out.F46 = m.F46
+	out.F47 = m.F47
+	out.F48 = m.F48
+	out.F49 = m.F49
+	out.F50 = m.F50
+	out.F51 = m.F51
+	out.F52 = m.F52
+	out.F53 = m.F53
+	out.F54 = m.F54
+	out.F55 = m.F55
+	out.F56 = m.F56
+	out.F57 = m.F57
+	out.F58 = m.F58
+	out.F59 = m.F59
+	out.F60 = m.F60
+	out.F61 = m.F61
+	out.F62 = m.F62
+	out.F63 = m.F63
+	out.F64 = m.F64
+	out.F65 = m.F65
+	out.F66 = m.F66
+	out.F67 = m.F67
+	out.F68 = m.F68
+	out.F69 = m.F69
+	out.F70 = m.F70
+	return out
 }
 
 func (x *UnpackedScalars) ProtoReflect() protoreflect.Message {

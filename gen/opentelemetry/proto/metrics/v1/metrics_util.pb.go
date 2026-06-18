@@ -11,6 +11,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 	"unsafe"
@@ -594,6 +595,308 @@ func (m *Exemplar) String() string {
 		b.WriteString(" ")
 	}
 	return strings.TrimSpace(b.String())
+}
+
+func (m *MetricsData) Clone() *MetricsData {
+	if m == nil {
+		return nil
+	}
+	out := &MetricsData{}
+	out.ResourceMetrics = slices.Clone(m.ResourceMetrics)
+	for i := range out.ResourceMetrics {
+		out.ResourceMetrics[i] = *m.ResourceMetrics[i].Clone()
+	}
+	return out
+}
+
+func (m *ResourceMetrics) Clone() *ResourceMetrics {
+	if m == nil {
+		return nil
+	}
+	out := &ResourceMetrics{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Resource = *m.Resource.Clone()
+	out.ScopeMetrics = slices.Clone(m.ScopeMetrics)
+	for i := range out.ScopeMetrics {
+		out.ScopeMetrics[i] = *m.ScopeMetrics[i].Clone()
+	}
+	out.SchemaUrl = m.SchemaUrl
+	return out
+}
+
+func (m *ScopeMetrics) Clone() *ScopeMetrics {
+	if m == nil {
+		return nil
+	}
+	out := &ScopeMetrics{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Scope = *m.Scope.Clone()
+	out.Metrics = slices.Clone(m.Metrics)
+	for i := range out.Metrics {
+		out.Metrics[i] = *m.Metrics[i].Clone()
+	}
+	out.SchemaUrl = m.SchemaUrl
+	return out
+}
+
+func (m *Metric) Clone() *Metric {
+	if m == nil {
+		return nil
+	}
+	out := &Metric{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Name = m.Name
+	out.Description = m.Description
+	out.Unit = m.Unit
+	switch v := m.Data.(type) {
+	case *Metric_Gauge:
+		out.Data = &Metric_Gauge{Gauge: *v.Gauge.Clone()}
+	case *Metric_Sum:
+		out.Data = &Metric_Sum{Sum: *v.Sum.Clone()}
+	case *Metric_Histogram:
+		out.Data = &Metric_Histogram{Histogram: *v.Histogram.Clone()}
+	case *Metric_ExponentialHistogram:
+		out.Data = &Metric_ExponentialHistogram{ExponentialHistogram: *v.ExponentialHistogram.Clone()}
+	case *Metric_Summary:
+		out.Data = &Metric_Summary{Summary: *v.Summary.Clone()}
+	}
+	out.Metadata = slices.Clone(m.Metadata)
+	for i := range out.Metadata {
+		out.Metadata[i] = *m.Metadata[i].Clone()
+	}
+	return out
+}
+
+func (m *Gauge) Clone() *Gauge {
+	if m == nil {
+		return nil
+	}
+	out := &Gauge{}
+	out.DataPoints = slices.Clone(m.DataPoints)
+	for i := range out.DataPoints {
+		out.DataPoints[i] = *m.DataPoints[i].Clone()
+	}
+	return out
+}
+
+func (m *Sum) Clone() *Sum {
+	if m == nil {
+		return nil
+	}
+	out := &Sum{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.DataPoints = slices.Clone(m.DataPoints)
+	for i := range out.DataPoints {
+		out.DataPoints[i] = *m.DataPoints[i].Clone()
+	}
+	out.AggregationTemporality = m.AggregationTemporality
+	out.IsMonotonic = m.IsMonotonic
+	return out
+}
+
+func (m *Histogram) Clone() *Histogram {
+	if m == nil {
+		return nil
+	}
+	out := &Histogram{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.DataPoints = slices.Clone(m.DataPoints)
+	for i := range out.DataPoints {
+		out.DataPoints[i] = *m.DataPoints[i].Clone()
+	}
+	out.AggregationTemporality = m.AggregationTemporality
+	return out
+}
+
+func (m *ExponentialHistogram) Clone() *ExponentialHistogram {
+	if m == nil {
+		return nil
+	}
+	out := &ExponentialHistogram{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.DataPoints = slices.Clone(m.DataPoints)
+	for i := range out.DataPoints {
+		out.DataPoints[i] = *m.DataPoints[i].Clone()
+	}
+	out.AggregationTemporality = m.AggregationTemporality
+	return out
+}
+
+func (m *Summary) Clone() *Summary {
+	if m == nil {
+		return nil
+	}
+	out := &Summary{}
+	out.DataPoints = slices.Clone(m.DataPoints)
+	for i := range out.DataPoints {
+		out.DataPoints[i] = *m.DataPoints[i].Clone()
+	}
+	return out
+}
+
+func (m *NumberDataPoint) Clone() *NumberDataPoint {
+	if m == nil {
+		return nil
+	}
+	out := &NumberDataPoint{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Attributes = slices.Clone(m.Attributes)
+	for i := range out.Attributes {
+		out.Attributes[i] = *m.Attributes[i].Clone()
+	}
+	out.StartTimeUnixNano = m.StartTimeUnixNano
+	out.TimeUnixNano = m.TimeUnixNano
+	switch v := m.Value.(type) {
+	case *NumberDataPoint_AsDouble:
+		out.Value = &NumberDataPoint_AsDouble{AsDouble: v.AsDouble}
+	case *NumberDataPoint_AsInt:
+		out.Value = &NumberDataPoint_AsInt{AsInt: v.AsInt}
+	}
+	out.Exemplars = slices.Clone(m.Exemplars)
+	for i := range out.Exemplars {
+		out.Exemplars[i] = *m.Exemplars[i].Clone()
+	}
+	out.Flags = m.Flags
+	return out
+}
+
+func (m *HistogramDataPoint) Clone() *HistogramDataPoint {
+	if m == nil {
+		return nil
+	}
+	out := &HistogramDataPoint{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Attributes = slices.Clone(m.Attributes)
+	for i := range out.Attributes {
+		out.Attributes[i] = *m.Attributes[i].Clone()
+	}
+	out.StartTimeUnixNano = m.StartTimeUnixNano
+	out.TimeUnixNano = m.TimeUnixNano
+	out.Count = m.Count
+	if m.Sum != nil {
+		tmp := *m.Sum
+		out.Sum = &tmp
+	}
+	out.BucketCounts = slices.Clone(m.BucketCounts)
+	out.ExplicitBounds = slices.Clone(m.ExplicitBounds)
+	out.Exemplars = slices.Clone(m.Exemplars)
+	for i := range out.Exemplars {
+		out.Exemplars[i] = *m.Exemplars[i].Clone()
+	}
+	out.Flags = m.Flags
+	if m.Min != nil {
+		tmp := *m.Min
+		out.Min = &tmp
+	}
+	if m.Max != nil {
+		tmp := *m.Max
+		out.Max = &tmp
+	}
+	return out
+}
+
+func (m *ExponentialHistogramDataPoint_Buckets) Clone() *ExponentialHistogramDataPoint_Buckets {
+	if m == nil {
+		return nil
+	}
+	out := &ExponentialHistogramDataPoint_Buckets{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Offset = m.Offset
+	out.BucketCounts = slices.Clone(m.BucketCounts)
+	return out
+}
+
+func (m *ExponentialHistogramDataPoint) Clone() *ExponentialHistogramDataPoint {
+	if m == nil {
+		return nil
+	}
+	out := &ExponentialHistogramDataPoint{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Attributes = slices.Clone(m.Attributes)
+	for i := range out.Attributes {
+		out.Attributes[i] = *m.Attributes[i].Clone()
+	}
+	out.StartTimeUnixNano = m.StartTimeUnixNano
+	out.TimeUnixNano = m.TimeUnixNano
+	out.Count = m.Count
+	if m.Sum != nil {
+		tmp := *m.Sum
+		out.Sum = &tmp
+	}
+	out.Scale = m.Scale
+	out.ZeroCount = m.ZeroCount
+	out.Positive = *m.Positive.Clone()
+	out.Negative = *m.Negative.Clone()
+	out.Flags = m.Flags
+	out.Exemplars = slices.Clone(m.Exemplars)
+	for i := range out.Exemplars {
+		out.Exemplars[i] = *m.Exemplars[i].Clone()
+	}
+	if m.Min != nil {
+		tmp := *m.Min
+		out.Min = &tmp
+	}
+	if m.Max != nil {
+		tmp := *m.Max
+		out.Max = &tmp
+	}
+	out.ZeroThreshold = m.ZeroThreshold
+	return out
+}
+
+func (m *SummaryDataPoint_ValueAtQuantile) Clone() *SummaryDataPoint_ValueAtQuantile {
+	if m == nil {
+		return nil
+	}
+	out := &SummaryDataPoint_ValueAtQuantile{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Quantile = m.Quantile
+	out.Value = m.Value
+	return out
+}
+
+func (m *SummaryDataPoint) Clone() *SummaryDataPoint {
+	if m == nil {
+		return nil
+	}
+	out := &SummaryDataPoint{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Attributes = slices.Clone(m.Attributes)
+	for i := range out.Attributes {
+		out.Attributes[i] = *m.Attributes[i].Clone()
+	}
+	out.StartTimeUnixNano = m.StartTimeUnixNano
+	out.TimeUnixNano = m.TimeUnixNano
+	out.Count = m.Count
+	out.Sum = m.Sum
+	out.QuantileValues = slices.Clone(m.QuantileValues)
+	for i := range out.QuantileValues {
+		out.QuantileValues[i] = *m.QuantileValues[i].Clone()
+	}
+	out.Flags = m.Flags
+	return out
+}
+
+func (m *Exemplar) Clone() *Exemplar {
+	if m == nil {
+		return nil
+	}
+	out := &Exemplar{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.FilteredAttributes = slices.Clone(m.FilteredAttributes)
+	for i := range out.FilteredAttributes {
+		out.FilteredAttributes[i] = *m.FilteredAttributes[i].Clone()
+	}
+	out.TimeUnixNano = m.TimeUnixNano
+	switch v := m.Value.(type) {
+	case *Exemplar_AsDouble:
+		out.Value = &Exemplar_AsDouble{AsDouble: v.AsDouble}
+	case *Exemplar_AsInt:
+		out.Value = &Exemplar_AsInt{AsInt: v.AsInt}
+	}
+	out.SpanId = slices.Clone(m.SpanId)
+	out.TraceId = slices.Clone(m.TraceId)
+	return out
 }
 
 func (x AggregationTemporality) Descriptor() protoreflect.EnumDescriptor {

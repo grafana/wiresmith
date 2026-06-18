@@ -4,6 +4,7 @@
 package anypb
 
 import (
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -55,4 +56,14 @@ func (m *Any) String() string {
 		b.WriteString(" ")
 	}
 	return strings.TrimSpace(b.String())
+}
+
+func (m *Any) Clone() *Any {
+	if m == nil {
+		return nil
+	}
+	out := &Any{}
+	out.TypeUrl = m.TypeUrl
+	out.Value = slices.Clone(m.Value)
+	return out
 }

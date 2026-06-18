@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"reflect"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -135,6 +136,44 @@ func (m *Inner) String() string {
 		b.WriteString(" ")
 	}
 	return strings.TrimSpace(b.String())
+}
+
+func (m *MapBench) Clone() *MapBench {
+	if m == nil {
+		return nil
+	}
+	out := &MapBench{}
+	if m.StringMap != nil {
+		out.StringMap = make(map[string]string, len(m.StringMap))
+		for k, v := range m.StringMap {
+			out.StringMap[k] = v
+		}
+	}
+	if m.IntMap != nil {
+		out.IntMap = make(map[int64]int64, len(m.IntMap))
+		for k, v := range m.IntMap {
+			out.IntMap[k] = v
+		}
+	}
+	if m.MessageMap != nil {
+		out.MessageMap = make(map[string]Inner, len(m.MessageMap))
+		for k, v := range m.MessageMap {
+			out.MessageMap[k] = *v.Clone()
+		}
+	}
+	return out
+}
+
+func (m *Inner) Clone() *Inner {
+	if m == nil {
+		return nil
+	}
+	out := &Inner{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Name = m.Name
+	out.Value = m.Value
+	out.Data = slices.Clone(m.Data)
+	return out
 }
 
 func (x *MapBench) ProtoReflect() protoreflect.Message {

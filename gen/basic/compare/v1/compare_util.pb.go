@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"reflect"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -382,6 +383,164 @@ func (m *WithOneof) String() string {
 		b.WriteString(" ")
 	}
 	return strings.TrimSpace(b.String())
+}
+
+func (m *AllScalars) Clone() *AllScalars {
+	if m == nil {
+		return nil
+	}
+	out := &AllScalars{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.FieldDouble = m.FieldDouble
+	out.FieldFloat = m.FieldFloat
+	out.FieldInt32 = m.FieldInt32
+	out.FieldInt64 = m.FieldInt64
+	out.FieldUint32 = m.FieldUint32
+	out.FieldUint64 = m.FieldUint64
+	out.FieldSint32 = m.FieldSint32
+	out.FieldSint64 = m.FieldSint64
+	out.FieldFixed32 = m.FieldFixed32
+	out.FieldFixed64 = m.FieldFixed64
+	out.FieldSfixed32 = m.FieldSfixed32
+	out.FieldSfixed64 = m.FieldSfixed64
+	out.FieldBool = m.FieldBool
+	out.FieldString = m.FieldString
+	out.FieldBytes = slices.Clone(m.FieldBytes)
+	out.FieldEnum = m.FieldEnum
+	return out
+}
+
+func (m *OutOfOrderTags) Clone() *OutOfOrderTags {
+	if m == nil {
+		return nil
+	}
+	out := &OutOfOrderTags{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Second = m.Second
+	out.First = m.First
+	out.Third = m.Third
+	return out
+}
+
+func (m *OptionalScalars) Clone() *OptionalScalars {
+	if m == nil {
+		return nil
+	}
+	out := &OptionalScalars{}
+	if m.FieldInt32 != nil {
+		tmp := *m.FieldInt32
+		out.FieldInt32 = &tmp
+	}
+	if m.FieldString != nil {
+		tmp := *m.FieldString
+		out.FieldString = &tmp
+	}
+	out.FieldBytes = slices.Clone(m.FieldBytes)
+	if m.FieldDouble != nil {
+		tmp := *m.FieldDouble
+		out.FieldDouble = &tmp
+	}
+	return out
+}
+
+func (m *Inner) Clone() *Inner {
+	if m == nil {
+		return nil
+	}
+	out := &Inner{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Value = m.Value
+	return out
+}
+
+func (m *WithMessage) Clone() *WithMessage {
+	if m == nil {
+		return nil
+	}
+	out := &WithMessage{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Inner = *m.Inner.Clone()
+	out.Name = m.Name
+	return out
+}
+
+func (m *WithPointerMessage) Clone() *WithPointerMessage {
+	if m == nil {
+		return nil
+	}
+	out := &WithPointerMessage{}
+	out.Inner = m.Inner.Clone()
+	return out
+}
+
+func (m *Repeated) Clone() *Repeated {
+	if m == nil {
+		return nil
+	}
+	out := &Repeated{}
+	out.Ints = slices.Clone(m.Ints)
+	out.Strs = slices.Clone(m.Strs)
+	out.Inners = slices.Clone(m.Inners)
+	for i := range out.Inners {
+		out.Inners[i] = *m.Inners[i].Clone()
+	}
+	out.Blobs = slices.Clone(m.Blobs)
+	for i := range out.Blobs {
+		out.Blobs[i] = slices.Clone(m.Blobs[i])
+	}
+	return out
+}
+
+func (m *WithMap) Clone() *WithMap {
+	if m == nil {
+		return nil
+	}
+	out := &WithMap{}
+	if m.MStringString != nil {
+		out.MStringString = make(map[string]string, len(m.MStringString))
+		for k, v := range m.MStringString {
+			out.MStringString[k] = v
+		}
+	}
+	if m.MInt32String != nil {
+		out.MInt32String = make(map[int32]string, len(m.MInt32String))
+		for k, v := range m.MInt32String {
+			out.MInt32String[k] = v
+		}
+	}
+	if m.MStringInner != nil {
+		out.MStringInner = make(map[string]Inner, len(m.MStringInner))
+		for k, v := range m.MStringInner {
+			out.MStringInner[k] = *v.Clone()
+		}
+	}
+	if m.MBoolString != nil {
+		out.MBoolString = make(map[bool]string, len(m.MBoolString))
+		for k, v := range m.MBoolString {
+			out.MBoolString[k] = v
+		}
+	}
+	return out
+}
+
+func (m *WithOneof) Clone() *WithOneof {
+	if m == nil {
+		return nil
+	}
+	out := &WithOneof{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	switch v := m.Value.(type) {
+	case *WithOneof_IntVal:
+		out.Value = &WithOneof_IntVal{IntVal: v.IntVal}
+	case *WithOneof_StrVal:
+		out.Value = &WithOneof_StrVal{StrVal: v.StrVal}
+	case *WithOneof_BytesVal:
+		out.Value = &WithOneof_BytesVal{BytesVal: slices.Clone(v.BytesVal)}
+	case *WithOneof_MsgVal:
+		out.Value = &WithOneof_MsgVal{MsgVal: *v.MsgVal.Clone()}
+	}
+	out.After = m.After
+	return out
 }
 
 func (x Color) Descriptor() protoreflect.EnumDescriptor {

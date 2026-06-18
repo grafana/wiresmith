@@ -11,6 +11,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 	"unsafe"
@@ -466,6 +467,218 @@ func (m *KeyValueAndUnit) String() string {
 		b.WriteString(" ")
 	}
 	return strings.TrimSpace(b.String())
+}
+
+func (m *ProfilesDictionary) Clone() *ProfilesDictionary {
+	if m == nil {
+		return nil
+	}
+	out := &ProfilesDictionary{}
+	out.MappingTable = slices.Clone(m.MappingTable)
+	for i := range out.MappingTable {
+		out.MappingTable[i] = *m.MappingTable[i].Clone()
+	}
+	out.LocationTable = slices.Clone(m.LocationTable)
+	for i := range out.LocationTable {
+		out.LocationTable[i] = *m.LocationTable[i].Clone()
+	}
+	out.FunctionTable = slices.Clone(m.FunctionTable)
+	for i := range out.FunctionTable {
+		out.FunctionTable[i] = *m.FunctionTable[i].Clone()
+	}
+	out.LinkTable = slices.Clone(m.LinkTable)
+	for i := range out.LinkTable {
+		out.LinkTable[i] = *m.LinkTable[i].Clone()
+	}
+	out.StringTable = slices.Clone(m.StringTable)
+	out.AttributeTable = slices.Clone(m.AttributeTable)
+	for i := range out.AttributeTable {
+		out.AttributeTable[i] = *m.AttributeTable[i].Clone()
+	}
+	out.StackTable = slices.Clone(m.StackTable)
+	for i := range out.StackTable {
+		out.StackTable[i] = *m.StackTable[i].Clone()
+	}
+	return out
+}
+
+func (m *ProfilesData) Clone() *ProfilesData {
+	if m == nil {
+		return nil
+	}
+	out := &ProfilesData{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.ResourceProfiles = slices.Clone(m.ResourceProfiles)
+	for i := range out.ResourceProfiles {
+		out.ResourceProfiles[i] = *m.ResourceProfiles[i].Clone()
+	}
+	out.Dictionary = *m.Dictionary.Clone()
+	return out
+}
+
+func (m *ResourceProfiles) Clone() *ResourceProfiles {
+	if m == nil {
+		return nil
+	}
+	out := &ResourceProfiles{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Resource = *m.Resource.Clone()
+	out.ScopeProfiles = slices.Clone(m.ScopeProfiles)
+	for i := range out.ScopeProfiles {
+		out.ScopeProfiles[i] = *m.ScopeProfiles[i].Clone()
+	}
+	out.SchemaUrl = m.SchemaUrl
+	return out
+}
+
+func (m *ScopeProfiles) Clone() *ScopeProfiles {
+	if m == nil {
+		return nil
+	}
+	out := &ScopeProfiles{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Scope = *m.Scope.Clone()
+	out.Profiles = slices.Clone(m.Profiles)
+	for i := range out.Profiles {
+		out.Profiles[i] = *m.Profiles[i].Clone()
+	}
+	out.SchemaUrl = m.SchemaUrl
+	return out
+}
+
+func (m *Profile) Clone() *Profile {
+	if m == nil {
+		return nil
+	}
+	out := &Profile{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.SampleType = *m.SampleType.Clone()
+	out.Samples = slices.Clone(m.Samples)
+	for i := range out.Samples {
+		out.Samples[i] = *m.Samples[i].Clone()
+	}
+	out.TimeUnixNano = m.TimeUnixNano
+	out.DurationNano = m.DurationNano
+	out.PeriodType = *m.PeriodType.Clone()
+	out.Period = m.Period
+	out.ProfileId = slices.Clone(m.ProfileId)
+	out.DroppedAttributesCount = m.DroppedAttributesCount
+	out.OriginalPayloadFormat = m.OriginalPayloadFormat
+	out.OriginalPayload = slices.Clone(m.OriginalPayload)
+	out.AttributeIndices = slices.Clone(m.AttributeIndices)
+	return out
+}
+
+func (m *Link) Clone() *Link {
+	if m == nil {
+		return nil
+	}
+	out := &Link{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.TraceId = slices.Clone(m.TraceId)
+	out.SpanId = slices.Clone(m.SpanId)
+	return out
+}
+
+func (m *ValueType) Clone() *ValueType {
+	if m == nil {
+		return nil
+	}
+	out := &ValueType{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.TypeStrindex = m.TypeStrindex
+	out.UnitStrindex = m.UnitStrindex
+	return out
+}
+
+func (m *Sample) Clone() *Sample {
+	if m == nil {
+		return nil
+	}
+	out := &Sample{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.StackIndex = m.StackIndex
+	out.AttributeIndices = slices.Clone(m.AttributeIndices)
+	out.LinkIndex = m.LinkIndex
+	out.Values = slices.Clone(m.Values)
+	out.TimestampsUnixNano = slices.Clone(m.TimestampsUnixNano)
+	return out
+}
+
+func (m *Mapping) Clone() *Mapping {
+	if m == nil {
+		return nil
+	}
+	out := &Mapping{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.MemoryStart = m.MemoryStart
+	out.MemoryLimit = m.MemoryLimit
+	out.FileOffset = m.FileOffset
+	out.FilenameStrindex = m.FilenameStrindex
+	out.AttributeIndices = slices.Clone(m.AttributeIndices)
+	return out
+}
+
+func (m *Stack) Clone() *Stack {
+	if m == nil {
+		return nil
+	}
+	out := &Stack{}
+	out.LocationIndices = slices.Clone(m.LocationIndices)
+	return out
+}
+
+func (m *Location) Clone() *Location {
+	if m == nil {
+		return nil
+	}
+	out := &Location{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.MappingIndex = m.MappingIndex
+	out.Address = m.Address
+	out.Lines = slices.Clone(m.Lines)
+	for i := range out.Lines {
+		out.Lines[i] = *m.Lines[i].Clone()
+	}
+	out.AttributeIndices = slices.Clone(m.AttributeIndices)
+	return out
+}
+
+func (m *Line) Clone() *Line {
+	if m == nil {
+		return nil
+	}
+	out := &Line{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.FunctionIndex = m.FunctionIndex
+	out.Line = m.Line
+	out.Column = m.Column
+	return out
+}
+
+func (m *Function) Clone() *Function {
+	if m == nil {
+		return nil
+	}
+	out := &Function{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.NameStrindex = m.NameStrindex
+	out.SystemNameStrindex = m.SystemNameStrindex
+	out.FilenameStrindex = m.FilenameStrindex
+	out.StartLine = m.StartLine
+	return out
+}
+
+func (m *KeyValueAndUnit) Clone() *KeyValueAndUnit {
+	if m == nil {
+		return nil
+	}
+	out := &KeyValueAndUnit{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.KeyStrindex = m.KeyStrindex
+	out.Value = *m.Value.Clone()
+	out.UnitStrindex = m.UnitStrindex
+	return out
 }
 
 func (x *ProfilesDictionary) ProtoReflect() protoreflect.Message {

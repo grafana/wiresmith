@@ -89,6 +89,30 @@ func (m *StdDurationHolder) String() string {
 	return strings.TrimSpace(b.String())
 }
 
+func (m *StdtimeHolder) Clone() *StdtimeHolder {
+	if m == nil {
+		return nil
+	}
+	out := &StdtimeHolder{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Name = m.Name
+	out.Version = m.Version
+	out.Created = m.Created
+	return out
+}
+
+func (m *StdDurationHolder) Clone() *StdDurationHolder {
+	if m == nil {
+		return nil
+	}
+	out := &StdDurationHolder{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Name = m.Name
+	out.Retries = m.Retries
+	out.Lookback = m.Lookback
+	return out
+}
+
 func (x *StdtimeHolder) ProtoReflect() protoreflect.Message {
 	file_basic_stdtime_v1_stdtime_proto_init()
 	return protohelpers.NewMessageReflect(&file_basic_stdtime_v1_stdtime_proto_msgTypes[0], x)

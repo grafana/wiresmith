@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"reflect"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -906,6 +907,376 @@ func (m *AllMaps) String() string {
 		}
 	}
 	return strings.TrimSpace(b.String())
+}
+
+func (m *AllScalars) Clone() *AllScalars {
+	if m == nil {
+		return nil
+	}
+	out := &AllScalars{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.FieldDouble = m.FieldDouble
+	out.FieldFloat = m.FieldFloat
+	out.FieldInt32 = m.FieldInt32
+	out.FieldInt64 = m.FieldInt64
+	out.FieldUint32 = m.FieldUint32
+	out.FieldUint64 = m.FieldUint64
+	out.FieldSint32 = m.FieldSint32
+	out.FieldSint64 = m.FieldSint64
+	out.FieldFixed32 = m.FieldFixed32
+	out.FieldFixed64 = m.FieldFixed64
+	out.FieldSfixed32 = m.FieldSfixed32
+	out.FieldSfixed64 = m.FieldSfixed64
+	out.FieldBool = m.FieldBool
+	out.FieldString = m.FieldString
+	out.FieldBytes = slices.Clone(m.FieldBytes)
+	return out
+}
+
+func (m *AllOptionalScalars) Clone() *AllOptionalScalars {
+	if m == nil {
+		return nil
+	}
+	out := &AllOptionalScalars{}
+	if m.FieldDouble != nil {
+		tmp := *m.FieldDouble
+		out.FieldDouble = &tmp
+	}
+	if m.FieldFloat != nil {
+		tmp := *m.FieldFloat
+		out.FieldFloat = &tmp
+	}
+	if m.FieldInt32 != nil {
+		tmp := *m.FieldInt32
+		out.FieldInt32 = &tmp
+	}
+	if m.FieldInt64 != nil {
+		tmp := *m.FieldInt64
+		out.FieldInt64 = &tmp
+	}
+	if m.FieldUint32 != nil {
+		tmp := *m.FieldUint32
+		out.FieldUint32 = &tmp
+	}
+	if m.FieldUint64 != nil {
+		tmp := *m.FieldUint64
+		out.FieldUint64 = &tmp
+	}
+	if m.FieldSint32 != nil {
+		tmp := *m.FieldSint32
+		out.FieldSint32 = &tmp
+	}
+	if m.FieldSint64 != nil {
+		tmp := *m.FieldSint64
+		out.FieldSint64 = &tmp
+	}
+	if m.FieldFixed32 != nil {
+		tmp := *m.FieldFixed32
+		out.FieldFixed32 = &tmp
+	}
+	if m.FieldFixed64 != nil {
+		tmp := *m.FieldFixed64
+		out.FieldFixed64 = &tmp
+	}
+	if m.FieldSfixed32 != nil {
+		tmp := *m.FieldSfixed32
+		out.FieldSfixed32 = &tmp
+	}
+	if m.FieldSfixed64 != nil {
+		tmp := *m.FieldSfixed64
+		out.FieldSfixed64 = &tmp
+	}
+	if m.FieldBool != nil {
+		tmp := *m.FieldBool
+		out.FieldBool = &tmp
+	}
+	if m.FieldString != nil {
+		tmp := *m.FieldString
+		out.FieldString = &tmp
+	}
+	out.FieldBytes = slices.Clone(m.FieldBytes)
+	return out
+}
+
+func (m *AllRepeatedScalars) Clone() *AllRepeatedScalars {
+	if m == nil {
+		return nil
+	}
+	out := &AllRepeatedScalars{}
+	out.FieldDouble = slices.Clone(m.FieldDouble)
+	out.FieldFloat = slices.Clone(m.FieldFloat)
+	out.FieldInt32 = slices.Clone(m.FieldInt32)
+	out.FieldInt64 = slices.Clone(m.FieldInt64)
+	out.FieldUint32 = slices.Clone(m.FieldUint32)
+	out.FieldUint64 = slices.Clone(m.FieldUint64)
+	out.FieldSint32 = slices.Clone(m.FieldSint32)
+	out.FieldSint64 = slices.Clone(m.FieldSint64)
+	out.FieldFixed32 = slices.Clone(m.FieldFixed32)
+	out.FieldFixed64 = slices.Clone(m.FieldFixed64)
+	out.FieldSfixed32 = slices.Clone(m.FieldSfixed32)
+	out.FieldSfixed64 = slices.Clone(m.FieldSfixed64)
+	out.FieldBool = slices.Clone(m.FieldBool)
+	out.FieldString = slices.Clone(m.FieldString)
+	out.FieldBytes = slices.Clone(m.FieldBytes)
+	for i := range out.FieldBytes {
+		out.FieldBytes[i] = slices.Clone(m.FieldBytes[i])
+	}
+	return out
+}
+
+func (m *OneofVariants) Clone() *OneofVariants {
+	if m == nil {
+		return nil
+	}
+	out := &OneofVariants{}
+	switch v := m.Value.(type) {
+	case *OneofVariants_DoubleValue:
+		out.Value = &OneofVariants_DoubleValue{DoubleValue: v.DoubleValue}
+	case *OneofVariants_FloatValue:
+		out.Value = &OneofVariants_FloatValue{FloatValue: v.FloatValue}
+	case *OneofVariants_Int32Value:
+		out.Value = &OneofVariants_Int32Value{Int32Value: v.Int32Value}
+	case *OneofVariants_Int64Value:
+		out.Value = &OneofVariants_Int64Value{Int64Value: v.Int64Value}
+	case *OneofVariants_Uint32Value:
+		out.Value = &OneofVariants_Uint32Value{Uint32Value: v.Uint32Value}
+	case *OneofVariants_Uint64Value:
+		out.Value = &OneofVariants_Uint64Value{Uint64Value: v.Uint64Value}
+	case *OneofVariants_Sint32Value:
+		out.Value = &OneofVariants_Sint32Value{Sint32Value: v.Sint32Value}
+	case *OneofVariants_Sint64Value:
+		out.Value = &OneofVariants_Sint64Value{Sint64Value: v.Sint64Value}
+	case *OneofVariants_Fixed32Value:
+		out.Value = &OneofVariants_Fixed32Value{Fixed32Value: v.Fixed32Value}
+	case *OneofVariants_Fixed64Value:
+		out.Value = &OneofVariants_Fixed64Value{Fixed64Value: v.Fixed64Value}
+	case *OneofVariants_Sfixed32Value:
+		out.Value = &OneofVariants_Sfixed32Value{Sfixed32Value: v.Sfixed32Value}
+	case *OneofVariants_Sfixed64Value:
+		out.Value = &OneofVariants_Sfixed64Value{Sfixed64Value: v.Sfixed64Value}
+	case *OneofVariants_BoolValue:
+		out.Value = &OneofVariants_BoolValue{BoolValue: v.BoolValue}
+	case *OneofVariants_StringValue:
+		out.Value = &OneofVariants_StringValue{StringValue: v.StringValue}
+	case *OneofVariants_BytesValue:
+		out.Value = &OneofVariants_BytesValue{BytesValue: slices.Clone(v.BytesValue)}
+	}
+	return out
+}
+
+func (m *Outer) Clone() *Outer {
+	if m == nil {
+		return nil
+	}
+	out := &Outer{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Middle = *m.Middle.Clone()
+	out.Middles = slices.Clone(m.Middles)
+	for i := range out.Middles {
+		out.Middles[i] = *m.Middles[i].Clone()
+	}
+	out.Name = m.Name
+	return out
+}
+
+func (m *Middle) Clone() *Middle {
+	if m == nil {
+		return nil
+	}
+	out := &Middle{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Inner = *m.Inner.Clone()
+	out.Inners = slices.Clone(m.Inners)
+	for i := range out.Inners {
+		out.Inners[i] = *m.Inners[i].Clone()
+	}
+	out.Value = m.Value
+	return out
+}
+
+func (m *Inner) Clone() *Inner {
+	if m == nil {
+		return nil
+	}
+	out := &Inner{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Data = m.Data
+	out.Raw = slices.Clone(m.Raw)
+	out.SignedVal = m.SignedVal
+	out.FixedVal = m.FixedVal
+	return out
+}
+
+func (m *HighFieldNumbers) Clone() *HighFieldNumbers {
+	if m == nil {
+		return nil
+	}
+	out := &HighFieldNumbers{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Field1 = m.Field1
+	out.Field16 = m.Field16
+	out.Field128 = m.Field128
+	out.Field2048 = m.Field2048
+	out.Field16384 = m.Field16384
+	return out
+}
+
+func (m *WithEnum) Clone() *WithEnum {
+	if m == nil {
+		return nil
+	}
+	out := &WithEnum{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Color = m.Color
+	out.Colors = slices.Clone(m.Colors)
+	return out
+}
+
+func (m *Empty) Clone() *Empty {
+	if m == nil {
+		return nil
+	}
+	out := &Empty{}
+	return out
+}
+
+func (m *OnlyRepeated) Clone() *OnlyRepeated {
+	if m == nil {
+		return nil
+	}
+	out := &OnlyRepeated{}
+	out.Names = slices.Clone(m.Names)
+	out.Values = slices.Clone(m.Values)
+	out.Items = slices.Clone(m.Items)
+	for i := range out.Items {
+		out.Items[i] = *m.Items[i].Clone()
+	}
+	return out
+}
+
+func (m *Container) Clone() *Container {
+	if m == nil {
+		return nil
+	}
+	out := &Container{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Variant = *m.Variant.Clone()
+	out.Scalars = *m.Scalars.Clone()
+	out.Variants = slices.Clone(m.Variants)
+	for i := range out.Variants {
+		out.Variants[i] = *m.Variants[i].Clone()
+	}
+	return out
+}
+
+func (m *AllMaps) Clone() *AllMaps {
+	if m == nil {
+		return nil
+	}
+	out := &AllMaps{}
+	if m.MapInt32Int32 != nil {
+		out.MapInt32Int32 = make(map[int32]int32, len(m.MapInt32Int32))
+		for k, v := range m.MapInt32Int32 {
+			out.MapInt32Int32[k] = v
+		}
+	}
+	if m.MapInt64Int64 != nil {
+		out.MapInt64Int64 = make(map[int64]int64, len(m.MapInt64Int64))
+		for k, v := range m.MapInt64Int64 {
+			out.MapInt64Int64[k] = v
+		}
+	}
+	if m.MapUint32Uint32 != nil {
+		out.MapUint32Uint32 = make(map[uint32]uint32, len(m.MapUint32Uint32))
+		for k, v := range m.MapUint32Uint32 {
+			out.MapUint32Uint32[k] = v
+		}
+	}
+	if m.MapUint64Uint64 != nil {
+		out.MapUint64Uint64 = make(map[uint64]uint64, len(m.MapUint64Uint64))
+		for k, v := range m.MapUint64Uint64 {
+			out.MapUint64Uint64[k] = v
+		}
+	}
+	if m.MapSint32Sint32 != nil {
+		out.MapSint32Sint32 = make(map[int32]int32, len(m.MapSint32Sint32))
+		for k, v := range m.MapSint32Sint32 {
+			out.MapSint32Sint32[k] = v
+		}
+	}
+	if m.MapSint64Sint64 != nil {
+		out.MapSint64Sint64 = make(map[int64]int64, len(m.MapSint64Sint64))
+		for k, v := range m.MapSint64Sint64 {
+			out.MapSint64Sint64[k] = v
+		}
+	}
+	if m.MapFixed32Fixed32 != nil {
+		out.MapFixed32Fixed32 = make(map[uint32]uint32, len(m.MapFixed32Fixed32))
+		for k, v := range m.MapFixed32Fixed32 {
+			out.MapFixed32Fixed32[k] = v
+		}
+	}
+	if m.MapFixed64Fixed64 != nil {
+		out.MapFixed64Fixed64 = make(map[uint64]uint64, len(m.MapFixed64Fixed64))
+		for k, v := range m.MapFixed64Fixed64 {
+			out.MapFixed64Fixed64[k] = v
+		}
+	}
+	if m.MapSfixed32Sfixed32 != nil {
+		out.MapSfixed32Sfixed32 = make(map[int32]int32, len(m.MapSfixed32Sfixed32))
+		for k, v := range m.MapSfixed32Sfixed32 {
+			out.MapSfixed32Sfixed32[k] = v
+		}
+	}
+	if m.MapSfixed64Sfixed64 != nil {
+		out.MapSfixed64Sfixed64 = make(map[int64]int64, len(m.MapSfixed64Sfixed64))
+		for k, v := range m.MapSfixed64Sfixed64 {
+			out.MapSfixed64Sfixed64[k] = v
+		}
+	}
+	if m.MapBoolBool != nil {
+		out.MapBoolBool = make(map[bool]bool, len(m.MapBoolBool))
+		for k, v := range m.MapBoolBool {
+			out.MapBoolBool[k] = v
+		}
+	}
+	if m.MapStringString != nil {
+		out.MapStringString = make(map[string]string, len(m.MapStringString))
+		for k, v := range m.MapStringString {
+			out.MapStringString[k] = v
+		}
+	}
+	if m.MapStringBytes != nil {
+		out.MapStringBytes = make(map[string][]byte, len(m.MapStringBytes))
+		for k, v := range m.MapStringBytes {
+			out.MapStringBytes[k] = slices.Clone(v)
+		}
+	}
+	if m.MapInt32Float != nil {
+		out.MapInt32Float = make(map[int32]float32, len(m.MapInt32Float))
+		for k, v := range m.MapInt32Float {
+			out.MapInt32Float[k] = v
+		}
+	}
+	if m.MapInt32Double != nil {
+		out.MapInt32Double = make(map[int32]float64, len(m.MapInt32Double))
+		for k, v := range m.MapInt32Double {
+			out.MapInt32Double[k] = v
+		}
+	}
+	if m.MapStringMessage != nil {
+		out.MapStringMessage = make(map[string]Inner, len(m.MapStringMessage))
+		for k, v := range m.MapStringMessage {
+			out.MapStringMessage[k] = *v.Clone()
+		}
+	}
+	if m.MapStringEnum != nil {
+		out.MapStringEnum = make(map[string]Color, len(m.MapStringEnum))
+		for k, v := range m.MapStringEnum {
+			out.MapStringEnum[k] = v
+		}
+	}
+	return out
 }
 
 func (x Color) Descriptor() protoreflect.EnumDescriptor {

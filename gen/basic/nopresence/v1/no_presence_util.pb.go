@@ -113,6 +113,42 @@ func (m *TrackedHolder) String() string {
 	return strings.TrimSpace(b.String())
 }
 
+func (m *Leaf) Clone() *Leaf {
+	if m == nil {
+		return nil
+	}
+	out := &Leaf{}
+	out.Id = m.Id
+	out.Name = m.Name
+	return out
+}
+
+func (m *BareHolder) Clone() *BareHolder {
+	if m == nil {
+		return nil
+	}
+	out := &BareHolder{}
+	out.Child = *m.Child.Clone()
+	out.Num = m.Num
+	out.Label = m.Label
+	if m.Maybe != nil {
+		tmp := *m.Maybe
+		out.Maybe = &tmp
+	}
+	return out
+}
+
+func (m *TrackedHolder) Clone() *TrackedHolder {
+	if m == nil {
+		return nil
+	}
+	out := &TrackedHolder{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Child = *m.Child.Clone()
+	out.Num = m.Num
+	return out
+}
+
 func (x *Leaf) ProtoReflect() protoreflect.Message {
 	file_basic_nopresence_v1_no_presence_proto_init()
 	return protohelpers.NewMessageReflect(&file_basic_nopresence_v1_no_presence_proto_msgTypes[0], x)

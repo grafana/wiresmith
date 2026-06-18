@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 	"unsafe"
@@ -101,6 +102,36 @@ func (m *CustomNameHolder) String() string {
 		b.WriteString(" ")
 	}
 	return strings.TrimSpace(b.String())
+}
+
+func (m *Leaf) Clone() *Leaf {
+	if m == nil {
+		return nil
+	}
+	out := &Leaf{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Id = m.Id
+	out.Name = m.Name
+	return out
+}
+
+func (m *CustomNameHolder) Clone() *CustomNameHolder {
+	if m == nil {
+		return nil
+	}
+	out := &CustomNameHolder{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.BlockID = m.BlockID
+	out.HeadLeaf = *m.HeadLeaf.Clone()
+	out.ByteSizes = slices.Clone(m.ByteSizes)
+	switch v := m.Identity.(type) {
+	case *CustomNameHolder_TenantId:
+		out.Identity = &CustomNameHolder_TenantId{Tenant: v.Tenant}
+	case *CustomNameHolder_NumericId:
+		out.Identity = &CustomNameHolder_NumericId{NumericId: v.NumericId}
+	}
+	out.PlainField = m.PlainField
+	return out
 }
 
 func (x *Leaf) ProtoReflect() protoreflect.Message {

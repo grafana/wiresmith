@@ -956,12 +956,13 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 
 	// Hot-path emitters target the main .pb.go: structs, oneof variants,
 	// Reset/Has/Get/Size/Marshal/Unmarshal all write to fg.body / fg.imports.
-	// emitAllEqualMethods, emitAllCompareMethods and emitAllStringMethods are
-	// intentionally driven from this same pass, but route their output into the
-	// cold companion buffers (Equal + Compare → fg.compareBody via equalEmitter /
-	// compareEmitter; String → fg.utilBody) so they land in their own companion
-	// files for the same icache/iTLB rationale as the reflect split — see the
-	// FileGenerator field comments for details.
+	// emitAllEqualMethods, emitAllCompareMethods, emitAllStringMethods and
+	// emitAllCloneMethods are intentionally driven from this same pass, but
+	// route their output into the cold companion buffers (Equal + Compare →
+	// fg.compareBody via equalEmitter / compareEmitter; String + Clone →
+	// fg.utilBody) so they land in their own companion files for the same
+	// icache/iTLB rationale as the reflect split — see the FileGenerator field
+	// comments for details.
 	fg.emitAllEnums(fd)
 	fg.emitAllOneofs(fd)
 	fg.emitAllStructs(fd)
@@ -974,6 +975,7 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 	fg.emitAllEqualMethods(fd)
 	fg.emitAllCompareMethods(fd)
 	fg.emitAllStringMethods(fd)
+	fg.emitAllCloneMethods(fd)
 
 	// Companion file: reflection/registration glue. These emitters write to
 	// fg.utilBody / fg.utilImports (the same buffer the String() methods above

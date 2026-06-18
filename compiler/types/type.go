@@ -27,6 +27,15 @@ type FieldType interface {
 	// element-wise comparison; oneof composites compare by variant index
 	// first, then payload.
 	EmitCompare(e Emitter, indent, lhs, rhs string)
+	// EmitClone emits a deep-copy statement assigning a fresh copy of src
+	// into dst (both are addressable Go lvalue expressions, e.g.
+	// "out.Field" / "m.Field"). Scalars/strings/enums copy by value;
+	// bytes/slices/maps allocate fresh backing storage; pointer and message
+	// fields recurse via their nil-safe Clone(); customtype/casttype fields
+	// copy by value (see the contract note in compiler/generator/emit_clone.go).
+	// `indent` is the prefix applied to every emitted line, matching the
+	// EmitEqual/EmitCompare style. Emitted into the cold `_util.pb.go`.
+	EmitClone(e Emitter, indent, dst, src string)
 	RequiredImports() []string
 }
 

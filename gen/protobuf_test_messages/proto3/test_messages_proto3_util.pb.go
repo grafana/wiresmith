@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"reflect"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -976,6 +977,284 @@ func (m *EnumOnlyProto3) String() string {
 	}
 	var b strings.Builder
 	return strings.TrimSpace(b.String())
+}
+
+func (m *TestAllTypesProto3_NestedMessage) Clone() *TestAllTypesProto3_NestedMessage {
+	if m == nil {
+		return nil
+	}
+	out := &TestAllTypesProto3_NestedMessage{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.A = m.A
+	out.Corecursive = m.Corecursive.Clone()
+	return out
+}
+
+func (m *TestAllTypesProto3) Clone() *TestAllTypesProto3 {
+	if m == nil {
+		return nil
+	}
+	out := &TestAllTypesProto3{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.OptionalInt32 = m.OptionalInt32
+	out.OptionalInt64 = m.OptionalInt64
+	out.OptionalUint32 = m.OptionalUint32
+	out.OptionalUint64 = m.OptionalUint64
+	out.OptionalSint32 = m.OptionalSint32
+	out.OptionalSint64 = m.OptionalSint64
+	out.OptionalFixed32 = m.OptionalFixed32
+	out.OptionalFixed64 = m.OptionalFixed64
+	out.OptionalSfixed32 = m.OptionalSfixed32
+	out.OptionalSfixed64 = m.OptionalSfixed64
+	out.OptionalFloat = m.OptionalFloat
+	out.OptionalDouble = m.OptionalDouble
+	out.OptionalBool = m.OptionalBool
+	out.OptionalString = m.OptionalString
+	out.OptionalBytes = slices.Clone(m.OptionalBytes)
+	out.OptionalNestedMessage = *m.OptionalNestedMessage.Clone()
+	out.OptionalForeignMessage = *m.OptionalForeignMessage.Clone()
+	out.OptionalNestedEnum = m.OptionalNestedEnum
+	out.OptionalForeignEnum = m.OptionalForeignEnum
+	out.OptionalStringPiece = m.OptionalStringPiece
+	out.OptionalCord = m.OptionalCord
+	out.RecursiveMessage = m.RecursiveMessage.Clone()
+	out.RepeatedInt32 = slices.Clone(m.RepeatedInt32)
+	out.RepeatedInt64 = slices.Clone(m.RepeatedInt64)
+	out.RepeatedUint32 = slices.Clone(m.RepeatedUint32)
+	out.RepeatedUint64 = slices.Clone(m.RepeatedUint64)
+	out.RepeatedSint32 = slices.Clone(m.RepeatedSint32)
+	out.RepeatedSint64 = slices.Clone(m.RepeatedSint64)
+	out.RepeatedFixed32 = slices.Clone(m.RepeatedFixed32)
+	out.RepeatedFixed64 = slices.Clone(m.RepeatedFixed64)
+	out.RepeatedSfixed32 = slices.Clone(m.RepeatedSfixed32)
+	out.RepeatedSfixed64 = slices.Clone(m.RepeatedSfixed64)
+	out.RepeatedFloat = slices.Clone(m.RepeatedFloat)
+	out.RepeatedDouble = slices.Clone(m.RepeatedDouble)
+	out.RepeatedBool = slices.Clone(m.RepeatedBool)
+	out.RepeatedString = slices.Clone(m.RepeatedString)
+	out.RepeatedBytes = slices.Clone(m.RepeatedBytes)
+	for i := range out.RepeatedBytes {
+		out.RepeatedBytes[i] = slices.Clone(m.RepeatedBytes[i])
+	}
+	out.RepeatedNestedMessage = slices.Clone(m.RepeatedNestedMessage)
+	for i := range out.RepeatedNestedMessage {
+		out.RepeatedNestedMessage[i] = *m.RepeatedNestedMessage[i].Clone()
+	}
+	out.RepeatedForeignMessage = slices.Clone(m.RepeatedForeignMessage)
+	for i := range out.RepeatedForeignMessage {
+		out.RepeatedForeignMessage[i] = *m.RepeatedForeignMessage[i].Clone()
+	}
+	out.RepeatedNestedEnum = slices.Clone(m.RepeatedNestedEnum)
+	out.RepeatedForeignEnum = slices.Clone(m.RepeatedForeignEnum)
+	out.RepeatedStringPiece = slices.Clone(m.RepeatedStringPiece)
+	out.RepeatedCord = slices.Clone(m.RepeatedCord)
+	if m.MapInt32Int32 != nil {
+		out.MapInt32Int32 = make(map[int32]int32, len(m.MapInt32Int32))
+		for k, v := range m.MapInt32Int32 {
+			out.MapInt32Int32[k] = v
+		}
+	}
+	if m.MapInt64Int64 != nil {
+		out.MapInt64Int64 = make(map[int64]int64, len(m.MapInt64Int64))
+		for k, v := range m.MapInt64Int64 {
+			out.MapInt64Int64[k] = v
+		}
+	}
+	if m.MapUint32Uint32 != nil {
+		out.MapUint32Uint32 = make(map[uint32]uint32, len(m.MapUint32Uint32))
+		for k, v := range m.MapUint32Uint32 {
+			out.MapUint32Uint32[k] = v
+		}
+	}
+	if m.MapUint64Uint64 != nil {
+		out.MapUint64Uint64 = make(map[uint64]uint64, len(m.MapUint64Uint64))
+		for k, v := range m.MapUint64Uint64 {
+			out.MapUint64Uint64[k] = v
+		}
+	}
+	if m.MapSint32Sint32 != nil {
+		out.MapSint32Sint32 = make(map[int32]int32, len(m.MapSint32Sint32))
+		for k, v := range m.MapSint32Sint32 {
+			out.MapSint32Sint32[k] = v
+		}
+	}
+	if m.MapSint64Sint64 != nil {
+		out.MapSint64Sint64 = make(map[int64]int64, len(m.MapSint64Sint64))
+		for k, v := range m.MapSint64Sint64 {
+			out.MapSint64Sint64[k] = v
+		}
+	}
+	if m.MapFixed32Fixed32 != nil {
+		out.MapFixed32Fixed32 = make(map[uint32]uint32, len(m.MapFixed32Fixed32))
+		for k, v := range m.MapFixed32Fixed32 {
+			out.MapFixed32Fixed32[k] = v
+		}
+	}
+	if m.MapFixed64Fixed64 != nil {
+		out.MapFixed64Fixed64 = make(map[uint64]uint64, len(m.MapFixed64Fixed64))
+		for k, v := range m.MapFixed64Fixed64 {
+			out.MapFixed64Fixed64[k] = v
+		}
+	}
+	if m.MapSfixed32Sfixed32 != nil {
+		out.MapSfixed32Sfixed32 = make(map[int32]int32, len(m.MapSfixed32Sfixed32))
+		for k, v := range m.MapSfixed32Sfixed32 {
+			out.MapSfixed32Sfixed32[k] = v
+		}
+	}
+	if m.MapSfixed64Sfixed64 != nil {
+		out.MapSfixed64Sfixed64 = make(map[int64]int64, len(m.MapSfixed64Sfixed64))
+		for k, v := range m.MapSfixed64Sfixed64 {
+			out.MapSfixed64Sfixed64[k] = v
+		}
+	}
+	if m.MapInt32Float != nil {
+		out.MapInt32Float = make(map[int32]float32, len(m.MapInt32Float))
+		for k, v := range m.MapInt32Float {
+			out.MapInt32Float[k] = v
+		}
+	}
+	if m.MapInt32Double != nil {
+		out.MapInt32Double = make(map[int32]float64, len(m.MapInt32Double))
+		for k, v := range m.MapInt32Double {
+			out.MapInt32Double[k] = v
+		}
+	}
+	if m.MapBoolBool != nil {
+		out.MapBoolBool = make(map[bool]bool, len(m.MapBoolBool))
+		for k, v := range m.MapBoolBool {
+			out.MapBoolBool[k] = v
+		}
+	}
+	if m.MapStringString != nil {
+		out.MapStringString = make(map[string]string, len(m.MapStringString))
+		for k, v := range m.MapStringString {
+			out.MapStringString[k] = v
+		}
+	}
+	if m.MapStringBytes != nil {
+		out.MapStringBytes = make(map[string][]byte, len(m.MapStringBytes))
+		for k, v := range m.MapStringBytes {
+			out.MapStringBytes[k] = slices.Clone(v)
+		}
+	}
+	if m.MapStringNestedMessage != nil {
+		out.MapStringNestedMessage = make(map[string]TestAllTypesProto3_NestedMessage, len(m.MapStringNestedMessage))
+		for k, v := range m.MapStringNestedMessage {
+			out.MapStringNestedMessage[k] = *v.Clone()
+		}
+	}
+	if m.MapStringForeignMessage != nil {
+		out.MapStringForeignMessage = make(map[string]ForeignMessage, len(m.MapStringForeignMessage))
+		for k, v := range m.MapStringForeignMessage {
+			out.MapStringForeignMessage[k] = *v.Clone()
+		}
+	}
+	if m.MapStringNestedEnum != nil {
+		out.MapStringNestedEnum = make(map[string]TestAllTypesProto3_NestedEnum, len(m.MapStringNestedEnum))
+		for k, v := range m.MapStringNestedEnum {
+			out.MapStringNestedEnum[k] = v
+		}
+	}
+	if m.MapStringForeignEnum != nil {
+		out.MapStringForeignEnum = make(map[string]ForeignEnum, len(m.MapStringForeignEnum))
+		for k, v := range m.MapStringForeignEnum {
+			out.MapStringForeignEnum[k] = v
+		}
+	}
+	out.PackedInt32 = slices.Clone(m.PackedInt32)
+	out.PackedInt64 = slices.Clone(m.PackedInt64)
+	out.PackedUint32 = slices.Clone(m.PackedUint32)
+	out.PackedUint64 = slices.Clone(m.PackedUint64)
+	out.PackedSint32 = slices.Clone(m.PackedSint32)
+	out.PackedSint64 = slices.Clone(m.PackedSint64)
+	out.PackedFixed32 = slices.Clone(m.PackedFixed32)
+	out.PackedFixed64 = slices.Clone(m.PackedFixed64)
+	out.PackedSfixed32 = slices.Clone(m.PackedSfixed32)
+	out.PackedSfixed64 = slices.Clone(m.PackedSfixed64)
+	out.PackedFloat = slices.Clone(m.PackedFloat)
+	out.PackedDouble = slices.Clone(m.PackedDouble)
+	out.PackedBool = slices.Clone(m.PackedBool)
+	out.PackedNestedEnum = slices.Clone(m.PackedNestedEnum)
+	out.UnpackedInt32 = slices.Clone(m.UnpackedInt32)
+	out.UnpackedInt64 = slices.Clone(m.UnpackedInt64)
+	out.UnpackedUint32 = slices.Clone(m.UnpackedUint32)
+	out.UnpackedUint64 = slices.Clone(m.UnpackedUint64)
+	out.UnpackedSint32 = slices.Clone(m.UnpackedSint32)
+	out.UnpackedSint64 = slices.Clone(m.UnpackedSint64)
+	out.UnpackedFixed32 = slices.Clone(m.UnpackedFixed32)
+	out.UnpackedFixed64 = slices.Clone(m.UnpackedFixed64)
+	out.UnpackedSfixed32 = slices.Clone(m.UnpackedSfixed32)
+	out.UnpackedSfixed64 = slices.Clone(m.UnpackedSfixed64)
+	out.UnpackedFloat = slices.Clone(m.UnpackedFloat)
+	out.UnpackedDouble = slices.Clone(m.UnpackedDouble)
+	out.UnpackedBool = slices.Clone(m.UnpackedBool)
+	out.UnpackedNestedEnum = slices.Clone(m.UnpackedNestedEnum)
+	switch v := m.OneofField.(type) {
+	case *TestAllTypesProto3_OneofUint32:
+		out.OneofField = &TestAllTypesProto3_OneofUint32{OneofUint32: v.OneofUint32}
+	case *TestAllTypesProto3_OneofNestedMessage:
+		out.OneofField = &TestAllTypesProto3_OneofNestedMessage{OneofNestedMessage: *v.OneofNestedMessage.Clone()}
+	case *TestAllTypesProto3_OneofString:
+		out.OneofField = &TestAllTypesProto3_OneofString{OneofString: v.OneofString}
+	case *TestAllTypesProto3_OneofBytes:
+		out.OneofField = &TestAllTypesProto3_OneofBytes{OneofBytes: slices.Clone(v.OneofBytes)}
+	case *TestAllTypesProto3_OneofBool:
+		out.OneofField = &TestAllTypesProto3_OneofBool{OneofBool: v.OneofBool}
+	case *TestAllTypesProto3_OneofUint64:
+		out.OneofField = &TestAllTypesProto3_OneofUint64{OneofUint64: v.OneofUint64}
+	case *TestAllTypesProto3_OneofFloat:
+		out.OneofField = &TestAllTypesProto3_OneofFloat{OneofFloat: v.OneofFloat}
+	case *TestAllTypesProto3_OneofDouble:
+		out.OneofField = &TestAllTypesProto3_OneofDouble{OneofDouble: v.OneofDouble}
+	case *TestAllTypesProto3_OneofEnum:
+		out.OneofField = &TestAllTypesProto3_OneofEnum{OneofEnum: v.OneofEnum}
+	}
+	out.Fieldname1 = m.Fieldname1
+	out.FieldName2 = m.FieldName2
+	out.FieldName3 = m.FieldName3
+	out.FieldName4 = m.FieldName4
+	out.Field0name5 = m.Field0name5
+	out.Field0Name6 = m.Field0Name6
+	out.FieldName7 = m.FieldName7
+	out.FieldName8 = m.FieldName8
+	out.FieldName9 = m.FieldName9
+	out.FieldName10 = m.FieldName10
+	out.FIELDNAME11 = m.FIELDNAME11
+	out.FIELDName12 = m.FIELDName12
+	out.FieldName13 = m.FieldName13
+	out.FieldName14 = m.FieldName14
+	out.FieldName15 = m.FieldName15
+	out.FieldName16 = m.FieldName16
+	out.FieldName17 = m.FieldName17
+	out.FieldName18 = m.FieldName18
+	return out
+}
+
+func (m *ForeignMessage) Clone() *ForeignMessage {
+	if m == nil {
+		return nil
+	}
+	out := &ForeignMessage{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.C = m.C
+	return out
+}
+
+func (m *NullHypothesisProto3) Clone() *NullHypothesisProto3 {
+	if m == nil {
+		return nil
+	}
+	out := &NullHypothesisProto3{}
+	return out
+}
+
+func (m *EnumOnlyProto3) Clone() *EnumOnlyProto3 {
+	if m == nil {
+		return nil
+	}
+	out := &EnumOnlyProto3{}
+	return out
 }
 
 func (x ForeignEnum) Descriptor() protoreflect.EnumDescriptor {

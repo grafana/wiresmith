@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"reflect"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -127,6 +128,46 @@ func (m *Nested) String() string {
 		b.WriteString(" ")
 	}
 	return strings.TrimSpace(b.String())
+}
+
+func (m *Payload) Clone() *Payload {
+	if m == nil {
+		return nil
+	}
+	out := &Payload{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Id = m.Id
+	out.Sequence = m.Sequence
+	out.Chunks = slices.Clone(m.Chunks)
+	for i := range out.Chunks {
+		out.Chunks[i] = slices.Clone(m.Chunks[i])
+	}
+	if m.Labels != nil {
+		out.Labels = make(map[string]string, len(m.Labels))
+		for k, v := range m.Labels {
+			out.Labels[k] = v
+		}
+	}
+	switch v := m.Kind.(type) {
+	case *Payload_Text:
+		out.Kind = &Payload_Text{Text: v.Text}
+	case *Payload_Number:
+		out.Kind = &Payload_Number{Number: v.Number}
+	}
+	out.Nested = *m.Nested.Clone()
+	out.Status = m.Status
+	return out
+}
+
+func (m *Nested) Clone() *Nested {
+	if m == nil {
+		return nil
+	}
+	out := &Nested{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Name = m.Name
+	out.Value = m.Value
+	return out
 }
 
 func (x Payload_Status) Descriptor() protoreflect.EnumDescriptor {

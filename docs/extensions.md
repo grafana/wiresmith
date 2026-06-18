@@ -154,6 +154,8 @@ type CustomMarshaler interface {
 - `EqualWiresmith(other any)` is consulted from the generated `Equal()` method. Implementations type-assert and return `false` on mismatch.
 - `CompareWiresmith(other any) int` is consulted from the generated `Compare()` method (added by #100). Returns -1/0/+1 like `bytes.Compare` / `strings.Compare`. Implementations type-assert and return a sentinel (commonly `-1`) on type mismatch so the wrapper's Compare stays total.
 
+The generated `Clone()` method copies a customtype field **by value** — wiresmith cannot see the user type's internal invariants, so it does not synthesise a deep copy and does not require a `CloneWiresmith` method. A customtype whose Go representation holds a reference (a slice, a pointer, a map) is therefore value-copied and will alias the original's backing storage; such a type must either be value-copy-safe or be treated as immutable by callers that rely on `Clone()`. (casttype is handled the same way, except a casttype over the `bytes` kind is deep-cloned because the slice reference is visible to the generator.)
+
 The interface deliberately uses wiresmith-specific method names so a caller can't accidentally satisfy it with gogoproto's `Marshal()` / `Unmarshal()` shape — those have incompatible signatures.
 
 ### Where it applies

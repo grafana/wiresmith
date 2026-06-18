@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"reflect"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -192,6 +193,90 @@ func (m *OneofPlusEverything) String() string {
 		b.WriteString(" ")
 	}
 	return strings.TrimSpace(b.String())
+}
+
+func (m *Payload) Clone() *Payload {
+	if m == nil {
+		return nil
+	}
+	out := &Payload{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Data = m.Data
+	out.Number = m.Number
+	return out
+}
+
+func (m *MultiOneof) Clone() *MultiOneof {
+	if m == nil {
+		return nil
+	}
+	out := &MultiOneof{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	switch v := m.Primary.(type) {
+	case *MultiOneof_StrVal:
+		out.Primary = &MultiOneof_StrVal{StrVal: v.StrVal}
+	case *MultiOneof_IntVal:
+		out.Primary = &MultiOneof_IntVal{IntVal: v.IntVal}
+	case *MultiOneof_BoolVal:
+		out.Primary = &MultiOneof_BoolVal{BoolVal: v.BoolVal}
+	}
+	switch v := m.Secondary.(type) {
+	case *MultiOneof_DblVal:
+		out.Secondary = &MultiOneof_DblVal{DblVal: v.DblVal}
+	case *MultiOneof_BytesVal:
+		out.Secondary = &MultiOneof_BytesVal{BytesVal: slices.Clone(v.BytesVal)}
+	case *MultiOneof_MsgVal:
+		out.Secondary = &MultiOneof_MsgVal{MsgVal: *v.MsgVal.Clone()}
+	}
+	out.RegularField = m.RegularField
+	return out
+}
+
+func (m *OneofWithTypes) Clone() *OneofWithTypes {
+	if m == nil {
+		return nil
+	}
+	out := &OneofWithTypes{}
+	switch v := m.Value.(type) {
+	case *OneofWithTypes_StrVal:
+		out.Value = &OneofWithTypes_StrVal{StrVal: v.StrVal}
+	case *OneofWithTypes_IntVal:
+		out.Value = &OneofWithTypes_IntVal{IntVal: v.IntVal}
+	case *OneofWithTypes_MsgVal:
+		out.Value = &OneofWithTypes_MsgVal{MsgVal: *v.MsgVal.Clone()}
+	case *OneofWithTypes_EnumVal:
+		out.Value = &OneofWithTypes_EnumVal{EnumVal: v.EnumVal}
+	}
+	return out
+}
+
+func (m *OneofPlusEverything) Clone() *OneofPlusEverything {
+	if m == nil {
+		return nil
+	}
+	out := &OneofPlusEverything{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Name = m.Name
+	out.Values = slices.Clone(m.Values)
+	if m.Score != nil {
+		tmp := *m.Score
+		out.Score = &tmp
+	}
+	if m.Labels != nil {
+		out.Labels = make(map[string]string, len(m.Labels))
+		for k, v := range m.Labels {
+			out.Labels[k] = v
+		}
+	}
+	switch v := m.Payload.(type) {
+	case *OneofPlusEverything_Text:
+		out.Payload = &OneofPlusEverything_Text{Text: v.Text}
+	case *OneofPlusEverything_Raw:
+		out.Payload = &OneofPlusEverything_Raw{Raw: slices.Clone(v.Raw)}
+	case *OneofPlusEverything_Structured:
+		out.Payload = &OneofPlusEverything_Structured{Structured: *v.Structured.Clone()}
+	}
+	return out
 }
 
 func (x Shape) Descriptor() protoreflect.EnumDescriptor {

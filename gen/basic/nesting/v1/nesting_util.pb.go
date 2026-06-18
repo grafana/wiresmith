@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 	"unsafe"
@@ -155,6 +156,66 @@ func (m *CrossRef) String() string {
 		b.WriteString(" ")
 	}
 	return strings.TrimSpace(b.String())
+}
+
+func (m *Level0_Level1_Level2_Level3) Clone() *Level0_Level1_Level2_Level3 {
+	if m == nil {
+		return nil
+	}
+	out := &Level0_Level1_Level2_Level3{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.DeepValue = m.DeepValue
+	out.Depth = m.Depth
+	return out
+}
+
+func (m *Level0_Level1_Level2) Clone() *Level0_Level1_Level2 {
+	if m == nil {
+		return nil
+	}
+	out := &Level0_Level1_Level2{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Child = *m.Child.Clone()
+	out.Value = m.Value
+	return out
+}
+
+func (m *Level0_Level1) Clone() *Level0_Level1 {
+	if m == nil {
+		return nil
+	}
+	out := &Level0_Level1{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Child = *m.Child.Clone()
+	out.Extras = slices.Clone(m.Extras)
+	for i := range out.Extras {
+		out.Extras[i] = *m.Extras[i].Clone()
+	}
+	out.Value = m.Value
+	return out
+}
+
+func (m *Level0) Clone() *Level0 {
+	if m == nil {
+		return nil
+	}
+	out := &Level0{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Child = *m.Child.Clone()
+	out.Label = m.Label
+	return out
+}
+
+func (m *CrossRef) Clone() *CrossRef {
+	if m == nil {
+		return nil
+	}
+	out := &CrossRef{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.NestedRef = *m.NestedRef.Clone()
+	out.DeepRef = *m.DeepRef.Clone()
+	out.Tag = m.Tag
+	return out
 }
 
 func (x *Level0) ProtoReflect() protoreflect.Message {

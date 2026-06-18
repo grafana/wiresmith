@@ -10,6 +10,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"reflect"
+	"slices"
 	"strings"
 	"unsafe"
 )
@@ -70,6 +71,24 @@ func (m *Resource) String() string {
 		b.WriteString(" ")
 	}
 	return strings.TrimSpace(b.String())
+}
+
+func (m *Resource) Clone() *Resource {
+	if m == nil {
+		return nil
+	}
+	out := &Resource{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Attributes = slices.Clone(m.Attributes)
+	for i := range out.Attributes {
+		out.Attributes[i] = *m.Attributes[i].Clone()
+	}
+	out.DroppedAttributesCount = m.DroppedAttributesCount
+	out.EntityRefs = slices.Clone(m.EntityRefs)
+	for i := range out.EntityRefs {
+		out.EntityRefs[i] = *m.EntityRefs[i].Clone()
+	}
+	return out
 }
 
 func (x *Resource) ProtoReflect() protoreflect.Message {

@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 	"unsafe"
@@ -202,6 +203,97 @@ func (m *EntityRef) String() string {
 		b.WriteString(" ")
 	}
 	return strings.TrimSpace(b.String())
+}
+
+func (m *AnyValue) Clone() *AnyValue {
+	if m == nil {
+		return nil
+	}
+	out := &AnyValue{}
+	switch v := m.Value.(type) {
+	case *AnyValue_StringValue:
+		out.Value = &AnyValue_StringValue{StringValue: v.StringValue}
+	case *AnyValue_BoolValue:
+		out.Value = &AnyValue_BoolValue{BoolValue: v.BoolValue}
+	case *AnyValue_IntValue:
+		out.Value = &AnyValue_IntValue{IntValue: v.IntValue}
+	case *AnyValue_DoubleValue:
+		out.Value = &AnyValue_DoubleValue{DoubleValue: v.DoubleValue}
+	case *AnyValue_ArrayValue:
+		out.Value = &AnyValue_ArrayValue{ArrayValue: *v.ArrayValue.Clone()}
+	case *AnyValue_KvlistValue:
+		out.Value = &AnyValue_KvlistValue{KvlistValue: *v.KvlistValue.Clone()}
+	case *AnyValue_BytesValue:
+		out.Value = &AnyValue_BytesValue{BytesValue: slices.Clone(v.BytesValue)}
+	case *AnyValue_StringValueStrindex:
+		out.Value = &AnyValue_StringValueStrindex{StringValueStrindex: v.StringValueStrindex}
+	}
+	return out
+}
+
+func (m *ArrayValue) Clone() *ArrayValue {
+	if m == nil {
+		return nil
+	}
+	out := &ArrayValue{}
+	out.Values = slices.Clone(m.Values)
+	for i := range out.Values {
+		out.Values[i] = *m.Values[i].Clone()
+	}
+	return out
+}
+
+func (m *KeyValueList) Clone() *KeyValueList {
+	if m == nil {
+		return nil
+	}
+	out := &KeyValueList{}
+	out.Values = slices.Clone(m.Values)
+	for i := range out.Values {
+		out.Values[i] = *m.Values[i].Clone()
+	}
+	return out
+}
+
+func (m *KeyValue) Clone() *KeyValue {
+	if m == nil {
+		return nil
+	}
+	out := &KeyValue{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Key = m.Key
+	out.Value = *m.Value.Clone()
+	out.KeyStrindex = m.KeyStrindex
+	return out
+}
+
+func (m *InstrumentationScope) Clone() *InstrumentationScope {
+	if m == nil {
+		return nil
+	}
+	out := &InstrumentationScope{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Name = m.Name
+	out.Version = m.Version
+	out.Attributes = slices.Clone(m.Attributes)
+	for i := range out.Attributes {
+		out.Attributes[i] = *m.Attributes[i].Clone()
+	}
+	out.DroppedAttributesCount = m.DroppedAttributesCount
+	return out
+}
+
+func (m *EntityRef) Clone() *EntityRef {
+	if m == nil {
+		return nil
+	}
+	out := &EntityRef{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.SchemaUrl = m.SchemaUrl
+	out.Type = m.Type
+	out.IdKeys = slices.Clone(m.IdKeys)
+	out.DescriptionKeys = slices.Clone(m.DescriptionKeys)
+	return out
 }
 
 func (x *AnyValue) ProtoReflect() protoreflect.Message {

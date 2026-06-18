@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 	"unsafe"
@@ -135,6 +136,58 @@ func (m *NodeB) String() string {
 		b.WriteString(" ")
 	}
 	return strings.TrimSpace(b.String())
+}
+
+func (m *LinkedList) Clone() *LinkedList {
+	if m == nil {
+		return nil
+	}
+	out := &LinkedList{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Value = m.Value
+	out.Next = m.Next.Clone()
+	return out
+}
+
+func (m *TreeNode) Clone() *TreeNode {
+	if m == nil {
+		return nil
+	}
+	out := &TreeNode{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Label = m.Label
+	out.Value = m.Value
+	out.Children = slices.Clone(m.Children)
+	for i := range out.Children {
+		out.Children[i] = *m.Children[i].Clone()
+	}
+	return out
+}
+
+func (m *NodeA) Clone() *NodeA {
+	if m == nil {
+		return nil
+	}
+	out := &NodeA{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Name = m.Name
+	out.Peer = m.Peer.Clone()
+	out.Peers = slices.Clone(m.Peers)
+	for i := range out.Peers {
+		out.Peers[i] = *m.Peers[i].Clone()
+	}
+	return out
+}
+
+func (m *NodeB) Clone() *NodeB {
+	if m == nil {
+		return nil
+	}
+	out := &NodeB{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Id = m.Id
+	out.Parent = m.Parent.Clone()
+	return out
 }
 
 func (x *LinkedList) ProtoReflect() protoreflect.Message {

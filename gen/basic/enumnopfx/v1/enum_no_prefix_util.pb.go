@@ -62,6 +62,17 @@ func (m *MetricInfo) String() string {
 	return strings.TrimSpace(b.String())
 }
 
+func (m *MetricInfo) Clone() *MetricInfo {
+	if m == nil {
+		return nil
+	}
+	out := &MetricInfo{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Type = m.Type
+	out.Name = m.Name
+	return out
+}
+
 func (x MetricType) Descriptor() protoreflect.EnumDescriptor {
 	file_basic_enumnopfx_v1_enum_no_prefix_proto_init()
 	return file_basic_enumnopfx_v1_enum_no_prefix_proto_enumTypes[0].Desc

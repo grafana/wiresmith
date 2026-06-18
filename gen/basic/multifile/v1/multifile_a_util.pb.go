@@ -63,6 +63,17 @@ func (m *AlphaEntry) String() string {
 	return strings.TrimSpace(b.String())
 }
 
+func (m *AlphaEntry) Clone() *AlphaEntry {
+	if m == nil {
+		return nil
+	}
+	out := &AlphaEntry{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Key = m.Key
+	out.Count = m.Count
+	return out
+}
+
 func (x *AlphaEntry) ProtoReflect() protoreflect.Message {
 	file_basic_multifile_v1_multifile_a_proto_init()
 	return protohelpers.NewMessageReflect(&file_basic_multifile_v1_multifile_a_proto_msgTypes[0], x)

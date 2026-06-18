@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 	"unsafe"
@@ -95,6 +96,34 @@ func (m *RepeatedCustomTypeHolder) String() string {
 		b.WriteString(" ")
 	}
 	return strings.TrimSpace(b.String())
+}
+
+func (m *CustomTypeHolder) Clone() *CustomTypeHolder {
+	if m == nil {
+		return nil
+	}
+	out := &CustomTypeHolder{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Labels = m.Labels
+	out.TenantId = m.TenantId
+	out.PlainBytes = slices.Clone(m.PlainBytes)
+	out.PlainString = m.PlainString
+	return out
+}
+
+func (m *RepeatedCustomTypeHolder) Clone() *RepeatedCustomTypeHolder {
+	if m == nil {
+		return nil
+	}
+	out := &RepeatedCustomTypeHolder{}
+	out.Ids = slices.Clone(m.Ids)
+	out.Tags = slices.Clone(m.Tags)
+	out.PlainIds = slices.Clone(m.PlainIds)
+	for i := range out.PlainIds {
+		out.PlainIds[i] = slices.Clone(m.PlainIds[i])
+	}
+	out.PlainTags = slices.Clone(m.PlainTags)
+	return out
 }
 
 func (x *CustomTypeHolder) ProtoReflect() protoreflect.Message {

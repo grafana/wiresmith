@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 	"unsafe"
@@ -95,6 +96,33 @@ func (m *PointerHolder) String() string {
 		b.WriteString(" ")
 	}
 	return strings.TrimSpace(b.String())
+}
+
+func (m *Leaf) Clone() *Leaf {
+	if m == nil {
+		return nil
+	}
+	out := &Leaf{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Id = m.Id
+	out.Name = m.Name
+	return out
+}
+
+func (m *PointerHolder) Clone() *PointerHolder {
+	if m == nil {
+		return nil
+	}
+	out := &PointerHolder{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Name = m.Name
+	out.Head = m.Head.Clone()
+	out.Items = slices.Clone(m.Items)
+	for i := range out.Items {
+		out.Items[i] = out.Items[i].Clone()
+	}
+	out.Tail = *m.Tail.Clone()
+	return out
 }
 
 func (x *Leaf) ProtoReflect() protoreflect.Message {

@@ -11,6 +11,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 	"unsafe"
@@ -181,6 +182,71 @@ func (m *LogRecord) String() string {
 		b.WriteString(" ")
 	}
 	return strings.TrimSpace(b.String())
+}
+
+func (m *LogsData) Clone() *LogsData {
+	if m == nil {
+		return nil
+	}
+	out := &LogsData{}
+	out.ResourceLogs = slices.Clone(m.ResourceLogs)
+	for i := range out.ResourceLogs {
+		out.ResourceLogs[i] = *m.ResourceLogs[i].Clone()
+	}
+	return out
+}
+
+func (m *ResourceLogs) Clone() *ResourceLogs {
+	if m == nil {
+		return nil
+	}
+	out := &ResourceLogs{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Resource = *m.Resource.Clone()
+	out.ScopeLogs = slices.Clone(m.ScopeLogs)
+	for i := range out.ScopeLogs {
+		out.ScopeLogs[i] = *m.ScopeLogs[i].Clone()
+	}
+	out.SchemaUrl = m.SchemaUrl
+	return out
+}
+
+func (m *ScopeLogs) Clone() *ScopeLogs {
+	if m == nil {
+		return nil
+	}
+	out := &ScopeLogs{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Scope = *m.Scope.Clone()
+	out.LogRecords = slices.Clone(m.LogRecords)
+	for i := range out.LogRecords {
+		out.LogRecords[i] = *m.LogRecords[i].Clone()
+	}
+	out.SchemaUrl = m.SchemaUrl
+	return out
+}
+
+func (m *LogRecord) Clone() *LogRecord {
+	if m == nil {
+		return nil
+	}
+	out := &LogRecord{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.TimeUnixNano = m.TimeUnixNano
+	out.ObservedTimeUnixNano = m.ObservedTimeUnixNano
+	out.SeverityNumber = m.SeverityNumber
+	out.SeverityText = m.SeverityText
+	out.Body = *m.Body.Clone()
+	out.Attributes = slices.Clone(m.Attributes)
+	for i := range out.Attributes {
+		out.Attributes[i] = *m.Attributes[i].Clone()
+	}
+	out.DroppedAttributesCount = m.DroppedAttributesCount
+	out.Flags = m.Flags
+	out.TraceId = slices.Clone(m.TraceId)
+	out.SpanId = slices.Clone(m.SpanId)
+	out.EventName = m.EventName
+	return out
 }
 
 func (x SeverityNumber) Descriptor() protoreflect.EnumDescriptor {

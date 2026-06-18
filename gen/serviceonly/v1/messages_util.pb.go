@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 	"unsafe"
@@ -79,6 +80,28 @@ func (m *Response) String() string {
 		b.WriteString(" ")
 	}
 	return strings.TrimSpace(b.String())
+}
+
+func (m *Request) Clone() *Request {
+	if m == nil {
+		return nil
+	}
+	out := &Request{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Id = m.Id
+	out.Payload = slices.Clone(m.Payload)
+	return out
+}
+
+func (m *Response) Clone() *Response {
+	if m == nil {
+		return nil
+	}
+	out := &Response{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Id = m.Id
+	out.PayloadBytes = m.PayloadBytes
+	return out
 }
 
 func (x *Request) ProtoReflect() protoreflect.Message {

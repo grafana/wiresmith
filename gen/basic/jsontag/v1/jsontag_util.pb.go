@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"reflect"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -132,6 +133,44 @@ func (m *JsonTagHolder) String() string {
 		b.WriteString(" ")
 	}
 	return strings.TrimSpace(b.String())
+}
+
+func (m *Leaf) Clone() *Leaf {
+	if m == nil {
+		return nil
+	}
+	out := &Leaf{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Id = m.Id
+	out.Name = m.Name
+	return out
+}
+
+func (m *JsonTagHolder) Clone() *JsonTagHolder {
+	if m == nil {
+		return nil
+	}
+	out := &JsonTagHolder{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.BlockId = m.BlockId
+	out.PlainName = m.PlainName
+	out.TotalObjects = m.TotalObjects
+	out.Head = *m.Head.Clone()
+	out.Sizes = slices.Clone(m.Sizes)
+	if m.Counters != nil {
+		out.Counters = make(map[string]int64, len(m.Counters))
+		for k, v := range m.Counters {
+			out.Counters[k] = v
+		}
+	}
+	out.InternalOnly = m.InternalOnly
+	switch v := m.Source.(type) {
+	case *JsonTagHolder_SourceId:
+		out.Source = &JsonTagHolder_SourceId{SourceId: v.SourceId}
+	case *JsonTagHolder_RawSource:
+		out.Source = &JsonTagHolder_RawSource{RawSource: slices.Clone(v.RawSource)}
+	}
+	return out
 }
 
 func (x *Leaf) ProtoReflect() protoreflect.Message {

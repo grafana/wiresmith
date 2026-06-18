@@ -74,6 +74,20 @@ func (m *CrossMapOuter) String() string {
 	return strings.TrimSpace(b.String())
 }
 
+func (m *CrossMapOuter) Clone() *CrossMapOuter {
+	if m == nil {
+		return nil
+	}
+	out := &CrossMapOuter{}
+	if m.Entries != nil {
+		out.Entries = make(map[string]recursivev1.LinkedList, len(m.Entries))
+		for k, v := range m.Entries {
+			out.Entries[k] = *v.Clone()
+		}
+	}
+	return out
+}
+
 func (x *CrossMapOuter) ProtoReflect() protoreflect.Message {
 	file_basic_crossmap_v1_crossmap_proto_init()
 	return protohelpers.NewMessageReflect(&file_basic_crossmap_v1_crossmap_proto_msgTypes[0], x)

@@ -11,6 +11,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 	"unsafe"
@@ -298,6 +299,127 @@ func (m *Status) String() string {
 		b.WriteString(" ")
 	}
 	return strings.TrimSpace(b.String())
+}
+
+func (m *TracesData) Clone() *TracesData {
+	if m == nil {
+		return nil
+	}
+	out := &TracesData{}
+	out.ResourceSpans = slices.Clone(m.ResourceSpans)
+	for i := range out.ResourceSpans {
+		out.ResourceSpans[i] = *m.ResourceSpans[i].Clone()
+	}
+	return out
+}
+
+func (m *ResourceSpans) Clone() *ResourceSpans {
+	if m == nil {
+		return nil
+	}
+	out := &ResourceSpans{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Resource = *m.Resource.Clone()
+	out.ScopeSpans = slices.Clone(m.ScopeSpans)
+	for i := range out.ScopeSpans {
+		out.ScopeSpans[i] = *m.ScopeSpans[i].Clone()
+	}
+	out.SchemaUrl = m.SchemaUrl
+	return out
+}
+
+func (m *ScopeSpans) Clone() *ScopeSpans {
+	if m == nil {
+		return nil
+	}
+	out := &ScopeSpans{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Scope = *m.Scope.Clone()
+	out.Spans = slices.Clone(m.Spans)
+	for i := range out.Spans {
+		out.Spans[i] = *m.Spans[i].Clone()
+	}
+	out.SchemaUrl = m.SchemaUrl
+	return out
+}
+
+func (m *Span_Event) Clone() *Span_Event {
+	if m == nil {
+		return nil
+	}
+	out := &Span_Event{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.TimeUnixNano = m.TimeUnixNano
+	out.Name = m.Name
+	out.Attributes = slices.Clone(m.Attributes)
+	for i := range out.Attributes {
+		out.Attributes[i] = *m.Attributes[i].Clone()
+	}
+	out.DroppedAttributesCount = m.DroppedAttributesCount
+	return out
+}
+
+func (m *Span_Link) Clone() *Span_Link {
+	if m == nil {
+		return nil
+	}
+	out := &Span_Link{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.TraceId = slices.Clone(m.TraceId)
+	out.SpanId = slices.Clone(m.SpanId)
+	out.TraceState = m.TraceState
+	out.Attributes = slices.Clone(m.Attributes)
+	for i := range out.Attributes {
+		out.Attributes[i] = *m.Attributes[i].Clone()
+	}
+	out.DroppedAttributesCount = m.DroppedAttributesCount
+	out.Flags = m.Flags
+	return out
+}
+
+func (m *Span) Clone() *Span {
+	if m == nil {
+		return nil
+	}
+	out := &Span{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.TraceId = slices.Clone(m.TraceId)
+	out.SpanId = slices.Clone(m.SpanId)
+	out.TraceState = m.TraceState
+	out.ParentSpanId = slices.Clone(m.ParentSpanId)
+	out.Flags = m.Flags
+	out.Name = m.Name
+	out.Kind = m.Kind
+	out.StartTimeUnixNano = m.StartTimeUnixNano
+	out.EndTimeUnixNano = m.EndTimeUnixNano
+	out.Attributes = slices.Clone(m.Attributes)
+	for i := range out.Attributes {
+		out.Attributes[i] = *m.Attributes[i].Clone()
+	}
+	out.DroppedAttributesCount = m.DroppedAttributesCount
+	out.Events = slices.Clone(m.Events)
+	for i := range out.Events {
+		out.Events[i] = *m.Events[i].Clone()
+	}
+	out.DroppedEventsCount = m.DroppedEventsCount
+	out.Links = slices.Clone(m.Links)
+	for i := range out.Links {
+		out.Links[i] = *m.Links[i].Clone()
+	}
+	out.DroppedLinksCount = m.DroppedLinksCount
+	out.Status = *m.Status.Clone()
+	return out
+}
+
+func (m *Status) Clone() *Status {
+	if m == nil {
+		return nil
+	}
+	out := &Status{}
+	out.XXX_fieldsPresent = m.XXX_fieldsPresent
+	out.Message = m.Message
+	out.Code = m.Code
+	return out
 }
 
 func (x SpanFlags) Descriptor() protoreflect.EnumDescriptor {
