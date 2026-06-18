@@ -55,7 +55,7 @@ func TestAnyField_GetterShape(t *testing.T) {
 	h := &af.Holder{}
 	require.NoError(t, h.Unmarshal(b))
 
-	var got *anypb.Any = h.GetPayload() // compile-time assertion of *anypb.Any
+	var got *anypb.Any = h.GetPayload() //nolint:staticcheck // QF1011: explicit type is an intentional compile-time assertion that GetPayload returns *anypb.Any
 	require.NotNil(t, got)
 	assert.Equal(t, "type.googleapis.com/x.X", got.GetTypeUrl())
 

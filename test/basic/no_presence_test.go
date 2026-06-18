@@ -82,7 +82,7 @@ func TestNoPresence_Accessors(t *testing.T) {
 	bare := &np.BareHolder{Child: np.Leaf{Id: 7}}
 	// Explicit *np.Leaf type is a compile-time assertion that GetChild returns
 	// a pointer, not the value — the uniform getter-shape contract.
-	var got *np.Leaf = bare.GetChild()
+	var got *np.Leaf = bare.GetChild() //nolint:staticcheck // QF1011: explicit type is an intentional compile-time assertion that GetChild returns *np.Leaf (uniform getter-shape contract)
 	require.NotNil(t, got, "GetChild must return a non-nil pointer for a non-nil receiver")
 	assert.Equal(t, int64(7), got.Id, "GetChild must return the field address under no_presence")
 	assert.False(t, bare.HasMaybe())
