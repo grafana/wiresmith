@@ -874,6 +874,14 @@ func destForReachable(fd protoreflect.FileDescriptor) goDest {
 	protoPkg := string(fd.Package())
 	importPath := relDir
 	pkgName := goPackageName(protoPkg)
+	// A WKT wiresmith ships a replacement for (e.g. google/protobuf/any.proto,
+	// pulled in transitively via WithStandardImports) resolves to the
+	// wiresmith package, not its official go_package. Source-relative relDir is
+	// irrelevant here — the file isn't emitted, only referenced.
+	if dest, ok := wktDest(fd.Path()); ok {
+		importPath, pkgName = parseGoPackage(dest)
+		return goDest{importPath: importPath, relDir: relDir, pkgName: pkgName, protoPkg: protoPkg}
+	}
 	opts, _ := fd.Options().(*descriptorpb.FileOptions)
 	if goPkg := opts.GetGoPackage(); goPkg != "" {
 		importPath, pkgName = parseGoPackage(goPkg)
@@ -974,9 +982,15 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 	// emitRegistration uses for the per-file _enumTypes / _msgTypes arrays.
 	// Changing one without the other will silently produce a binary where
 	// message N's ProtoReflect() returns the descriptor for message N+k.
-	fg.emitAllEnumReflectMethods(fd)
-	fg.emitAllProtoReflectMethods(fd)
-	fg.emitRegistration(fd)
+	// wiresmith's own WKT replacement packages (e.g. types/known/anypb) skip
+	// reflect/registration: the official runtime already registers the
+	// google.protobuf.* descriptor, so a second registration would panic.
+	// Their ProtoReflect is hand-written to delegate to the official descriptor.
+	if !skipReflectEmission(fd) {
+		fg.emitAllEnumReflectMethods(fd)
+		fg.emitAllProtoReflectMethods(fd)
+		fg.emitRegistration(fd)
+	}
 
 	// Record the main .pb.go file. Skip when fg.body is empty — that's the
 	// service-only case (no enums, oneofs, structs, accessors, or marshal

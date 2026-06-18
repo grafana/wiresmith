@@ -134,6 +134,14 @@ func TestGenerateMatchesCheckedIn(t *testing.T) {
 		name      string
 		protoDir  string
 		overrides map[string]string
+		// outDir is the generator --out value (default "gen"). compareRoot is
+		// the checked-in tree the freshly generated files are diffed against
+		// (default the gen/ dir). files scopes emission to specific positional
+		// sources (default: emit the whole walked tree). The well-known-type
+		// package is generated to the module root, so it needs all three.
+		outDir      string
+		compareRoot string
+		files       []string
 	}{
 		{
 			name:      "otlp",
@@ -152,9 +160,14 @@ func TestGenerateMatchesCheckedIn(t *testing.T) {
 			name:     "conformance/test_messages",
 			protoDir: filepath.Join(root, "proto", "conformance"),
 		},
+		{
+			name:        "wellknown/anypb",
+			protoDir:    filepath.Join(root, "proto", "wellknown"),
+			outDir:      ".",
+			compareRoot: root,
+			files:       []string{filepath.Join(root, "proto", "wellknown", "types", "known", "anypb", "any.proto")},
+		},
 	}
-
-	genDir := filepath.Join(root, "gen")
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -164,7 +177,14 @@ func TestGenerateMatchesCheckedIn(t *testing.T) {
 			// would yield a nonsense base like wiresmith/var/folders/....
 			cwd := t.TempDir()
 			t.Chdir(cwd)
-			outDir := "gen"
+			outDir := tc.outDir
+			if outDir == "" {
+				outDir = "gen"
+			}
+			compareRoot := tc.compareRoot
+			if compareRoot == "" {
+				compareRoot = filepath.Join(root, "gen")
+			}
 			absOutDir := filepath.Join(cwd, outDir)
 
 			// For conformance, only test_messages_proto3.proto is generated
@@ -188,6 +208,7 @@ func TestGenerateMatchesCheckedIn(t *testing.T) {
 				OutDir:    outDir,
 				ProtoDirs: []string{protoDir},
 				Overrides: tc.overrides,
+				Files:     tc.files,
 			}
 			if err := gen.Generate(ctx); err != nil {
 				t.Fatalf("Generate failed: %v", err)
@@ -217,7 +238,7 @@ func TestGenerateMatchesCheckedIn(t *testing.T) {
 				if err != nil {
 					return err
 				}
-				checkedIn := filepath.Join(genDir, rel)
+				checkedIn := filepath.Join(compareRoot, rel)
 				existingContent, err := os.ReadFile(checkedIn)
 				if err != nil {
 					t.Errorf("generated %s has no checked-in counterpart at %s", rel, checkedIn)
@@ -244,7 +265,7 @@ func TestGenerateMatchesCheckedIn(t *testing.T) {
 				genDirs[filepath.Dir(rel)] = struct{}{}
 			}
 			for dir := range genDirs {
-				checkedInDir := filepath.Join(genDir, dir)
+				checkedInDir := filepath.Join(compareRoot, dir)
 				entries, err := os.ReadDir(checkedInDir)
 				if err != nil {
 					t.Fatalf("reading checked-in directory %s: %v", dir, err)

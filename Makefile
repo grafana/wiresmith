@@ -128,6 +128,12 @@ endef
 
 generate-ours: ## Regenerate all wiresmith + conformance code
 	$(eval WIRESMITH := $(shell go build -o /tmp/wiresmith-gen ./cmd/wiresmith/ && echo /tmp/wiresmith-gen))
+	@echo "==> Generating wiresmith well-known types → types/known/"
+	@# Shipped WKT replacements (e.g. google.protobuf.Any). Output is at the
+	@# module root (--out=.) so the import path matches the source-relative
+	@# disk path; the package omits reflect/registration (see compiler/
+	@# generator/wellknown.go) and pairs with hand-written helpers.go.
+	$(WIRESMITH) --proto_path=proto/wellknown --out=. --module=$(MODULE) proto/wellknown/types/known/anypb/any.proto
 	@echo "==> Generating wiresmith code → gen/opentelemetry/proto/"
 	$(WIRESMITH) --proto_path=proto/otlp --out=gen --module=$(MODULE) $(call wiresmith_mflags)
 	@echo "==> Generating wiresmith code → gen/test/kitchensink/"

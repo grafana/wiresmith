@@ -1,0 +1,31 @@
+// This is wiresmith's source for its drop-in replacement of the well-known
+// `google.protobuf.Any` (google/protobuf/any.proto). It is byte-for-byte the
+// upstream Any message, but its go_package and source-relative path place the
+// generated Go in github.com/grafana/wiresmith/types/known/anypb so the
+// generated struct carries wiresmith's wire methods
+// (Size/Marshal/Unmarshal/Equal/Compare) — the official anypb.Any does not.
+//
+// References to `google/protobuf/any.proto` in consumer protos are redirected
+// to this package by the built-in WKT override (see compiler/generator/
+// wellknown.go); this file is only the source for generating the package
+// itself. Reflect/registration is intentionally NOT generated for it (the
+// official runtime already registers google.protobuf.Any) — ProtoReflect and
+// the typed Any helpers are hand-written in helpers.go.
+syntax = "proto3";
+
+package google.protobuf;
+
+option go_package = "github.com/grafana/wiresmith/types/known/anypb;anypb";
+
+import "wiresmith/options.proto";
+
+message Any {
+  // no_presence gives Any a gogo nullable=false-style {TypeUrl, Value} layout
+  // (no XXX_fieldsPresent bitmap): the official/gogo Any has no presence
+  // semantics, and consumers literal-compare and unsafe-cast Any, so the clean
+  // declared-fields-only layout is the right shape for the replacement.
+  option (wiresmith.options.no_presence) = true;
+
+  string type_url = 1;
+  bytes value = 2;
+}

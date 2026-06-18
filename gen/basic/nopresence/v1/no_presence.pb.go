@@ -115,11 +115,11 @@ func (m *Leaf) GetName() string {
 	return ""
 }
 
-func (m *BareHolder) GetChild() Leaf {
+func (m *BareHolder) GetChild() *Leaf {
 	if m != nil {
-		return m.Child
+		return &m.Child
 	}
-	return Leaf{}
+	return nil
 }
 
 func (m *BareHolder) GetNum() int64 {

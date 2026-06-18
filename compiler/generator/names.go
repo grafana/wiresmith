@@ -113,6 +113,11 @@ func destForPath(module, outDir, fdPath, protoPkg string, goPackages, overrides 
 	// statements. The same key shape protoc consumes via `Mkey=value`.
 	if override, ok := overrides[fdPath]; ok && override != "" {
 		importPath, pkgName = parseGoPackage(override)
+	} else if dest, ok := wktDest(fdPath); ok {
+		// Well-known types wiresmith ships a replacement for resolve to that
+		// package regardless of their official go_package — but an explicit
+		// user -M override above still wins.
+		importPath, pkgName = parseGoPackage(dest)
 	} else if goPkg, ok := goPackages[protoPkg]; ok && goPkg != "" {
 		importPath, pkgName = parseGoPackage(goPkg)
 	}

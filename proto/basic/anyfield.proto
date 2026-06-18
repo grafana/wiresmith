@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package basic.anyfield.v1;
+
+option go_package = "github.com/grafana/wiresmith/gen/basic/anyfield/v1";
+
+import "google/protobuf/any.proto";
+
+// Holder exercises google.protobuf.Any as both a singular and a repeated
+// field. References to the well-known Any resolve to wiresmith's shipped
+// replacement (github.com/grafana/wiresmith/types/known/anypb), whose struct
+// carries wiresmith's wire methods.
+message Holder {
+  google.protobuf.Any payload = 1;
+  repeated google.protobuf.Any items = 2;
+}
