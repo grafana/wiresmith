@@ -213,6 +213,21 @@ type FileGenerator struct {
 	// it once, and callers don't have to opt in.
 	compareImports *ImportTracker
 	compareBody    *bytes.Buffer
+
+	// stringBody / stringImports hold the companion `<name>_string.pb.go`
+	// file: per-message String() methods. String() is a debug method, never
+	// called from Marshal/Unmarshal/Size, so it follows the same icache/iTLB
+	// split as _compare/_equal — it can be large (one append per field) and
+	// would otherwise bloat the hot main .pb.go. Unlike the old
+	// fmt.Sprintf("%v", *m) form, the generated body walks fields explicitly,
+	// dereferencing pointers (so optional scalars / oneofs / pointer-option /
+	// recursive fields render their VALUE, never a heap address) and sorting
+	// map keys, so the output is content- and byte-deterministic. It needs
+	// only fmt/sort/strings, not protoimpl/prototext, so no reflection bridge
+	// is involved (the official protoreflect path panics on wiresmith's
+	// value-typed message fields — see protohelpers/message.go).
+	stringImports *ImportTracker
+	stringBody    *bytes.Buffer
 }
 
 // Emitter interface implementation for FileGenerator.
@@ -518,18 +533,18 @@ func (g *Generator) generateFromFiles(results []protoreflect.FileDescriptor, emi
 	// internal schemas and empty protos that emit no output, so they can't
 	// clobber a neighbour).
 	//
-	// Each proto emits up to five outputs (the main .pb.go and the
-	// companion _reflect.pb.go, _compare.pb.go, _equal.pb.go, and — when
+	// Each proto emits up to six outputs (the main .pb.go and the companion
+	// _reflect.pb.go, _compare.pb.go, _equal.pb.go, _string.pb.go, and — when
 	// the proto declares services — _grpc.pb.go), so an input like
-	// foo_reflect.proto / foo_compare.proto / foo_equal.proto / foo_grpc.proto
-	// would generate a file that collides with foo.proto's companion.
-	// Check all five paths against the same map.
-	outputs := make(map[string]string, 5*len(results))
+	// foo_reflect.proto / foo_compare.proto / foo_equal.proto / foo_string.proto /
+	// foo_grpc.proto would generate a file that collides with foo.proto's
+	// companion. Check all six paths against the same map.
+	outputs := make(map[string]string, 6*len(results))
 	for _, fd := range results {
 		if !g.shouldEmit(fd) {
 			continue
 		}
-		for _, outPath := range []string{g.outputPathFor(fd), g.outputReflectPathFor(fd), g.outputComparePathFor(fd), g.outputEqualPathFor(fd), g.outputGrpcPathFor(fd)} {
+		for _, outPath := range []string{g.outputPathFor(fd), g.outputReflectPathFor(fd), g.outputComparePathFor(fd), g.outputEqualPathFor(fd), g.outputStringPathFor(fd), g.outputGrpcPathFor(fd)} {
 			if prev, exists := outputs[outPath]; exists {
 				return nil, fmt.Errorf("output collision at %s: %q and %q both write to this path (proto package %q)",
 					outPath, prev, fd.Path(), fd.Package())
@@ -947,6 +962,8 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 		compareBody:        &bytes.Buffer{},
 		equalImports:       newImportTracker(g.Module, selfDest, g.destinations),
 		equalBody:          &bytes.Buffer{},
+		stringImports:      newImportTracker(g.Module, selfDest, g.destinations),
+		stringBody:         &bytes.Buffer{},
 		fileVarName:        sanitizeFileVarName(fd.Path()),
 		options:            g.options,
 		jsontagExt:         g.jsontagExt,
@@ -974,6 +991,7 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 	fg.emitAllUnmarshalMethods(fd)
 	fg.emitAllEqualMethods(fd)
 	fg.emitAllCompareMethods(fd)
+	fg.emitAllStringMethods(fd)
 
 	// Companion file: reflection/registration glue. These emitters write to
 	// fg.reflectBody / fg.reflectImports. The two passes below MUST iterate
@@ -1039,6 +1057,16 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 		g.writeFormatted(g.outputEqualPathFor(fd), eqOut.Bytes(), fd.Path())
 	}
 
+	// Record the companion _string.pb.go file. Skip if no messages contributed
+	// a String method (enum-only or empty file).
+	if fg.stringBody.Len() > 0 {
+		var strOut bytes.Buffer
+		fg.emitHeader(&strOut, fg.stringImports)
+		fg.emitStringFileBanner(&strOut)
+		strOut.Write(fg.stringBody.Bytes())
+		g.writeFormatted(g.outputStringPathFor(fd), strOut.Bytes(), fd.Path())
+	}
+
 	// Record the companion _grpc.pb.go file. Skip when fd declares no
 	// services — emitGRPC short-circuits the same case but checking
 	// inline keeps the order-of-files generated visible in this loop.
@@ -1083,6 +1111,14 @@ func (g *Generator) outputComparePathFor(fd protoreflect.FileDescriptor) string 
 // iTLB locality reasons as `_reflect.pb.go`.
 func (g *Generator) outputEqualPathFor(fd protoreflect.FileDescriptor) string {
 	base := strings.TrimSuffix(filepath.Base(fd.Path()), ".proto") + "_equal.pb.go"
+	return filepath.Join(g.OutDir, sourceRelDir(fd.Path()), base)
+}
+
+// outputStringPathFor returns the path for the companion `<name>_string.pb.go`
+// file that holds per-message String() methods, split out for the same icache /
+// iTLB locality reasons as `_compare.pb.go` / `_equal.pb.go`.
+func (g *Generator) outputStringPathFor(fd protoreflect.FileDescriptor) string {
+	base := strings.TrimSuffix(filepath.Base(fd.Path()), ".proto") + "_string.pb.go"
 	return filepath.Join(g.OutDir, sourceRelDir(fd.Path()), base)
 }
 
@@ -1220,6 +1256,32 @@ func (fg *FileGenerator) emitEqualFileBanner(out *bytes.Buffer) {
 	fmt.Fprintf(out, "// documented in the companion _reflect.pb.go banner and in\n")
 	fmt.Fprintf(out, "// compiler/generator/emit_registration.go. DO NOT inline this file's\n")
 	fmt.Fprintf(out, "// contents back into the main .pb.go without re-measuring.\n\n")
+}
+
+// emitStringFileBanner writes the header comment for every `_string.pb.go`
+// file. String() is a hand-rolled, deterministic, non-reflection debug dump
+// (it cannot use protoimpl.X.MessageStringOf — that walks fields via the
+// protoreflect bridge, which panics on wiresmith's value-typed message fields).
+// It is split out of the hot main .pb.go for the same cache-locality reason as
+// the _compare / _equal companions.
+func (fg *FileGenerator) emitStringFileBanner(out *bytes.Buffer) {
+	fmt.Fprintf(out, "// Per-message String() methods for %s.\n", fg.fd.Path())
+	fmt.Fprintf(out, "//\n")
+	fmt.Fprintf(out, "// String() is a hand-rolled, deterministic debug dump: pointer fields are\n")
+	fmt.Fprintf(out, "// dereferenced to their value (so optional scalars, oneof payloads,\n")
+	fmt.Fprintf(out, "// pointer-option, and recursive fields render content, never a heap\n")
+	fmt.Fprintf(out, "// address), nested messages recurse through their own String(), and map\n")
+	fmt.Fprintf(out, "// keys are sorted — so the output is content- and byte-deterministic.\n")
+	fmt.Fprintf(out, "// It does NOT use protoimpl.X.MessageStringOf / prototext: those walk\n")
+	fmt.Fprintf(out, "// fields via google.golang.org/protobuf reflection, which wiresmith's\n")
+	fmt.Fprintf(out, "// ProtoReflect bridge panics on (value-typed message fields are\n")
+	fmt.Fprintf(out, "// incompatible with the official field converters).\n")
+	fmt.Fprintf(out, "//\n")
+	fmt.Fprintf(out, "// Why a separate file? String() is never called from Marshal/Unmarshal/\n")
+	fmt.Fprintf(out, "// Size; emitting it next to those hot methods costs icache/iTLB locality\n")
+	fmt.Fprintf(out, "// for no benefit — same split rationale as _reflect / _compare / _equal.\n")
+	fmt.Fprintf(out, "// See compiler/generator/emit_string.go. DO NOT inline back into the main\n")
+	fmt.Fprintf(out, "// .pb.go without re-measuring.\n\n")
 }
 
 func (fg *FileGenerator) emitAllEnums(fd protoreflect.FileDescriptor) {

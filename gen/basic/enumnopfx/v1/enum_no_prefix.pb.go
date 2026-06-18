@@ -81,12 +81,6 @@ func (m *MetricInfo) Reset() {
 	*m = MetricInfo{}
 }
 func (*MetricInfo) ProtoMessage() {}
-func (m *MetricInfo) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *MetricInfo) HasType() bool {
 	if m == nil {

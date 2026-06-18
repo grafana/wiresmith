@@ -81,12 +81,12 @@ message Greeting {
 		t.Fatalf("response error: %s", got)
 	}
 	files := resp.GetFile()
-	if len(files) != 4 {
+	if len(files) != 5 {
 		var names []string
 		for _, f := range files {
 			names = append(names, f.GetName())
 		}
-		t.Fatalf("expected 4 files (main+reflect+compare+equal), got %d: %v", len(files), names)
+		t.Fatalf("expected 5 files (main+reflect+compare+equal+string), got %d: %v", len(files), names)
 	}
 
 	mainOut := findFile(t, files, "wsplugin/v1/greeting.pb.go")
@@ -105,7 +105,7 @@ message Greeting {
 		}
 	}
 	// Sanity: companion files should be wired to the same package.
-	for _, suffix := range []string{"_reflect.pb.go", "_compare.pb.go", "_equal.pb.go"} {
+	for _, suffix := range []string{"_reflect.pb.go", "_compare.pb.go", "_equal.pb.go", "_string.pb.go"} {
 		path := "wsplugin/v1/greeting" + suffix
 		companion := findFile(t, files, path)
 		if !strings.Contains(companion.GetContent(), "package wsplugin") {

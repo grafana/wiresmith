@@ -30,12 +30,6 @@ func (m *Holder) Reset() {
 	*m = Holder{}
 }
 func (*Holder) ProtoMessage() {}
-func (m *Holder) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *Holder) HasPayload() bool {
 	if m == nil {

@@ -53,12 +53,6 @@ func (m *Label) Reset() {
 	*m = Label{}
 }
 func (*Label) ProtoMessage() {}
-func (m *Label) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *CustomTypeMessageHolder) Reset() {
 	if m == nil {
@@ -67,12 +61,6 @@ func (m *CustomTypeMessageHolder) Reset() {
 	*m = CustomTypeMessageHolder{}
 }
 func (*CustomTypeMessageHolder) ProtoMessage() {}
-func (m *CustomTypeMessageHolder) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *Label) HasName() bool {
 	if m == nil {

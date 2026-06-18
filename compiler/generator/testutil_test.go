@@ -116,6 +116,8 @@ func newFixtureGeneratorWith(t *testing.T, fd protoreflect.FileDescriptor, allFi
 		body:           &bytes.Buffer{},
 		reflectImports: newImportTracker("wiresmith", selfDest, destinations),
 		reflectBody:    &bytes.Buffer{},
+		stringImports:  newImportTracker("wiresmith", selfDest, destinations),
+		stringBody:     &bytes.Buffer{},
 		fileVarName:    sanitizeFileVarName(fd.Path()),
 		options:        options,
 		jsontagExt:     jsontagExt,

@@ -43,12 +43,6 @@ func (m *Leaf) Reset() {
 	*m = Leaf{}
 }
 func (*Leaf) ProtoMessage() {}
-func (m *Leaf) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *PointerHolder) Reset() {
 	if m == nil {
@@ -57,12 +51,6 @@ func (m *PointerHolder) Reset() {
 	*m = PointerHolder{}
 }
 func (*PointerHolder) ProtoMessage() {}
-func (m *PointerHolder) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *Leaf) HasId() bool {
 	if m == nil {

@@ -32,12 +32,6 @@ func (m *MapBench) Reset() {
 	*m = MapBench{}
 }
 func (*MapBench) ProtoMessage() {}
-func (m *MapBench) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *Inner) Reset() {
 	if m == nil {
@@ -46,12 +40,6 @@ func (m *Inner) Reset() {
 	*m = Inner{}
 }
 func (*Inner) ProtoMessage() {}
-func (m *Inner) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *Inner) HasName() bool {
 	if m == nil {

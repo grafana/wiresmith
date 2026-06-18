@@ -131,12 +131,6 @@ func (m *UnpackedScalars) Reset() {
 	*m = UnpackedScalars{}
 }
 func (*UnpackedScalars) ProtoMessage() {}
-func (m *UnpackedScalars) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *MixedModifiers) Reset() {
 	if m == nil {
@@ -145,12 +139,6 @@ func (m *MixedModifiers) Reset() {
 	*m = MixedModifiers{}
 }
 func (*MixedModifiers) ProtoMessage() {}
-func (m *MixedModifiers) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *WideFields) Reset() {
 	if m == nil {
@@ -159,12 +147,6 @@ func (m *WideFields) Reset() {
 	*m = WideFields{}
 }
 func (*WideFields) ProtoMessage() {}
-func (m *WideFields) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *MixedModifiers) HasRegularInt() bool {
 	if m == nil {

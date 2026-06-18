@@ -27,12 +27,6 @@ func (m *BetaHolder) Reset() {
 	*m = BetaHolder{}
 }
 func (*BetaHolder) ProtoMessage() {}
-func (m *BetaHolder) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *BetaHolder) HasNote() bool {
 	if m == nil {

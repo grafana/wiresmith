@@ -30,12 +30,6 @@ func (m *AlphaEntry) Reset() {
 	*m = AlphaEntry{}
 }
 func (*AlphaEntry) ProtoMessage() {}
-func (m *AlphaEntry) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *AlphaEntry) HasKey() bool {
 	if m == nil {

@@ -39,12 +39,6 @@ func (m *Resource) Reset() {
 	*m = Resource{}
 }
 func (*Resource) ProtoMessage() {}
-func (m *Resource) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *Resource) HasDroppedAttributesCount() bool {
 	if m == nil {

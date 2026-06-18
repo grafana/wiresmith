@@ -291,12 +291,6 @@ func (m *LogsData) Reset() {
 	*m = LogsData{}
 }
 func (*LogsData) ProtoMessage() {}
-func (m *LogsData) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *ResourceLogs) Reset() {
 	if m == nil {
@@ -305,12 +299,6 @@ func (m *ResourceLogs) Reset() {
 	*m = ResourceLogs{}
 }
 func (*ResourceLogs) ProtoMessage() {}
-func (m *ResourceLogs) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *ScopeLogs) Reset() {
 	if m == nil {
@@ -319,12 +307,6 @@ func (m *ScopeLogs) Reset() {
 	*m = ScopeLogs{}
 }
 func (*ScopeLogs) ProtoMessage() {}
-func (m *ScopeLogs) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *LogRecord) Reset() {
 	if m == nil {
@@ -333,12 +315,6 @@ func (m *LogRecord) Reset() {
 	*m = LogRecord{}
 }
 func (*LogRecord) ProtoMessage() {}
-func (m *LogRecord) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *ResourceLogs) HasResource() bool {
 	if m == nil {

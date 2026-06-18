@@ -160,12 +160,6 @@ func (m *AllScalars) Reset() {
 	*m = AllScalars{}
 }
 func (*AllScalars) ProtoMessage() {}
-func (m *AllScalars) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *OutOfOrderTags) Reset() {
 	if m == nil {
@@ -174,12 +168,6 @@ func (m *OutOfOrderTags) Reset() {
 	*m = OutOfOrderTags{}
 }
 func (*OutOfOrderTags) ProtoMessage() {}
-func (m *OutOfOrderTags) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *OptionalScalars) Reset() {
 	if m == nil {
@@ -188,12 +176,6 @@ func (m *OptionalScalars) Reset() {
 	*m = OptionalScalars{}
 }
 func (*OptionalScalars) ProtoMessage() {}
-func (m *OptionalScalars) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *Inner) Reset() {
 	if m == nil {
@@ -202,12 +184,6 @@ func (m *Inner) Reset() {
 	*m = Inner{}
 }
 func (*Inner) ProtoMessage() {}
-func (m *Inner) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *WithMessage) Reset() {
 	if m == nil {
@@ -216,12 +192,6 @@ func (m *WithMessage) Reset() {
 	*m = WithMessage{}
 }
 func (*WithMessage) ProtoMessage() {}
-func (m *WithMessage) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *WithPointerMessage) Reset() {
 	if m == nil {
@@ -230,12 +200,6 @@ func (m *WithPointerMessage) Reset() {
 	*m = WithPointerMessage{}
 }
 func (*WithPointerMessage) ProtoMessage() {}
-func (m *WithPointerMessage) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *Repeated) Reset() {
 	if m == nil {
@@ -244,12 +208,6 @@ func (m *Repeated) Reset() {
 	*m = Repeated{}
 }
 func (*Repeated) ProtoMessage() {}
-func (m *Repeated) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *WithMap) Reset() {
 	if m == nil {
@@ -258,12 +216,6 @@ func (m *WithMap) Reset() {
 	*m = WithMap{}
 }
 func (*WithMap) ProtoMessage() {}
-func (m *WithMap) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *WithOneof) Reset() {
 	if m == nil {
@@ -272,12 +224,6 @@ func (m *WithOneof) Reset() {
 	*m = WithOneof{}
 }
 func (*WithOneof) ProtoMessage() {}
-func (m *WithOneof) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *AllScalars) HasFieldDouble() bool {
 	if m == nil {

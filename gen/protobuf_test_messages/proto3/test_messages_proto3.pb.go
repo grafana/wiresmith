@@ -303,12 +303,6 @@ func (m *TestAllTypesProto3_NestedMessage) Reset() {
 	*m = TestAllTypesProto3_NestedMessage{}
 }
 func (*TestAllTypesProto3_NestedMessage) ProtoMessage() {}
-func (m *TestAllTypesProto3_NestedMessage) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *TestAllTypesProto3) Reset() {
 	if m == nil {
@@ -317,12 +311,6 @@ func (m *TestAllTypesProto3) Reset() {
 	*m = TestAllTypesProto3{}
 }
 func (*TestAllTypesProto3) ProtoMessage() {}
-func (m *TestAllTypesProto3) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *ForeignMessage) Reset() {
 	if m == nil {
@@ -331,12 +319,6 @@ func (m *ForeignMessage) Reset() {
 	*m = ForeignMessage{}
 }
 func (*ForeignMessage) ProtoMessage() {}
-func (m *ForeignMessage) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *NullHypothesisProto3) Reset() {
 	if m == nil {
@@ -345,12 +327,6 @@ func (m *NullHypothesisProto3) Reset() {
 	*m = NullHypothesisProto3{}
 }
 func (*NullHypothesisProto3) ProtoMessage() {}
-func (m *NullHypothesisProto3) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *EnumOnlyProto3) Reset() {
 	if m == nil {
@@ -359,12 +335,6 @@ func (m *EnumOnlyProto3) Reset() {
 	*m = EnumOnlyProto3{}
 }
 func (*EnumOnlyProto3) ProtoMessage() {}
-func (m *EnumOnlyProto3) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *TestAllTypesProto3_NestedMessage) HasA() bool {
 	if m == nil {

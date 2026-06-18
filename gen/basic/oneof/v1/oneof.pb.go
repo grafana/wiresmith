@@ -176,12 +176,6 @@ func (m *Payload) Reset() {
 	*m = Payload{}
 }
 func (*Payload) ProtoMessage() {}
-func (m *Payload) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *MultiOneof) Reset() {
 	if m == nil {
@@ -190,12 +184,6 @@ func (m *MultiOneof) Reset() {
 	*m = MultiOneof{}
 }
 func (*MultiOneof) ProtoMessage() {}
-func (m *MultiOneof) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *OneofWithTypes) Reset() {
 	if m == nil {
@@ -204,12 +192,6 @@ func (m *OneofWithTypes) Reset() {
 	*m = OneofWithTypes{}
 }
 func (*OneofWithTypes) ProtoMessage() {}
-func (m *OneofWithTypes) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *OneofPlusEverything) Reset() {
 	if m == nil {
@@ -218,12 +200,6 @@ func (m *OneofPlusEverything) Reset() {
 	*m = OneofPlusEverything{}
 }
 func (*OneofPlusEverything) ProtoMessage() {}
-func (m *OneofPlusEverything) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *Payload) HasData() bool {
 	if m == nil {

@@ -39,12 +39,6 @@ func (m *Request) Reset() {
 	*m = Request{}
 }
 func (*Request) ProtoMessage() {}
-func (m *Request) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *Response) Reset() {
 	if m == nil {
@@ -53,12 +47,6 @@ func (m *Response) Reset() {
 	*m = Response{}
 }
 func (*Response) ProtoMessage() {}
-func (m *Response) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *Request) HasId() bool {
 	if m == nil {

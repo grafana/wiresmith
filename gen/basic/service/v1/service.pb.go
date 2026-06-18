@@ -86,12 +86,6 @@ func (m *Payload) Reset() {
 	*m = Payload{}
 }
 func (*Payload) ProtoMessage() {}
-func (m *Payload) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *Nested) Reset() {
 	if m == nil {
@@ -100,12 +94,6 @@ func (m *Nested) Reset() {
 	*m = Nested{}
 }
 func (*Nested) ProtoMessage() {}
-func (m *Nested) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *Payload) HasId() bool {
 	if m == nil {

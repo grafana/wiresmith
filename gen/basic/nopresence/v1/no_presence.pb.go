@@ -48,12 +48,6 @@ func (m *Leaf) Reset() {
 	*m = Leaf{}
 }
 func (*Leaf) ProtoMessage() {}
-func (m *Leaf) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *BareHolder) Reset() {
 	if m == nil {
@@ -62,12 +56,6 @@ func (m *BareHolder) Reset() {
 	*m = BareHolder{}
 }
 func (*BareHolder) ProtoMessage() {}
-func (m *BareHolder) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *TrackedHolder) Reset() {
 	if m == nil {
@@ -76,12 +64,6 @@ func (m *TrackedHolder) Reset() {
 	*m = TrackedHolder{}
 }
 func (*TrackedHolder) ProtoMessage() {}
-func (m *TrackedHolder) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *BareHolder) HasMaybe() bool {
 	return m != nil && m.Maybe != nil

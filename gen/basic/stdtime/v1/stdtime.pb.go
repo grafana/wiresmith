@@ -54,12 +54,6 @@ func (m *StdtimeHolder) Reset() {
 	*m = StdtimeHolder{}
 }
 func (*StdtimeHolder) ProtoMessage() {}
-func (m *StdtimeHolder) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *StdDurationHolder) Reset() {
 	if m == nil {
@@ -68,12 +62,6 @@ func (m *StdDurationHolder) Reset() {
 	*m = StdDurationHolder{}
 }
 func (*StdDurationHolder) ProtoMessage() {}
-func (m *StdDurationHolder) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *StdtimeHolder) HasName() bool {
 	if m == nil {

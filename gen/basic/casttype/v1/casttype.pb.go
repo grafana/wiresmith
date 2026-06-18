@@ -40,12 +40,6 @@ func (m *CastTypeHolder) Reset() {
 	*m = CastTypeHolder{}
 }
 func (*CastTypeHolder) ProtoMessage() {}
-func (m *CastTypeHolder) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *CastTypeHolder) HasUserId() bool {
 	if m == nil {

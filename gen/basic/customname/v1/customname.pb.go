@@ -64,12 +64,6 @@ func (m *Leaf) Reset() {
 	*m = Leaf{}
 }
 func (*Leaf) ProtoMessage() {}
-func (m *Leaf) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *CustomNameHolder) Reset() {
 	if m == nil {
@@ -78,12 +72,6 @@ func (m *CustomNameHolder) Reset() {
 	*m = CustomNameHolder{}
 }
 func (*CustomNameHolder) ProtoMessage() {}
-func (m *CustomNameHolder) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *Leaf) HasId() bool {
 	if m == nil {

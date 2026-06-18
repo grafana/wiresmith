@@ -33,10 +33,11 @@ message M {
 	}
 }
 
-// TestEmitReset_StringIsNilSafe locks in the matching nil-safe contract on
-// String(). The ReviewCaveats section of CLAUDE.md flags this as a recurring
-// review hit: every pointer-receiver method must tolerate nil.
-func TestEmitReset_StringIsNilSafe(t *testing.T) {
+// TestEmitReset_NoStringInMainBody pins the relocation of String() out of the
+// hot main .pb.go (wiresmith-qcp1): Reset() must no longer emit a String()
+// method, and the main body must not carry the fmt-based "%v" print that
+// leaked pointer addresses for pointer fields.
+func TestEmitReset_NoStringInMainBody(t *testing.T) {
 	fg := newFixtureGenerator(t, compileProtoFixture(t, `
 syntax = "proto3";
 package test.v1;
@@ -45,9 +46,8 @@ message M {}
 `))
 	fg.emitReset(messageByName(t, fg.fd, "M"))
 	body := fg.body.String()
-	assertContains(t, body, "func (m *M) String() string {")
-	assertContains(t, body, "if m == nil {")
-	assertContains(t, body, `return "<nil>"`)
+	assertNotContains(t, body, "func (m *M) String() string {")
+	assertNotContains(t, body, `fmt.Sprintf("%v", *m)`)
 }
 
 // TestEmitReset_EmitsProtoMessageMarker confirms the ProtoMessage() marker

@@ -181,12 +181,6 @@ func (m *AnyValue) Reset() {
 	*m = AnyValue{}
 }
 func (*AnyValue) ProtoMessage() {}
-func (m *AnyValue) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *ArrayValue) Reset() {
 	if m == nil {
@@ -195,12 +189,6 @@ func (m *ArrayValue) Reset() {
 	*m = ArrayValue{}
 }
 func (*ArrayValue) ProtoMessage() {}
-func (m *ArrayValue) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *KeyValueList) Reset() {
 	if m == nil {
@@ -209,12 +197,6 @@ func (m *KeyValueList) Reset() {
 	*m = KeyValueList{}
 }
 func (*KeyValueList) ProtoMessage() {}
-func (m *KeyValueList) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *KeyValue) Reset() {
 	if m == nil {
@@ -223,12 +205,6 @@ func (m *KeyValue) Reset() {
 	*m = KeyValue{}
 }
 func (*KeyValue) ProtoMessage() {}
-func (m *KeyValue) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *InstrumentationScope) Reset() {
 	if m == nil {
@@ -237,12 +213,6 @@ func (m *InstrumentationScope) Reset() {
 	*m = InstrumentationScope{}
 }
 func (*InstrumentationScope) ProtoMessage() {}
-func (m *InstrumentationScope) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *EntityRef) Reset() {
 	if m == nil {
@@ -251,12 +221,6 @@ func (m *EntityRef) Reset() {
 	*m = EntityRef{}
 }
 func (*EntityRef) ProtoMessage() {}
-func (m *EntityRef) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *KeyValue) HasKey() bool {
 	if m == nil {

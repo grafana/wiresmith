@@ -73,12 +73,6 @@ func (m *Leaf) Reset() {
 	*m = Leaf{}
 }
 func (*Leaf) ProtoMessage() {}
-func (m *Leaf) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *JsonTagHolder) Reset() {
 	if m == nil {
@@ -87,12 +81,6 @@ func (m *JsonTagHolder) Reset() {
 	*m = JsonTagHolder{}
 }
 func (*JsonTagHolder) ProtoMessage() {}
-func (m *JsonTagHolder) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *Leaf) HasId() bool {
 	if m == nil {

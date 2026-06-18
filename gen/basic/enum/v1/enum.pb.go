@@ -132,12 +132,6 @@ func (m *WithNestedEnum) Reset() {
 	*m = WithNestedEnum{}
 }
 func (*WithNestedEnum) ProtoMessage() {}
-func (m *WithNestedEnum) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *EnumContainer) Reset() {
 	if m == nil {
@@ -146,12 +140,6 @@ func (m *EnumContainer) Reset() {
 	*m = EnumContainer{}
 }
 func (*EnumContainer) ProtoMessage() {}
-func (m *EnumContainer) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *WithNestedEnum) HasPriority() bool {
 	if m == nil {

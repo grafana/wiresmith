@@ -57,12 +57,6 @@ func (m *Level0_Level1_Level2_Level3) Reset() {
 	*m = Level0_Level1_Level2_Level3{}
 }
 func (*Level0_Level1_Level2_Level3) ProtoMessage() {}
-func (m *Level0_Level1_Level2_Level3) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *Level0_Level1_Level2) Reset() {
 	if m == nil {
@@ -71,12 +65,6 @@ func (m *Level0_Level1_Level2) Reset() {
 	*m = Level0_Level1_Level2{}
 }
 func (*Level0_Level1_Level2) ProtoMessage() {}
-func (m *Level0_Level1_Level2) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *Level0_Level1) Reset() {
 	if m == nil {
@@ -85,12 +73,6 @@ func (m *Level0_Level1) Reset() {
 	*m = Level0_Level1{}
 }
 func (*Level0_Level1) ProtoMessage() {}
-func (m *Level0_Level1) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *Level0) Reset() {
 	if m == nil {
@@ -99,12 +81,6 @@ func (m *Level0) Reset() {
 	*m = Level0{}
 }
 func (*Level0) ProtoMessage() {}
-func (m *Level0) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *CrossRef) Reset() {
 	if m == nil {
@@ -113,12 +89,6 @@ func (m *CrossRef) Reset() {
 	*m = CrossRef{}
 }
 func (*CrossRef) ProtoMessage() {}
-func (m *CrossRef) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *Level0_Level1_Level2_Level3) HasDeepValue() bool {
 	if m == nil {

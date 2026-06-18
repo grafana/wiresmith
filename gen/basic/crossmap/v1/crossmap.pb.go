@@ -28,12 +28,6 @@ func (m *CrossMapOuter) Reset() {
 	*m = CrossMapOuter{}
 }
 func (*CrossMapOuter) ProtoMessage() {}
-func (m *CrossMapOuter) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *CrossMapOuter) GetEntries() map[string]recursivev1.LinkedList {
 	if m != nil {

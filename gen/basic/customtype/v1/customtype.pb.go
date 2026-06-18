@@ -54,12 +54,6 @@ func (m *CustomTypeHolder) Reset() {
 	*m = CustomTypeHolder{}
 }
 func (*CustomTypeHolder) ProtoMessage() {}
-func (m *CustomTypeHolder) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *RepeatedCustomTypeHolder) Reset() {
 	if m == nil {
@@ -68,12 +62,6 @@ func (m *RepeatedCustomTypeHolder) Reset() {
 	*m = RepeatedCustomTypeHolder{}
 }
 func (*RepeatedCustomTypeHolder) ProtoMessage() {}
-func (m *RepeatedCustomTypeHolder) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *CustomTypeHolder) HasLabels() bool {
 	if m == nil {
