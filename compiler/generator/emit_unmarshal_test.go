@@ -35,10 +35,11 @@ message M {
 }
 
 // TestEmitUnmarshal_PreScanThreshold pins the size-gated pre-scan: it is
-// wrapped in `if l >= 256 {` so short messages skip the extra pass entirely.
-// Without the gate, every small message pays an O(N) pass that yields zero
-// savings (no slice growth to amortize), which is what motivated the
-// threshold in the first place.
+// wrapped in `if l >= 256 && depth >= 0 {` so short messages skip the extra
+// pass entirely. Without the gate, every small message pays an O(N) pass that
+// yields zero savings (no slice growth to amortize), which is what motivated
+// the threshold in the first place. The `depth >= 0` term is the
+// UnmarshalNoPrescan opt-out (a -1 starting depth disables the top-level scan).
 func TestEmitUnmarshal_PreScanThreshold(t *testing.T) {
 	fg := newFixtureGenerator(t, compileProtoFixture(t, `
 syntax = "proto3";
@@ -51,11 +52,51 @@ message M {
 `))
 	fg.emitUnmarshal(messageByName(t, fg.fd, "M"))
 	body := fg.body.String()
-	assertContains(t, body, "if l >= 256 {")
+	assertContains(t, body, "if l >= 256 && depth >= 0 {")
 	assertContains(t, body, "var preIdx int")
 	// Each pre-scanned field gets a counter so post-loop allocation can size
 	// the slice exactly. Field number 1 → field1count.
 	assertContains(t, body, "var field1count int")
+}
+
+// TestEmitUnmarshal_NoPrescanEmittedForPreScanMessage pins the new
+// UnmarshalNoPrescan entry point for a message that HAS a pre-scan: it must be
+// emitted and must call the internal unmarshal with the -1 sentinel depth that
+// disables the top-level scan (see emitPreScan's `depth >= 0` guard).
+func TestEmitUnmarshal_NoPrescanEmittedForPreScanMessage(t *testing.T) {
+	fg := newFixtureGenerator(t, compileProtoFixture(t, `
+syntax = "proto3";
+package test.v1;
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
+message Inner {}
+message M {
+  repeated Inner xs = 1;
+}
+`))
+	fg.emitUnmarshal(messageByName(t, fg.fd, "M"))
+	body := fg.body.String()
+	assertContains(t, body, "func (m *M) UnmarshalNoPrescan(dAtA []byte) error {")
+	assertContains(t, body, "return m.unmarshal(dAtA, -1)")
+}
+
+// TestEmitUnmarshal_NoPrescanOmittedWithoutPreScan covers the documented
+// emission rule: a message with no pre-scan block has nothing to skip, so
+// UnmarshalNoPrescan must NOT be emitted (it would be byte-identical to
+// Unmarshal and only bloat the file).
+func TestEmitUnmarshal_NoPrescanOmittedWithoutPreScan(t *testing.T) {
+	fg := newFixtureGenerator(t, compileProtoFixture(t, `
+syntax = "proto3";
+package test.v1;
+option go_package = "github.com/grafana/wiresmith/gen/test/v1";
+message M {
+  int32 a = 1;
+  string s = 2;
+  repeated int32 nums = 3; // scalar repeated — packed, no allocation hint needed
+}
+`))
+	fg.emitUnmarshal(messageByName(t, fg.fd, "M"))
+	body := fg.body.String()
+	assertNotContains(t, body, "UnmarshalNoPrescan")
 }
 
 // TestEmitUnmarshal_PreScanOmittedWithoutCountableFields covers the other

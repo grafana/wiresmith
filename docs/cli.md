@@ -157,7 +157,7 @@ plugins:
       - module=example.com/myproject
 ```
 
-The plugin path is feature-equivalent to the CLI: it produces the same four files per `.proto` (`<name>.pb.go`, `<name>_reflect.pb.go`, `<name>_compare.pb.go`, `<name>_equal.pb.go`). Output paths are source-relative — the same scheme as `protoc-gen-go`'s `paths=source_relative` mode — so `buf`'s `out:` directive controls placement.
+The plugin path is feature-equivalent to the CLI: it produces the same files per `.proto` (`<name>.pb.go`, the consolidated cold companion `<name>_util.pb.go` (reflection/registration glue + `String()`), `<name>_compare.pb.go` (`Equal()` + `Compare()`), and — for service-declaring files — `<name>_grpc.pb.go`). Output paths are source-relative — the same scheme as `protoc-gen-go`'s `paths=source_relative` mode — so `buf`'s `out:` directive controls placement.
 
 Supported `--wiresmith_opt` parameters:
 

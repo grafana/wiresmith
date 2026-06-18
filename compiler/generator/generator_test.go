@@ -134,6 +134,14 @@ func TestGenerateMatchesCheckedIn(t *testing.T) {
 		name      string
 		protoDir  string
 		overrides map[string]string
+		// outDir is the generator --out value (default "gen"). compareRoot is
+		// the checked-in tree the freshly generated files are diffed against
+		// (default the gen/ dir). files scopes emission to specific positional
+		// sources (default: emit the whole walked tree). The well-known-type
+		// package is generated to the module root, so it needs all three.
+		outDir      string
+		compareRoot string
+		files       []string
 	}{
 		{
 			name:      "otlp",
@@ -152,9 +160,14 @@ func TestGenerateMatchesCheckedIn(t *testing.T) {
 			name:     "conformance/test_messages",
 			protoDir: filepath.Join(root, "proto", "conformance"),
 		},
+		{
+			name:        "wellknown/anypb",
+			protoDir:    filepath.Join(root, "proto", "wellknown"),
+			outDir:      ".",
+			compareRoot: root,
+			files:       []string{filepath.Join(root, "proto", "wellknown", "types", "known", "anypb", "any.proto")},
+		},
 	}
-
-	genDir := filepath.Join(root, "gen")
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -164,7 +177,14 @@ func TestGenerateMatchesCheckedIn(t *testing.T) {
 			// would yield a nonsense base like wiresmith/var/folders/....
 			cwd := t.TempDir()
 			t.Chdir(cwd)
-			outDir := "gen"
+			outDir := tc.outDir
+			if outDir == "" {
+				outDir = "gen"
+			}
+			compareRoot := tc.compareRoot
+			if compareRoot == "" {
+				compareRoot = filepath.Join(root, "gen")
+			}
 			absOutDir := filepath.Join(cwd, outDir)
 
 			// For conformance, only test_messages_proto3.proto is generated
@@ -188,6 +208,7 @@ func TestGenerateMatchesCheckedIn(t *testing.T) {
 				OutDir:    outDir,
 				ProtoDirs: []string{protoDir},
 				Overrides: tc.overrides,
+				Files:     tc.files,
 			}
 			if err := gen.Generate(ctx); err != nil {
 				t.Fatalf("Generate failed: %v", err)
@@ -217,7 +238,7 @@ func TestGenerateMatchesCheckedIn(t *testing.T) {
 				if err != nil {
 					return err
 				}
-				checkedIn := filepath.Join(genDir, rel)
+				checkedIn := filepath.Join(compareRoot, rel)
 				existingContent, err := os.ReadFile(checkedIn)
 				if err != nil {
 					t.Errorf("generated %s has no checked-in counterpart at %s", rel, checkedIn)
@@ -244,7 +265,7 @@ func TestGenerateMatchesCheckedIn(t *testing.T) {
 				genDirs[filepath.Dir(rel)] = struct{}{}
 			}
 			for dir := range genDirs {
-				checkedInDir := filepath.Join(genDir, dir)
+				checkedInDir := filepath.Join(compareRoot, dir)
 				entries, err := os.ReadDir(checkedInDir)
 				if err != nil {
 					t.Fatalf("reading checked-in directory %s: %v", dir, err)
@@ -293,8 +314,8 @@ message Foo { string name = 1; }`)
 
 // TestGenerateEnumsOnlyProto pins that an enums-only proto file (no
 // messages) does not leave an unused `protohelpers` import in its
-// generated `_reflect.pb.go`. ProtoReflect methods — the sole consumer
-// of protohelpers in the reflect file — are emitted per-message; for an
+// generated `_util.pb.go`. ProtoReflect methods — the sole consumer
+// of protohelpers in the util file — are emitted per-message; for an
 // enums-only file there are no messages, so adding the import
 // unconditionally in emitRegistration would produce
 // "imported and not used: protohelpers" at `go build` time. The fix is
@@ -318,13 +339,13 @@ enum Color {
 		t.Fatalf("Generate: %v", err)
 	}
 
-	reflectPath := filepath.Join(outDir, "enumsonly", "enumsonly_reflect.pb.go")
-	body, err := os.ReadFile(reflectPath)
+	utilPath := filepath.Join(outDir, "enumsonly", "enumsonly_util.pb.go")
+	body, err := os.ReadFile(utilPath)
 	if err != nil {
-		t.Fatalf("read reflect file: %v", err)
+		t.Fatalf("read util file: %v", err)
 	}
 	if strings.Contains(string(body), "protohelpers") {
-		t.Errorf("enums-only reflect file must not import protohelpers; would fail to build as unused import:\n%s", body)
+		t.Errorf("enums-only util file must not import protohelpers; would fail to build as unused import:\n%s", body)
 	}
 }
 
@@ -359,7 +380,7 @@ message Foo { string s = 1; }`)
 
 // TestGeneratePerSourceFileOutput pins the per-source-file emission contract:
 // two .proto files sharing a proto package must each get their own .pb.go +
-// _reflect.pb.go (named by basename, not aggregated into one Go file), and
+// _util.pb.go (named by basename, not aggregated into one Go file), and
 // each registration init() must be self-contained for its own file's types.
 //
 // This is the precondition for source-relative output paths
@@ -385,11 +406,11 @@ message Bar { Foo foo = 1; }`)
 
 	wantFiles := []string{
 		filepath.Join("example", "v1", "common.pb.go"),
-		filepath.Join("example", "v1", "common_reflect.pb.go"),
-		filepath.Join("example", "v1", "common_equal.pb.go"),
+		filepath.Join("example", "v1", "common_util.pb.go"),
+		filepath.Join("example", "v1", "common_compare.pb.go"),
 		filepath.Join("example", "v1", "types.pb.go"),
-		filepath.Join("example", "v1", "types_reflect.pb.go"),
-		filepath.Join("example", "v1", "types_equal.pb.go"),
+		filepath.Join("example", "v1", "types_util.pb.go"),
+		filepath.Join("example", "v1", "types_compare.pb.go"),
 	}
 	for _, rel := range wantFiles {
 		if _, err := os.Stat(filepath.Join(outDir, rel)); err != nil {
@@ -399,8 +420,8 @@ message Bar { Foo foo = 1; }`)
 
 	commonSrc := mustReadFile(t, filepath.Join(outDir, "example", "v1", "common.pb.go"))
 	typesSrc := mustReadFile(t, filepath.Join(outDir, "example", "v1", "types.pb.go"))
-	commonReflSrc := mustReadFile(t, filepath.Join(outDir, "example", "v1", "common_reflect.pb.go"))
-	typesReflSrc := mustReadFile(t, filepath.Join(outDir, "example", "v1", "types_reflect.pb.go"))
+	commonReflSrc := mustReadFile(t, filepath.Join(outDir, "example", "v1", "common_util.pb.go"))
+	typesReflSrc := mustReadFile(t, filepath.Join(outDir, "example", "v1", "types_util.pb.go"))
 
 	// Each file declares only its own types — no aggregation into a single
 	// Go file. common.pb.go must contain Foo (not Bar); types.pb.go must
@@ -425,26 +446,26 @@ message Bar { Foo foo = 1; }`)
 		t.Errorf("types.pb.go must reference Foo without a package qualifier — expected to find an unqualified `Foo` reference")
 	}
 
-	// Per-file registration: each _reflect.pb.go owns its file's rawDesc and
+	// Per-file registration: each _util.pb.go owns its file's rawDesc and
 	// its own init() — registration must NOT be aggregated across the proto
 	// package into a single init.
 	if !strings.Contains(commonReflSrc, "file_example_v1_common_proto_rawDesc") {
-		t.Errorf("common_reflect.pb.go missing its own file_*_rawDesc constant")
+		t.Errorf("common_util.pb.go missing its own file_*_rawDesc constant")
 	}
 	if !strings.Contains(typesReflSrc, "file_example_v1_types_proto_rawDesc") {
-		t.Errorf("types_reflect.pb.go missing its own file_*_rawDesc constant")
+		t.Errorf("types_util.pb.go missing its own file_*_rawDesc constant")
 	}
 	if strings.Contains(commonReflSrc, "file_example_v1_types_proto_rawDesc") {
-		t.Errorf("common_reflect.pb.go references types.proto's rawDesc — registration leaked across source files")
+		t.Errorf("common_util.pb.go references types.proto's rawDesc — registration leaked across source files")
 	}
 	if strings.Contains(typesReflSrc, "file_example_v1_common_proto_rawDesc") {
-		t.Errorf("types_reflect.pb.go references common.proto's rawDesc — registration leaked across source files")
+		t.Errorf("types_util.pb.go references common.proto's rawDesc — registration leaked across source files")
 	}
 	if strings.Count(commonReflSrc, "\nfunc init() {") != 1 {
-		t.Errorf("common_reflect.pb.go must declare exactly one init() function")
+		t.Errorf("common_util.pb.go must declare exactly one init() function")
 	}
 	if strings.Count(typesReflSrc, "\nfunc init() {") != 1 {
-		t.Errorf("types_reflect.pb.go must declare exactly one init() function")
+		t.Errorf("types_util.pb.go must declare exactly one init() function")
 	}
 }
 
@@ -1564,17 +1585,17 @@ func TestGenerateOutputCollision(t *testing.T) {
 	}
 }
 
-// TestGenerateReflectOutputCollision verifies that a user proto whose basename
-// would generate a `_reflect.pb.go` file colliding with another proto's
-// companion reflect output is rejected. Without this guard, `foo_reflect.proto`
+// TestGenerateUtilOutputCollision verifies that a user proto whose basename
+// would generate a `_util.pb.go` file colliding with another proto's
+// companion util output is rejected. Without this guard, `foo_util.proto`
 // and `foo.proto` in the same package would silently overwrite each other's
-// reflect output.
-func TestGenerateReflectOutputCollision(t *testing.T) {
+// util output.
+func TestGenerateUtilOutputCollision(t *testing.T) {
 	protoDir := t.TempDir()
 	writeProto(t, protoDir, "foo.proto",
 		"syntax = \"proto3\";\npackage testpb.v1;\nmessage Foo {}")
-	writeProto(t, protoDir, "foo_reflect.proto",
-		"syntax = \"proto3\";\npackage testpb.v1;\nmessage FooReflect {}")
+	writeProto(t, protoDir, "foo_util.proto",
+		"syntax = \"proto3\";\npackage testpb.v1;\nmessage FooUtil {}")
 
 	outDir := testOutDir(t)
 	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDirs: []string{protoDir}}

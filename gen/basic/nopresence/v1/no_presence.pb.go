@@ -48,12 +48,6 @@ func (m *Leaf) Reset() {
 	*m = Leaf{}
 }
 func (*Leaf) ProtoMessage() {}
-func (m *Leaf) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *BareHolder) Reset() {
 	if m == nil {
@@ -62,12 +56,6 @@ func (m *BareHolder) Reset() {
 	*m = BareHolder{}
 }
 func (*BareHolder) ProtoMessage() {}
-func (m *BareHolder) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *TrackedHolder) Reset() {
 	if m == nil {
@@ -76,12 +64,6 @@ func (m *TrackedHolder) Reset() {
 	*m = TrackedHolder{}
 }
 func (*TrackedHolder) ProtoMessage() {}
-func (m *TrackedHolder) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *BareHolder) HasMaybe() bool {
 	return m != nil && m.Maybe != nil
@@ -115,11 +97,11 @@ func (m *Leaf) GetName() string {
 	return ""
 }
 
-func (m *BareHolder) GetChild() Leaf {
+func (m *BareHolder) GetChild() *Leaf {
 	if m != nil {
-		return m.Child
+		return &m.Child
 	}
-	return Leaf{}
+	return nil
 }
 
 func (m *BareHolder) GetNum() int64 {
@@ -245,7 +227,12 @@ func (m *Leaf) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.Name) > 0 {
 		i -= len(m.Name)
 		copy(dAtA[i:], m.Name)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Name)))
+		if len(m.Name) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.Name))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Name)))
+		}
 		i--
 		dAtA[i] = 0x12
 	}
@@ -294,7 +281,12 @@ func (m *BareHolder) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.Label) > 0 {
 		i -= len(m.Label)
 		copy(dAtA[i:], m.Label)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Label)))
+		if len(m.Label) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.Label))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Label)))
+		}
 		i--
 		dAtA[i] = 0x1a
 	}
@@ -310,7 +302,12 @@ func (m *BareHolder) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		}
 		if size > 0 {
 			i -= size
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			if size <= 0x7F {
+				dAtA[i-1] = uint8(size)
+				i--
+			} else {
+				i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			}
 			i--
 			dAtA[i] = 0x0a
 		}
@@ -359,7 +356,12 @@ func (m *TrackedHolder) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		}
 		if size > 0 {
 			i -= size
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			if size <= 0x7F {
+				i--
+				dAtA[i] = uint8(size)
+			} else {
+				i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			}
 			i--
 			dAtA[i] = 0x0a
 		} else if m.XXX_fieldsPresent[0]&(1<<0) != 0 {

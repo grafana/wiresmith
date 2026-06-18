@@ -780,12 +780,6 @@ func (m *MetricsData) Reset() {
 	*m = MetricsData{}
 }
 func (*MetricsData) ProtoMessage() {}
-func (m *MetricsData) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *ResourceMetrics) Reset() {
 	if m == nil {
@@ -794,12 +788,6 @@ func (m *ResourceMetrics) Reset() {
 	*m = ResourceMetrics{}
 }
 func (*ResourceMetrics) ProtoMessage() {}
-func (m *ResourceMetrics) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *ScopeMetrics) Reset() {
 	if m == nil {
@@ -808,12 +796,6 @@ func (m *ScopeMetrics) Reset() {
 	*m = ScopeMetrics{}
 }
 func (*ScopeMetrics) ProtoMessage() {}
-func (m *ScopeMetrics) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *Metric) Reset() {
 	if m == nil {
@@ -822,12 +804,6 @@ func (m *Metric) Reset() {
 	*m = Metric{}
 }
 func (*Metric) ProtoMessage() {}
-func (m *Metric) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *Gauge) Reset() {
 	if m == nil {
@@ -836,12 +812,6 @@ func (m *Gauge) Reset() {
 	*m = Gauge{}
 }
 func (*Gauge) ProtoMessage() {}
-func (m *Gauge) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *Sum) Reset() {
 	if m == nil {
@@ -850,12 +820,6 @@ func (m *Sum) Reset() {
 	*m = Sum{}
 }
 func (*Sum) ProtoMessage() {}
-func (m *Sum) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *Histogram) Reset() {
 	if m == nil {
@@ -864,12 +828,6 @@ func (m *Histogram) Reset() {
 	*m = Histogram{}
 }
 func (*Histogram) ProtoMessage() {}
-func (m *Histogram) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *ExponentialHistogram) Reset() {
 	if m == nil {
@@ -878,12 +836,6 @@ func (m *ExponentialHistogram) Reset() {
 	*m = ExponentialHistogram{}
 }
 func (*ExponentialHistogram) ProtoMessage() {}
-func (m *ExponentialHistogram) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *Summary) Reset() {
 	if m == nil {
@@ -892,12 +844,6 @@ func (m *Summary) Reset() {
 	*m = Summary{}
 }
 func (*Summary) ProtoMessage() {}
-func (m *Summary) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *NumberDataPoint) Reset() {
 	if m == nil {
@@ -906,12 +852,6 @@ func (m *NumberDataPoint) Reset() {
 	*m = NumberDataPoint{}
 }
 func (*NumberDataPoint) ProtoMessage() {}
-func (m *NumberDataPoint) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *HistogramDataPoint) Reset() {
 	if m == nil {
@@ -920,12 +860,6 @@ func (m *HistogramDataPoint) Reset() {
 	*m = HistogramDataPoint{}
 }
 func (*HistogramDataPoint) ProtoMessage() {}
-func (m *HistogramDataPoint) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *ExponentialHistogramDataPoint_Buckets) Reset() {
 	if m == nil {
@@ -934,12 +868,6 @@ func (m *ExponentialHistogramDataPoint_Buckets) Reset() {
 	*m = ExponentialHistogramDataPoint_Buckets{}
 }
 func (*ExponentialHistogramDataPoint_Buckets) ProtoMessage() {}
-func (m *ExponentialHistogramDataPoint_Buckets) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *ExponentialHistogramDataPoint) Reset() {
 	if m == nil {
@@ -948,12 +876,6 @@ func (m *ExponentialHistogramDataPoint) Reset() {
 	*m = ExponentialHistogramDataPoint{}
 }
 func (*ExponentialHistogramDataPoint) ProtoMessage() {}
-func (m *ExponentialHistogramDataPoint) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *SummaryDataPoint_ValueAtQuantile) Reset() {
 	if m == nil {
@@ -962,12 +884,6 @@ func (m *SummaryDataPoint_ValueAtQuantile) Reset() {
 	*m = SummaryDataPoint_ValueAtQuantile{}
 }
 func (*SummaryDataPoint_ValueAtQuantile) ProtoMessage() {}
-func (m *SummaryDataPoint_ValueAtQuantile) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *SummaryDataPoint) Reset() {
 	if m == nil {
@@ -976,12 +892,6 @@ func (m *SummaryDataPoint) Reset() {
 	*m = SummaryDataPoint{}
 }
 func (*SummaryDataPoint) ProtoMessage() {}
-func (m *SummaryDataPoint) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *Exemplar) Reset() {
 	if m == nil {
@@ -990,12 +900,6 @@ func (m *Exemplar) Reset() {
 	*m = Exemplar{}
 }
 func (*Exemplar) ProtoMessage() {}
-func (m *Exemplar) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *ResourceMetrics) HasResource() bool {
 	if m == nil {
@@ -2261,7 +2165,12 @@ func (m *MetricsData) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			return 0, err
 		}
 		i -= size
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		if size <= 0x7F {
+			dAtA[i-1] = uint8(size)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		}
 		i--
 		dAtA[i] = 0x0a
 	}
@@ -2300,7 +2209,12 @@ func (m *ResourceMetrics) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.SchemaUrl) > 0 {
 		i -= len(m.SchemaUrl)
 		copy(dAtA[i:], m.SchemaUrl)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.SchemaUrl)))
+		if len(m.SchemaUrl) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.SchemaUrl))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.SchemaUrl)))
+		}
 		i--
 		dAtA[i] = 0x1a
 	}
@@ -2310,7 +2224,12 @@ func (m *ResourceMetrics) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			return 0, err
 		}
 		i -= size
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		if size <= 0x7F {
+			dAtA[i-1] = uint8(size)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		}
 		i--
 		dAtA[i] = 0x12
 	}
@@ -2321,7 +2240,12 @@ func (m *ResourceMetrics) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		}
 		if size > 0 {
 			i -= size
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			if size <= 0x7F {
+				i--
+				dAtA[i] = uint8(size)
+			} else {
+				i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			}
 			i--
 			dAtA[i] = 0x0a
 		} else if m.XXX_fieldsPresent[0]&(1<<0) != 0 {
@@ -2366,7 +2290,12 @@ func (m *ScopeMetrics) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.SchemaUrl) > 0 {
 		i -= len(m.SchemaUrl)
 		copy(dAtA[i:], m.SchemaUrl)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.SchemaUrl)))
+		if len(m.SchemaUrl) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.SchemaUrl))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.SchemaUrl)))
+		}
 		i--
 		dAtA[i] = 0x1a
 	}
@@ -2376,7 +2305,12 @@ func (m *ScopeMetrics) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			return 0, err
 		}
 		i -= size
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		if size <= 0x7F {
+			dAtA[i-1] = uint8(size)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		}
 		i--
 		dAtA[i] = 0x12
 	}
@@ -2387,7 +2321,12 @@ func (m *ScopeMetrics) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		}
 		if size > 0 {
 			i -= size
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			if size <= 0x7F {
+				i--
+				dAtA[i] = uint8(size)
+			} else {
+				i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			}
 			i--
 			dAtA[i] = 0x0a
 		} else if m.XXX_fieldsPresent[0]&(1<<0) != 0 {
@@ -2435,7 +2374,12 @@ func (m *Metric) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			return 0, err
 		}
 		i -= size
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		if size <= 0x7F {
+			dAtA[i-1] = uint8(size)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		}
 		i--
 		dAtA[i] = 0x62
 	}
@@ -2446,7 +2390,12 @@ func (m *Metric) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			return 0, err
 		}
 		i -= size
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		if size <= 0x7F {
+			dAtA[i-1] = uint8(size)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		}
 		i--
 		dAtA[i] = 0x5a
 	case *Metric_ExponentialHistogram:
@@ -2455,7 +2404,12 @@ func (m *Metric) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			return 0, err
 		}
 		i -= size
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		if size <= 0x7F {
+			dAtA[i-1] = uint8(size)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		}
 		i--
 		dAtA[i] = 0x52
 	case *Metric_Histogram:
@@ -2464,7 +2418,12 @@ func (m *Metric) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			return 0, err
 		}
 		i -= size
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		if size <= 0x7F {
+			dAtA[i-1] = uint8(size)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		}
 		i--
 		dAtA[i] = 0x4a
 	case *Metric_Sum:
@@ -2473,7 +2432,12 @@ func (m *Metric) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			return 0, err
 		}
 		i -= size
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		if size <= 0x7F {
+			dAtA[i-1] = uint8(size)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		}
 		i--
 		dAtA[i] = 0x3a
 	case *Metric_Gauge:
@@ -2482,28 +2446,48 @@ func (m *Metric) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			return 0, err
 		}
 		i -= size
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		if size <= 0x7F {
+			dAtA[i-1] = uint8(size)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		}
 		i--
 		dAtA[i] = 0x2a
 	}
 	if len(m.Unit) > 0 {
 		i -= len(m.Unit)
 		copy(dAtA[i:], m.Unit)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Unit)))
+		if len(m.Unit) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.Unit))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Unit)))
+		}
 		i--
 		dAtA[i] = 0x1a
 	}
 	if len(m.Description) > 0 {
 		i -= len(m.Description)
 		copy(dAtA[i:], m.Description)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Description)))
+		if len(m.Description) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.Description))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Description)))
+		}
 		i--
 		dAtA[i] = 0x12
 	}
 	if len(m.Name) > 0 {
 		i -= len(m.Name)
 		copy(dAtA[i:], m.Name)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Name)))
+		if len(m.Name) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.Name))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Name)))
+		}
 		i--
 		dAtA[i] = 0x0a
 	}
@@ -2545,7 +2529,12 @@ func (m *Gauge) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			return 0, err
 		}
 		i -= size
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		if size <= 0x7F {
+			dAtA[i-1] = uint8(size)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		}
 		i--
 		dAtA[i] = 0x0a
 	}
@@ -2602,7 +2591,12 @@ func (m *Sum) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			return 0, err
 		}
 		i -= size
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		if size <= 0x7F {
+			dAtA[i-1] = uint8(size)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		}
 		i--
 		dAtA[i] = 0x0a
 	}
@@ -2649,7 +2643,12 @@ func (m *Histogram) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			return 0, err
 		}
 		i -= size
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		if size <= 0x7F {
+			dAtA[i-1] = uint8(size)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		}
 		i--
 		dAtA[i] = 0x0a
 	}
@@ -2696,7 +2695,12 @@ func (m *ExponentialHistogram) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			return 0, err
 		}
 		i -= size
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		if size <= 0x7F {
+			dAtA[i-1] = uint8(size)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		}
 		i--
 		dAtA[i] = 0x0a
 	}
@@ -2738,7 +2742,12 @@ func (m *Summary) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			return 0, err
 		}
 		i -= size
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		if size <= 0x7F {
+			dAtA[i-1] = uint8(size)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		}
 		i--
 		dAtA[i] = 0x0a
 	}
@@ -2785,7 +2794,12 @@ func (m *NumberDataPoint) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			return 0, err
 		}
 		i -= size
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		if size <= 0x7F {
+			dAtA[i-1] = uint8(size)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		}
 		i--
 		dAtA[i] = 0x3a
 	}
@@ -2807,7 +2821,12 @@ func (m *NumberDataPoint) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			return 0, err
 		}
 		i -= size
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		if size <= 0x7F {
+			dAtA[i-1] = uint8(size)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		}
 		i--
 		dAtA[i] = 0x2a
 	}
@@ -2878,7 +2897,12 @@ func (m *HistogramDataPoint) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			return 0, err
 		}
 		i -= size
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		if size <= 0x7F {
+			dAtA[i-1] = uint8(size)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		}
 		i--
 		dAtA[i] = 0x4a
 	}
@@ -2888,7 +2912,12 @@ func (m *HistogramDataPoint) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			return 0, err
 		}
 		i -= size
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		if size <= 0x7F {
+			dAtA[i-1] = uint8(size)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		}
 		i--
 		dAtA[i] = 0x42
 	}
@@ -2972,7 +3001,12 @@ func (m *ExponentialHistogramDataPoint_Buckets) MarshalToSizedBuffer(dAtA []byte
 		for j = len(m.BucketCounts) - 1; j >= 0; j-- {
 			i = protohelpers.EncodeVarint(dAtA, i, uint64(m.BucketCounts[j]))
 		}
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(pStart-i))
+		if pStart-i <= 0x7F {
+			dAtA[i-1] = uint8(pStart - i)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(pStart-i))
+		}
 		i--
 		dAtA[i] = 0x12
 	}
@@ -3037,7 +3071,12 @@ func (m *ExponentialHistogramDataPoint) MarshalToSizedBuffer(dAtA []byte) (int, 
 			return 0, err
 		}
 		i -= size
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		if size <= 0x7F {
+			dAtA[i-1] = uint8(size)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		}
 		i--
 		dAtA[i] = 0x5a
 	}
@@ -3053,7 +3092,12 @@ func (m *ExponentialHistogramDataPoint) MarshalToSizedBuffer(dAtA []byte) (int, 
 		}
 		if size > 0 {
 			i -= size
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			if size <= 0x7F {
+				i--
+				dAtA[i] = uint8(size)
+			} else {
+				i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			}
 			i--
 			dAtA[i] = 0x4a
 		} else if m.XXX_fieldsPresent[0]&(1<<6) != 0 {
@@ -3070,7 +3114,12 @@ func (m *ExponentialHistogramDataPoint) MarshalToSizedBuffer(dAtA []byte) (int, 
 		}
 		if size > 0 {
 			i -= size
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			if size <= 0x7F {
+				i--
+				dAtA[i] = uint8(size)
+			} else {
+				i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			}
 			i--
 			dAtA[i] = 0x42
 		} else if m.XXX_fieldsPresent[0]&(1<<5) != 0 {
@@ -3121,7 +3170,12 @@ func (m *ExponentialHistogramDataPoint) MarshalToSizedBuffer(dAtA []byte) (int, 
 			return 0, err
 		}
 		i -= size
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		if size <= 0x7F {
+			dAtA[i-1] = uint8(size)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		}
 		i--
 		dAtA[i] = 0x0a
 	}
@@ -3212,7 +3266,12 @@ func (m *SummaryDataPoint) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			return 0, err
 		}
 		i -= size
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		if size <= 0x7F {
+			dAtA[i-1] = uint8(size)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		}
 		i--
 		dAtA[i] = 0x3a
 	}
@@ -3222,7 +3281,12 @@ func (m *SummaryDataPoint) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			return 0, err
 		}
 		i -= size
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		if size <= 0x7F {
+			dAtA[i-1] = uint8(size)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		}
 		i--
 		dAtA[i] = 0x32
 	}
@@ -3288,7 +3352,12 @@ func (m *Exemplar) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			return 0, err
 		}
 		i -= size
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		if size <= 0x7F {
+			dAtA[i-1] = uint8(size)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		}
 		i--
 		dAtA[i] = 0x3a
 	}
@@ -3307,14 +3376,24 @@ func (m *Exemplar) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.TraceId) > 0 {
 		i -= len(m.TraceId)
 		copy(dAtA[i:], m.TraceId)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.TraceId)))
+		if len(m.TraceId) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.TraceId))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.TraceId)))
+		}
 		i--
 		dAtA[i] = 0x2a
 	}
 	if len(m.SpanId) > 0 {
 		i -= len(m.SpanId)
 		copy(dAtA[i:], m.SpanId)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.SpanId)))
+		if len(m.SpanId) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.SpanId))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.SpanId)))
+		}
 		i--
 		dAtA[i] = 0x22
 	}
@@ -3344,7 +3423,7 @@ func (m *MetricsData) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field1count int
 		for preIdx < l {
@@ -3498,6 +3577,10 @@ func (m *MetricsData) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *MetricsData) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *ResourceMetrics) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -3515,7 +3598,7 @@ func (m *ResourceMetrics) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field2count int
 		for preIdx < l {
@@ -3763,6 +3846,10 @@ func (m *ResourceMetrics) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *ResourceMetrics) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *ScopeMetrics) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -3780,7 +3867,7 @@ func (m *ScopeMetrics) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field2count int
 		for preIdx < l {
@@ -4028,6 +4115,10 @@ func (m *ScopeMetrics) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *ScopeMetrics) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *Metric) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -4045,7 +4136,7 @@ func (m *Metric) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field12count int
 		for preIdx < l {
@@ -4597,6 +4688,10 @@ func (m *Metric) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *Metric) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *Gauge) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -4614,7 +4709,7 @@ func (m *Gauge) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field1count int
 		for preIdx < l {
@@ -4768,6 +4863,10 @@ func (m *Gauge) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *Gauge) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *Sum) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -4785,7 +4884,7 @@ func (m *Sum) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field1count int
 		for preIdx < l {
@@ -4997,6 +5096,10 @@ func (m *Sum) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *Sum) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *Histogram) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -5014,7 +5117,7 @@ func (m *Histogram) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field1count int
 		for preIdx < l {
@@ -5197,6 +5300,10 @@ func (m *Histogram) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *Histogram) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *ExponentialHistogram) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -5214,7 +5321,7 @@ func (m *ExponentialHistogram) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field1count int
 		for preIdx < l {
@@ -5397,6 +5504,10 @@ func (m *ExponentialHistogram) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *ExponentialHistogram) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *Summary) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -5414,7 +5525,7 @@ func (m *Summary) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field1count int
 		for preIdx < l {
@@ -5568,6 +5679,10 @@ func (m *Summary) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *Summary) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *NumberDataPoint) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -5585,7 +5700,7 @@ func (m *NumberDataPoint) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field7count int
 		var field5count int
@@ -5889,6 +6004,10 @@ func (m *NumberDataPoint) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *NumberDataPoint) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *HistogramDataPoint) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -5906,7 +6025,7 @@ func (m *HistogramDataPoint) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field9count int
 		var field8count int
@@ -6370,6 +6489,10 @@ func (m *HistogramDataPoint) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *HistogramDataPoint) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *ExponentialHistogramDataPoint_Buckets) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -6571,7 +6694,7 @@ func (m *ExponentialHistogramDataPoint) unmarshal(dAtA []byte, depth int) error 
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field1count int
 		var field11count int
@@ -7066,6 +7189,10 @@ func (m *ExponentialHistogramDataPoint) unmarshal(dAtA []byte, depth int) error 
 	return nil
 }
 
+func (m *ExponentialHistogramDataPoint) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *SummaryDataPoint_ValueAtQuantile) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -7173,7 +7300,7 @@ func (m *SummaryDataPoint) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field7count int
 		var field6count int
@@ -7479,6 +7606,10 @@ func (m *SummaryDataPoint) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *SummaryDataPoint) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *Exemplar) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -7496,7 +7627,7 @@ func (m *Exemplar) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field7count int
 		for preIdx < l {
@@ -7786,4 +7917,8 @@ func (m *Exemplar) unmarshal(dAtA []byte, depth int) error {
 		return io.ErrUnexpectedEOF
 	}
 	return nil
+}
+
+func (m *Exemplar) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
 }

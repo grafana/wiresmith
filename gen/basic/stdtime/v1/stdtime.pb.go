@@ -54,12 +54,6 @@ func (m *StdtimeHolder) Reset() {
 	*m = StdtimeHolder{}
 }
 func (*StdtimeHolder) ProtoMessage() {}
-func (m *StdtimeHolder) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *StdDurationHolder) Reset() {
 	if m == nil {
@@ -68,12 +62,6 @@ func (m *StdDurationHolder) Reset() {
 	*m = StdDurationHolder{}
 }
 func (*StdDurationHolder) ProtoMessage() {}
-func (m *StdDurationHolder) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *StdtimeHolder) HasName() bool {
 	if m == nil {
@@ -226,7 +214,12 @@ func (m *StdtimeHolder) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.Name) > 0 {
 		i -= len(m.Name)
 		copy(dAtA[i:], m.Name)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Name)))
+		if len(m.Name) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.Name))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Name)))
+		}
 		i--
 		dAtA[i] = 0x0a
 	}
@@ -278,7 +271,12 @@ func (m *StdDurationHolder) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.Name) > 0 {
 		i -= len(m.Name)
 		copy(dAtA[i:], m.Name)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Name)))
+		if len(m.Name) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.Name))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Name)))
+		}
 		i--
 		dAtA[i] = 0x0a
 	}

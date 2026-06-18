@@ -54,12 +54,6 @@ func (m *CustomTypeHolder) Reset() {
 	*m = CustomTypeHolder{}
 }
 func (*CustomTypeHolder) ProtoMessage() {}
-func (m *CustomTypeHolder) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *RepeatedCustomTypeHolder) Reset() {
 	if m == nil {
@@ -68,12 +62,6 @@ func (m *RepeatedCustomTypeHolder) Reset() {
 	*m = RepeatedCustomTypeHolder{}
 }
 func (*RepeatedCustomTypeHolder) ProtoMessage() {}
-func (m *RepeatedCustomTypeHolder) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *CustomTypeHolder) HasLabels() bool {
 	if m == nil {
@@ -235,14 +223,24 @@ func (m *CustomTypeHolder) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.PlainString) > 0 {
 		i -= len(m.PlainString)
 		copy(dAtA[i:], m.PlainString)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.PlainString)))
+		if len(m.PlainString) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.PlainString))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.PlainString)))
+		}
 		i--
 		dAtA[i] = 0x22
 	}
 	if len(m.PlainBytes) > 0 {
 		i -= len(m.PlainBytes)
 		copy(dAtA[i:], m.PlainBytes)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.PlainBytes)))
+		if len(m.PlainBytes) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.PlainBytes))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.PlainBytes)))
+		}
 		i--
 		dAtA[i] = 0x1a
 	}
@@ -307,14 +305,24 @@ func (m *RepeatedCustomTypeHolder) MarshalToSizedBuffer(dAtA []byte) (int, error
 	for iNdEx := len(m.PlainTags) - 1; iNdEx >= 0; iNdEx-- {
 		i -= len(m.PlainTags[iNdEx])
 		copy(dAtA[i:], m.PlainTags[iNdEx])
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.PlainTags[iNdEx])))
+		if len(m.PlainTags[iNdEx]) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.PlainTags[iNdEx]))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.PlainTags[iNdEx])))
+		}
 		i--
 		dAtA[i] = 0x22
 	}
 	for iNdEx := len(m.PlainIds) - 1; iNdEx >= 0; iNdEx-- {
 		i -= len(m.PlainIds[iNdEx])
 		copy(dAtA[i:], m.PlainIds[iNdEx])
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.PlainIds[iNdEx])))
+		if len(m.PlainIds[iNdEx]) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.PlainIds[iNdEx]))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.PlainIds[iNdEx])))
+		}
 		i--
 		dAtA[i] = 0x1a
 	}
@@ -616,7 +624,7 @@ func (m *RepeatedCustomTypeHolder) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field1count int
 		var field2count int
@@ -941,4 +949,8 @@ func (m *RepeatedCustomTypeHolder) unmarshal(dAtA []byte, depth int) error {
 		return io.ErrUnexpectedEOF
 	}
 	return nil
+}
+
+func (m *RepeatedCustomTypeHolder) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
 }

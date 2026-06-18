@@ -63,7 +63,7 @@ func (m *MapField) EmitMarshal(e Emitter, access string, num protowire.Number) {
 	m.Key.EmitValueMarshal(e, "\t\t", "k", 1)
 
 	// Entry length and map field tag
-	e.Writef("\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(baseI-i))\n")
+	emitLenPrefixFastPath(e, "\t\t", "baseI-i")
 	e.ReverseTag("\t\t", num, protowire.BytesType)
 	e.Writef("\t}\n")
 }

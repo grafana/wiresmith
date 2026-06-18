@@ -57,12 +57,6 @@ func (m *Level0_Level1_Level2_Level3) Reset() {
 	*m = Level0_Level1_Level2_Level3{}
 }
 func (*Level0_Level1_Level2_Level3) ProtoMessage() {}
-func (m *Level0_Level1_Level2_Level3) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *Level0_Level1_Level2) Reset() {
 	if m == nil {
@@ -71,12 +65,6 @@ func (m *Level0_Level1_Level2) Reset() {
 	*m = Level0_Level1_Level2{}
 }
 func (*Level0_Level1_Level2) ProtoMessage() {}
-func (m *Level0_Level1_Level2) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *Level0_Level1) Reset() {
 	if m == nil {
@@ -85,12 +73,6 @@ func (m *Level0_Level1) Reset() {
 	*m = Level0_Level1{}
 }
 func (*Level0_Level1) ProtoMessage() {}
-func (m *Level0_Level1) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *Level0) Reset() {
 	if m == nil {
@@ -99,12 +81,6 @@ func (m *Level0) Reset() {
 	*m = Level0{}
 }
 func (*Level0) ProtoMessage() {}
-func (m *Level0) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *CrossRef) Reset() {
 	if m == nil {
@@ -113,12 +89,6 @@ func (m *CrossRef) Reset() {
 	*m = CrossRef{}
 }
 func (*CrossRef) ProtoMessage() {}
-func (m *CrossRef) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *Level0_Level1_Level2_Level3) HasDeepValue() bool {
 	if m == nil {
@@ -420,7 +390,12 @@ func (m *Level0_Level1_Level2_Level3) MarshalToSizedBuffer(dAtA []byte) (int, er
 	if len(m.DeepValue) > 0 {
 		i -= len(m.DeepValue)
 		copy(dAtA[i:], m.DeepValue)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.DeepValue)))
+		if len(m.DeepValue) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.DeepValue))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.DeepValue)))
+		}
 		i--
 		dAtA[i] = 0x0a
 	}
@@ -459,7 +434,12 @@ func (m *Level0_Level1_Level2) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.Value) > 0 {
 		i -= len(m.Value)
 		copy(dAtA[i:], m.Value)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Value)))
+		if len(m.Value) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.Value))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Value)))
+		}
 		i--
 		dAtA[i] = 0x12
 	}
@@ -470,7 +450,12 @@ func (m *Level0_Level1_Level2) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		}
 		if size > 0 {
 			i -= size
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			if size <= 0x7F {
+				i--
+				dAtA[i] = uint8(size)
+			} else {
+				i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			}
 			i--
 			dAtA[i] = 0x0a
 		} else if m.XXX_fieldsPresent[0]&(1<<0) != 0 {
@@ -515,7 +500,12 @@ func (m *Level0_Level1) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.Value) > 0 {
 		i -= len(m.Value)
 		copy(dAtA[i:], m.Value)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Value)))
+		if len(m.Value) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.Value))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Value)))
+		}
 		i--
 		dAtA[i] = 0x1a
 	}
@@ -525,7 +515,12 @@ func (m *Level0_Level1) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			return 0, err
 		}
 		i -= size
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		if size <= 0x7F {
+			dAtA[i-1] = uint8(size)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		}
 		i--
 		dAtA[i] = 0x12
 	}
@@ -536,7 +531,12 @@ func (m *Level0_Level1) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		}
 		if size > 0 {
 			i -= size
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			if size <= 0x7F {
+				i--
+				dAtA[i] = uint8(size)
+			} else {
+				i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			}
 			i--
 			dAtA[i] = 0x0a
 		} else if m.XXX_fieldsPresent[0]&(1<<0) != 0 {
@@ -581,7 +581,12 @@ func (m *Level0) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.Label) > 0 {
 		i -= len(m.Label)
 		copy(dAtA[i:], m.Label)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Label)))
+		if len(m.Label) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.Label))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Label)))
+		}
 		i--
 		dAtA[i] = 0x12
 	}
@@ -592,7 +597,12 @@ func (m *Level0) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		}
 		if size > 0 {
 			i -= size
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			if size <= 0x7F {
+				i--
+				dAtA[i] = uint8(size)
+			} else {
+				i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			}
 			i--
 			dAtA[i] = 0x0a
 		} else if m.XXX_fieldsPresent[0]&(1<<0) != 0 {
@@ -637,7 +647,12 @@ func (m *CrossRef) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.Tag) > 0 {
 		i -= len(m.Tag)
 		copy(dAtA[i:], m.Tag)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Tag)))
+		if len(m.Tag) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.Tag))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Tag)))
+		}
 		i--
 		dAtA[i] = 0x1a
 	}
@@ -648,7 +663,12 @@ func (m *CrossRef) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		}
 		if size > 0 {
 			i -= size
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			if size <= 0x7F {
+				i--
+				dAtA[i] = uint8(size)
+			} else {
+				i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			}
 			i--
 			dAtA[i] = 0x12
 		} else if m.XXX_fieldsPresent[0]&(1<<1) != 0 {
@@ -665,7 +685,12 @@ func (m *CrossRef) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		}
 		if size > 0 {
 			i -= size
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			if size <= 0x7F {
+				i--
+				dAtA[i] = uint8(size)
+			} else {
+				i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			}
 			i--
 			dAtA[i] = 0x0a
 		} else if m.XXX_fieldsPresent[0]&(1<<0) != 0 {
@@ -980,7 +1005,7 @@ func (m *Level0_Level1) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field2count int
 		for preIdx < l {
@@ -1226,6 +1251,10 @@ func (m *Level0_Level1) unmarshal(dAtA []byte, depth int) error {
 		return io.ErrUnexpectedEOF
 	}
 	return nil
+}
+
+func (m *Level0_Level1) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
 }
 
 func (m *Level0) Unmarshal(b []byte) error {

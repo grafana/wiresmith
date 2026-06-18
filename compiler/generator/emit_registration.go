@@ -10,7 +10,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
-// emitRegistration emits, into the companion `_reflect.pb.go` file:
+// emitRegistration emits, into the companion `_util.pb.go` file:
 //
 //  1. the embedded `file_*_rawDesc` byte blob (a marshaled FileDescriptorProto
 //     with SourceCodeInfo and the wiresmith.options dependency stripped);
@@ -111,8 +111,8 @@ func (fg *FileGenerator) emitRegistration(fd protoreflect.FileDescriptor) {
 	msgs := flattenedMessages(fd)
 
 	// Empty proto file (no enums, no messages, no services): emit nothing.
-	// The caller already skips writing the _reflect.pb.go file if
-	// reflectBody stayed empty after all emitters ran.
+	// The caller already skips writing the _util.pb.go file if
+	// utilBody stayed empty after all emitters ran.
 	//
 	// A file with only services still goes through registration: its
 	// rawDesc records the package, dependencies, and (now-stripped)
@@ -127,36 +127,36 @@ func (fg *FileGenerator) emitRegistration(fd protoreflect.FileDescriptor) {
 
 	// 1. rawDesc const.
 	rawDesc := serializeFileDescriptor(fd)
-	fg.reflectBody.WriteString("const ")
-	fg.reflectBody.WriteString(prefix)
-	fg.reflectBody.WriteString("_rawDesc = \"\" +\n")
-	encodeRawDescriptor(fg.reflectBody, rawDesc)
-	fg.reflectBody.WriteString("\n\n")
+	fg.utilBody.WriteString("const ")
+	fg.utilBody.WriteString(prefix)
+	fg.utilBody.WriteString("_rawDesc = \"\" +\n")
+	encodeRawDescriptor(fg.utilBody, rawDesc)
+	fg.utilBody.WriteString("\n\n")
 
 	// 2. File-descriptor cache var.
-	fmt.Fprintf(fg.reflectBody, "var %s_fd protoreflect.FileDescriptor\n\n", prefix)
+	fmt.Fprintf(fg.utilBody, "var %s_fd protoreflect.FileDescriptor\n\n", prefix)
 
 	// 3. Pre-allocated MessageInfo / EnumInfo slices. Build() populates
 	//    GoReflectType and Desc on each non-map-entry slot; map-entry slots
 	//    stay zero-valued and are skipped by Build's registration loop.
 	if len(msgs) > 0 {
-		fmt.Fprintf(fg.reflectBody, "var %s_msgTypes = make([]protoimpl.MessageInfo, %d)\n",
+		fmt.Fprintf(fg.utilBody, "var %s_msgTypes = make([]protoimpl.MessageInfo, %d)\n",
 			prefix, len(msgs))
 	}
 	if len(enums) > 0 {
-		fmt.Fprintf(fg.reflectBody, "var %s_enumTypes = make([]protoimpl.EnumInfo, %d)\n",
+		fmt.Fprintf(fg.utilBody, "var %s_enumTypes = make([]protoimpl.EnumInfo, %d)\n",
 			prefix, len(enums))
 	}
-	fg.reflectBody.WriteString("\n")
+	fg.utilBody.WriteString("\n")
 
 	// 4. goTypes + depIdxs — the codegen-time work that lets Build() do
 	//    its job without descriptorpb at runtime.
 	fg.emitGoTypesAndDepIdxs(enums, msgs)
 
 	// 5. init function (eager top-level + lazy guarded helper).
-	fmt.Fprintf(fg.reflectBody, "func init() { %s_init() }\n\n", prefix)
-	fmt.Fprintf(fg.reflectBody, "func %s_init() {\n", prefix)
-	fmt.Fprintf(fg.reflectBody, "\tif %s_fd != nil {\n\t\treturn\n\t}\n", prefix)
+	fmt.Fprintf(fg.utilBody, "func init() { %s_init() }\n\n", prefix)
+	fmt.Fprintf(fg.utilBody, "func %s_init() {\n", prefix)
+	fmt.Fprintf(fg.utilBody, "\tif %s_fd != nil {\n\t\treturn\n\t}\n", prefix)
 
 	// 5a. OneofWrappers — Build() does NOT populate this; we must set it
 	//     before the Build() call (matching protoc-gen-go's init shape).
@@ -180,7 +180,7 @@ func (fg *FileGenerator) emitRegistration(fd protoreflect.FileDescriptor) {
 			}
 		}
 		if len(wrappers) > 0 {
-			fmt.Fprintf(fg.reflectBody, "\t%s_msgTypes[%d].OneofWrappers = []any{%s}\n",
+			fmt.Fprintf(fg.utilBody, "\t%s_msgTypes[%d].OneofWrappers = []any{%s}\n",
 				prefix, msgIdx, strings.Join(wrappers, ", "))
 		}
 		msgIdx++
@@ -189,32 +189,32 @@ func (fg *FileGenerator) emitRegistration(fd protoreflect.FileDescriptor) {
 	// 5b. The Build() call. `type x struct{}` lets us recover the Go package
 	//     path via reflect.TypeOf — same idiom protoc-gen-go uses. unsafe.Slice
 	//     hands rawDesc bytes to Build without re-copying.
-	fmt.Fprintf(fg.reflectBody, "\ttype x struct{}\n")
-	fmt.Fprintf(fg.reflectBody, "\tout := protoimpl.TypeBuilder{\n")
-	fmt.Fprintf(fg.reflectBody, "\t\tFile: protoimpl.DescBuilder{\n")
-	fmt.Fprintf(fg.reflectBody, "\t\t\tGoPackagePath: reflect.TypeOf(x{}).PkgPath(),\n")
-	fmt.Fprintf(fg.reflectBody, "\t\t\tRawDescriptor: unsafe.Slice(unsafe.StringData(%s_rawDesc), len(%s_rawDesc)),\n",
+	fmt.Fprintf(fg.utilBody, "\ttype x struct{}\n")
+	fmt.Fprintf(fg.utilBody, "\tout := protoimpl.TypeBuilder{\n")
+	fmt.Fprintf(fg.utilBody, "\t\tFile: protoimpl.DescBuilder{\n")
+	fmt.Fprintf(fg.utilBody, "\t\t\tGoPackagePath: reflect.TypeOf(x{}).PkgPath(),\n")
+	fmt.Fprintf(fg.utilBody, "\t\t\tRawDescriptor: unsafe.Slice(unsafe.StringData(%s_rawDesc), len(%s_rawDesc)),\n",
 		prefix, prefix)
-	fmt.Fprintf(fg.reflectBody, "\t\t\tNumEnums:      %d,\n", len(enums))
-	fmt.Fprintf(fg.reflectBody, "\t\t\tNumMessages:   %d,\n", len(msgs))
-	fmt.Fprintf(fg.reflectBody, "\t\t\tNumExtensions: 0,\n")
-	fmt.Fprintf(fg.reflectBody, "\t\t\tNumServices:   0,\n")
-	fmt.Fprintf(fg.reflectBody, "\t\t},\n")
-	fmt.Fprintf(fg.reflectBody, "\t\tGoTypes:           %s_goTypes,\n", prefix)
-	fmt.Fprintf(fg.reflectBody, "\t\tDependencyIndexes: %s_depIdxs,\n", prefix)
+	fmt.Fprintf(fg.utilBody, "\t\t\tNumEnums:      %d,\n", len(enums))
+	fmt.Fprintf(fg.utilBody, "\t\t\tNumMessages:   %d,\n", len(msgs))
+	fmt.Fprintf(fg.utilBody, "\t\t\tNumExtensions: 0,\n")
+	fmt.Fprintf(fg.utilBody, "\t\t\tNumServices:   0,\n")
+	fmt.Fprintf(fg.utilBody, "\t\t},\n")
+	fmt.Fprintf(fg.utilBody, "\t\tGoTypes:           %s_goTypes,\n", prefix)
+	fmt.Fprintf(fg.utilBody, "\t\tDependencyIndexes: %s_depIdxs,\n", prefix)
 	if len(enums) > 0 {
-		fmt.Fprintf(fg.reflectBody, "\t\tEnumInfos:         %s_enumTypes,\n", prefix)
+		fmt.Fprintf(fg.utilBody, "\t\tEnumInfos:         %s_enumTypes,\n", prefix)
 	}
 	if len(msgs) > 0 {
-		fmt.Fprintf(fg.reflectBody, "\t\tMessageInfos:      %s_msgTypes,\n", prefix)
+		fmt.Fprintf(fg.utilBody, "\t\tMessageInfos:      %s_msgTypes,\n", prefix)
 	}
-	fmt.Fprintf(fg.reflectBody, "\t}.Build()\n")
-	fmt.Fprintf(fg.reflectBody, "\t%s_fd = out.File\n", prefix)
+	fmt.Fprintf(fg.utilBody, "\t}.Build()\n")
+	fmt.Fprintf(fg.utilBody, "\t%s_fd = out.File\n", prefix)
 	// Drop the codegen-only goTypes/depIdxs slices once Build has consumed
 	// them — matches protoc-gen-go and shrinks the steady-state retained heap.
-	fmt.Fprintf(fg.reflectBody, "\t%s_goTypes = nil\n", prefix)
-	fmt.Fprintf(fg.reflectBody, "\t%s_depIdxs = nil\n", prefix)
-	fmt.Fprintf(fg.reflectBody, "}\n")
+	fmt.Fprintf(fg.utilBody, "\t%s_goTypes = nil\n", prefix)
+	fmt.Fprintf(fg.utilBody, "\t%s_depIdxs = nil\n", prefix)
+	fmt.Fprintf(fg.utilBody, "}\n")
 
 	// Imports for reflect file. DROPPED vs the old descriptorpb path:
 	// google.golang.org/protobuf/proto, .../reflect/protodesc,
@@ -226,10 +226,10 @@ func (fg *FileGenerator) emitRegistration(fd protoreflect.FileDescriptor) {
 	// must not see protohelpers in its import block (would fail to
 	// compile as "imported and not used"). Letting the per-message
 	// emitter own the import keeps the two in sync automatically.
-	fg.reflectImports.addImport("reflect", "")
-	fg.reflectImports.addImport("unsafe", "")
-	fg.reflectImports.addImport("google.golang.org/protobuf/reflect/protoreflect", "")
-	fg.reflectImports.addImport("google.golang.org/protobuf/runtime/protoimpl", "")
+	fg.utilImports.addImport("reflect", "")
+	fg.utilImports.addImport("unsafe", "")
+	fg.utilImports.addImport("google.golang.org/protobuf/reflect/protoreflect", "")
+	fg.utilImports.addImport("google.golang.org/protobuf/runtime/protoimpl", "")
 }
 
 // emitGoTypesAndDepIdxs emits the two codegen-time slices that
@@ -249,9 +249,9 @@ func (fg *FileGenerator) emitRegistration(fd protoreflect.FileDescriptor) {
 //     extensions or services, so the four ext/method sub-lists are empty —
 //     their start positions all equal `len(listFieldDeps)`.
 //
-// External package references are resolved via `fg.reflectImports`. The
+// External package references are resolved via `fg.utilImports`. The
 // dependency entries reuse the same import alias the rest of the file uses
-// (via `goMessageType`/`goEnumType`), and `reflectImports.addProtoImport`
+// (via `goMessageType`/`goEnumType`), and `utilImports.addProtoImport`
 // inside those helpers registers the alias for the reflect file's import
 // block.
 func (fg *FileGenerator) emitGoTypesAndDepIdxs(
@@ -281,7 +281,7 @@ func (fg *FileGenerator) emitGoTypesAndDepIdxs(
 	// 1. Declared enums (indices 0..len(enums)-1 in goTypes).
 	for i, ed := range enums {
 		appendGoType(ed.FullName(), fmt.Sprintf("(%s)(0), // %d: %s",
-			fg.reflectImports.goEnumType(ed), i, ed.FullName()))
+			fg.utilImports.goEnumType(ed), i, ed.FullName()))
 	}
 
 	// 2. Declared messages (indices len(enums)..len(enums)+len(msgs)-1).
@@ -294,7 +294,7 @@ func (fg *FileGenerator) emitGoTypesAndDepIdxs(
 			lit = fmt.Sprintf("nil, // %d: %s", idx, md.FullName())
 		} else {
 			lit = fmt.Sprintf("(*%s)(nil), // %d: %s",
-				fg.reflectImports.goMessageType(md), idx, md.FullName())
+				fg.utilImports.goMessageType(md), idx, md.FullName())
 		}
 		appendGoType(md.FullName(), lit)
 	}
@@ -318,7 +318,7 @@ func (fg *FileGenerator) emitGoTypesAndDepIdxs(
 				if _, declared := goTypeIndex[ed.FullName()]; !declared {
 					// External enum dependency.
 					appendGoType(ed.FullName(), fmt.Sprintf("(%s)(0), // %d: %s",
-						fg.reflectImports.goEnumType(ed),
+						fg.utilImports.goEnumType(ed),
 						len(goTypeLines), ed.FullName()))
 				}
 				idx := goTypeIndex[ed.FullName()]
@@ -331,7 +331,7 @@ func (fg *FileGenerator) emitGoTypesAndDepIdxs(
 					// cross-file reference). Map entries can't appear here —
 					// they're always declared in their parent's file.
 					appendGoType(child.FullName(), fmt.Sprintf("(*%s)(nil), // %d: %s",
-						fg.reflectImports.goMessageType(child),
+						fg.utilImports.goMessageType(child),
 						len(goTypeLines), child.FullName()))
 				}
 				idx := goTypeIndex[child.FullName()]
@@ -345,11 +345,11 @@ func (fg *FileGenerator) emitGoTypesAndDepIdxs(
 	}
 
 	// 4. Emit goTypes.
-	fmt.Fprintf(fg.reflectBody, "var %s_goTypes = []any{\n", prefix)
+	fmt.Fprintf(fg.utilBody, "var %s_goTypes = []any{\n", prefix)
 	for _, ln := range goTypeLines {
-		fmt.Fprintf(fg.reflectBody, "\t%s\n", ln)
+		fmt.Fprintf(fg.utilBody, "\t%s\n", ln)
 	}
-	fmt.Fprintf(fg.reflectBody, "}\n\n")
+	fmt.Fprintf(fg.utilBody, "}\n\n")
 
 	// 5. Emit depIdxs with the 5 trailing boundary markers in REVERSE
 	//    sub-list order. The constants in filedesc/build.go:61-68 are
@@ -363,17 +363,17 @@ func (fg *FileGenerator) emitGoTypesAndDepIdxs(
 	//      [methOut_start, methIn_start, extDeps_start, extTargets_start, fieldDeps_start]
 	//    which for wiresmith (no extensions, no services) collapses to
 	//    `[N, N, N, N, 0]` where N = len(listFieldDeps).
-	fmt.Fprintf(fg.reflectBody, "var %s_depIdxs = []int32{\n", prefix)
+	fmt.Fprintf(fg.utilBody, "var %s_depIdxs = []int32{\n", prefix)
 	for _, ln := range depLines {
-		fmt.Fprintf(fg.reflectBody, "\t%s\n", ln)
+		fmt.Fprintf(fg.utilBody, "\t%s\n", ln)
 	}
 	n := int32(len(depLines))
-	fmt.Fprintf(fg.reflectBody, "\t%d, // [%d:%d] is the sub-list for method output_type\n", n, n, n)
-	fmt.Fprintf(fg.reflectBody, "\t%d, // [%d:%d] is the sub-list for method input_type\n", n, n, n)
-	fmt.Fprintf(fg.reflectBody, "\t%d, // [%d:%d] is the sub-list for extension type_name\n", n, n, n)
-	fmt.Fprintf(fg.reflectBody, "\t%d, // [%d:%d] is the sub-list for extension extendee\n", n, n, n)
-	fmt.Fprintf(fg.reflectBody, "\t0, // [0:%d] is the sub-list for field type_name\n", n)
-	fmt.Fprintf(fg.reflectBody, "}\n\n")
+	fmt.Fprintf(fg.utilBody, "\t%d, // [%d:%d] is the sub-list for method output_type\n", n, n, n)
+	fmt.Fprintf(fg.utilBody, "\t%d, // [%d:%d] is the sub-list for method input_type\n", n, n, n)
+	fmt.Fprintf(fg.utilBody, "\t%d, // [%d:%d] is the sub-list for extension type_name\n", n, n, n)
+	fmt.Fprintf(fg.utilBody, "\t%d, // [%d:%d] is the sub-list for extension extendee\n", n, n, n)
+	fmt.Fprintf(fg.utilBody, "\t0, // [0:%d] is the sub-list for field type_name\n", n)
+	fmt.Fprintf(fg.utilBody, "}\n\n")
 }
 
 // serializeFileDescriptor converts a protoreflect.FileDescriptor to raw proto
@@ -385,7 +385,7 @@ func (fg *FileGenerator) emitGoTypesAndDepIdxs(
 //
 // Note: this function runs at CODEGEN time inside the wiresmith binary, where
 // pulling in descriptorpb/protodesc is fine. The OUTPUT — the generated
-// `_reflect.pb.go` file — never imports descriptorpb.
+// `_util.pb.go` file — never imports descriptorpb.
 func serializeFileDescriptor(fd protoreflect.FileDescriptor) []byte {
 	fdp := protodesc.ToFileDescriptorProto(fd)
 	fdp.SourceCodeInfo = nil

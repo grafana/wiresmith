@@ -86,12 +86,6 @@ func (m *Payload) Reset() {
 	*m = Payload{}
 }
 func (*Payload) ProtoMessage() {}
-func (m *Payload) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *Nested) Reset() {
 	if m == nil {
@@ -100,12 +94,6 @@ func (m *Nested) Reset() {
 	*m = Nested{}
 }
 func (*Nested) ProtoMessage() {}
-func (m *Nested) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *Payload) HasId() bool {
 	if m == nil {
@@ -322,7 +310,12 @@ func (m *Payload) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		}
 		if size > 0 {
 			i -= size
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			if size <= 0x7F {
+				i--
+				dAtA[i] = uint8(size)
+			} else {
+				i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			}
 			i--
 			dAtA[i] = 0x3a
 		} else if m.XXX_fieldsPresent[0]&(1<<2) != 0 {
@@ -340,7 +333,12 @@ func (m *Payload) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	case *Payload_Text:
 		i -= len(v.Text)
 		copy(dAtA[i:], v.Text)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(v.Text)))
+		if len(v.Text) <= 0x7F {
+			dAtA[i-1] = uint8(len(v.Text))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(v.Text)))
+		}
 		i--
 		dAtA[i] = 0x2a
 	}
@@ -348,22 +346,42 @@ func (m *Payload) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		baseI := i
 		i -= len(v)
 		copy(dAtA[i:], v)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(v)))
+		if len(v) <= 0x7F {
+			dAtA[i-1] = uint8(len(v))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(v)))
+		}
 		i--
 		dAtA[i] = 0x12
 		i -= len(k)
 		copy(dAtA[i:], k)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(k)))
+		if len(k) <= 0x7F {
+			dAtA[i-1] = uint8(len(k))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(k)))
+		}
 		i--
 		dAtA[i] = 0x0a
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(baseI-i))
+		if baseI-i <= 0x7F {
+			dAtA[i-1] = uint8(baseI - i)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(baseI-i))
+		}
 		i--
 		dAtA[i] = 0x22
 	}
 	for iNdEx := len(m.Chunks) - 1; iNdEx >= 0; iNdEx-- {
 		i -= len(m.Chunks[iNdEx])
 		copy(dAtA[i:], m.Chunks[iNdEx])
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Chunks[iNdEx])))
+		if len(m.Chunks[iNdEx]) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.Chunks[iNdEx]))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Chunks[iNdEx])))
+		}
 		i--
 		dAtA[i] = 0x1a
 	}
@@ -375,7 +393,12 @@ func (m *Payload) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.Id) > 0 {
 		i -= len(m.Id)
 		copy(dAtA[i:], m.Id)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Id)))
+		if len(m.Id) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.Id))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Id)))
+		}
 		i--
 		dAtA[i] = 0x0a
 	}
@@ -420,7 +443,12 @@ func (m *Nested) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.Name) > 0 {
 		i -= len(m.Name)
 		copy(dAtA[i:], m.Name)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Name)))
+		if len(m.Name) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.Name))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Name)))
+		}
 		i--
 		dAtA[i] = 0x0a
 	}
@@ -444,7 +472,7 @@ func (m *Payload) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field3count int
 		var field4count int
@@ -1002,6 +1030,10 @@ func (m *Payload) unmarshal(dAtA []byte, depth int) error {
 		return io.ErrUnexpectedEOF
 	}
 	return nil
+}
+
+func (m *Payload) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
 }
 
 func (m *Nested) Unmarshal(b []byte) error {

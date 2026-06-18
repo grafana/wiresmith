@@ -131,12 +131,6 @@ func (m *UnpackedScalars) Reset() {
 	*m = UnpackedScalars{}
 }
 func (*UnpackedScalars) ProtoMessage() {}
-func (m *UnpackedScalars) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *MixedModifiers) Reset() {
 	if m == nil {
@@ -145,12 +139,6 @@ func (m *MixedModifiers) Reset() {
 	*m = MixedModifiers{}
 }
 func (*MixedModifiers) ProtoMessage() {}
-func (m *MixedModifiers) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *WideFields) Reset() {
 	if m == nil {
@@ -159,12 +147,6 @@ func (m *WideFields) Reset() {
 	*m = WideFields{}
 }
 func (*WideFields) ProtoMessage() {}
-func (m *WideFields) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *MixedModifiers) HasRegularInt() bool {
 	if m == nil {
@@ -1805,42 +1787,72 @@ func (m *MixedModifiers) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	for iNdEx := len(m.RepeatedBytes) - 1; iNdEx >= 0; iNdEx-- {
 		i -= len(m.RepeatedBytes[iNdEx])
 		copy(dAtA[i:], m.RepeatedBytes[iNdEx])
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.RepeatedBytes[iNdEx])))
+		if len(m.RepeatedBytes[iNdEx]) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.RepeatedBytes[iNdEx]))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.RepeatedBytes[iNdEx])))
+		}
 		i--
 		dAtA[i] = 0x62
 	}
 	if m.OptionalBytes != nil {
 		i -= len(m.OptionalBytes)
 		copy(dAtA[i:], m.OptionalBytes)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.OptionalBytes)))
+		if len(m.OptionalBytes) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.OptionalBytes))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.OptionalBytes)))
+		}
 		i--
 		dAtA[i] = 0x5a
 	}
 	if len(m.RegularBytes) > 0 {
 		i -= len(m.RegularBytes)
 		copy(dAtA[i:], m.RegularBytes)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.RegularBytes)))
+		if len(m.RegularBytes) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.RegularBytes))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.RegularBytes)))
+		}
 		i--
 		dAtA[i] = 0x52
 	}
 	for iNdEx := len(m.RepeatedString) - 1; iNdEx >= 0; iNdEx-- {
 		i -= len(m.RepeatedString[iNdEx])
 		copy(dAtA[i:], m.RepeatedString[iNdEx])
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.RepeatedString[iNdEx])))
+		if len(m.RepeatedString[iNdEx]) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.RepeatedString[iNdEx]))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.RepeatedString[iNdEx])))
+		}
 		i--
 		dAtA[i] = 0x4a
 	}
 	if m.OptionalString != nil {
 		i -= len(*m.OptionalString)
 		copy(dAtA[i:], *m.OptionalString)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(*m.OptionalString)))
+		if len(*m.OptionalString) <= 0x7F {
+			dAtA[i-1] = uint8(len(*m.OptionalString))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(*m.OptionalString)))
+		}
 		i--
 		dAtA[i] = 0x42
 	}
 	if len(m.RegularString) > 0 {
 		i -= len(m.RegularString)
 		copy(dAtA[i:], m.RegularString)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.RegularString)))
+		if len(m.RegularString) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.RegularString))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.RegularString)))
+		}
 		i--
 		dAtA[i] = 0x3a
 	}
@@ -1871,7 +1883,12 @@ func (m *MixedModifiers) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		for j = len(m.RepeatedInt) - 1; j >= 0; j-- {
 			i = protohelpers.EncodeVarint(dAtA, i, uint64(m.RepeatedInt[j]))
 		}
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(pStart-i))
+		if pStart-i <= 0x7F {
+			dAtA[i-1] = uint8(pStart - i)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(pStart-i))
+		}
 		i--
 		dAtA[i] = 0x1a
 	}
@@ -2330,7 +2347,12 @@ func (m *WideFields) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.F20) > 0 {
 		i -= len(m.F20)
 		copy(dAtA[i:], m.F20)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F20)))
+		if len(m.F20) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.F20))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F20)))
+		}
 		i--
 		dAtA[i] = 0x01
 		i--
@@ -2339,7 +2361,12 @@ func (m *WideFields) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.F19) > 0 {
 		i -= len(m.F19)
 		copy(dAtA[i:], m.F19)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F19)))
+		if len(m.F19) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.F19))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F19)))
+		}
 		i--
 		dAtA[i] = 0x01
 		i--
@@ -2348,7 +2375,12 @@ func (m *WideFields) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.F18) > 0 {
 		i -= len(m.F18)
 		copy(dAtA[i:], m.F18)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F18)))
+		if len(m.F18) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.F18))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F18)))
+		}
 		i--
 		dAtA[i] = 0x01
 		i--
@@ -2357,7 +2389,12 @@ func (m *WideFields) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.F17) > 0 {
 		i -= len(m.F17)
 		copy(dAtA[i:], m.F17)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F17)))
+		if len(m.F17) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.F17))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F17)))
+		}
 		i--
 		dAtA[i] = 0x01
 		i--
@@ -2366,7 +2403,12 @@ func (m *WideFields) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.F16) > 0 {
 		i -= len(m.F16)
 		copy(dAtA[i:], m.F16)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F16)))
+		if len(m.F16) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.F16))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F16)))
+		}
 		i--
 		dAtA[i] = 0x01
 		i--
@@ -2375,105 +2417,180 @@ func (m *WideFields) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.F15) > 0 {
 		i -= len(m.F15)
 		copy(dAtA[i:], m.F15)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F15)))
+		if len(m.F15) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.F15))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F15)))
+		}
 		i--
 		dAtA[i] = 0x7a
 	}
 	if len(m.F14) > 0 {
 		i -= len(m.F14)
 		copy(dAtA[i:], m.F14)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F14)))
+		if len(m.F14) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.F14))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F14)))
+		}
 		i--
 		dAtA[i] = 0x72
 	}
 	if len(m.F13) > 0 {
 		i -= len(m.F13)
 		copy(dAtA[i:], m.F13)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F13)))
+		if len(m.F13) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.F13))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F13)))
+		}
 		i--
 		dAtA[i] = 0x6a
 	}
 	if len(m.F12) > 0 {
 		i -= len(m.F12)
 		copy(dAtA[i:], m.F12)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F12)))
+		if len(m.F12) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.F12))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F12)))
+		}
 		i--
 		dAtA[i] = 0x62
 	}
 	if len(m.F11) > 0 {
 		i -= len(m.F11)
 		copy(dAtA[i:], m.F11)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F11)))
+		if len(m.F11) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.F11))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F11)))
+		}
 		i--
 		dAtA[i] = 0x5a
 	}
 	if len(m.F10) > 0 {
 		i -= len(m.F10)
 		copy(dAtA[i:], m.F10)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F10)))
+		if len(m.F10) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.F10))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F10)))
+		}
 		i--
 		dAtA[i] = 0x52
 	}
 	if len(m.F9) > 0 {
 		i -= len(m.F9)
 		copy(dAtA[i:], m.F9)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F9)))
+		if len(m.F9) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.F9))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F9)))
+		}
 		i--
 		dAtA[i] = 0x4a
 	}
 	if len(m.F8) > 0 {
 		i -= len(m.F8)
 		copy(dAtA[i:], m.F8)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F8)))
+		if len(m.F8) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.F8))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F8)))
+		}
 		i--
 		dAtA[i] = 0x42
 	}
 	if len(m.F7) > 0 {
 		i -= len(m.F7)
 		copy(dAtA[i:], m.F7)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F7)))
+		if len(m.F7) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.F7))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F7)))
+		}
 		i--
 		dAtA[i] = 0x3a
 	}
 	if len(m.F6) > 0 {
 		i -= len(m.F6)
 		copy(dAtA[i:], m.F6)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F6)))
+		if len(m.F6) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.F6))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F6)))
+		}
 		i--
 		dAtA[i] = 0x32
 	}
 	if len(m.F5) > 0 {
 		i -= len(m.F5)
 		copy(dAtA[i:], m.F5)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F5)))
+		if len(m.F5) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.F5))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F5)))
+		}
 		i--
 		dAtA[i] = 0x2a
 	}
 	if len(m.F4) > 0 {
 		i -= len(m.F4)
 		copy(dAtA[i:], m.F4)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F4)))
+		if len(m.F4) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.F4))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F4)))
+		}
 		i--
 		dAtA[i] = 0x22
 	}
 	if len(m.F3) > 0 {
 		i -= len(m.F3)
 		copy(dAtA[i:], m.F3)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F3)))
+		if len(m.F3) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.F3))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F3)))
+		}
 		i--
 		dAtA[i] = 0x1a
 	}
 	if len(m.F2) > 0 {
 		i -= len(m.F2)
 		copy(dAtA[i:], m.F2)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F2)))
+		if len(m.F2) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.F2))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F2)))
+		}
 		i--
 		dAtA[i] = 0x12
 	}
 	if len(m.F1) > 0 {
 		i -= len(m.F1)
 		copy(dAtA[i:], m.F1)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F1)))
+		if len(m.F1) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.F1))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.F1)))
+		}
 		i--
 		dAtA[i] = 0x0a
 	}
@@ -3606,7 +3723,7 @@ func (m *MixedModifiers) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field9count int
 		var field12count int
@@ -4247,6 +4364,10 @@ func (m *MixedModifiers) unmarshal(dAtA []byte, depth int) error {
 		return io.ErrUnexpectedEOF
 	}
 	return nil
+}
+
+func (m *MixedModifiers) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
 }
 
 func (m *WideFields) Unmarshal(b []byte) error {

@@ -30,12 +30,6 @@ func (m *AlphaEntry) Reset() {
 	*m = AlphaEntry{}
 }
 func (*AlphaEntry) ProtoMessage() {}
-func (m *AlphaEntry) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *AlphaEntry) HasKey() bool {
 	if m == nil {
@@ -116,7 +110,12 @@ func (m *AlphaEntry) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.Key) > 0 {
 		i -= len(m.Key)
 		copy(dAtA[i:], m.Key)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Key)))
+		if len(m.Key) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.Key))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Key)))
+		}
 		i--
 		dAtA[i] = 0x0a
 	}

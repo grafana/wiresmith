@@ -108,29 +108,27 @@ func (fg *FileGenerator) emitGetters(md protoreflect.MessageDescriptor) {
 			continue
 		}
 
-		// Message value-type fields: return pointer, nil when bitmap says absent.
-		// Currently the bitmap entry always exists here (same filter predicate
-		// as fieldsForPresence), but we keep the fallback so the getter
-		// degrades to a plain nil-safe accessor if the predicates ever diverge.
+		// Singular message value-type fields: the getter returns `*T` in every
+		// presence mode (uniform getter shape — der5). A pointer result keeps
+		// chained pointer-receiver calls (`x.GetY().GetW()`, `x.GetY().Marshal()`)
+		// compiling; a value-returning getter's result isn't addressable, so
+		// those would fail to compile. This deliberately diverges from gogo
+		// `nullable=false` value getters — safe per the 2026-06-18 consumer
+		// audit (no tempo/loki/mimir call site relies on the value shape).
+		//
+		// BITMAP messages gate on the presence bit. Under `no_presence` (FLAT)
+		// presenceMap returns nil, so `hasBit` is false and the getter falls
+		// through to the plain nil-receiver check — the live FLAT path.
 		if fd.Kind() == protoreflect.MessageKind {
 			msgType := fg.imports.goSingularType(fd)
-			// Under `(wiresmith.options.no_presence)` the getter returns the
-			// value, not a pointer — gogoproto nullable=false getter parity.
-			// Loki's queryrange Request/Response interfaces (and similar
-			// gogo-era interfaces elsewhere) are value-getter-shaped, so the
-			// pointer shape forced per-field customname workarounds (N2).
-			if fg.hasNoPresence(md) {
-				fmt.Fprintf(fg.body, "func (m *%s) Get%s() %s {\n", name, goName, msgType)
-				fmt.Fprintf(fg.body, "\tif m != nil {\n\t\treturn m.%s\n\t}\n", goName)
-				fmt.Fprintf(fg.body, "\treturn %s{}\n}\n\n", msgType)
-				continue
-			}
 			bitIndex, hasBit := pm[fd.Number()]
 			fmt.Fprintf(fg.body, "func (m *%s) Get%s() *%s {\n", name, goName, msgType)
 			if hasBit {
 				fmt.Fprintf(fg.body, "\tif m != nil && %s {\n", presenceCheck(bitIndex))
 			} else {
-				// Defensive: emitted when the field has no presence-bitmap entry.
+				// No bitmap entry: `no_presence` (FLAT) messages don't track
+				// presence, so return the field address whenever the receiver
+				// is non-nil.
 				fmt.Fprintf(fg.body, "\tif m != nil {\n")
 			}
 			fmt.Fprintf(fg.body, "\t\treturn &m.%s\n\t}\n", goName)

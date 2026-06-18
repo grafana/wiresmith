@@ -9,23 +9,1030 @@ import (
 	"sort"
 )
 
-// Per-message Compare() methods for test/kitchensink/v1/kitchen_sink.proto.
+// Per-message value-comparison methods (Equal + Compare) for test/kitchensink/v1/kitchen_sink.proto.
 //
-// Compare returns -1/0/+1 like bytes.Compare with the gogoproto.compare
-// nil/wrong-type preamble. Always emitted on every message; callers that
-// don't use it can rely on Go's dead-code elimination to drop the body.
+// Equal returns bool; Compare returns -1/0/+1 like bytes.Compare with the
+// gogoproto.compare nil/wrong-type preamble. Both are emitted on every
+// message; callers that don't use one can rely on Go's dead-code
+// elimination to drop the body.
 //
-// Why a separate file? Compare is never called from Marshal/Unmarshal/Size,
-// but emitting it next to those hot functions in the main .pb.go pushed
-// them onto different cache sets and produced a measured ~9% geomean
+// Why a separate file? Equal/Compare are never called from Marshal/Unmarshal/
+// Size, but emitting them next to those hot functions in the main .pb.go
+// pushed them onto different cache sets and produced a measured ~9% geomean
 // regression on OTel benchmarks (UnmarshalMap +14%, MarshalSingleSpan +13%)
-// purely from icache / iTLB / BTB pressure. Splitting Compare into its own
+// purely from icache / iTLB / BTB pressure. Splitting them into their own
 // compilation unit gives the linker freedom to place the cold half away
-// from the hot half — same trick the _reflect.pb.go split uses.
+// from the hot half — same trick the _util.pb.go split uses.
 //
-// See compiler/generator/emit_compare.go for the full rationale and the
-// benchmark methodology. DO NOT inline this file's contents back into
-// the main .pb.go without re-measuring.
+// See compiler/generator/emit_compare.go / emit_equal.go for the full
+// rationale and the benchmark methodology. DO NOT inline this file's
+// contents back into the main .pb.go without re-measuring.
+
+func (this *AllScalars) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*AllScalars)
+	if !ok {
+		that2, ok := that.(AllScalars)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if math.Float64bits(this.FieldDouble) != math.Float64bits(that1.FieldDouble) {
+		return false
+	}
+	if math.Float32bits(this.FieldFloat) != math.Float32bits(that1.FieldFloat) {
+		return false
+	}
+	if this.FieldInt32 != that1.FieldInt32 {
+		return false
+	}
+	if this.FieldInt64 != that1.FieldInt64 {
+		return false
+	}
+	if this.FieldUint32 != that1.FieldUint32 {
+		return false
+	}
+	if this.FieldUint64 != that1.FieldUint64 {
+		return false
+	}
+	if this.FieldSint32 != that1.FieldSint32 {
+		return false
+	}
+	if this.FieldSint64 != that1.FieldSint64 {
+		return false
+	}
+	if this.FieldFixed32 != that1.FieldFixed32 {
+		return false
+	}
+	if this.FieldFixed64 != that1.FieldFixed64 {
+		return false
+	}
+	if this.FieldSfixed32 != that1.FieldSfixed32 {
+		return false
+	}
+	if this.FieldSfixed64 != that1.FieldSfixed64 {
+		return false
+	}
+	if this.FieldBool != that1.FieldBool {
+		return false
+	}
+	if this.FieldString != that1.FieldString {
+		return false
+	}
+	if !bytes.Equal(this.FieldBytes, that1.FieldBytes) {
+		return false
+	}
+	return true
+}
+
+func (this *AllOptionalScalars) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*AllOptionalScalars)
+	if !ok {
+		that2, ok := that.(AllOptionalScalars)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.FieldDouble != that1.FieldDouble {
+		if this.FieldDouble == nil || that1.FieldDouble == nil {
+			return false
+		}
+		if *this.FieldDouble != *that1.FieldDouble {
+			return false
+		}
+	}
+	if this.FieldFloat != that1.FieldFloat {
+		if this.FieldFloat == nil || that1.FieldFloat == nil {
+			return false
+		}
+		if *this.FieldFloat != *that1.FieldFloat {
+			return false
+		}
+	}
+	if this.FieldInt32 != that1.FieldInt32 {
+		if this.FieldInt32 == nil || that1.FieldInt32 == nil {
+			return false
+		}
+		if *this.FieldInt32 != *that1.FieldInt32 {
+			return false
+		}
+	}
+	if this.FieldInt64 != that1.FieldInt64 {
+		if this.FieldInt64 == nil || that1.FieldInt64 == nil {
+			return false
+		}
+		if *this.FieldInt64 != *that1.FieldInt64 {
+			return false
+		}
+	}
+	if this.FieldUint32 != that1.FieldUint32 {
+		if this.FieldUint32 == nil || that1.FieldUint32 == nil {
+			return false
+		}
+		if *this.FieldUint32 != *that1.FieldUint32 {
+			return false
+		}
+	}
+	if this.FieldUint64 != that1.FieldUint64 {
+		if this.FieldUint64 == nil || that1.FieldUint64 == nil {
+			return false
+		}
+		if *this.FieldUint64 != *that1.FieldUint64 {
+			return false
+		}
+	}
+	if this.FieldSint32 != that1.FieldSint32 {
+		if this.FieldSint32 == nil || that1.FieldSint32 == nil {
+			return false
+		}
+		if *this.FieldSint32 != *that1.FieldSint32 {
+			return false
+		}
+	}
+	if this.FieldSint64 != that1.FieldSint64 {
+		if this.FieldSint64 == nil || that1.FieldSint64 == nil {
+			return false
+		}
+		if *this.FieldSint64 != *that1.FieldSint64 {
+			return false
+		}
+	}
+	if this.FieldFixed32 != that1.FieldFixed32 {
+		if this.FieldFixed32 == nil || that1.FieldFixed32 == nil {
+			return false
+		}
+		if *this.FieldFixed32 != *that1.FieldFixed32 {
+			return false
+		}
+	}
+	if this.FieldFixed64 != that1.FieldFixed64 {
+		if this.FieldFixed64 == nil || that1.FieldFixed64 == nil {
+			return false
+		}
+		if *this.FieldFixed64 != *that1.FieldFixed64 {
+			return false
+		}
+	}
+	if this.FieldSfixed32 != that1.FieldSfixed32 {
+		if this.FieldSfixed32 == nil || that1.FieldSfixed32 == nil {
+			return false
+		}
+		if *this.FieldSfixed32 != *that1.FieldSfixed32 {
+			return false
+		}
+	}
+	if this.FieldSfixed64 != that1.FieldSfixed64 {
+		if this.FieldSfixed64 == nil || that1.FieldSfixed64 == nil {
+			return false
+		}
+		if *this.FieldSfixed64 != *that1.FieldSfixed64 {
+			return false
+		}
+	}
+	if this.FieldBool != that1.FieldBool {
+		if this.FieldBool == nil || that1.FieldBool == nil {
+			return false
+		}
+		if *this.FieldBool != *that1.FieldBool {
+			return false
+		}
+	}
+	if this.FieldString != that1.FieldString {
+		if this.FieldString == nil || that1.FieldString == nil {
+			return false
+		}
+		if *this.FieldString != *that1.FieldString {
+			return false
+		}
+	}
+	if (this.FieldBytes == nil) != (that1.FieldBytes == nil) {
+		return false
+	}
+	if !bytes.Equal(this.FieldBytes, that1.FieldBytes) {
+		return false
+	}
+	return true
+}
+
+func (this *AllRepeatedScalars) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*AllRepeatedScalars)
+	if !ok {
+		that2, ok := that.(AllRepeatedScalars)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if len(this.FieldDouble) != len(that1.FieldDouble) {
+		return false
+	}
+	for i := range this.FieldDouble {
+		if math.Float64bits(this.FieldDouble[i]) != math.Float64bits(that1.FieldDouble[i]) {
+			return false
+		}
+	}
+	if len(this.FieldFloat) != len(that1.FieldFloat) {
+		return false
+	}
+	for i := range this.FieldFloat {
+		if math.Float32bits(this.FieldFloat[i]) != math.Float32bits(that1.FieldFloat[i]) {
+			return false
+		}
+	}
+	if len(this.FieldInt32) != len(that1.FieldInt32) {
+		return false
+	}
+	for i := range this.FieldInt32 {
+		if this.FieldInt32[i] != that1.FieldInt32[i] {
+			return false
+		}
+	}
+	if len(this.FieldInt64) != len(that1.FieldInt64) {
+		return false
+	}
+	for i := range this.FieldInt64 {
+		if this.FieldInt64[i] != that1.FieldInt64[i] {
+			return false
+		}
+	}
+	if len(this.FieldUint32) != len(that1.FieldUint32) {
+		return false
+	}
+	for i := range this.FieldUint32 {
+		if this.FieldUint32[i] != that1.FieldUint32[i] {
+			return false
+		}
+	}
+	if len(this.FieldUint64) != len(that1.FieldUint64) {
+		return false
+	}
+	for i := range this.FieldUint64 {
+		if this.FieldUint64[i] != that1.FieldUint64[i] {
+			return false
+		}
+	}
+	if len(this.FieldSint32) != len(that1.FieldSint32) {
+		return false
+	}
+	for i := range this.FieldSint32 {
+		if this.FieldSint32[i] != that1.FieldSint32[i] {
+			return false
+		}
+	}
+	if len(this.FieldSint64) != len(that1.FieldSint64) {
+		return false
+	}
+	for i := range this.FieldSint64 {
+		if this.FieldSint64[i] != that1.FieldSint64[i] {
+			return false
+		}
+	}
+	if len(this.FieldFixed32) != len(that1.FieldFixed32) {
+		return false
+	}
+	for i := range this.FieldFixed32 {
+		if this.FieldFixed32[i] != that1.FieldFixed32[i] {
+			return false
+		}
+	}
+	if len(this.FieldFixed64) != len(that1.FieldFixed64) {
+		return false
+	}
+	for i := range this.FieldFixed64 {
+		if this.FieldFixed64[i] != that1.FieldFixed64[i] {
+			return false
+		}
+	}
+	if len(this.FieldSfixed32) != len(that1.FieldSfixed32) {
+		return false
+	}
+	for i := range this.FieldSfixed32 {
+		if this.FieldSfixed32[i] != that1.FieldSfixed32[i] {
+			return false
+		}
+	}
+	if len(this.FieldSfixed64) != len(that1.FieldSfixed64) {
+		return false
+	}
+	for i := range this.FieldSfixed64 {
+		if this.FieldSfixed64[i] != that1.FieldSfixed64[i] {
+			return false
+		}
+	}
+	if len(this.FieldBool) != len(that1.FieldBool) {
+		return false
+	}
+	for i := range this.FieldBool {
+		if this.FieldBool[i] != that1.FieldBool[i] {
+			return false
+		}
+	}
+	if len(this.FieldString) != len(that1.FieldString) {
+		return false
+	}
+	for i := range this.FieldString {
+		if this.FieldString[i] != that1.FieldString[i] {
+			return false
+		}
+	}
+	if len(this.FieldBytes) != len(that1.FieldBytes) {
+		return false
+	}
+	for i := range this.FieldBytes {
+		if !bytes.Equal(this.FieldBytes[i], that1.FieldBytes[i]) {
+			return false
+		}
+	}
+	return true
+}
+
+func (this *OneofVariants) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*OneofVariants)
+	if !ok {
+		that2, ok := that.(OneofVariants)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if (this.Value == nil) != (that1.Value == nil) {
+		return false
+	}
+	if this.Value != nil {
+		switch v := this.Value.(type) {
+		case *OneofVariants_DoubleValue:
+			v2, ok := that1.Value.(*OneofVariants_DoubleValue)
+			if !ok {
+				return false
+			}
+			if math.Float64bits(v.DoubleValue) != math.Float64bits(v2.DoubleValue) {
+				return false
+			}
+		case *OneofVariants_FloatValue:
+			v2, ok := that1.Value.(*OneofVariants_FloatValue)
+			if !ok {
+				return false
+			}
+			if math.Float32bits(v.FloatValue) != math.Float32bits(v2.FloatValue) {
+				return false
+			}
+		case *OneofVariants_Int32Value:
+			v2, ok := that1.Value.(*OneofVariants_Int32Value)
+			if !ok {
+				return false
+			}
+			if v.Int32Value != v2.Int32Value {
+				return false
+			}
+		case *OneofVariants_Int64Value:
+			v2, ok := that1.Value.(*OneofVariants_Int64Value)
+			if !ok {
+				return false
+			}
+			if v.Int64Value != v2.Int64Value {
+				return false
+			}
+		case *OneofVariants_Uint32Value:
+			v2, ok := that1.Value.(*OneofVariants_Uint32Value)
+			if !ok {
+				return false
+			}
+			if v.Uint32Value != v2.Uint32Value {
+				return false
+			}
+		case *OneofVariants_Uint64Value:
+			v2, ok := that1.Value.(*OneofVariants_Uint64Value)
+			if !ok {
+				return false
+			}
+			if v.Uint64Value != v2.Uint64Value {
+				return false
+			}
+		case *OneofVariants_Sint32Value:
+			v2, ok := that1.Value.(*OneofVariants_Sint32Value)
+			if !ok {
+				return false
+			}
+			if v.Sint32Value != v2.Sint32Value {
+				return false
+			}
+		case *OneofVariants_Sint64Value:
+			v2, ok := that1.Value.(*OneofVariants_Sint64Value)
+			if !ok {
+				return false
+			}
+			if v.Sint64Value != v2.Sint64Value {
+				return false
+			}
+		case *OneofVariants_Fixed32Value:
+			v2, ok := that1.Value.(*OneofVariants_Fixed32Value)
+			if !ok {
+				return false
+			}
+			if v.Fixed32Value != v2.Fixed32Value {
+				return false
+			}
+		case *OneofVariants_Fixed64Value:
+			v2, ok := that1.Value.(*OneofVariants_Fixed64Value)
+			if !ok {
+				return false
+			}
+			if v.Fixed64Value != v2.Fixed64Value {
+				return false
+			}
+		case *OneofVariants_Sfixed32Value:
+			v2, ok := that1.Value.(*OneofVariants_Sfixed32Value)
+			if !ok {
+				return false
+			}
+			if v.Sfixed32Value != v2.Sfixed32Value {
+				return false
+			}
+		case *OneofVariants_Sfixed64Value:
+			v2, ok := that1.Value.(*OneofVariants_Sfixed64Value)
+			if !ok {
+				return false
+			}
+			if v.Sfixed64Value != v2.Sfixed64Value {
+				return false
+			}
+		case *OneofVariants_BoolValue:
+			v2, ok := that1.Value.(*OneofVariants_BoolValue)
+			if !ok {
+				return false
+			}
+			if v.BoolValue != v2.BoolValue {
+				return false
+			}
+		case *OneofVariants_StringValue:
+			v2, ok := that1.Value.(*OneofVariants_StringValue)
+			if !ok {
+				return false
+			}
+			if v.StringValue != v2.StringValue {
+				return false
+			}
+		case *OneofVariants_BytesValue:
+			v2, ok := that1.Value.(*OneofVariants_BytesValue)
+			if !ok {
+				return false
+			}
+			if !bytes.Equal(v.BytesValue, v2.BytesValue) {
+				return false
+			}
+		default:
+			return false
+		}
+	}
+	return true
+}
+
+func (this *Outer) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*Outer)
+	if !ok {
+		that2, ok := that.(Outer)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Middle.Equal(that1.Middle) {
+		return false
+	}
+	if len(this.Middles) != len(that1.Middles) {
+		return false
+	}
+	for i := range this.Middles {
+		if !this.Middles[i].Equal(that1.Middles[i]) {
+			return false
+		}
+	}
+	if this.Name != that1.Name {
+		return false
+	}
+	return true
+}
+
+func (this *Middle) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*Middle)
+	if !ok {
+		that2, ok := that.(Middle)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Inner.Equal(that1.Inner) {
+		return false
+	}
+	if len(this.Inners) != len(that1.Inners) {
+		return false
+	}
+	for i := range this.Inners {
+		if !this.Inners[i].Equal(that1.Inners[i]) {
+			return false
+		}
+	}
+	if this.Value != that1.Value {
+		return false
+	}
+	return true
+}
+
+func (this *Inner) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*Inner)
+	if !ok {
+		that2, ok := that.(Inner)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Data != that1.Data {
+		return false
+	}
+	if !bytes.Equal(this.Raw, that1.Raw) {
+		return false
+	}
+	if this.SignedVal != that1.SignedVal {
+		return false
+	}
+	if this.FixedVal != that1.FixedVal {
+		return false
+	}
+	return true
+}
+
+func (this *HighFieldNumbers) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*HighFieldNumbers)
+	if !ok {
+		that2, ok := that.(HighFieldNumbers)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Field1 != that1.Field1 {
+		return false
+	}
+	if this.Field16 != that1.Field16 {
+		return false
+	}
+	if this.Field128 != that1.Field128 {
+		return false
+	}
+	if this.Field2048 != that1.Field2048 {
+		return false
+	}
+	if this.Field16384 != that1.Field16384 {
+		return false
+	}
+	return true
+}
+
+func (this *WithEnum) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*WithEnum)
+	if !ok {
+		that2, ok := that.(WithEnum)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Color != that1.Color {
+		return false
+	}
+	if len(this.Colors) != len(that1.Colors) {
+		return false
+	}
+	for i := range this.Colors {
+		if this.Colors[i] != that1.Colors[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func (this *Empty) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*Empty)
+	if !ok {
+		that2, ok := that.(Empty)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	return true
+}
+
+func (this *OnlyRepeated) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*OnlyRepeated)
+	if !ok {
+		that2, ok := that.(OnlyRepeated)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if len(this.Names) != len(that1.Names) {
+		return false
+	}
+	for i := range this.Names {
+		if this.Names[i] != that1.Names[i] {
+			return false
+		}
+	}
+	if len(this.Values) != len(that1.Values) {
+		return false
+	}
+	for i := range this.Values {
+		if this.Values[i] != that1.Values[i] {
+			return false
+		}
+	}
+	if len(this.Items) != len(that1.Items) {
+		return false
+	}
+	for i := range this.Items {
+		if !this.Items[i].Equal(that1.Items[i]) {
+			return false
+		}
+	}
+	return true
+}
+
+func (this *Container) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*Container)
+	if !ok {
+		that2, ok := that.(Container)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Variant.Equal(that1.Variant) {
+		return false
+	}
+	if !this.Scalars.Equal(that1.Scalars) {
+		return false
+	}
+	if len(this.Variants) != len(that1.Variants) {
+		return false
+	}
+	for i := range this.Variants {
+		if !this.Variants[i].Equal(that1.Variants[i]) {
+			return false
+		}
+	}
+	return true
+}
+
+func (this *AllMaps) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*AllMaps)
+	if !ok {
+		that2, ok := that.(AllMaps)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if len(this.MapInt32Int32) != len(that1.MapInt32Int32) {
+		return false
+	}
+	for k, v := range this.MapInt32Int32 {
+		v2, ok := that1.MapInt32Int32[k]
+		if !ok {
+			return false
+		}
+		if v != v2 {
+			return false
+		}
+	}
+	if len(this.MapInt64Int64) != len(that1.MapInt64Int64) {
+		return false
+	}
+	for k, v := range this.MapInt64Int64 {
+		v2, ok := that1.MapInt64Int64[k]
+		if !ok {
+			return false
+		}
+		if v != v2 {
+			return false
+		}
+	}
+	if len(this.MapUint32Uint32) != len(that1.MapUint32Uint32) {
+		return false
+	}
+	for k, v := range this.MapUint32Uint32 {
+		v2, ok := that1.MapUint32Uint32[k]
+		if !ok {
+			return false
+		}
+		if v != v2 {
+			return false
+		}
+	}
+	if len(this.MapUint64Uint64) != len(that1.MapUint64Uint64) {
+		return false
+	}
+	for k, v := range this.MapUint64Uint64 {
+		v2, ok := that1.MapUint64Uint64[k]
+		if !ok {
+			return false
+		}
+		if v != v2 {
+			return false
+		}
+	}
+	if len(this.MapSint32Sint32) != len(that1.MapSint32Sint32) {
+		return false
+	}
+	for k, v := range this.MapSint32Sint32 {
+		v2, ok := that1.MapSint32Sint32[k]
+		if !ok {
+			return false
+		}
+		if v != v2 {
+			return false
+		}
+	}
+	if len(this.MapSint64Sint64) != len(that1.MapSint64Sint64) {
+		return false
+	}
+	for k, v := range this.MapSint64Sint64 {
+		v2, ok := that1.MapSint64Sint64[k]
+		if !ok {
+			return false
+		}
+		if v != v2 {
+			return false
+		}
+	}
+	if len(this.MapFixed32Fixed32) != len(that1.MapFixed32Fixed32) {
+		return false
+	}
+	for k, v := range this.MapFixed32Fixed32 {
+		v2, ok := that1.MapFixed32Fixed32[k]
+		if !ok {
+			return false
+		}
+		if v != v2 {
+			return false
+		}
+	}
+	if len(this.MapFixed64Fixed64) != len(that1.MapFixed64Fixed64) {
+		return false
+	}
+	for k, v := range this.MapFixed64Fixed64 {
+		v2, ok := that1.MapFixed64Fixed64[k]
+		if !ok {
+			return false
+		}
+		if v != v2 {
+			return false
+		}
+	}
+	if len(this.MapSfixed32Sfixed32) != len(that1.MapSfixed32Sfixed32) {
+		return false
+	}
+	for k, v := range this.MapSfixed32Sfixed32 {
+		v2, ok := that1.MapSfixed32Sfixed32[k]
+		if !ok {
+			return false
+		}
+		if v != v2 {
+			return false
+		}
+	}
+	if len(this.MapSfixed64Sfixed64) != len(that1.MapSfixed64Sfixed64) {
+		return false
+	}
+	for k, v := range this.MapSfixed64Sfixed64 {
+		v2, ok := that1.MapSfixed64Sfixed64[k]
+		if !ok {
+			return false
+		}
+		if v != v2 {
+			return false
+		}
+	}
+	if len(this.MapBoolBool) != len(that1.MapBoolBool) {
+		return false
+	}
+	for k, v := range this.MapBoolBool {
+		v2, ok := that1.MapBoolBool[k]
+		if !ok {
+			return false
+		}
+		if v != v2 {
+			return false
+		}
+	}
+	if len(this.MapStringString) != len(that1.MapStringString) {
+		return false
+	}
+	for k, v := range this.MapStringString {
+		v2, ok := that1.MapStringString[k]
+		if !ok {
+			return false
+		}
+		if v != v2 {
+			return false
+		}
+	}
+	if len(this.MapStringBytes) != len(that1.MapStringBytes) {
+		return false
+	}
+	for k, v := range this.MapStringBytes {
+		v2, ok := that1.MapStringBytes[k]
+		if !ok {
+			return false
+		}
+		if !bytes.Equal(v, v2) {
+			return false
+		}
+	}
+	if len(this.MapInt32Float) != len(that1.MapInt32Float) {
+		return false
+	}
+	for k, v := range this.MapInt32Float {
+		v2, ok := that1.MapInt32Float[k]
+		if !ok {
+			return false
+		}
+		if math.Float32bits(v) != math.Float32bits(v2) {
+			return false
+		}
+	}
+	if len(this.MapInt32Double) != len(that1.MapInt32Double) {
+		return false
+	}
+	for k, v := range this.MapInt32Double {
+		v2, ok := that1.MapInt32Double[k]
+		if !ok {
+			return false
+		}
+		if math.Float64bits(v) != math.Float64bits(v2) {
+			return false
+		}
+	}
+	if len(this.MapStringMessage) != len(that1.MapStringMessage) {
+		return false
+	}
+	for k, v := range this.MapStringMessage {
+		v2, ok := that1.MapStringMessage[k]
+		if !ok {
+			return false
+		}
+		if !v.Equal(v2) {
+			return false
+		}
+	}
+	if len(this.MapStringEnum) != len(that1.MapStringEnum) {
+		return false
+	}
+	for k, v := range this.MapStringEnum {
+		v2, ok := that1.MapStringEnum[k]
+		if !ok {
+			return false
+		}
+		if v != v2 {
+			return false
+		}
+	}
+	return true
+}
 
 func (this *AllScalars) Compare(that interface{}) int {
 	if that == nil {

@@ -8,7 +8,7 @@ import (
 	"github.com/grafana/wiresmith/compiler/types"
 )
 
-// Equal() methods are emitted into the companion `_equal.pb.go` file, not
+// Equal() methods are emitted into the companion `_compare.pb.go` file, not
 // into the main `.pb.go`. Same icache/iTLB rationale as the reflect/registration
 // split documented in emit_registration.go: Equal is cold, the marshal hot
 // path is hot, and co-locating them in one compilation unit shifts the hot
@@ -36,7 +36,7 @@ func (fg *FileGenerator) emitAllEqualMethods(fd protoreflect.FileDescriptor) {
 
 func (fg *FileGenerator) emitEqual(md protoreflect.MessageDescriptor) {
 	name := goMessageTypeName(md)
-	out := fg.equalBody
+	out := fg.compareBody
 	em := equalEmitter{fg: fg}
 
 	fmt.Fprintf(out, "func (this *%s) Equal(that interface{}) bool {\n", name)
@@ -74,7 +74,7 @@ func (fg *FileGenerator) emitEqual(md protoreflect.MessageDescriptor) {
 
 func (fg *FileGenerator) emitOneofEqual(md protoreflect.MessageDescriptor, oo protoreflect.OneofDescriptor) {
 	goName := snakeToPascal(string(oo.Name()))
-	out := fg.equalBody
+	out := fg.compareBody
 	em := equalEmitter{fg: fg}
 
 	fmt.Fprintf(out, "\tif (this.%s == nil) != (that1.%s == nil) {\n", goName, goName)

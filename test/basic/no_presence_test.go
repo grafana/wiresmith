@@ -72,22 +72,25 @@ func TestNoPresence_EmptyChildDropsFromWire(t *testing.T) {
 	assert.Empty(t, b3)
 }
 
-// Get<MsgField> on a no_presence message returns the VALUE — gogoproto
-// nullable=false getter parity, so gogo-era value-getter-shaped interfaces
-// (Loki's queryrange Request/Response) are satisfied directly. Optional
-// fields keep their pointer-based Has accessor.
+// Get<MsgField> on a singular message field returns *T in every presence mode
+// (der5) — uniform getter shape, so chained pointer-receiver calls compile.
+// Under no_presence presenceMap has no entry for the field, so the getter
+// takes the plain nil-receiver fallback rather than a bitmap gate; this test
+// covers that now-live FLAT path (non-nil pointer for a non-nil receiver, nil
+// for a nil receiver). Optional fields keep their pointer-based Has accessor.
 func TestNoPresence_Accessors(t *testing.T) {
 	bare := &np.BareHolder{Child: np.Leaf{Id: 7}}
-	// Explicit np.Leaf type is a compile-time assertion that GetChild returns
-	// the value, not *np.Leaf — the no_presence value-getter contract.
-	var got np.Leaf = bare.GetChild() //nolint:staticcheck // QF1011: type is intentional, see above
-	assert.Equal(t, int64(7), got.Id, "GetChild must return the value under no_presence")
+	// Explicit *np.Leaf type is a compile-time assertion that GetChild returns
+	// a pointer, not the value — the uniform getter-shape contract.
+	var got *np.Leaf = bare.GetChild() //nolint:staticcheck // QF1011: explicit type is an intentional compile-time assertion that GetChild returns *np.Leaf (uniform getter-shape contract)
+	require.NotNil(t, got, "GetChild must return a non-nil pointer for a non-nil receiver")
+	assert.Equal(t, int64(7), got.Id, "GetChild must return the field address under no_presence")
 	assert.False(t, bare.HasMaybe())
 	maybe := int64(0)
 	bare.Maybe = &maybe
 	assert.True(t, bare.HasMaybe(), "optional presence is the pointer's nil-ness, unaffected by no_presence")
 
 	var nilHolder *np.BareHolder
-	assert.Equal(t, np.Leaf{}, nilHolder.GetChild(), "nil receiver returns the zero value")
+	assert.Nil(t, nilHolder.GetChild(), "nil receiver returns a nil pointer (covers the FLAT no-bitmap fallback)")
 	assert.Zero(t, nilHolder.GetNum())
 }
