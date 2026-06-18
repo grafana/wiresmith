@@ -27,12 +27,6 @@ func (m *BetaHolder) Reset() {
 	*m = BetaHolder{}
 }
 func (*BetaHolder) ProtoMessage() {}
-func (m *BetaHolder) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *BetaHolder) HasNote() bool {
 	if m == nil {
@@ -102,7 +96,12 @@ func (m *BetaHolder) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.Note) > 0 {
 		i -= len(m.Note)
 		copy(dAtA[i:], m.Note)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Note)))
+		if len(m.Note) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.Note))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Note)))
+		}
 		i--
 		dAtA[i] = 0x12
 	}
@@ -112,7 +111,12 @@ func (m *BetaHolder) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			return 0, err
 		}
 		i -= size
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		if size <= 0x7F {
+			dAtA[i-1] = uint8(size)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		}
 		i--
 		dAtA[i] = 0x0a
 	}
@@ -136,7 +140,7 @@ func (m *BetaHolder) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field1count int
 		for preIdx < l {
@@ -334,4 +338,8 @@ func (m *BetaHolder) unmarshal(dAtA []byte, depth int) error {
 		return io.ErrUnexpectedEOF
 	}
 	return nil
+}
+
+func (m *BetaHolder) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
 }

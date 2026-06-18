@@ -73,12 +73,6 @@ func (m *Leaf) Reset() {
 	*m = Leaf{}
 }
 func (*Leaf) ProtoMessage() {}
-func (m *Leaf) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *JsonTagHolder) Reset() {
 	if m == nil {
@@ -87,12 +81,6 @@ func (m *JsonTagHolder) Reset() {
 	*m = JsonTagHolder{}
 }
 func (*JsonTagHolder) ProtoMessage() {}
-func (m *JsonTagHolder) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *Leaf) HasId() bool {
 	if m == nil {
@@ -322,7 +310,12 @@ func (m *Leaf) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.Name) > 0 {
 		i -= len(m.Name)
 		copy(dAtA[i:], m.Name)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Name)))
+		if len(m.Name) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.Name))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Name)))
+		}
 		i--
 		dAtA[i] = 0x12
 	}
@@ -367,20 +360,35 @@ func (m *JsonTagHolder) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	case *JsonTagHolder_RawSource:
 		i -= len(v.RawSource)
 		copy(dAtA[i:], v.RawSource)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(v.RawSource)))
+		if len(v.RawSource) <= 0x7F {
+			dAtA[i-1] = uint8(len(v.RawSource))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(v.RawSource)))
+		}
 		i--
 		dAtA[i] = 0x4a
 	case *JsonTagHolder_SourceId:
 		i -= len(v.SourceId)
 		copy(dAtA[i:], v.SourceId)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(v.SourceId)))
+		if len(v.SourceId) <= 0x7F {
+			dAtA[i-1] = uint8(len(v.SourceId))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(v.SourceId)))
+		}
 		i--
 		dAtA[i] = 0x42
 	}
 	if len(m.InternalOnly) > 0 {
 		i -= len(m.InternalOnly)
 		copy(dAtA[i:], m.InternalOnly)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.InternalOnly)))
+		if len(m.InternalOnly) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.InternalOnly))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.InternalOnly)))
+		}
 		i--
 		dAtA[i] = 0x3a
 	}
@@ -391,10 +399,20 @@ func (m *JsonTagHolder) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		dAtA[i] = 0x10
 		i -= len(k)
 		copy(dAtA[i:], k)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(k)))
+		if len(k) <= 0x7F {
+			dAtA[i-1] = uint8(len(k))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(k)))
+		}
 		i--
 		dAtA[i] = 0x0a
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(baseI-i))
+		if baseI-i <= 0x7F {
+			dAtA[i-1] = uint8(baseI - i)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(baseI-i))
+		}
 		i--
 		dAtA[i] = 0x32
 	}
@@ -404,7 +422,12 @@ func (m *JsonTagHolder) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		for j = len(m.Sizes) - 1; j >= 0; j-- {
 			i = protohelpers.EncodeVarint(dAtA, i, uint64(m.Sizes[j]))
 		}
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(pStart-i))
+		if pStart-i <= 0x7F {
+			dAtA[i-1] = uint8(pStart - i)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(pStart-i))
+		}
 		i--
 		dAtA[i] = 0x2a
 	}
@@ -415,7 +438,12 @@ func (m *JsonTagHolder) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		}
 		if size > 0 {
 			i -= size
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			if size <= 0x7F {
+				i--
+				dAtA[i] = uint8(size)
+			} else {
+				i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			}
 			i--
 			dAtA[i] = 0x22
 		} else if m.XXX_fieldsPresent[0]&(1<<3) != 0 {
@@ -433,14 +461,24 @@ func (m *JsonTagHolder) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.PlainName) > 0 {
 		i -= len(m.PlainName)
 		copy(dAtA[i:], m.PlainName)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.PlainName)))
+		if len(m.PlainName) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.PlainName))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.PlainName)))
+		}
 		i--
 		dAtA[i] = 0x12
 	}
 	if len(m.BlockId) > 0 {
 		i -= len(m.BlockId)
 		copy(dAtA[i:], m.BlockId)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.BlockId)))
+		if len(m.BlockId) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.BlockId))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.BlockId)))
+		}
 		i--
 		dAtA[i] = 0x0a
 	}
@@ -597,7 +635,7 @@ func (m *JsonTagHolder) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field6count int
 		for preIdx < l {
@@ -1259,4 +1297,8 @@ func (m *JsonTagHolder) unmarshal(dAtA []byte, depth int) error {
 		return io.ErrUnexpectedEOF
 	}
 	return nil
+}
+
+func (m *JsonTagHolder) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
 }

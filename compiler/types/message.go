@@ -47,7 +47,7 @@ func (MessageType) EmitMarshal(e Emitter, access string, num protowire.Number) {
 	e.Writef("\t\tif err != nil {\n\t\t\treturn 0, err\n\t\t}\n")
 	e.Writef("\t\tif size > 0 {\n")
 	e.Writef("\t\t\ti -= size\n")
-	e.Writef("\t\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(size))\n")
+	emitLenPrefixFastPath(e, "\t\t\t", "size")
 	e.ReverseTag("\t\t\t", num, protowire.BytesType)
 	e.Writef("\t\t}\n")
 	e.Writef("\t}\n")
@@ -57,7 +57,7 @@ func (MessageType) EmitValueMarshal(e Emitter, indent, access string, num protow
 	e.Writef("%ssize, err := %s.MarshalToSizedBuffer(dAtA[:i])\n", indent, access)
 	e.Writef("%sif err != nil {\n%s\treturn 0, err\n%s}\n", indent, indent, indent)
 	e.Writef("%si -= size\n", indent)
-	e.Writef("%si = protohelpers.EncodeVarint(dAtA, i, uint64(size))\n", indent)
+	emitLenPrefixFastPath(e, indent, "size")
 	e.ReverseTag(indent, num, protowire.BytesType)
 }
 

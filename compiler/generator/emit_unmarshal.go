@@ -37,14 +37,29 @@ const preScanMinBytes = 256
 
 // emitPreScan emits a lightweight tag-scanning loop that counts occurrences of
 // repeated message/string/bytes fields, then pre-allocates their slices with
-// exact capacity. Uses inline varint decoding for performance.
-func (fg *FileGenerator) emitPreScan(md protoreflect.MessageDescriptor) {
+// exact capacity. Uses inline varint decoding for performance. It returns true
+// when a pre-scan block was emitted (the message has at least one pre-scannable
+// field) and false otherwise; callers use this to decide whether a
+// pre-scan-skipping entry point (UnmarshalNoPrescan) is worth emitting.
+//
+// The emitted guard is `if l >= preScanMinBytes && depth >= 0`. The `depth >= 0`
+// term is what UnmarshalNoPrescan exploits: the top-level entry points pass
+// depth 0 (Unmarshal) or -1 (UnmarshalNoPrescan), so a negative starting depth
+// disables the pre-scan for the top-level message only. Nested unmarshals always
+// advance depth by 1 (same-package `unmarshal(b, depth+1)`, cross-package
+// `UnmarshalWithDepth(b, depth+1)` which never re-clamps a non-negative value),
+// so -1 becomes 0 at the first hop and every nested pre-scan still runs. See
+// emitUnmarshal for the entry-point wiring.
+func (fg *FileGenerator) emitPreScan(md protoreflect.MessageDescriptor) bool {
 	fields := fieldsForPreScan(md)
 	if len(fields) == 0 {
-		return
+		return false
 	}
 
-	fmt.Fprintf(fg.body, "\tif l >= %d {\n", preScanMinBytes)
+	// `depth >= 0` is the pre-scan opt-out switch (see doc comment): -1 means
+	// "top-level UnmarshalNopScan, skip this scan"; the +1 every nested call
+	// applies lifts -1 to 0 so nested scans are unaffected.
+	fmt.Fprintf(fg.body, "\tif l >= %d && depth >= 0 {\n", preScanMinBytes)
 	fmt.Fprintf(fg.body, "\t\tvar preIdx int\n")
 	for _, fd := range fields {
 		fmt.Fprintf(fg.body, "\t\tvar field%dcount int\n", fd.Number())
@@ -160,6 +175,7 @@ func (fg *FileGenerator) emitPreScan(md protoreflect.MessageDescriptor) {
 	}
 
 	fmt.Fprintf(fg.body, "\t}\n")
+	return true
 }
 
 func (fg *FileGenerator) emitUnmarshal(md protoreflect.MessageDescriptor) {
@@ -189,7 +205,13 @@ func (fg *FileGenerator) emitUnmarshal(md protoreflect.MessageDescriptor) {
 	fmt.Fprintf(fg.body, "\treturn m.unmarshal(b, depth)\n")
 	fmt.Fprintf(fg.body, "}\n\n")
 
-	// Private implementation with inline varint decoding (iNdEx/dAtA pattern).
+	// Pre-render the body so we know whether a pre-scan block was emitted
+	// before we write the entry points. UnmarshalNoPrescan is only emitted for
+	// messages whose unmarshal actually contains a pre-scan (a message without
+	// a pre-scan has nothing to skip, so the extra method would be dead weight
+	// and bloat every generated file). The pre-scan guard itself carries the
+	// `&& depth >= 0` term that lets a -1 starting depth disable the top-level
+	// scan; see emitPreScan.
 	fmt.Fprintf(fg.body, "func (m *%s) unmarshal(dAtA []byte, depth int) error {\n", name)
 	fmt.Fprintf(fg.body, "\tif depth > protohelpers.MaxUnmarshalDepth {\n")
 	fmt.Fprintf(fg.body, "\t\treturn fmt.Errorf(\"exceeded max recursion depth\")\n")
@@ -197,7 +219,7 @@ func (fg *FileGenerator) emitUnmarshal(md protoreflect.MessageDescriptor) {
 	fmt.Fprintf(fg.body, "\tl := len(dAtA)\n")
 	fmt.Fprintf(fg.body, "\tiNdEx := 0\n")
 
-	fg.emitPreScan(md)
+	hasPreScan := fg.emitPreScan(md)
 
 	// Main parse loop with inline tag decoding.
 	fmt.Fprintf(fg.body, "\tfor iNdEx < l {\n")
@@ -226,6 +248,29 @@ func (fg *FileGenerator) emitUnmarshal(md protoreflect.MessageDescriptor) {
 	fmt.Fprintf(fg.body, "\tif iNdEx > l {\n\t\treturn io.ErrUnexpectedEOF\n\t}\n")
 	fmt.Fprintf(fg.body, "\treturn nil\n")
 	fmt.Fprintf(fg.body, "}\n\n")
+
+	// UnmarshalNoPrescan decodes identically to Unmarshal but skips the
+	// TOP-LEVEL repeated-field counting pre-scan. It is emitted only for
+	// messages that have a pre-scan (hasPreScan); a message with no pre-scan
+	// would produce a method byte-identical to Unmarshal, so we omit it.
+	//
+	// Use it when unmarshalling into a REUSED or pooled message (one whose
+	// repeated slices already have len>0, or were reset to [:0] with capacity
+	// retained): the pre-scan's exact-fit prealloc never fires in that case
+	// (its guard is `len==0 && cap<count`), so the scan is pure overhead.
+	// For a FRESH message the pre-scan's prealloc pays off — keep using
+	// Unmarshal there.
+	//
+	// The mechanism is a -1 starting depth: the pre-scan guard is
+	// `l >= N && depth >= 0`, so depth -1 disables the top-level scan, while
+	// every nested unmarshal advances depth by 1 (lifting -1 to 0), preserving
+	// nested pre-scans. The unmarshal() depth guard (`depth > MaxUnmarshalDepth`)
+	// tolerates the negative value.
+	if hasPreScan {
+		fmt.Fprintf(fg.body, "func (m *%s) UnmarshalNoPrescan(dAtA []byte) error {\n", name)
+		fmt.Fprintf(fg.body, "\treturn m.unmarshal(dAtA, -1)\n")
+		fmt.Fprintf(fg.body, "}\n\n")
+	}
 }
 
 func (fg *FileGenerator) emitFieldUnmarshal(md protoreflect.MessageDescriptor, fd protoreflect.FieldDescriptor) {

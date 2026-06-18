@@ -131,7 +131,7 @@ func (f fixed32Base) EmitEqual(e Emitter, indent, lhs, rhs string) {
 	if f.equalCastExpr != "" {
 		// The only registered fixed32Base with an equalCastExpr is Float,
 		// whose cast names math.Float32bits. Register the import here so the
-		// companion _equal.pb.go file (which doesn't share imports with the
+		// companion _compare.pb.go file (which doesn't share imports with the
 		// main .pb.go) compiles.
 		e.AddImport("math", "")
 	}

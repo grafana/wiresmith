@@ -181,12 +181,6 @@ func (m *AnyValue) Reset() {
 	*m = AnyValue{}
 }
 func (*AnyValue) ProtoMessage() {}
-func (m *AnyValue) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *ArrayValue) Reset() {
 	if m == nil {
@@ -195,12 +189,6 @@ func (m *ArrayValue) Reset() {
 	*m = ArrayValue{}
 }
 func (*ArrayValue) ProtoMessage() {}
-func (m *ArrayValue) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *KeyValueList) Reset() {
 	if m == nil {
@@ -209,12 +197,6 @@ func (m *KeyValueList) Reset() {
 	*m = KeyValueList{}
 }
 func (*KeyValueList) ProtoMessage() {}
-func (m *KeyValueList) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *KeyValue) Reset() {
 	if m == nil {
@@ -223,12 +205,6 @@ func (m *KeyValue) Reset() {
 	*m = KeyValue{}
 }
 func (*KeyValue) ProtoMessage() {}
-func (m *KeyValue) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *InstrumentationScope) Reset() {
 	if m == nil {
@@ -237,12 +213,6 @@ func (m *InstrumentationScope) Reset() {
 	*m = InstrumentationScope{}
 }
 func (*InstrumentationScope) ProtoMessage() {}
-func (m *InstrumentationScope) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *EntityRef) Reset() {
 	if m == nil {
@@ -251,12 +221,6 @@ func (m *EntityRef) Reset() {
 	*m = EntityRef{}
 }
 func (*EntityRef) ProtoMessage() {}
-func (m *EntityRef) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *KeyValue) HasKey() bool {
 	if m == nil {
@@ -624,7 +588,12 @@ func (m *AnyValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	case *AnyValue_BytesValue:
 		i -= len(v.BytesValue)
 		copy(dAtA[i:], v.BytesValue)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(v.BytesValue)))
+		if len(v.BytesValue) <= 0x7F {
+			dAtA[i-1] = uint8(len(v.BytesValue))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(v.BytesValue)))
+		}
 		i--
 		dAtA[i] = 0x3a
 	case *AnyValue_KvlistValue:
@@ -633,7 +602,12 @@ func (m *AnyValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			return 0, err
 		}
 		i -= size
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		if size <= 0x7F {
+			dAtA[i-1] = uint8(size)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		}
 		i--
 		dAtA[i] = 0x32
 	case *AnyValue_ArrayValue:
@@ -642,7 +616,12 @@ func (m *AnyValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			return 0, err
 		}
 		i -= size
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		if size <= 0x7F {
+			dAtA[i-1] = uint8(size)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		}
 		i--
 		dAtA[i] = 0x2a
 	case *AnyValue_DoubleValue:
@@ -666,7 +645,12 @@ func (m *AnyValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	case *AnyValue_StringValue:
 		i -= len(v.StringValue)
 		copy(dAtA[i:], v.StringValue)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(v.StringValue)))
+		if len(v.StringValue) <= 0x7F {
+			dAtA[i-1] = uint8(len(v.StringValue))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(v.StringValue)))
+		}
 		i--
 		dAtA[i] = 0x0a
 	}
@@ -708,7 +692,12 @@ func (m *ArrayValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			return 0, err
 		}
 		i -= size
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		if size <= 0x7F {
+			dAtA[i-1] = uint8(size)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		}
 		i--
 		dAtA[i] = 0x0a
 	}
@@ -750,7 +739,12 @@ func (m *KeyValueList) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			return 0, err
 		}
 		i -= size
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		if size <= 0x7F {
+			dAtA[i-1] = uint8(size)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		}
 		i--
 		dAtA[i] = 0x0a
 	}
@@ -798,7 +792,12 @@ func (m *KeyValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		}
 		if size > 0 {
 			i -= size
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			if size <= 0x7F {
+				i--
+				dAtA[i] = uint8(size)
+			} else {
+				i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			}
 			i--
 			dAtA[i] = 0x12
 		} else if m.XXX_fieldsPresent[0]&(1<<1) != 0 {
@@ -811,7 +810,12 @@ func (m *KeyValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.Key) > 0 {
 		i -= len(m.Key)
 		copy(dAtA[i:], m.Key)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Key)))
+		if len(m.Key) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.Key))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Key)))
+		}
 		i--
 		dAtA[i] = 0x0a
 	}
@@ -858,21 +862,36 @@ func (m *InstrumentationScope) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			return 0, err
 		}
 		i -= size
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		if size <= 0x7F {
+			dAtA[i-1] = uint8(size)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		}
 		i--
 		dAtA[i] = 0x1a
 	}
 	if len(m.Version) > 0 {
 		i -= len(m.Version)
 		copy(dAtA[i:], m.Version)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Version)))
+		if len(m.Version) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.Version))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Version)))
+		}
 		i--
 		dAtA[i] = 0x12
 	}
 	if len(m.Name) > 0 {
 		i -= len(m.Name)
 		copy(dAtA[i:], m.Name)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Name)))
+		if len(m.Name) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.Name))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Name)))
+		}
 		i--
 		dAtA[i] = 0x0a
 	}
@@ -911,28 +930,48 @@ func (m *EntityRef) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	for iNdEx := len(m.DescriptionKeys) - 1; iNdEx >= 0; iNdEx-- {
 		i -= len(m.DescriptionKeys[iNdEx])
 		copy(dAtA[i:], m.DescriptionKeys[iNdEx])
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.DescriptionKeys[iNdEx])))
+		if len(m.DescriptionKeys[iNdEx]) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.DescriptionKeys[iNdEx]))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.DescriptionKeys[iNdEx])))
+		}
 		i--
 		dAtA[i] = 0x22
 	}
 	for iNdEx := len(m.IdKeys) - 1; iNdEx >= 0; iNdEx-- {
 		i -= len(m.IdKeys[iNdEx])
 		copy(dAtA[i:], m.IdKeys[iNdEx])
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.IdKeys[iNdEx])))
+		if len(m.IdKeys[iNdEx]) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.IdKeys[iNdEx]))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.IdKeys[iNdEx])))
+		}
 		i--
 		dAtA[i] = 0x1a
 	}
 	if len(m.Type) > 0 {
 		i -= len(m.Type)
 		copy(dAtA[i:], m.Type)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Type)))
+		if len(m.Type) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.Type))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Type)))
+		}
 		i--
 		dAtA[i] = 0x12
 	}
 	if len(m.SchemaUrl) > 0 {
 		i -= len(m.SchemaUrl)
 		copy(dAtA[i:], m.SchemaUrl)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.SchemaUrl)))
+		if len(m.SchemaUrl) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.SchemaUrl))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.SchemaUrl)))
+		}
 		i--
 		dAtA[i] = 0x0a
 	}
@@ -1307,7 +1346,7 @@ func (m *ArrayValue) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field1count int
 		for preIdx < l {
@@ -1461,6 +1500,10 @@ func (m *ArrayValue) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *ArrayValue) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *KeyValueList) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -1478,7 +1521,7 @@ func (m *KeyValueList) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field1count int
 		for preIdx < l {
@@ -1630,6 +1673,10 @@ func (m *KeyValueList) unmarshal(dAtA []byte, depth int) error {
 		return io.ErrUnexpectedEOF
 	}
 	return nil
+}
+
+func (m *KeyValueList) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
 }
 
 func (m *KeyValue) Unmarshal(b []byte) error {
@@ -1830,7 +1877,7 @@ func (m *InstrumentationScope) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field3count int
 		for preIdx < l {
@@ -2105,6 +2152,10 @@ func (m *InstrumentationScope) unmarshal(dAtA []byte, depth int) error {
 	return nil
 }
 
+func (m *InstrumentationScope) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
+}
+
 func (m *EntityRef) Unmarshal(b []byte) error {
 	return m.unmarshal(b, 0)
 }
@@ -2122,7 +2173,7 @@ func (m *EntityRef) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field3count int
 		var field4count int
@@ -2419,4 +2470,8 @@ func (m *EntityRef) unmarshal(dAtA []byte, depth int) error {
 		return io.ErrUnexpectedEOF
 	}
 	return nil
+}
+
+func (m *EntityRef) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
 }

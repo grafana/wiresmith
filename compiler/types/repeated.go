@@ -108,7 +108,7 @@ func (r *RepeatedField) emitPackedMarshal(e Emitter, access string, num protowir
 		e.Writef("\t\tfor j = len(%s) - 1; j >= 0; j-- {\n", access)
 		r.Inner.(encoder).EmitEncode(e, "\t\t\t", access+"[j]")
 		e.Writef("\t\t}\n")
-		e.Writef("\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(pStart-i))\n")
+		emitLenPrefixFastPath(e, "\t\t", "pStart-i")
 	}
 
 	e.ReverseTag("\t\t", num, protowire.BytesType)

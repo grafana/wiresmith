@@ -20,7 +20,7 @@ import (
 
 // TestProtocInvokesPluginEndToEnd builds the plugin, hands it a tiny .proto
 // fixture via protoc, and checks the resulting .pb.go set:
-//   - the four files we expect (main + reflect + compare + equal) exist;
+//   - the three files we expect (main + util + compare) exist;
 //   - the main file declares the struct in the expected Go package;
 //   - the output compiles with `go build` (executed inside a temp module).
 //
@@ -84,9 +84,8 @@ message Greeting {
 
 	expected := []string{
 		"pluginsmoke/v1/greeting.pb.go",
-		"pluginsmoke/v1/greeting_reflect.pb.go",
+		"pluginsmoke/v1/greeting_util.pb.go",
 		"pluginsmoke/v1/greeting_compare.pb.go",
-		"pluginsmoke/v1/greeting_equal.pb.go",
 	}
 	for _, rel := range expected {
 		full := filepath.Join(outDir, rel)

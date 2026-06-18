@@ -64,12 +64,6 @@ func (m *Leaf) Reset() {
 	*m = Leaf{}
 }
 func (*Leaf) ProtoMessage() {}
-func (m *Leaf) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *CustomNameHolder) Reset() {
 	if m == nil {
@@ -78,12 +72,6 @@ func (m *CustomNameHolder) Reset() {
 	*m = CustomNameHolder{}
 }
 func (*CustomNameHolder) ProtoMessage() {}
-func (m *CustomNameHolder) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *Leaf) HasId() bool {
 	if m == nil {
@@ -265,7 +253,12 @@ func (m *Leaf) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.Name) > 0 {
 		i -= len(m.Name)
 		copy(dAtA[i:], m.Name)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Name)))
+		if len(m.Name) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.Name))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Name)))
+		}
 		i--
 		dAtA[i] = 0x12
 	}
@@ -309,7 +302,12 @@ func (m *CustomNameHolder) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.PlainField) > 0 {
 		i -= len(m.PlainField)
 		copy(dAtA[i:], m.PlainField)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.PlainField)))
+		if len(m.PlainField) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.PlainField))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.PlainField)))
+		}
 		i--
 		dAtA[i] = 0x32
 	}
@@ -321,7 +319,12 @@ func (m *CustomNameHolder) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	case *CustomNameHolder_TenantId:
 		i -= len(v.Tenant)
 		copy(dAtA[i:], v.Tenant)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(v.Tenant)))
+		if len(v.Tenant) <= 0x7F {
+			dAtA[i-1] = uint8(len(v.Tenant))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(v.Tenant)))
+		}
 		i--
 		dAtA[i] = 0x22
 	}
@@ -331,7 +334,12 @@ func (m *CustomNameHolder) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		for j = len(m.ByteSizes) - 1; j >= 0; j-- {
 			i = protohelpers.EncodeVarint(dAtA, i, uint64(m.ByteSizes[j]))
 		}
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(pStart-i))
+		if pStart-i <= 0x7F {
+			dAtA[i-1] = uint8(pStart - i)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(pStart-i))
+		}
 		i--
 		dAtA[i] = 0x1a
 	}
@@ -342,7 +350,12 @@ func (m *CustomNameHolder) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		}
 		if size > 0 {
 			i -= size
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			if size <= 0x7F {
+				i--
+				dAtA[i] = uint8(size)
+			} else {
+				i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			}
 			i--
 			dAtA[i] = 0x12
 		} else if m.XXX_fieldsPresent[0]&(1<<1) != 0 {
@@ -355,7 +368,12 @@ func (m *CustomNameHolder) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.BlockID) > 0 {
 		i -= len(m.BlockID)
 		copy(dAtA[i:], m.BlockID)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.BlockID)))
+		if len(m.BlockID) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.BlockID))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.BlockID)))
+		}
 		i--
 		dAtA[i] = 0x0a
 	}

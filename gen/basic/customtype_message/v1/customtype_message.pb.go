@@ -53,12 +53,6 @@ func (m *Label) Reset() {
 	*m = Label{}
 }
 func (*Label) ProtoMessage() {}
-func (m *Label) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *CustomTypeMessageHolder) Reset() {
 	if m == nil {
@@ -67,12 +61,6 @@ func (m *CustomTypeMessageHolder) Reset() {
 	*m = CustomTypeMessageHolder{}
 }
 func (*CustomTypeMessageHolder) ProtoMessage() {}
-func (m *CustomTypeMessageHolder) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *Label) HasName() bool {
 	if m == nil {
@@ -211,14 +199,24 @@ func (m *Label) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.Value) > 0 {
 		i -= len(m.Value)
 		copy(dAtA[i:], m.Value)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Value)))
+		if len(m.Value) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.Value))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Value)))
+		}
 		i--
 		dAtA[i] = 0x12
 	}
 	if len(m.Name) > 0 {
 		i -= len(m.Name)
 		copy(dAtA[i:], m.Name)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Name)))
+		if len(m.Name) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.Name))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Name)))
+		}
 		i--
 		dAtA[i] = 0x0a
 	}
@@ -260,7 +258,12 @@ func (m *CustomTypeMessageHolder) MarshalToSizedBuffer(dAtA []byte) (int, error)
 			return 0, err
 		}
 		i -= size
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		if size <= 0x7F {
+			dAtA[i-1] = uint8(size)
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		}
 		i--
 		dAtA[i] = 0x22
 	}
@@ -271,7 +274,12 @@ func (m *CustomTypeMessageHolder) MarshalToSizedBuffer(dAtA []byte) (int, error)
 		}
 		if size > 0 {
 			i -= size
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			if size <= 0x7F {
+				i--
+				dAtA[i] = uint8(size)
+			} else {
+				i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			}
 			i--
 			dAtA[i] = 0x1a
 		} else if m.XXX_fieldsPresent[0]&(1<<0) != 0 {
@@ -480,7 +488,7 @@ func (m *CustomTypeMessageHolder) unmarshal(dAtA []byte, depth int) error {
 	}
 	l := len(dAtA)
 	iNdEx := 0
-	if l >= 256 {
+	if l >= 256 && depth >= 0 {
 		var preIdx int
 		var field2count int
 		var field4count int
@@ -787,4 +795,8 @@ func (m *CustomTypeMessageHolder) unmarshal(dAtA []byte, depth int) error {
 		return io.ErrUnexpectedEOF
 	}
 	return nil
+}
+
+func (m *CustomTypeMessageHolder) UnmarshalNoPrescan(dAtA []byte) error {
+	return m.unmarshal(dAtA, -1)
 }

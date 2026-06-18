@@ -7,23 +7,186 @@ import (
 	"bytes"
 )
 
-// Per-message Compare() methods for opentelemetry/proto/logs/v1/logs.proto.
+// Per-message value-comparison methods (Equal + Compare) for opentelemetry/proto/logs/v1/logs.proto.
 //
-// Compare returns -1/0/+1 like bytes.Compare with the gogoproto.compare
-// nil/wrong-type preamble. Always emitted on every message; callers that
-// don't use it can rely on Go's dead-code elimination to drop the body.
+// Equal returns bool; Compare returns -1/0/+1 like bytes.Compare with the
+// gogoproto.compare nil/wrong-type preamble. Both are emitted on every
+// message; callers that don't use one can rely on Go's dead-code
+// elimination to drop the body.
 //
-// Why a separate file? Compare is never called from Marshal/Unmarshal/Size,
-// but emitting it next to those hot functions in the main .pb.go pushed
-// them onto different cache sets and produced a measured ~9% geomean
+// Why a separate file? Equal/Compare are never called from Marshal/Unmarshal/
+// Size, but emitting them next to those hot functions in the main .pb.go
+// pushed them onto different cache sets and produced a measured ~9% geomean
 // regression on OTel benchmarks (UnmarshalMap +14%, MarshalSingleSpan +13%)
-// purely from icache / iTLB / BTB pressure. Splitting Compare into its own
+// purely from icache / iTLB / BTB pressure. Splitting them into their own
 // compilation unit gives the linker freedom to place the cold half away
-// from the hot half — same trick the _reflect.pb.go split uses.
+// from the hot half — same trick the _util.pb.go split uses.
 //
-// See compiler/generator/emit_compare.go for the full rationale and the
-// benchmark methodology. DO NOT inline this file's contents back into
-// the main .pb.go without re-measuring.
+// See compiler/generator/emit_compare.go / emit_equal.go for the full
+// rationale and the benchmark methodology. DO NOT inline this file's
+// contents back into the main .pb.go without re-measuring.
+
+func (this *LogsData) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*LogsData)
+	if !ok {
+		that2, ok := that.(LogsData)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if len(this.ResourceLogs) != len(that1.ResourceLogs) {
+		return false
+	}
+	for i := range this.ResourceLogs {
+		if !this.ResourceLogs[i].Equal(that1.ResourceLogs[i]) {
+			return false
+		}
+	}
+	return true
+}
+
+func (this *ResourceLogs) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*ResourceLogs)
+	if !ok {
+		that2, ok := that.(ResourceLogs)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Resource.Equal(that1.Resource) {
+		return false
+	}
+	if len(this.ScopeLogs) != len(that1.ScopeLogs) {
+		return false
+	}
+	for i := range this.ScopeLogs {
+		if !this.ScopeLogs[i].Equal(that1.ScopeLogs[i]) {
+			return false
+		}
+	}
+	if this.SchemaUrl != that1.SchemaUrl {
+		return false
+	}
+	return true
+}
+
+func (this *ScopeLogs) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*ScopeLogs)
+	if !ok {
+		that2, ok := that.(ScopeLogs)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Scope.Equal(that1.Scope) {
+		return false
+	}
+	if len(this.LogRecords) != len(that1.LogRecords) {
+		return false
+	}
+	for i := range this.LogRecords {
+		if !this.LogRecords[i].Equal(that1.LogRecords[i]) {
+			return false
+		}
+	}
+	if this.SchemaUrl != that1.SchemaUrl {
+		return false
+	}
+	return true
+}
+
+func (this *LogRecord) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*LogRecord)
+	if !ok {
+		that2, ok := that.(LogRecord)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.TimeUnixNano != that1.TimeUnixNano {
+		return false
+	}
+	if this.ObservedTimeUnixNano != that1.ObservedTimeUnixNano {
+		return false
+	}
+	if this.SeverityNumber != that1.SeverityNumber {
+		return false
+	}
+	if this.SeverityText != that1.SeverityText {
+		return false
+	}
+	if !this.Body.Equal(that1.Body) {
+		return false
+	}
+	if len(this.Attributes) != len(that1.Attributes) {
+		return false
+	}
+	for i := range this.Attributes {
+		if !this.Attributes[i].Equal(that1.Attributes[i]) {
+			return false
+		}
+	}
+	if this.DroppedAttributesCount != that1.DroppedAttributesCount {
+		return false
+	}
+	if this.Flags != that1.Flags {
+		return false
+	}
+	if !bytes.Equal(this.TraceId, that1.TraceId) {
+		return false
+	}
+	if !bytes.Equal(this.SpanId, that1.SpanId) {
+		return false
+	}
+	if this.EventName != that1.EventName {
+		return false
+	}
+	return true
+}
 
 func (this *LogsData) Compare(that interface{}) int {
 	if that == nil {

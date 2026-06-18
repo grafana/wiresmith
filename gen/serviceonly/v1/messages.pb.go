@@ -39,12 +39,6 @@ func (m *Request) Reset() {
 	*m = Request{}
 }
 func (*Request) ProtoMessage() {}
-func (m *Request) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *Response) Reset() {
 	if m == nil {
@@ -53,12 +47,6 @@ func (m *Response) Reset() {
 	*m = Response{}
 }
 func (*Response) ProtoMessage() {}
-func (m *Response) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("%v", *m)
-}
 
 func (m *Request) HasId() bool {
 	if m == nil {
@@ -176,14 +164,24 @@ func (m *Request) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.Payload) > 0 {
 		i -= len(m.Payload)
 		copy(dAtA[i:], m.Payload)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Payload)))
+		if len(m.Payload) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.Payload))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Payload)))
+		}
 		i--
 		dAtA[i] = 0x12
 	}
 	if len(m.Id) > 0 {
 		i -= len(m.Id)
 		copy(dAtA[i:], m.Id)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Id)))
+		if len(m.Id) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.Id))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Id)))
+		}
 		i--
 		dAtA[i] = 0x0a
 	}
@@ -227,7 +225,12 @@ func (m *Response) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.Id) > 0 {
 		i -= len(m.Id)
 		copy(dAtA[i:], m.Id)
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Id)))
+		if len(m.Id) <= 0x7F {
+			dAtA[i-1] = uint8(len(m.Id))
+			i--
+		} else {
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Id)))
+		}
 		i--
 		dAtA[i] = 0x0a
 	}

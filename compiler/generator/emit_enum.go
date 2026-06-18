@@ -9,7 +9,7 @@ import (
 // emitEnum emits the enum's type, named constants, name/value maps, and
 // String() method into the MAIN .pb.go file. The protoreflect-shaped
 // Descriptor() / Type() / Number() methods are emitted separately by
-// emitEnumReflect — see the file split rationale on FileGenerator.reflectBody.
+// emitEnumReflect — see the file split rationale on FileGenerator.utilBody.
 func (fg *FileGenerator) emitEnum(ed protoreflect.EnumDescriptor) {
 	typeName := goEnumTypeName(ed)
 	valuePrefix := goEnumValuePrefix(ed)
@@ -71,7 +71,7 @@ func (fg *FileGenerator) emitEnum(ed protoreflect.EnumDescriptor) {
 }
 
 // emitEnumReflect emits the protoreflect-shaped Descriptor() / Type() /
-// Number() methods for one enum into the COMPANION _reflect.pb.go file.
+// Number() methods for one enum into the COMPANION _util.pb.go file.
 //
 // MUST be called in TypeBuilder's flattened enum ordering, because both this
 // method and emitRegistration index into the shared `file_*_enumTypes` array
@@ -84,19 +84,19 @@ func (fg *FileGenerator) emitEnumReflect(ed protoreflect.EnumDescriptor) {
 	idx := fg.nextEnumIndex
 	fg.nextEnumIndex++
 
-	fmt.Fprintf(fg.reflectBody, "func (x %s) Descriptor() protoreflect.EnumDescriptor {\n", typeName)
-	fmt.Fprintf(fg.reflectBody, "\t%s_init()\n", fg.fileVarName)
-	fmt.Fprintf(fg.reflectBody, "\treturn %s_enumTypes[%d].Desc\n", fg.fileVarName, idx)
-	fmt.Fprintf(fg.reflectBody, "}\n\n")
+	fmt.Fprintf(fg.utilBody, "func (x %s) Descriptor() protoreflect.EnumDescriptor {\n", typeName)
+	fmt.Fprintf(fg.utilBody, "\t%s_init()\n", fg.fileVarName)
+	fmt.Fprintf(fg.utilBody, "\treturn %s_enumTypes[%d].Desc\n", fg.fileVarName, idx)
+	fmt.Fprintf(fg.utilBody, "}\n\n")
 
-	fmt.Fprintf(fg.reflectBody, "func (x %s) Type() protoreflect.EnumType {\n", typeName)
-	fmt.Fprintf(fg.reflectBody, "\t%s_init()\n", fg.fileVarName)
-	fmt.Fprintf(fg.reflectBody, "\treturn &%s_enumTypes[%d]\n", fg.fileVarName, idx)
-	fmt.Fprintf(fg.reflectBody, "}\n\n")
+	fmt.Fprintf(fg.utilBody, "func (x %s) Type() protoreflect.EnumType {\n", typeName)
+	fmt.Fprintf(fg.utilBody, "\t%s_init()\n", fg.fileVarName)
+	fmt.Fprintf(fg.utilBody, "\treturn &%s_enumTypes[%d]\n", fg.fileVarName, idx)
+	fmt.Fprintf(fg.utilBody, "}\n\n")
 
-	fmt.Fprintf(fg.reflectBody, "func (x %s) Number() protoreflect.EnumNumber {\n", typeName)
-	fmt.Fprintf(fg.reflectBody, "\treturn protoreflect.EnumNumber(x)\n")
-	fmt.Fprintf(fg.reflectBody, "}\n\n")
+	fmt.Fprintf(fg.utilBody, "func (x %s) Number() protoreflect.EnumNumber {\n", typeName)
+	fmt.Fprintf(fg.utilBody, "\treturn protoreflect.EnumNumber(x)\n")
+	fmt.Fprintf(fg.utilBody, "}\n\n")
 
-	fg.reflectImports.addImport("google.golang.org/protobuf/reflect/protoreflect", "")
+	fg.utilImports.addImport("google.golang.org/protobuf/reflect/protoreflect", "")
 }

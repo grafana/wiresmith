@@ -44,7 +44,7 @@ space := $(empty) $(empty)
 comma := ,
 gogo_mflags = $(subst $(space),,$(foreach p,$(ALL_PROTOS),M$(p)=$(MODULE)/$(1)/$(call pkgsuffix,$(p))$(comma)))
 
-.PHONY: help build test coverage fuzz generate bench bench-compare clean conformance
+.PHONY: help build test test-race coverage fuzz generate bench bench-compare clean conformance
 
 help: ## Print this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-20s %s\n", $$1, $$2}'
@@ -53,7 +53,10 @@ build: ## Build all packages
 	go build ./...
 
 test: ## Run correctness tests
-	GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn go test ./test/... ./cmd/... -v
+	GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn go test ./test/... ./cmd/... ./compiler/... -v
+
+test-race: ## Run the race detector over concurrency-sensitive tests
+	GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn go test -race ./test/peer/ ./test/basic/ ./test/differential/
 
 coverage: ## Run tests with coverage report
 	GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn go test ./test/... ./compiler/... -coverpkg=./compiler/...,./protohelpers/... -coverprofile=coverage.out
@@ -125,6 +128,12 @@ endef
 
 generate-ours: ## Regenerate all wiresmith + conformance code
 	$(eval WIRESMITH := $(shell go build -o /tmp/wiresmith-gen ./cmd/wiresmith/ && echo /tmp/wiresmith-gen))
+	@echo "==> Generating wiresmith well-known types → types/known/"
+	@# Shipped WKT replacements (e.g. google.protobuf.Any). Output is at the
+	@# module root (--out=.) so the import path matches the source-relative
+	@# disk path; the package omits reflect/registration (see compiler/
+	@# generator/wellknown.go) and pairs with hand-written helpers.go.
+	$(WIRESMITH) --proto_path=proto/wellknown --out=. --module=$(MODULE) proto/wellknown/types/known/anypb/any.proto
 	@echo "==> Generating wiresmith code → gen/opentelemetry/proto/"
 	$(WIRESMITH) --proto_path=proto/otlp --out=gen --module=$(MODULE) $(call wiresmith_mflags)
 	@echo "==> Generating wiresmith code → gen/test/kitchensink/"

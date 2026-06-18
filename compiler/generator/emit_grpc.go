@@ -20,7 +20,7 @@ import (
 // stubs reference grpc / status / codes packages that have no overlap
 // with the main .pb.go's import block. Recording the bytes directly as
 // a new GeneratedFile keeps the icache rationale documented for the
-// _reflect / _compare / _equal splits intact (the gRPC file is also a
+// _util / _compare splits intact (the gRPC file is also a
 // cold-path companion).
 func (g *Generator) emitGRPC(fd protoreflect.FileDescriptor) error {
 	if fd.Services().Len() == 0 {

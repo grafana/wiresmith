@@ -7,23 +7,592 @@ import (
 	"bytes"
 )
 
-// Per-message Compare() methods for opentelemetry/proto/profiles/v1development/profiles.proto.
+// Per-message value-comparison methods (Equal + Compare) for opentelemetry/proto/profiles/v1development/profiles.proto.
 //
-// Compare returns -1/0/+1 like bytes.Compare with the gogoproto.compare
-// nil/wrong-type preamble. Always emitted on every message; callers that
-// don't use it can rely on Go's dead-code elimination to drop the body.
+// Equal returns bool; Compare returns -1/0/+1 like bytes.Compare with the
+// gogoproto.compare nil/wrong-type preamble. Both are emitted on every
+// message; callers that don't use one can rely on Go's dead-code
+// elimination to drop the body.
 //
-// Why a separate file? Compare is never called from Marshal/Unmarshal/Size,
-// but emitting it next to those hot functions in the main .pb.go pushed
-// them onto different cache sets and produced a measured ~9% geomean
+// Why a separate file? Equal/Compare are never called from Marshal/Unmarshal/
+// Size, but emitting them next to those hot functions in the main .pb.go
+// pushed them onto different cache sets and produced a measured ~9% geomean
 // regression on OTel benchmarks (UnmarshalMap +14%, MarshalSingleSpan +13%)
-// purely from icache / iTLB / BTB pressure. Splitting Compare into its own
+// purely from icache / iTLB / BTB pressure. Splitting them into their own
 // compilation unit gives the linker freedom to place the cold half away
-// from the hot half — same trick the _reflect.pb.go split uses.
+// from the hot half — same trick the _util.pb.go split uses.
 //
-// See compiler/generator/emit_compare.go for the full rationale and the
-// benchmark methodology. DO NOT inline this file's contents back into
-// the main .pb.go without re-measuring.
+// See compiler/generator/emit_compare.go / emit_equal.go for the full
+// rationale and the benchmark methodology. DO NOT inline this file's
+// contents back into the main .pb.go without re-measuring.
+
+func (this *ProfilesDictionary) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*ProfilesDictionary)
+	if !ok {
+		that2, ok := that.(ProfilesDictionary)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if len(this.MappingTable) != len(that1.MappingTable) {
+		return false
+	}
+	for i := range this.MappingTable {
+		if !this.MappingTable[i].Equal(that1.MappingTable[i]) {
+			return false
+		}
+	}
+	if len(this.LocationTable) != len(that1.LocationTable) {
+		return false
+	}
+	for i := range this.LocationTable {
+		if !this.LocationTable[i].Equal(that1.LocationTable[i]) {
+			return false
+		}
+	}
+	if len(this.FunctionTable) != len(that1.FunctionTable) {
+		return false
+	}
+	for i := range this.FunctionTable {
+		if !this.FunctionTable[i].Equal(that1.FunctionTable[i]) {
+			return false
+		}
+	}
+	if len(this.LinkTable) != len(that1.LinkTable) {
+		return false
+	}
+	for i := range this.LinkTable {
+		if !this.LinkTable[i].Equal(that1.LinkTable[i]) {
+			return false
+		}
+	}
+	if len(this.StringTable) != len(that1.StringTable) {
+		return false
+	}
+	for i := range this.StringTable {
+		if this.StringTable[i] != that1.StringTable[i] {
+			return false
+		}
+	}
+	if len(this.AttributeTable) != len(that1.AttributeTable) {
+		return false
+	}
+	for i := range this.AttributeTable {
+		if !this.AttributeTable[i].Equal(that1.AttributeTable[i]) {
+			return false
+		}
+	}
+	if len(this.StackTable) != len(that1.StackTable) {
+		return false
+	}
+	for i := range this.StackTable {
+		if !this.StackTable[i].Equal(that1.StackTable[i]) {
+			return false
+		}
+	}
+	return true
+}
+
+func (this *ProfilesData) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*ProfilesData)
+	if !ok {
+		that2, ok := that.(ProfilesData)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if len(this.ResourceProfiles) != len(that1.ResourceProfiles) {
+		return false
+	}
+	for i := range this.ResourceProfiles {
+		if !this.ResourceProfiles[i].Equal(that1.ResourceProfiles[i]) {
+			return false
+		}
+	}
+	if !this.Dictionary.Equal(that1.Dictionary) {
+		return false
+	}
+	return true
+}
+
+func (this *ResourceProfiles) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*ResourceProfiles)
+	if !ok {
+		that2, ok := that.(ResourceProfiles)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Resource.Equal(that1.Resource) {
+		return false
+	}
+	if len(this.ScopeProfiles) != len(that1.ScopeProfiles) {
+		return false
+	}
+	for i := range this.ScopeProfiles {
+		if !this.ScopeProfiles[i].Equal(that1.ScopeProfiles[i]) {
+			return false
+		}
+	}
+	if this.SchemaUrl != that1.SchemaUrl {
+		return false
+	}
+	return true
+}
+
+func (this *ScopeProfiles) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*ScopeProfiles)
+	if !ok {
+		that2, ok := that.(ScopeProfiles)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Scope.Equal(that1.Scope) {
+		return false
+	}
+	if len(this.Profiles) != len(that1.Profiles) {
+		return false
+	}
+	for i := range this.Profiles {
+		if !this.Profiles[i].Equal(that1.Profiles[i]) {
+			return false
+		}
+	}
+	if this.SchemaUrl != that1.SchemaUrl {
+		return false
+	}
+	return true
+}
+
+func (this *Profile) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*Profile)
+	if !ok {
+		that2, ok := that.(Profile)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.SampleType.Equal(that1.SampleType) {
+		return false
+	}
+	if len(this.Samples) != len(that1.Samples) {
+		return false
+	}
+	for i := range this.Samples {
+		if !this.Samples[i].Equal(that1.Samples[i]) {
+			return false
+		}
+	}
+	if this.TimeUnixNano != that1.TimeUnixNano {
+		return false
+	}
+	if this.DurationNano != that1.DurationNano {
+		return false
+	}
+	if !this.PeriodType.Equal(that1.PeriodType) {
+		return false
+	}
+	if this.Period != that1.Period {
+		return false
+	}
+	if !bytes.Equal(this.ProfileId, that1.ProfileId) {
+		return false
+	}
+	if this.DroppedAttributesCount != that1.DroppedAttributesCount {
+		return false
+	}
+	if this.OriginalPayloadFormat != that1.OriginalPayloadFormat {
+		return false
+	}
+	if !bytes.Equal(this.OriginalPayload, that1.OriginalPayload) {
+		return false
+	}
+	if len(this.AttributeIndices) != len(that1.AttributeIndices) {
+		return false
+	}
+	for i := range this.AttributeIndices {
+		if this.AttributeIndices[i] != that1.AttributeIndices[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func (this *Link) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*Link)
+	if !ok {
+		that2, ok := that.(Link)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !bytes.Equal(this.TraceId, that1.TraceId) {
+		return false
+	}
+	if !bytes.Equal(this.SpanId, that1.SpanId) {
+		return false
+	}
+	return true
+}
+
+func (this *ValueType) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*ValueType)
+	if !ok {
+		that2, ok := that.(ValueType)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.TypeStrindex != that1.TypeStrindex {
+		return false
+	}
+	if this.UnitStrindex != that1.UnitStrindex {
+		return false
+	}
+	return true
+}
+
+func (this *Sample) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*Sample)
+	if !ok {
+		that2, ok := that.(Sample)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.StackIndex != that1.StackIndex {
+		return false
+	}
+	if len(this.AttributeIndices) != len(that1.AttributeIndices) {
+		return false
+	}
+	for i := range this.AttributeIndices {
+		if this.AttributeIndices[i] != that1.AttributeIndices[i] {
+			return false
+		}
+	}
+	if this.LinkIndex != that1.LinkIndex {
+		return false
+	}
+	if len(this.Values) != len(that1.Values) {
+		return false
+	}
+	for i := range this.Values {
+		if this.Values[i] != that1.Values[i] {
+			return false
+		}
+	}
+	if len(this.TimestampsUnixNano) != len(that1.TimestampsUnixNano) {
+		return false
+	}
+	for i := range this.TimestampsUnixNano {
+		if this.TimestampsUnixNano[i] != that1.TimestampsUnixNano[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func (this *Mapping) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*Mapping)
+	if !ok {
+		that2, ok := that.(Mapping)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.MemoryStart != that1.MemoryStart {
+		return false
+	}
+	if this.MemoryLimit != that1.MemoryLimit {
+		return false
+	}
+	if this.FileOffset != that1.FileOffset {
+		return false
+	}
+	if this.FilenameStrindex != that1.FilenameStrindex {
+		return false
+	}
+	if len(this.AttributeIndices) != len(that1.AttributeIndices) {
+		return false
+	}
+	for i := range this.AttributeIndices {
+		if this.AttributeIndices[i] != that1.AttributeIndices[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func (this *Stack) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*Stack)
+	if !ok {
+		that2, ok := that.(Stack)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if len(this.LocationIndices) != len(that1.LocationIndices) {
+		return false
+	}
+	for i := range this.LocationIndices {
+		if this.LocationIndices[i] != that1.LocationIndices[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func (this *Location) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*Location)
+	if !ok {
+		that2, ok := that.(Location)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.MappingIndex != that1.MappingIndex {
+		return false
+	}
+	if this.Address != that1.Address {
+		return false
+	}
+	if len(this.Lines) != len(that1.Lines) {
+		return false
+	}
+	for i := range this.Lines {
+		if !this.Lines[i].Equal(that1.Lines[i]) {
+			return false
+		}
+	}
+	if len(this.AttributeIndices) != len(that1.AttributeIndices) {
+		return false
+	}
+	for i := range this.AttributeIndices {
+		if this.AttributeIndices[i] != that1.AttributeIndices[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func (this *Line) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*Line)
+	if !ok {
+		that2, ok := that.(Line)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.FunctionIndex != that1.FunctionIndex {
+		return false
+	}
+	if this.Line != that1.Line {
+		return false
+	}
+	if this.Column != that1.Column {
+		return false
+	}
+	return true
+}
+
+func (this *Function) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*Function)
+	if !ok {
+		that2, ok := that.(Function)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.NameStrindex != that1.NameStrindex {
+		return false
+	}
+	if this.SystemNameStrindex != that1.SystemNameStrindex {
+		return false
+	}
+	if this.FilenameStrindex != that1.FilenameStrindex {
+		return false
+	}
+	if this.StartLine != that1.StartLine {
+		return false
+	}
+	return true
+}
+
+func (this *KeyValueAndUnit) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*KeyValueAndUnit)
+	if !ok {
+		that2, ok := that.(KeyValueAndUnit)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.KeyStrindex != that1.KeyStrindex {
+		return false
+	}
+	if !this.Value.Equal(that1.Value) {
+		return false
+	}
+	if this.UnitStrindex != that1.UnitStrindex {
+		return false
+	}
+	return true
+}
 
 func (this *ProfilesDictionary) Compare(that interface{}) int {
 	if that == nil {

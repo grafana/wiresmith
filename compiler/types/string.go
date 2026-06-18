@@ -1,6 +1,8 @@
 package types
 
 import (
+	"fmt"
+
 	"google.golang.org/protobuf/encoding/protowire"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
@@ -40,14 +42,14 @@ func (StringType) EmitValueSize(e Emitter, indent, access string, tagSize int, t
 func (StringType) EmitMarshal(e Emitter, access string, num protowire.Number) {
 	e.Writef("\tif len(%s) > 0 {\n", access)
 	e.Writef("\t\ti -= len(%s)\n\t\tcopy(dAtA[i:], %s)\n", access, access)
-	e.Writef("\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(len(%s)))\n", access)
+	emitLenPrefixFastPath(e, "\t\t", fmt.Sprintf("len(%s)", access))
 	e.ReverseTag("\t\t", num, protowire.BytesType)
 	e.Writef("\t}\n")
 }
 
 func (StringType) EmitEncode(e Emitter, indent, access string) {
 	e.Writef("%si -= len(%s)\n%scopy(dAtA[i:], %s)\n", indent, access, indent, access)
-	e.Writef("%si = protohelpers.EncodeVarint(dAtA, i, uint64(len(%s)))\n", indent, access)
+	emitLenPrefixFastPath(e, indent, fmt.Sprintf("len(%s)", access))
 }
 
 func (s StringType) EmitValueMarshal(e Emitter, indent, access string, num protowire.Number) {
