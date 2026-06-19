@@ -29,7 +29,14 @@ plugins:
       - module=example.com/myproject
 ```
 
-The plugin path is feature-equivalent to the CLI: it produces the same files per `.proto` (`<name>.pb.go`, the consolidated cold companion `<name>_util.pb.go` (reflection/registration glue + `String()`), `<name>_compare.pb.go` (`Equal()` + `Compare()`), and — for service-declaring files — `<name>_grpc.pb.go`). Output paths are source-relative — the same scheme as `protoc-gen-go`'s `paths=source_relative` mode — so `buf`'s `out:` directive controls placement.
+The plugin path is feature-equivalent to the CLI. Which files it emits for a given `.proto` depends on what that file declares:
+
+- `<name>.pb.go` — message structs with marshal/unmarshal/size; emitted when the file declares messages or enums.
+- `<name>_compare.pb.go` — `Equal()` + `Compare()`; emitted when the file declares messages.
+- `<name>_util.pb.go` — the consolidated cold companion: reflection/registration glue plus per-message `String()`.
+- `<name>_grpc.pb.go` — gRPC service stubs; emitted when the file declares `service` blocks.
+
+So a file with both messages and services produces all four, while a service-only file produces just `<name>_grpc.pb.go` and `<name>_util.pb.go`. Output paths are source-relative — the same scheme as `protoc-gen-go`'s `paths=source_relative` mode — so `buf`'s `out:` directive controls placement.
 
 Supported `--wiresmith_opt` parameters:
 
