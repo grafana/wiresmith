@@ -74,6 +74,40 @@ value), so `-1` becomes `0` at the first hop and nested pre-scans run normally.
 | Oneof                                    | Interface field + per-variant wrapper structs | `nil` vs non-`nil` interface     |
 | Field with `(wiresmith.options.pointer)` | `*Foo` / `[]*Foo` — see [extensions.md](extensions.md) | `nil` vs non-`nil`           |
 
+## `google.protobuf.Any`
+
+`google.protobuf.Any` is the one general well-known type wiresmith handles directly (`Timestamp` / `Duration` are covered by the `stdtime` / `stdduration` options instead — see [extensions.md](extensions.md)). Import and use it with no annotation:
+
+```proto
+import "google/protobuf/any.proto";
+
+message Envelope {
+  google.protobuf.Any payload = 1;
+  repeated google.protobuf.Any details = 2;
+}
+```
+
+A field referencing it resolves to wiresmith's shipped [`types/known/anypb`](../types/known/anypb) package instead of the official `google.golang.org/protobuf/types/known/anypb`. The official `anypb.Any` lacks wiresmith's wire methods (`Size`/`Marshal`/`Unmarshal`/`Equal`/`Compare`), and registering a second descriptor for `google/protobuf/any.proto` would panic at `init()` (the official runtime already registers it), so wiresmith ships a non-registering replacement with the identical `{TypeUrl, Value}` layout and wire format.
+
+**Field shape.** Same as any other message field: the struct field is a value (`Payload anypb.Any`, `Details []anypb.Any`); the singular getter returns a pointer (`GetPayload() *anypb.Any`), the repeated getter returns the slice.
+
+**Helper API** (`types/known/anypb`, mirroring the official `anypb` plus gogo-style accessors):
+
+| Method | Behavior |
+|--------|----------|
+| `anypb.New(m proto.Message) (*Any, error)`     | Pack a message into a fresh `*Any`. |
+| `(*Any) MarshalFrom(m proto.Message) error`    | Pack into an existing `*Any` (sets `TypeUrl` + `Value`). |
+| `(*Any) UnmarshalTo(m proto.Message) error`    | Unpack into `m`; errors if `m`'s type does not match the packed `TypeUrl`. |
+| `(*Any) UnmarshalNew() (proto.Message, error)` | Resolve the packed type via `protoregistry.GlobalTypes`, allocate it, and unpack. |
+| `(*Any) MessageName() protoreflect.FullName` / `TypeName() string` | The packed message's full name, parsed from `TypeUrl`. |
+| `(*Any) MessageIs(m proto.Message) bool`       | Whether the packed type matches `m`. |
+
+**Limitations.**
+
+- `UnmarshalNew()` resolves the target through the global type registry, so the packed message type must be registered in `protoregistry.GlobalTypes`. To unpack into a known concrete type — including a wiresmith-generated one — prefer `UnmarshalTo` with an instance you allocate yourself; it decodes through `proto.Unmarshal`, which takes wiresmith's fast path.
+- `ProtoReflect()` on an `anypb.Any` returns a **detached, read-only** view over a copy of the fields (backed by the official descriptor the runtime already registered). It is sufficient for descriptor / type resolution but is **not** a write-through handle — mutations through it do not reach the original `*Any`. This is a direct consequence of the deliberate no-registration design.
+- Supported on singular and repeated `Any` fields. `Any` carries the same field-level-reflection limits as every wiresmith message (see below).
+
 ## Reflection: what works and what does not
 
 The generator advertises a `ProtoMethods` fast path against `google.golang.org/protobuf/runtime/protoimpl`, so the common high-level operations work transparently:
