@@ -15,10 +15,15 @@ wiresmith competes most directly with [vtprotobuf](https://github.com/planetscal
 | Exact-capacity packed scalar alloc     | Yes                  | Partial              | Partial              | No                   |
 | Field presence bitmap (`Has<F>()`)     | Yes                  | No                   | Via `nullable=false` | Via proto2 / `optional` |
 | Custom pointer-shape opt-in            | `(wiresmith.options.pointer)` | n/a         | `gogoproto.nullable` | n/a                  |
+| Generated deep `Clone()`               | `Clone()`            | `CloneVT()`          | Via `proto.Clone` (reflection) | `proto.Clone` (reflection) |
+| Generated `Equal()`                    | `Equal()`            | `EqualVT()`          | `Equal()` (`equal_all`) | `proto.Equal` (reflection) |
+| Generated `Compare()`                  | `Compare()`          | No                   | `Compare()` (`compare_all`) | No                   |
+| Generated `String()`                   | Deterministic proto-text | Via official (`prototext`) | gogo stringer | Via official (`prototext`) |
+| Reuse-friendly decode (pooling)        | `UnmarshalNoPrescan` + retain-capacity | `ResetVT` pool mode | No | No |
 | Unknown field preservation             | No (discarded)       | Yes                  | Yes                  | Yes                  |
 | Deterministic marshaling               | No                   | Yes                  | Yes                  | Yes                  |
 | Field-level `protoreflect` Range/Get/Set | Panics             | Yes                  | Yes (via official)   | Yes                  |
-| `protojson` / `prototext` / `proto.Clone` / `proto.Merge` | No (panics) | Yes (via official)   | Yes (via official)   | Yes                  |
+| `protojson` / `prototext` / `proto.Merge` (reflection) | No (panics) | Yes (via official)   | Yes (via official)   | Yes                  |
 | Maintained                             | Yes                  | Yes                  | No (deprecated)      | Yes                  |
 
 See [design.md](design.md) for the rationale behind each row in the wiresmith column, and [generated-api.md](generated-api.md) for what the panicking reflection paths look like.

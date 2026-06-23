@@ -2,12 +2,18 @@
 
 The `wiresmith` command compiles `.proto` files in a directory tree into Go packages of marshal/unmarshal/size code.
 
-## Build
+## Install
 
-The module path is `wiresmith` (no host prefix), so the CLI is built from a checkout rather than installed via `go install`:
+Install the latest version directly:
 
 ```sh
-git clone git@github.com:grafana/wiresmith.git
+go install github.com/grafana/wiresmith/cmd/wiresmith@latest
+```
+
+Or build from a checkout:
+
+```sh
+git clone https://github.com/grafana/wiresmith.git
 cd wiresmith
 go build -o wiresmith ./cmd/wiresmith
 ```
@@ -59,7 +65,7 @@ mismatch.
 |----------------|---------------|------------------------------------------------------------|
 | `--proto_path`, `-I` | `proto` | Directory containing `.proto` files (walked recursively). Repeatable; a single occurrence may carry list-separated entries using `os.PathListSeparator` (`:` on Unix, `;` on Windows). |
 | `--out`        | `gen`         | Output directory for generated Go packages.                |
-| `--module`     | `wiresmith`   | Go module name used as the prefix when emitting imports.   |
+| `--module`     | `github.com/grafana/wiresmith` | Go module name used as the prefix when emitting imports.   |
 | `-M`           | _(repeatable)_| Override the Go import path for one `.proto` (see below).  |
 | `--version`    | _(boolean)_   | Print the build version and exit.                          |
 
@@ -95,7 +101,7 @@ proto/
 walk-and-emit-everything mode:
 
 ```sh
-./wiresmith --proto_path=proto --out=gen --module=wiresmith
+./wiresmith --proto_path=proto --out=gen --module=github.com/grafana/wiresmith
 ```
 
 produces both `gen/example/v1/greeter.pb.go` and `gen/example/v1/notes.pb.go`,
@@ -104,7 +110,7 @@ importable as `github.com/grafana/wiresmith/gen/example/v1`.
 Scoped mode emits only the listed file(s) while keeping the import graph:
 
 ```sh
-./wiresmith --proto_path=proto --out=gen --module=wiresmith proto/example/v1/greeter.proto
+./wiresmith --proto_path=proto --out=gen --module=github.com/grafana/wiresmith proto/example/v1/greeter.proto
 ```
 
 produces only `gen/example/v1/greeter.pb.go`. Any imports from `greeter.proto`
@@ -134,38 +140,5 @@ To opt a field into pointer-shaped codegen, import `wiresmith/options.proto` fro
 
 ## `protoc` / `buf` plugin
 
-The sibling binary at `cmd/protoc-gen-wiresmith` is a `protoc` plugin built on `google.golang.org/protobuf/compiler/protogen`. Once on `PATH`, both `protoc` and `buf generate` invoke it the same way they invoke `protoc-gen-go`:
-
-```sh
-go build -o /usr/local/bin/protoc-gen-wiresmith ./cmd/protoc-gen-wiresmith
-
-protoc \
-  --proto_path=proto \
-  --wiresmith_out=gen \
-  --wiresmith_opt=module=example.com/myproject \
-  proto/example/v1/greeter.proto
-```
-
-Or via `buf.gen.yaml`:
-
-```yaml
-version: v2
-plugins:
-  - local: protoc-gen-wiresmith
-    out: gen
-    opt:
-      - module=example.com/myproject
-```
-
-The plugin path is feature-equivalent to the CLI: it produces the same files per `.proto` (`<name>.pb.go`, the consolidated cold companion `<name>_util.pb.go` (reflection/registration glue + `String()`), `<name>_compare.pb.go` (`Equal()` + `Compare()`), and — for service-declaring files — `<name>_grpc.pb.go`). Output paths are source-relative — the same scheme as `protoc-gen-go`'s `paths=source_relative` mode — so `buf`'s `out:` directive controls placement.
-
-Supported `--wiresmith_opt` parameters:
-
-| Parameter | Description |
-|-----------|-------------|
-| `module=…` | Go module path used as a fallback when a `.proto` omits `option go_package`. Matches the `--module` flag on the CLI. |
-| `M<src>=<dest>` | Per-file import-path override; repeatable. Matches the `-M` flag on the CLI. |
-
-The plugin and the CLI share the same generator core — bug fixes in either land in both at once.
-
-To use `(wiresmith.options.*)` extensions in plugin mode, the consumer's proto module must make `wiresmith/options.proto` resolvable (vendor it, or add it as a `buf` module dependency). The plugin only auto-injects the embedded schema in CLI mode; `protoc`/`buf` need to see the file ahead of time to compile any `.proto` that references the extensions.
+wiresmith also ships as a `protoc` plugin (`protoc-gen-wiresmith`) for `protoc`
+and `buf generate` pipelines — see [buf.md](buf.md).
