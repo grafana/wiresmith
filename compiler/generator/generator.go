@@ -103,6 +103,11 @@ type Generator struct {
 	enumNoPrefixExt    protoreflect.FieldDescriptor
 	enumNoPrefixAllExt protoreflect.FieldDescriptor
 
+	// noRegistrationExt is the linked file-level no_registration extension
+	// descriptor, consulted by FileGenerator.hasNoRegistration in
+	// emitRegistration. Outside the FieldOption registry (annotates the file).
+	noRegistrationExt protoreflect.FieldDescriptor
+
 	// outputs accumulates the formatted Go files produced by writeFormatted
 	// during a Generate run. Two callers harvest it: Generate writes them
 	// to disk; GenerateFromDescriptors returns them to a protoc plugin
@@ -196,6 +201,10 @@ type FileGenerator struct {
 	// enum_no_prefix pair (option_enum_no_prefix.go).
 	enumNoPrefixExt    protoreflect.FieldDescriptor
 	enumNoPrefixAllExt protoreflect.FieldDescriptor
+
+	// noRegistrationExt is the cached file-level no_registration extension
+	// descriptor. Consulted by hasNoRegistration (option_no_registration.go).
+	noRegistrationExt protoreflect.FieldDescriptor
 
 	// compareBody / compareImports hold the value-comparison companion
 	// `_compare.pb.go` file: the per-message Equal(other interface{}) bool and
@@ -506,6 +515,7 @@ func (g *Generator) generateFromFiles(results []protoreflect.FileDescriptor, emi
 	g.noPresenceAllExt = findExtension(results, noPresenceAllExtName)
 	g.enumNoPrefixExt = findExtension(results, enumNoPrefixExtName)
 	g.enumNoPrefixAllExt = findExtension(results, enumNoPrefixAllExtName)
+	g.noRegistrationExt = findExtension(results, noRegistrationExtName)
 	if err := g.validateJsontagOptions(results); err != nil {
 		return nil, err
 	}
@@ -965,6 +975,7 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 		noPresenceAllExt:   g.noPresenceAllExt,
 		enumNoPrefixExt:    g.enumNoPrefixExt,
 		enumNoPrefixAllExt: g.enumNoPrefixAllExt,
+		noRegistrationExt:  g.noRegistrationExt,
 	}
 
 	// Hot-path emitters target the main .pb.go: structs, oneof variants,

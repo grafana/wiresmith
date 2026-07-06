@@ -80,7 +80,7 @@ The generator advertises a `ProtoMethods` fast path against `google.golang.org/p
 
 - `proto.Marshal`, `proto.Unmarshal`, `proto.Size` — go through the fast path.
 - `proto.Equal` — delegates to the generated `Equal` method.
-- `proto.MessageName`, `protoregistry.GlobalTypes.FindMessageByName`, and descriptor lookups against `protoregistry.GlobalFiles` — work because `init()` registers the embedded file descriptors.
+- `proto.MessageName`, `protoregistry.GlobalTypes.FindMessageByName`, and descriptor lookups against `protoregistry.GlobalFiles` — work because `init()` registers the embedded file descriptors. Exception: files annotated with `(wiresmith.options.no_registration)` register into a package-local registry instead, so they are absent from `protoregistry.GlobalFiles` / `GlobalTypes` — `proto.MessageName` / `GlobalTypes.Find*` / `GlobalFiles.FindFileByPath` will not resolve them, by design (see [extensions.md](extensions.md)).
 
 What does **not** work — these will panic if called on a wiresmith-generated message:
 

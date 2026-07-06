@@ -30,7 +30,7 @@ The choices below shape every line of generated code. Most exist for performance
 
 - **Enum name maps.** Each enum gets `TypeName_name` (int32→string), `TypeName_value` (string→int32), and a `String()` method. Constant names follow `protoc-gen-go`'s prefixing rules: enum name for top-level enums (`Color_COLOR_RED`), parent message chain for nested enums (`Span_SPAN_KIND_SERVER`). Map string values use bare proto names.
 
-- **Type registration with the official registry.** The generated `init()` embeds raw file descriptor bytes and registers them with `protoregistry.GlobalFiles`, then registers messages via `protoimpl.MessageInfo` and enums via `protoimpl.EnumInfo`. This makes wiresmith messages usable from `proto.Marshal`, `proto.Unmarshal`, `proto.Size`, `proto.Equal`, `proto.MessageName`, and descriptor lookups — see the reflection-support discussion in [generated-api.md](generated-api.md) for the limits.
+- **Type registration with the official registry.** The generated `init()` embeds raw file descriptor bytes and registers them with `protoregistry.GlobalFiles`, then registers messages via `protoimpl.MessageInfo` and enums via `protoimpl.EnumInfo`. This makes wiresmith messages usable from `proto.Marshal`, `proto.Unmarshal`, `proto.Size`, `proto.Equal`, `proto.MessageName`, and descriptor lookups — see the reflection-support discussion in [generated-api.md](generated-api.md) for the limits. A file may opt out of official global registration with `(wiresmith.options.no_registration)`, registering into a package-local registry instead (see [extensions.md](extensions.md)) — for consumers whose proto package is also published by an official-runtime module.
 
 ## DB-6 reuse-safety review (wiresmith-u4qg)
 

@@ -209,4 +209,38 @@ extend google.protobuf.FileOptions {
   // every enum in the file, including nested ones. A per-enum value
   // (true or false) overrides the file default.
   optional bool enum_no_prefix_all = 50043;
+
+  // no_registration = true suppresses registration of this file's descriptor
+  // and its message/enum types with the OFFICIAL global proto registries
+  // (google.golang.org/protobuf's protoregistry.GlobalFiles / GlobalTypes).
+  //
+  // By default a wiresmith-generated file — like protoc-gen-go output —
+  // registers itself with the official global registries at init(), so its
+  // messages are discoverable via proto.MessageName / protoregistry lookups.
+  // That global registration PANICS at init if another module linked into the
+  // same binary already registered a file with the same import path, or a
+  // message/enum with the same full name. This collides when a wiresmith-
+  // migrated proto shares its package / import path with an official-runtime-
+  // generated module also in the binary — e.g. Prometheus generating
+  // io.prometheus.client with wiresmith while the external
+  // github.com/prometheus/client_model/go module registers the same
+  // io.prometheus.client with the official runtime. (Under gogoproto there was
+  // no collision because gogo used its own registry.)
+  //
+  // With no_registration = true the generated file registers into a
+  // package-LOCAL registry instead of the globals: it performs ZERO mutation of
+  // protoregistry.GlobalFiles / GlobalTypes and can never collide. The types
+  // stay valid proto.Messages — ProtoReflect / String / Clone / Marshal /
+  // Unmarshal / Equal / Compare all keep working — they are simply invisible to
+  // the official GLOBAL registry (proto.MessageName / GlobalTypes.Find* /
+  // GlobalFiles.FindFileByPath will not resolve them; the external module's
+  // registration serves that). Because the file's own descriptor is not in the
+  // global registry, reflective enumeration of its imports
+  // (FileDescriptor.Imports) yields placeholder file descriptors; field-level
+  // cross-type resolution is unaffected (it resolves through the generated Go
+  // type, not the import table).
+  //
+  // File-level only — registration is per file (the whole file registers as one
+  // unit), so there is no per-message form.
+  optional bool no_registration = 50044;
 }

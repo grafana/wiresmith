@@ -419,6 +419,22 @@ Unprefixed constants live at Go package scope: two enums in one package declarin
 
 [`proto/basic/enum_no_prefix.proto`](../proto/basic/enum_no_prefix.proto) declares an annotated `MetricType` next to a prefixed `PrefixedColor` control; [`test/basic/enum_no_prefix_test.go`](../test/basic/enum_no_prefix_test.go) pins the identifiers, maps, String(), and round-trip.
 
+## `(wiresmith.options.no_registration) = true` (file)
+
+Annotates the **file**, not a field — registration is per file (the whole file registers with the runtime as one unit), so there is no per-message form and no `*_all` layering.
+
+**The collision it solves.** By default a wiresmith-generated file — like `protoc-gen-go` output — registers its file descriptor and its message/enum types with the OFFICIAL global registries (`google.golang.org/protobuf`'s `protoregistry.GlobalFiles` / `GlobalTypes`) at `init()`. That global registration **panics** at init if another module linked into the same binary already registered a file with the same import path, or a message/enum with the same full name. This collides when a wiresmith-migrated proto shares its package / import path with an official-runtime-generated module also in the binary — e.g. Prometheus generating `io.prometheus.client` with wiresmith while the external `github.com/prometheus/client_model/go` module registers the same `io.prometheus.client` with the official runtime. (Under gogoproto there was no collision, because gogo used its own registry — the `client_model` precedent.)
+
+**What it does.** With `no_registration = true` the generated `init()` registers into a package-LOCAL `protoregistry.Files` / `protoregistry.Types` (constructed with `new(...)`) instead of the globals — the `protoimpl.DescBuilder.FileRegistry` and `protoimpl.TypeBuilder.TypeRegistry` fields are redirected at them. The file performs **zero mutation** of `protoregistry.GlobalFiles` / `GlobalTypes` and can never collide. The reflection/`TypeBuilder` machinery is otherwise emitted unchanged.
+
+**What still works.** The types stay valid `proto.Message`s backed by the file's local descriptor: the wiresmith wire methods (`Marshal` / `Unmarshal` / `Equal` / `Compare` / `Clone` / `String`) and reflective `ProtoReflect` / `proto.Marshal` / `proto.Unmarshal` / `proto.Equal` (which resolve through the LOCAL descriptor) all keep working.
+
+**What changes.** The types are invisible to the official GLOBAL registry: `proto.MessageName`, `protoregistry.GlobalTypes.Find*`, and `protoregistry.GlobalFiles.FindFileByPath` will not resolve them (the external module's registration serves that). Because the file's own descriptor is not in the global registry, reflective enumeration of its imports (`FileDescriptor.Imports`) yields placeholder file descriptors; field-level cross-type resolution is unaffected (it resolves through the generated Go type, not the import table).
+
+### Worked example
+
+[`proto/basic/basic/noregistration/v1/no_registration.proto`](../proto/basic/basic/noregistration/v1/no_registration.proto) sets `(wiresmith.options.no_registration) = true` on a file with a `Color` enum and cross-referencing `Widget` / `Part` messages; [`test/basic/no_registration_test.go`](../test/basic/no_registration_test.go) pins that the file, messages, and enum are absent from the global registries (`errors.Is(err, protoregistry.NotFound)`) while the wire methods and local-descriptor reflection still round-trip.
+
 ## google.protobuf.Any
 
 Unlike the options above, `Any` is not a field option — a field declared `google.protobuf.Any` resolves **automatically** to wiresmith's shipped replacement package [`types/known/anypb`](../types/known/anypb) (resolution in [`compiler/generator/wellknown.go`](../compiler/generator/wellknown.go)). Just `import "google/protobuf/any.proto"`; no annotation or `-M` mapping is required.
