@@ -1026,6 +1026,15 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 	// conditional writes for _util / _compare below.
 	if fg.body.Len() > 0 {
 		var mainOut bytes.Buffer
+		// emitSize adds the protowire import per message unconditionally, but a
+		// field-less message emits Size/Marshal/unmarshal bodies that never
+		// reference protowire. A file whose messages are all field-less would
+		// then carry an unused import and fail to compile — drop it when the
+		// assembled body has no protowire reference (protowire is always emitted
+		// unaliased, so the "protowire." token is a reliable usage signal).
+		if !bytes.Contains(fg.body.Bytes(), []byte("protowire.")) {
+			fg.imports.unrequest("google.golang.org/protobuf/encoding/protowire")
+		}
 		fg.emitHeader(&mainOut, fg.imports)
 		mainOut.Write(fg.body.Bytes())
 		g.writeFormatted(g.outputPathFor(fd), mainOut.Bytes(), fd.Path())

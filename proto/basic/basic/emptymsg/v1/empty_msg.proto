@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package basic.emptymsg.v1;
+
+option go_package = "github.com/grafana/wiresmith/gen/basic/emptymsg/v1";
+
+// Exercises the field-less-message path: generated Size / Marshal / unmarshal
+// never reference protowire, so the main .pb.go must NOT import protowire (an
+// unused import fails to compile). Real-world hit: mimir's
+// rangevectorsplitting.SplitFunctionCallDetails, whose only field was reserved
+// upstream.
+message Empty {
+  reserved 1;
+}
+
+// A second field-less message so the file has more than one and still emits
+// zero protowire references.
+message AlsoEmpty {}
