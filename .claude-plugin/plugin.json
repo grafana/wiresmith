@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin.json",
+  "name": "wiresmith",
+  "description": "Guidance for migrating Go repositories from gogoproto to wiresmith. Ships the wiresmith-migrator agent alongside the compiler so its migration knowledge stays in sync with the generator.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Grafana Labs",
+    "url": "https://github.com/grafana/wiresmith"
+  },
+  "homepage": "https://github.com/grafana/wiresmith",
+  "repository": "https://github.com/grafana/wiresmith",
+  "license": "Apache-2.0",
+  "keywords": ["protobuf", "gogoproto", "migration", "codegen", "go"]
+}
