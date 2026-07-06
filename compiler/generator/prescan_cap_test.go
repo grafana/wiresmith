@@ -35,9 +35,9 @@ message Container {
 
 	protoDir := t.TempDir()
 	outDir := testOutDir(t)
-	if err := os.WriteFile(filepath.Join(protoDir, "test.proto"), []byte(protoBody), 0o644); err != nil {
-		t.Fatalf("writing proto: %v", err)
-	}
+	// Written at the package-matching path so path-parity keying places the
+	// source-relative output at test/v1/test.pb.go.
+	writeProto(t, protoDir, "test/v1/test.proto", protoBody)
 
 	g := &Generator{
 		Module:    "wiresmith",

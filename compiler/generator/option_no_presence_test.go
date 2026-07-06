@@ -7,14 +7,14 @@ import (
 	"testing"
 )
 
-// generateNoPresenceProto writes protoBody as test.proto, runs the generator,
-// and returns the main .pb.go source. The proto must declare `package
-// nopresence.v1` so the output lands at a known path.
+// generateNoPresenceProto writes protoBody at nopresence/v1/test.proto — the
+// path matching its `package nopresence.v1`, so the source-relative output
+// lands at a known path — runs the generator, and returns the main .pb.go source.
 func generateNoPresenceProto(t *testing.T, protoBody string) string {
 	t.Helper()
 	protoDir := t.TempDir()
 	outDir := testOutDir(t)
-	writeProto(t, protoDir, "test.proto", protoBody)
+	writeProto(t, protoDir, "nopresence/v1/test.proto", protoBody)
 	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDirs: []string{protoDir}}
 	if err := gen.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate: %v", err)

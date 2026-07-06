@@ -4,11 +4,11 @@ Custom protobuf compiler that generates high-performance Go code from OpenTeleme
 
 ## Project structure
 
-- `proto/` - All .proto source files, organized by purpose:
+- `proto/` - All .proto source files, organized by purpose. Within each root, every `.proto` is laid out at its import path (protoc/buf parity: the import key is the path relative to the `--proto_path` root, `package` never enters the key), e.g. `proto/otlp/opentelemetry/proto/common/v1/common.proto`:
   - `otlp/` - OpenTelemetry protos (common, resource, metrics, trace, logs, profiles)
   - `test/` - Test protos (kitchen_sink)
   - `basic/` - Basic type coverage protos (maps, numeric, enum, oneof, nesting, recursive)
-  - `conformance/` - Conformance protos (protocol envelope + test messages)
+  - `conformance/` - Conformance protos (protocol envelope + test messages; `conformance.proto` stays flat — it is protoc-compiled, not walked by wiresmith)
 - `compiler/generator/` - Code generator: reads proto descriptors via `bufbuild/protocompile`, emits Go structs + marshal/unmarshal/size methods
 - `compiler/types/` - Per-kind type dispatch for code emission, see [compiler/types/AGENTS.md](compiler/types/AGENTS.md)
 - `cmd/wiresmith/` - CLI entry point
@@ -82,7 +82,7 @@ See [docs/design.md](docs/design.md) for the canonical list of design decisions 
 
 ## Custom field options
 
-wiresmith ships custom field options in `compiler/generator/embed/wiresmith/options.proto`, served from the canonical import path `wiresmith/options.proto` (embedded in the compiler, no vendoring required). On-wire format is unaffected by any of them — they only change the generated Go shape.
+wiresmith ships custom field options in `compiler/generator/embed/wiresmith/options.proto`, served from the canonical import path `wiresmith/options.proto` (embedded in the compiler, no vendoring required). Consumers that also run buf/protoc over the tree may vendor a physical copy at that path; wiresmith tolerates it only if byte-identical to the embed (serving its own copy, emitting nothing) and rejects a drifted copy. On-wire format is unaffected by any of them — they only change the generated Go shape.
 
 - `(wiresmith.options.pointer) = true` — switches a singular message field from `T` to `*T` and a repeated message field from `[]T` to `[]*T`. Rejected on scalar, enum, bytes, string, map, oneof, and proto3-`optional` fields.
 - `(wiresmith.options.jsontag) = "..."` — overrides the `json:"..."` struct tag verbatim (no `,omitempty` appended); applies to every field kind.

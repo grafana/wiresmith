@@ -10,8 +10,6 @@ ALL_PROTOS := \
 	opentelemetry/proto/logs/v1/logs.proto \
 	opentelemetry/proto/profiles/v1development/profiles.proto
 
-PROTO_DIRS := common/v1 resource/v1 metrics/v1 trace/v1 logs/v1 profiles/v1development
-
 # Go package suffix for a proto path: opentelemetry/proto/common/v1/common.proto → common/v1
 pkgsuffix = $(patsubst %/,%,$(patsubst opentelemetry/proto/%,%,$(dir $(1))))
 
@@ -114,16 +112,12 @@ clean: ## Remove all generated code under gen/ (protohelpers/ at repo root is ch
 .PHONY: generate-ours generate-vtproto generate-gogoproto
 
 # Build the canonical proto directory layout that matches import paths.
-# Sets PROTO_ROOT as a temp directory and copies proto files into it.
+# Sets PROTO_ROOT as a temp directory and copies proto files into it. The
+# proto/otlp tree is already laid out under opentelemetry/proto/... (matching
+# each file's import path), so a single recursive copy reproduces it.
 define setup_proto_root
 	$(eval PROTO_ROOT := $(shell mktemp -d))
-	@mkdir -p $(foreach d,$(PROTO_DIRS),"$(PROTO_ROOT)/opentelemetry/proto/$(d)")
-	@cp proto/otlp/common.proto   "$(PROTO_ROOT)/opentelemetry/proto/common/v1/"
-	@cp proto/otlp/resource.proto "$(PROTO_ROOT)/opentelemetry/proto/resource/v1/"
-	@cp proto/otlp/metrics.proto  "$(PROTO_ROOT)/opentelemetry/proto/metrics/v1/"
-	@cp proto/otlp/trace.proto    "$(PROTO_ROOT)/opentelemetry/proto/trace/v1/"
-	@cp proto/otlp/logs.proto     "$(PROTO_ROOT)/opentelemetry/proto/logs/v1/"
-	@cp proto/otlp/profiles.proto "$(PROTO_ROOT)/opentelemetry/proto/profiles/v1development/"
+	@cp -R proto/otlp/opentelemetry "$(PROTO_ROOT)/"
 endef
 
 generate-ours: ## Regenerate all wiresmith + conformance code
@@ -145,16 +139,19 @@ generate-ours: ## Regenerate all wiresmith + conformance code
 	@# compiler/generator/grpc/). No separate protoc-gen-go-grpc invocation
 	@# is needed — adopters no longer have to install the standalone plugin.
 	@echo "==> Generating wiresmith conformance test messages → gen/protobuf_test_messages/"
-	$(WIRESMITH) --proto_path=proto/conformance --out=gen --module=$(MODULE) proto/conformance/test_messages_proto3.proto
+	$(WIRESMITH) --proto_path=proto/conformance --out=gen --module=$(MODULE) proto/conformance/protobuf_test_messages/proto3/test_messages_proto3.proto
 	@echo "==> Generating conformance protocol code → test/conformance/internal/conformancepb/"
 	protoc -I proto/conformance \
 		--go_out=. --go_opt=module=$(MODULE) \
 		proto/conformance/conformance.proto
 	@echo "==> Generating official proto bench code → gen/bench/official/"
-	protoc -I proto/basic \
+	@# maps.proto now lives at proto/basic/basic/maps/v1/maps.proto; point -I at
+	@# its dir so protoc still sees the import path as "maps.proto", keeping the
+	@# checked-in bench output (and its Mmaps.proto= mapping) byte-identical.
+	protoc -I proto/basic/basic/maps/v1 \
 		--go_out=. --go_opt=module=$(MODULE) \
 		--go_opt=Mmaps.proto=github.com/grafana/wiresmith/gen/bench/official \
-		proto/basic/maps.proto
+		maps.proto
 
 generate-vtproto:
 	$(setup_proto_root)
@@ -168,13 +165,15 @@ generate-vtproto:
 		$(ALL_PROTOS)
 	@rm -rf "$(PROTO_ROOT)"
 	@echo "==> Generating vtproto bench code → gen/bench/vtpb/"
-	protoc -I proto/basic \
+	@# See the official bench pass: -I points at maps.proto's dir so protoc keeps
+	@# the "maps.proto" import path and the checked-in output stays byte-identical.
+	protoc -I proto/basic/basic/maps/v1 \
 		--go_out=. --go_opt=module=$(MODULE) \
 		--go_opt=Mmaps.proto=github.com/grafana/wiresmith/gen/bench/vtpb \
 		--go-vtproto_out=. --go-vtproto_opt=module=$(MODULE) \
 		--go-vtproto_opt=features=marshal+unmarshal+size \
 		--go-vtproto_opt=Mmaps.proto=github.com/grafana/wiresmith/gen/bench/vtpb \
-		proto/basic/maps.proto
+		maps.proto
 
 generate-gogoproto:
 	$(setup_proto_root)
@@ -195,7 +194,7 @@ generate-gogoproto:
 	@rm -rf gen/gogopb
 	@mv "$(GOGO_OUT)/$(MODULE)/gen/gogopb" gen/gogopb
 	@echo "==> Generating gogoproto bench code → gen/bench/gogopb/"
-	@cp proto/basic/maps.proto "$(GOGO_ROOT)/maps.proto"
+	@cp proto/basic/basic/maps/v1/maps.proto "$(GOGO_ROOT)/maps.proto"
 	@sed -i '' 's|option go_package = .*|option go_package = "$(MODULE)/gen/bench/gogopb";|' "$(GOGO_ROOT)/maps.proto"
 	@protoc -I "$(GOGO_ROOT)" \
 		--gogofast_out=Mmaps.proto=$(MODULE)/gen/bench/gogopb$(comma):"$(GOGO_OUT)" \

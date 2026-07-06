@@ -25,8 +25,8 @@ func runGenerator(t *testing.T, protoBody string) error {
 	}
 
 	g := &Generator{
-		Module:   "wiresmith",
-		OutDir:   outDir,
+		Module:    "wiresmith",
+		OutDir:    outDir,
 		ProtoDirs: []string{protoDir},
 	}
 	return g.Generate(context.Background())
@@ -125,9 +125,7 @@ message Holder {
   repeated Inner repeated = 2 [(wiresmith.options.pointer) = true];
 }
 `
-	if err := os.WriteFile(filepath.Join(protoDir, "test.proto"), []byte(body), 0o644); err != nil {
-		t.Fatalf("writing proto: %v", err)
-	}
+	writeProto(t, protoDir, "test/v1/test.proto", body)
 
 	g := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDirs: []string{protoDir}}
 	if err := g.Generate(context.Background()); err != nil {
@@ -164,19 +162,20 @@ package wiresmith.options;
 option go_package = "github.com/grafana/wiresmith/gen/wiresmith/options";
 message UserMessage { int32 x = 1; }
 `
-	if err := os.WriteFile(filepath.Join(protoDir, "user.proto"), []byte(body), 0o644); err != nil {
-		t.Fatalf("writing proto: %v", err)
-	}
+	// Written at wiresmith/options/user.proto: a distinct import key from the
+	// embedded schema's wiresmith/options.proto (different basename), so it is
+	// not mistaken for the embed even though it shares the proto package.
+	writeProto(t, protoDir, "wiresmith/options/user.proto", body)
 
 	g := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDirs: []string{protoDir}}
 	if err := g.Generate(context.Background()); err != nil {
 		t.Fatalf("Generate failed: %v", err)
 	}
 
-	// Under source-relative output, a flat user file with package
-	// `wiresmith.options` lands at the package-derived path
-	// wiresmith/options/user.pb.go — the embedded schema lives at
-	// wiresmith/options.proto and emits nothing, so the two don't collide.
+	// The file is keyed at wiresmith/options/user.proto (path-parity), so the
+	// source-relative output lands at wiresmith/options/user.pb.go — the
+	// embedded schema lives at wiresmith/options.proto and emits nothing, so
+	// the two don't collide.
 	out := filepath.Join(outDir, "wiresmith", "options", "user.pb.go")
 	if _, err := os.Stat(out); err != nil {
 		t.Fatalf("expected generated file at %s: %v", out, err)

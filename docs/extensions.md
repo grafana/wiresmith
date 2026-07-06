@@ -4,7 +4,7 @@ wiresmith exposes a single custom `.proto` file with field-level options that in
 
 ## `wiresmith/options.proto`
 
-The file lives in the repo at [`compiler/generator/embed/wiresmith/options.proto`](../compiler/generator/embed/wiresmith/options.proto) and is embedded into the compiler binary. The CLI serves it from the canonical import path `wiresmith/options.proto`, so user proto trees can import it without vendoring:
+The file lives in the repo at [`compiler/generator/embed/wiresmith/options.proto`](../compiler/generator/embed/wiresmith/options.proto) and is embedded into the compiler binary. The CLI serves it from the canonical import path `wiresmith/options.proto`, so user proto trees can import it without vendoring anything:
 
 ```proto
 syntax = "proto3";
@@ -19,6 +19,8 @@ message Foo {
 ```
 
 The lookup is keyed on the import path, so a user file that happens to declare the same proto package (`wiresmith.options`) cannot shadow the embedded definition. See [`compiler/generator/option_pointer.go`](../compiler/generator/option_pointer.go) for the resolution and validation pass.
+
+Consumers that also run `buf` or `protoc` over the same tree (for lint or breaking-change checks) must vendor a physical copy at `wiresmith/options.proto` — those tools can't read the compiler's embed. wiresmith tolerates an on-disk copy at the canonical path **if and only if it is byte-identical to the embedded schema**: it serves its own embed and skips emitting the vendored file. A copy whose bytes differ (a drifted vendored version) is rejected up front, so keep it in sync with the pinned wiresmith release.
 
 ## `(wiresmith.options.pointer) = true`
 
