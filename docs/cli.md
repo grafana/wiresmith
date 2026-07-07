@@ -4,7 +4,11 @@ The `wiresmith` command compiles `.proto` files in a directory tree into Go pack
 
 ## Build
 
-The module path is `wiresmith` (no host prefix), so the CLI is built from a checkout rather than installed via `go install`:
+```sh
+go install github.com/grafana/wiresmith/cmd/wiresmith@latest
+```
+
+Or build from a checkout:
 
 ```sh
 git clone git@github.com:grafana/wiresmith.git
@@ -70,7 +74,7 @@ mismatch.
 |----------------|---------------|------------------------------------------------------------|
 | `--proto_path`, `-I` | `proto` | Directory containing `.proto` files (walked recursively). Repeatable; a single occurrence may carry list-separated entries using `os.PathListSeparator` (`:` on Unix, `;` on Windows). |
 | `--out`        | `gen`         | Output directory for generated Go packages.                |
-| `--module`     | `wiresmith`   | Go module name used as the prefix when emitting imports.   |
+| `--module`     | `github.com/grafana/wiresmith` | Go module name used as the prefix when emitting imports.   |
 | `-M`           | _(repeatable)_| Override the Go import path for one `.proto` (see below).  |
 | `--version`    | _(boolean)_   | Print the build version and exit.                          |
 
@@ -106,7 +110,7 @@ proto/
 walk-and-emit-everything mode:
 
 ```sh
-./wiresmith --proto_path=proto --out=gen --module=wiresmith
+./wiresmith --proto_path=proto --out=gen --module=github.com/grafana/wiresmith
 ```
 
 produces both `gen/example/v1/greeter.pb.go` and `gen/example/v1/notes.pb.go`,
@@ -115,7 +119,7 @@ importable as `github.com/grafana/wiresmith/gen/example/v1`.
 Scoped mode emits only the listed file(s) while keeping the import graph:
 
 ```sh
-./wiresmith --proto_path=proto --out=gen --module=wiresmith proto/example/v1/greeter.proto
+./wiresmith --proto_path=proto --out=gen --module=github.com/grafana/wiresmith proto/example/v1/greeter.proto
 ```
 
 produces only `gen/example/v1/greeter.pb.go`. Any imports from `greeter.proto`
@@ -141,7 +145,7 @@ both files compile in one run:
 ./wiresmith -I=vendor/proto:internal/proto --out=gen --module=example.com/myproject
 ```
 
-To opt a field into pointer-shaped codegen, import `wiresmith/options.proto` from the `.proto` source — see [extensions.md](extensions.md) for the option's effect and the worked example in [`proto/basic/pointer.proto`](../proto/basic/pointer.proto).
+To opt a field into pointer-shaped codegen, import `wiresmith/options.proto` from the `.proto` source — see [extensions.md](extensions.md) for the option's effect and the worked example in [`proto/basic/basic/pointer/v1/pointer.proto`](../proto/basic/basic/pointer/v1/pointer.proto).
 
 ## `protoc` / `buf` plugin
 
@@ -179,4 +183,4 @@ Supported `--wiresmith_opt` parameters:
 
 The plugin and the CLI share the same generator core — bug fixes in either land in both at once.
 
-To use `(wiresmith.options.*)` extensions in plugin mode, the consumer's proto module must make `wiresmith/options.proto` resolvable (vendor it, or add it as a `buf` module dependency). The plugin only auto-injects the embedded schema in CLI mode; `protoc`/`buf` need to see the file ahead of time to compile any `.proto` that references the extensions.
+To use `(wiresmith.options.*)` extensions in plugin mode, the consumer's proto module must make `wiresmith/options.proto` resolvable to `protoc`/`buf` ahead of time — the plugin only auto-injects the embedded schema in CLI mode. `buf` users can add the published `buf.build/grafana/wiresmith` module as a `deps:` entry instead of vendoring; see [extensions.md](extensions.md#wiresmithoptionsproto) for that and the vendoring alternative.

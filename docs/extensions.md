@@ -20,7 +20,7 @@ message Foo {
 
 The lookup is keyed on the import path, so a user file that happens to declare the same proto package (`wiresmith.options`) cannot shadow the embedded definition. See [`compiler/generator/option_pointer.go`](../compiler/generator/option_pointer.go) for the resolution and validation pass.
 
-Consumers that also run `buf` or `protoc` over the same tree (for lint or breaking-change checks) must vendor a physical copy at `wiresmith/options.proto` — those tools can't read the compiler's embed. wiresmith tolerates an on-disk copy at the canonical path **if and only if it is byte-identical to the embedded schema**: it serves its own embed and skips emitting the vendored file. A copy whose bytes differ (a drifted vendored version) is rejected up front, so keep it in sync with the pinned wiresmith release.
+Consumers that also run `buf` or `protoc` over the same tree (for lint or breaking-change checks) need `wiresmith/options.proto` resolvable to those tools — they can't read the compiler's embed. `buf` users can depend on the published Buf Schema Registry module instead of vendoring: add `buf.build/grafana/wiresmith` to your `buf.yaml`'s `deps:` and run `buf dep update`. `protoc` users (and `buf` users who'd rather not add the dependency) can vendor a physical copy at `wiresmith/options.proto` instead: wiresmith tolerates an on-disk copy at the canonical path **if and only if it is byte-identical to the embedded schema**, serving its own embed and skipping the vendored file. A copy whose bytes differ (a drifted vendored version) is rejected up front, so keep a vendored copy in sync with the pinned wiresmith release — or just track the BSR module, which is versioned per commit.
 
 ## `(wiresmith.options.pointer) = true`
 
@@ -48,7 +48,7 @@ The validation source of truth is `pointerOptionRejection` in `compiler/generato
 
 ### Worked example
 
-[`proto/basic/pointer.proto`](../proto/basic/pointer.proto) exercises all three positions side by side and serves as the integration test fixture:
+[`proto/basic/basic/pointer/v1/pointer.proto`](../proto/basic/basic/pointer/v1/pointer.proto) exercises all three positions side by side and serves as the integration test fixture:
 
 ```proto
 syntax = "proto3";
@@ -111,7 +111,7 @@ The validation source of truth is `validateJsontagOptions` in `compiler/generato
 
 ### Worked example
 
-[`proto/basic/jsontag.proto`](../proto/basic/jsontag.proto) exercises the option across scalar, message, repeated, map, and the `"-"` opt-out, with an unannotated field as the control showing the default `json:"<proto_name>,omitempty"` shape is unaffected.
+[`proto/basic/basic/jsontag/v1/jsontag.proto`](../proto/basic/basic/jsontag/v1/jsontag.proto) exercises the option across scalar, message, repeated, map, and the `"-"` opt-out, with an unannotated field as the control showing the default `json:"<proto_name>,omitempty"` shape is unaffected.
 
 ## `(wiresmith.options.customtype) = "import/path.TypeName"`
 
@@ -175,8 +175,8 @@ The compatibility whitelist lives in `customtypeCompatiblePeers` in `compiler/ge
 
 ### Worked examples
 
-- [`proto/basic/customtype.proto`](../proto/basic/customtype.proto) annotates singular and repeated bytes/string fields. The singular cases use the `LabelPairs` / `TenantID` types in [`test/customtypes/customtypes.go`](../test/customtypes/customtypes.go); the repeated cases use `UUID` (fixed-size opaque bytes) and `Tag` (string-backed) — the canonical "I want a typed slice element" patterns.
-- [`proto/basic/customtype_message.proto`](../proto/basic/customtype_message.proto) annotates singular and repeated message fields. The `LabelAdapter` type in [`test/customtypes/label_adapter.go`](../test/customtypes/label_adapter.go) writes the inner `Label` submessage's wire payload directly via `google.golang.org/protobuf/encoding/protowire`, demonstrating that the customtype contract is identical across kinds — the user type owns the payload bytes; wiresmith owns the envelope.
+- [`proto/basic/basic/customtype/v1/customtype.proto`](../proto/basic/basic/customtype/v1/customtype.proto) annotates singular and repeated bytes/string fields. The singular cases use the `LabelPairs` / `TenantID` types in [`test/customtypes/customtypes.go`](../test/customtypes/customtypes.go); the repeated cases use `UUID` (fixed-size opaque bytes) and `Tag` (string-backed) — the canonical "I want a typed slice element" patterns.
+- [`proto/basic/basic/customtype_message/v1/customtype_message.proto`](../proto/basic/basic/customtype_message/v1/customtype_message.proto) annotates singular and repeated message fields. The `LabelAdapter` type in [`test/customtypes/label_adapter.go`](../test/customtypes/label_adapter.go) writes the inner `Label` submessage's wire payload directly via `google.golang.org/protobuf/encoding/protowire`, demonstrating that the customtype contract is identical across kinds — the user type owns the payload bytes; wiresmith owns the envelope.
 
 ## `(wiresmith.options.customname) = "Identifier"`
 
@@ -212,7 +212,7 @@ The validation source of truth is `customnameOptionRejection` in `compiler/gener
 
 ### Worked example
 
-[`proto/basic/customname.proto`](../proto/basic/customname.proto) exercises the option across scalar, message, repeated, and oneof-variant fields, with an unannotated control showing that default `snake_to_PascalCase` conversion still applies elsewhere.
+[`proto/basic/basic/customname/v1/customname.proto`](../proto/basic/basic/customname/v1/customname.proto) exercises the option across scalar, message, repeated, and oneof-variant fields, with an unannotated control showing that default `snake_to_PascalCase` conversion still applies elsewhere.
 
 ## `(wiresmith.options.casttype) = "import/path.TypeName"`
 
@@ -266,7 +266,7 @@ Rejected (combined compile-time error from `casttypeOption.Validate`):
 
 ### Worked example
 
-[`proto/basic/casttype.proto`](../proto/basic/casttype.proto) annotates an int64, a string, and a bytes field next to plain controls. [`test/casttypes/casttypes.go`](../test/casttypes/casttypes.go) declares the trivial alias types, and [`test/basic/casttype_test.go`](../test/basic/casttype_test.go) pins the field-type swap, round-trip, wire-compatibility with the unannotated control, Equal/Compare, and nil-safe getter invariants documented above.
+[`proto/basic/basic/casttype/v1/casttype.proto`](../proto/basic/basic/casttype/v1/casttype.proto) annotates an int64, a string, and a bytes field next to plain controls. [`test/casttypes/casttypes.go`](../test/casttypes/casttypes.go) declares the trivial alias types, and [`test/basic/casttype_test.go`](../test/basic/casttype_test.go) pins the field-type swap, round-trip, wire-compatibility with the unannotated control, Equal/Compare, and nil-safe getter invariants documented above.
 
 ## `(wiresmith.options.stdtime) = true`
 
@@ -324,7 +324,7 @@ The generated `*_util.pb.go` still describes the field as `google.protobuf.Times
 
 ### Worked example
 
-[`proto/basic/stdtime.proto`](../proto/basic/stdtime.proto) annotates a Timestamp field next to stock scalar controls, and [`test/basic/stdtime_test.go`](../test/basic/stdtime_test.go) pins the round-trip / zero-presence / UTC-normalization / cross-library wire-format invariants documented above.
+[`proto/basic/basic/stdtime/v1/stdtime.proto`](../proto/basic/basic/stdtime/v1/stdtime.proto) annotates a Timestamp field next to stock scalar controls, and [`test/basic/stdtime_test.go`](../test/basic/stdtime_test.go) pins the round-trip / zero-presence / UTC-normalization / cross-library wire-format invariants documented above.
 
 ## `(wiresmith.options.stdduration) = true`
 
@@ -382,7 +382,7 @@ Same caveat as stdtime: the `*_util.pb.go` describes the field as `google.protob
 
 ### Worked example
 
-[`proto/basic/stdtime.proto`](../proto/basic/stdtime.proto) (shared with stdtime) declares a `StdDurationHolder` message with an annotated `lookback` field, and [`test/basic/stdduration_test.go`](../test/basic/stdduration_test.go) pins the round-trip / zero-presence / negative / truncation-boundary / cross-library wire-format invariants documented above.
+[`proto/basic/basic/stdtime/v1/stdtime.proto`](../proto/basic/basic/stdtime/v1/stdtime.proto) (shared with stdtime) declares a `StdDurationHolder` message with an annotated `lookback` field, and [`test/basic/stdduration_test.go`](../test/basic/stdduration_test.go) pins the round-trip / zero-presence / negative / truncation-boundary / cross-library wire-format invariants documented above.
 
 ## `(wiresmith.options.no_presence) = true` (message) / `(wiresmith.options.no_presence_all) = true` (file)
 
@@ -405,7 +405,7 @@ For deep-equality between hand-built and decoded values, every transitively-embe
 
 ### Worked example
 
-[`proto/basic/no_presence.proto`](../proto/basic/no_presence.proto) declares an annotated `BareHolder` next to an unannotated `TrackedHolder` control, and [`test/basic/no_presence_test.go`](../test/basic/no_presence_test.go) pins the layout, round-trip, empty-child-drop, and accessor semantics.
+[`proto/basic/basic/nopresence/v1/no_presence.proto`](../proto/basic/basic/nopresence/v1/no_presence.proto) declares an annotated `BareHolder` next to an unannotated `TrackedHolder` control, and [`test/basic/no_presence_test.go`](../test/basic/no_presence_test.go) pins the layout, round-trip, empty-child-drop, and accessor semantics.
 
 ## `(wiresmith.options.enum_no_prefix) = true` (enum) / `(wiresmith.options.enum_no_prefix_all) = true` (file)
 
@@ -417,7 +417,7 @@ Unprefixed constants live at Go package scope: two enums in one package declarin
 
 ### Worked example
 
-[`proto/basic/enum_no_prefix.proto`](../proto/basic/enum_no_prefix.proto) declares an annotated `MetricType` next to a prefixed `PrefixedColor` control; [`test/basic/enum_no_prefix_test.go`](../test/basic/enum_no_prefix_test.go) pins the identifiers, maps, String(), and round-trip.
+[`proto/basic/basic/enumnopfx/v1/enum_no_prefix.proto`](../proto/basic/basic/enumnopfx/v1/enum_no_prefix.proto) declares an annotated `MetricType` next to a prefixed `PrefixedColor` control; [`test/basic/enum_no_prefix_test.go`](../test/basic/enum_no_prefix_test.go) pins the identifiers, maps, String(), and round-trip.
 
 ## `(wiresmith.options.no_registration) = true` (file)
 

@@ -4,7 +4,7 @@ Custom protobuf compiler that generates high-performance Go code from OpenTeleme
 
 ## Status
 
-Early alpha - currently working on compatibility, so breaking API changes and significant rewrites are to be expected
+Beta. Generated code and the CLI now follow protoc/buf conventions (proto_path-relative import keying, official-runtime registration with a documented `no_registration` opt-out), and the custom options schema is published on the Buf Schema Registry as `buf.build/grafana/wiresmith`. The compiler is exercised by four production-scale migrations — Mimir, Tempo, and Loki (draft PRs) plus a Prometheus fork PR — all building and CI-green against their pinned wiresmith versions. Breaking changes are no longer expected as routine; future ones will be deliberate and called out.
 
 ## Why
 
@@ -70,11 +70,17 @@ Scalar types: `string`, `bool`, `int32`, `int64`, `uint32`, `uint64`, `sint32`, 
 
 Map keys: all scalar types except `float`, `double`, and `bytes`. Map values: all scalars, enums, and messages.
 
-Not supported (not needed for OTel protos): services/RPCs, extensions, well-known types, proto2.
+Well-known types `google.protobuf.Timestamp` / `Duration` (via the `stdtime` / `stdduration` options) and `google.protobuf.Any` are supported, as are `service` definitions (emitting `<name>_grpc.pb.go` stubs) — see [docs/extensions.md](docs/extensions.md) and [docs/cli.md](docs/cli.md).
+
+Not supported (not needed for OTel protos): other well-known types (Empty, Struct, FieldMask, wrappers), extensions (other than wiresmith's own options), proto2.
 
 ## Install
 
-The module path is bare `wiresmith` (no host prefix), so a remote `go install wiresmith/cmd/wiresmith@latest` can't resolve — build from a checkout instead:
+```sh
+go install github.com/grafana/wiresmith/cmd/wiresmith@latest
+```
+
+Or build from a checkout:
 
 ```sh
 git clone https://github.com/grafana/wiresmith.git
@@ -92,7 +98,7 @@ go install ./cmd/wiresmith
 ./wiresmith --proto_path=proto --out=gen --module=github.com/your/module
 ```
 
-`--proto_path` walks the .proto tree, `--out` is the destination for generated `.pb.go` files (source-relative under that root), and `--module` is the **Go module prefix used in cross-file imports** — set it to your own module's path. Inside this repo, that's `wiresmith`; in your project, it's whatever your `go.mod` declares.
+`--proto_path` walks the .proto tree, `--out` is the destination for generated `.pb.go` files (source-relative under that root), and `--module` is the **Go module prefix used in cross-file imports** — set it to your own module's path. Inside this repo, that's `github.com/grafana/wiresmith`; in your project, it's whatever your `go.mod` declares.
 
 Passing one or more `.proto` paths as positional arguments scopes emission to just those files; the paths must live under `--proto_path` (a path outside that tree is rejected up front). Their imports are still resolved against the full `--proto_path` walk, but only the listed files and their transitive imports are actually compiled — unrelated siblings in the tree are never parsed, so a tree that still contains protos wiresmith can't compile (e.g. gogo-annotated ones mid-migration) doesn't block a scoped run.
 
@@ -112,6 +118,10 @@ make bench       # run comparative benchmarks
 ```
 
 See `Makefile` for all targets.
+
+## Claude Code plugin
+
+This repo doubles as a [Claude Code](https://claude.com/claude-code) plugin marketplace (`.claude-plugin/`), shipping the `wiresmith-migrator` agent: guidance for migrating a Go repository from gogoproto-generated code to wiresmith, kept in sync with the compiler as it evolves. See [`agents/wiresmith-migrator.md`](agents/wiresmith-migrator.md).
 
 ## Documentation
 

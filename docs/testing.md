@@ -12,7 +12,7 @@ A small message interface and constructor helpers used across the other subdirec
 
 ### `test/basic/` — code-path exercise tests
 
-Round-trip, equality, presence, and per-feature tests against the basic protos (`proto/basic/{numeric,enum,oneof,nesting,recursive,maps,pointer}.proto`) plus the `kitchen_sink.proto`. Each test targets a specific generator code path — e.g. `has_field_test.go` covers the presence bitmap, `pointer_test.go` covers `(wiresmith.options.pointer)`. Run via `make test` or `go test ./test/basic/...`.
+Round-trip, equality, presence, and per-feature tests against the basic protos (`proto/basic/basic/{numeric,enum,oneof,nesting,recursive,maps,pointer}/v1/*.proto`) plus the `kitchen_sink.proto`. Each test targets a specific generator code path — e.g. `has_field_test.go` covers the presence bitmap, `pointer_test.go` covers `(wiresmith.options.pointer)`. Run via `make test` or `go test ./test/basic/...`.
 
 ### `test/fuzz/` — fuzz targets
 

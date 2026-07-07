@@ -110,7 +110,7 @@ Messages, nested messages, enums (top-level and nested), oneof, optional, repeat
 
 Well-known types: `google.protobuf.Timestamp` / `Duration` via the `stdtime` / `stdduration` options (value-type substitution); `google.protobuf.Any` is supported directly — a field referencing it resolves to wiresmith's shipped replacement [`types/known/anypb`](types/known/anypb) (which carries wiresmith's wire methods, unlike the official `anypb.Any`). See `compiler/generator/wellknown.go`.
 
-Not supported (not needed for OTel protos): services/RPCs, extensions, other well-known types (Empty/Struct/FieldMask/wrappers), proto2.
+Not supported (not needed for OTel protos): extensions (other than the wiresmith options), other well-known types (Empty/Struct/FieldMask/wrappers), proto2. gRPC `service` definitions **are** supported — a file declaring `service` blocks emits `<name>_grpc.pb.go` stubs via a vendored `protoc-gen-go-grpc` (see `compiler/generator/emit_grpc.go` and docs/cli.md).
 
 ## Conformance test status
 
