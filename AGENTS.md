@@ -1,6 +1,6 @@
 # wiresmith
 
-Custom protobuf compiler that generates high-performance Go code from OpenTelemetry .proto files using `google.golang.org/protobuf/encoding/protowire` and reverse-write marshaling.
+Custom protobuf compiler that generates high-performance Go code from .proto files, originally built for OpenTelemetry and observability workloads, using `google.golang.org/protobuf/encoding/protowire` and reverse-write marshaling.
 
 ## Project structure
 
