@@ -2,7 +2,9 @@
 
 The `wiresmith` command compiles `.proto` files in a directory tree into Go packages of marshal/unmarshal/size code.
 
-## Build
+## Install
+
+Install the latest version directly:
 
 ```sh
 go install github.com/grafana/wiresmith/cmd/wiresmith@latest
@@ -11,7 +13,7 @@ go install github.com/grafana/wiresmith/cmd/wiresmith@latest
 Or build from a checkout:
 
 ```sh
-git clone git@github.com:grafana/wiresmith.git
+git clone https://github.com/grafana/wiresmith.git
 cd wiresmith
 go build -o wiresmith ./cmd/wiresmith
 ```
@@ -149,38 +151,5 @@ To opt a field into pointer-shaped codegen, import `wiresmith/options.proto` fro
 
 ## `protoc` / `buf` plugin
 
-The sibling binary at `cmd/protoc-gen-wiresmith` is a `protoc` plugin built on `google.golang.org/protobuf/compiler/protogen`. Once on `PATH`, both `protoc` and `buf generate` invoke it the same way they invoke `protoc-gen-go`:
-
-```sh
-go build -o /usr/local/bin/protoc-gen-wiresmith ./cmd/protoc-gen-wiresmith
-
-protoc \
-  --proto_path=proto \
-  --wiresmith_out=gen \
-  --wiresmith_opt=module=example.com/myproject \
-  proto/example/v1/greeter.proto
-```
-
-Or via `buf.gen.yaml`:
-
-```yaml
-version: v2
-plugins:
-  - local: protoc-gen-wiresmith
-    out: gen
-    opt:
-      - module=example.com/myproject
-```
-
-The plugin path is feature-equivalent to the CLI: it produces the same files per `.proto` (`<name>.pb.go`, the consolidated cold companion `<name>_util.pb.go` (reflection/registration glue + `String()`), `<name>_compare.pb.go` (`Equal()` + `Compare()`), and — for service-declaring files — `<name>_grpc.pb.go`). Output paths are source-relative — the same scheme as `protoc-gen-go`'s `paths=source_relative` mode — so `buf`'s `out:` directive controls placement.
-
-Supported `--wiresmith_opt` parameters:
-
-| Parameter | Description |
-|-----------|-------------|
-| `module=…` | Go module path used as a fallback when a `.proto` omits `option go_package`. Matches the `--module` flag on the CLI. |
-| `M<src>=<dest>` | Per-file import-path override; repeatable. Matches the `-M` flag on the CLI. |
-
-The plugin and the CLI share the same generator core — bug fixes in either land in both at once.
-
-To use `(wiresmith.options.*)` extensions in plugin mode, the consumer's proto module must make `wiresmith/options.proto` resolvable to `protoc`/`buf` ahead of time — the plugin only auto-injects the embedded schema in CLI mode. `buf` users can add the published `buf.build/grafana/wiresmith` module as a `deps:` entry instead of vendoring; see [extensions.md](extensions.md#wiresmithoptionsproto) for that and the vendoring alternative.
+wiresmith also ships as a `protoc` plugin (`protoc-gen-wiresmith`) for `protoc`
+and `buf generate` pipelines — see [buf.md](buf.md).
