@@ -1,0 +1,37 @@
+name: Buf
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: buf-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions: {}
+
+jobs:
+  buf:
+    name: Lint & Breaking
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - uses: bufbuild/buf-action@fd21066df7214747548607aaa45548ba2b9bc1ff # v1.4.0
+        with:
+          lint: true
+          # Compare against the published BSR module, not a git ref: main
+          # doesn't carry buf.yaml before this PR, so a git-ref --against
+          # would misconfigure, and the published module is the actual
+          # compatibility contract consumers pin against.
+          breaking: true
+          breaking_against: buf.build/grafana/wiresmith
+          format: false
+          push: false
+          pr_comment: false
