@@ -1,6 +1,6 @@
 # Overview
 
-wiresmith is a custom protobuf compiler that generates high-performance Go code from OpenTelemetry `.proto` files, built on `google.golang.org/protobuf/encoding/protowire` and reverse-write marshaling.
+wiresmith is a custom protobuf compiler that generates high-performance Go code from `.proto` files, originally built for OpenTelemetry and observability workloads, built on `google.golang.org/protobuf/encoding/protowire` and reverse-write marshaling.
 
 ## Why
 
@@ -62,4 +62,4 @@ Map keys: all scalar types except `float`, `double`, and `bytes`. Map values: al
 
 **Well-known types.** `google.protobuf.Timestamp` and `Duration` are supported via the `stdtime` / `stdduration` field options (value-type substitution to `time.Time` / `time.Duration` -- see [extensions.md](extensions.md)). `google.protobuf.Any` is supported directly: a field referencing it resolves to wiresmith's shipped [`types/known/anypb`](../types/known/anypb) package, which carries wiresmith's wire methods -- see [generated-api.md](generated-api.md#googleprotobufany).
 
-Not supported (not needed for OTel protos): extensions, other well-known types (`Empty`, `Struct`, `FieldMask`, wrappers), and proto2.
+Not supported (not needed for OTel protos): extensions (other than the wiresmith options), other well-known types (`Empty`, `Struct`, `FieldMask`, wrappers), and proto2.

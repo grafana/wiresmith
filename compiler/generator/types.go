@@ -121,6 +121,20 @@ func (it *ImportTracker) register(importPath, alias, naturalName string) string 
 	return alias
 }
 
+// unrequest marks importPath as no-longer-requested so emitHeader skips it,
+// while keeping its reserved entry so the alias stays out of the pool. Used to
+// drop an import that a per-message emitter added eagerly but that the fully
+// assembled body turned out never to reference — specifically protowire for a
+// file whose messages are all field-less (their Size/Marshal/unmarshal emit no
+// protowire reference), which would otherwise be an unused import and fail to
+// compile.
+func (it *ImportTracker) unrequest(importPath string) {
+	if e, ok := it.imports[importPath]; ok {
+		e.requested = false
+		it.imports[importPath] = e
+	}
+}
+
 // addProtoImport registers the import for a cross-package proto reference.
 // fdPath is the importing file's Path() — it identifies the target's Go
 // destination unambiguously, including the well-known case where one proto

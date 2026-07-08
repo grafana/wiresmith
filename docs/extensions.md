@@ -4,7 +4,7 @@ wiresmith exposes a single custom `.proto` file with field-level options that in
 
 ## `wiresmith/options.proto`
 
-The file lives in the repo at [`compiler/generator/embed/wiresmith/options.proto`](../compiler/generator/embed/wiresmith/options.proto) and is embedded into the compiler binary. The CLI serves it from the canonical import path `wiresmith/options.proto`, so user proto trees can import it without vendoring:
+The file lives in the repo at [`compiler/generator/embed/wiresmith/options.proto`](../compiler/generator/embed/wiresmith/options.proto) and is embedded into the compiler binary. The CLI serves it from the canonical import path `wiresmith/options.proto`, so user proto trees can import it without vendoring anything:
 
 ```proto
 syntax = "proto3";
@@ -19,6 +19,8 @@ message Foo {
 ```
 
 The lookup is keyed on the import path, so a user file that happens to declare the same proto package (`wiresmith.options`) cannot shadow the embedded definition. See [`compiler/generator/option_pointer.go`](../compiler/generator/option_pointer.go) for the resolution and validation pass.
+
+Consumers that also run `buf` or `protoc` over the same tree (for lint or breaking-change checks) need `wiresmith/options.proto` resolvable to those tools — they can't read the compiler's embed. `buf` users can depend on the published Buf Schema Registry module instead of vendoring: add `buf.build/grafana/wiresmith` to your `buf.yaml`'s `deps:` and run `buf dep update`. `protoc` users (and `buf` users who'd rather not add the dependency) can vendor a physical copy at `wiresmith/options.proto` instead: wiresmith tolerates an on-disk copy at the canonical path **if and only if it is byte-identical to the embedded schema**, serving its own embed and skipping the vendored file. A copy whose bytes differ (a drifted vendored version) is rejected up front, so keep a vendored copy in sync with the pinned wiresmith release — or just track the BSR module, which is versioned per commit.
 
 ## `(wiresmith.options.pointer) = true`
 
@@ -46,7 +48,7 @@ The validation source of truth is `pointerOptionRejection` in `compiler/generato
 
 ### Worked example
 
-[`proto/basic/pointer.proto`](../proto/basic/pointer.proto) exercises all three positions side by side and serves as the integration test fixture:
+[`proto/basic/basic/pointer/v1/pointer.proto`](../proto/basic/basic/pointer/v1/pointer.proto) exercises all three positions side by side and serves as the integration test fixture:
 
 ```proto
 syntax = "proto3";
@@ -109,7 +111,7 @@ The validation source of truth is `validateJsontagOptions` in `compiler/generato
 
 ### Worked example
 
-[`proto/basic/jsontag.proto`](../proto/basic/jsontag.proto) exercises the option across scalar, message, repeated, map, and the `"-"` opt-out, with an unannotated field as the control showing the default `json:"<proto_name>,omitempty"` shape is unaffected.
+[`proto/basic/basic/jsontag/v1/jsontag.proto`](../proto/basic/basic/jsontag/v1/jsontag.proto) exercises the option across scalar, message, repeated, map, and the `"-"` opt-out, with an unannotated field as the control showing the default `json:"<proto_name>,omitempty"` shape is unaffected.
 
 ## `(wiresmith.options.customtype) = "import/path.TypeName"`
 
@@ -173,8 +175,8 @@ The compatibility whitelist lives in `customtypeCompatiblePeers` in `compiler/ge
 
 ### Worked examples
 
-- [`proto/basic/customtype.proto`](../proto/basic/customtype.proto) annotates singular and repeated bytes/string fields. The singular cases use the `LabelPairs` / `TenantID` types in [`test/customtypes/customtypes.go`](../test/customtypes/customtypes.go); the repeated cases use `UUID` (fixed-size opaque bytes) and `Tag` (string-backed) — the canonical "I want a typed slice element" patterns.
-- [`proto/basic/customtype_message.proto`](../proto/basic/customtype_message.proto) annotates singular and repeated message fields. The `LabelAdapter` type in [`test/customtypes/label_adapter.go`](../test/customtypes/label_adapter.go) writes the inner `Label` submessage's wire payload directly via `google.golang.org/protobuf/encoding/protowire`, demonstrating that the customtype contract is identical across kinds — the user type owns the payload bytes; wiresmith owns the envelope.
+- [`proto/basic/basic/customtype/v1/customtype.proto`](../proto/basic/basic/customtype/v1/customtype.proto) annotates singular and repeated bytes/string fields. The singular cases use the `LabelPairs` / `TenantID` types in [`test/customtypes/customtypes.go`](../test/customtypes/customtypes.go); the repeated cases use `UUID` (fixed-size opaque bytes) and `Tag` (string-backed) — the canonical "I want a typed slice element" patterns.
+- [`proto/basic/basic/customtype_message/v1/customtype_message.proto`](../proto/basic/basic/customtype_message/v1/customtype_message.proto) annotates singular and repeated message fields. The `LabelAdapter` type in [`test/customtypes/label_adapter.go`](../test/customtypes/label_adapter.go) writes the inner `Label` submessage's wire payload directly via `google.golang.org/protobuf/encoding/protowire`, demonstrating that the customtype contract is identical across kinds — the user type owns the payload bytes; wiresmith owns the envelope.
 
 ## `(wiresmith.options.customname) = "Identifier"`
 
@@ -210,7 +212,7 @@ The validation source of truth is `customnameOptionRejection` in `compiler/gener
 
 ### Worked example
 
-[`proto/basic/customname.proto`](../proto/basic/customname.proto) exercises the option across scalar, message, repeated, and oneof-variant fields, with an unannotated control showing that default `snake_to_PascalCase` conversion still applies elsewhere.
+[`proto/basic/basic/customname/v1/customname.proto`](../proto/basic/basic/customname/v1/customname.proto) exercises the option across scalar, message, repeated, and oneof-variant fields, with an unannotated control showing that default `snake_to_PascalCase` conversion still applies elsewhere.
 
 ## `(wiresmith.options.casttype) = "import/path.TypeName"`
 
@@ -264,7 +266,7 @@ Rejected (combined compile-time error from `casttypeOption.Validate`):
 
 ### Worked example
 
-[`proto/basic/casttype.proto`](../proto/basic/casttype.proto) annotates an int64, a string, and a bytes field next to plain controls. [`test/casttypes/casttypes.go`](../test/casttypes/casttypes.go) declares the trivial alias types, and [`test/basic/casttype_test.go`](../test/basic/casttype_test.go) pins the field-type swap, round-trip, wire-compatibility with the unannotated control, Equal/Compare, and nil-safe getter invariants documented above.
+[`proto/basic/basic/casttype/v1/casttype.proto`](../proto/basic/basic/casttype/v1/casttype.proto) annotates an int64, a string, and a bytes field next to plain controls. [`test/casttypes/casttypes.go`](../test/casttypes/casttypes.go) declares the trivial alias types, and [`test/basic/casttype_test.go`](../test/basic/casttype_test.go) pins the field-type swap, round-trip, wire-compatibility with the unannotated control, Equal/Compare, and nil-safe getter invariants documented above.
 
 ## `(wiresmith.options.stdtime) = true`
 
@@ -322,7 +324,7 @@ The generated `*_util.pb.go` still describes the field as `google.protobuf.Times
 
 ### Worked example
 
-[`proto/basic/stdtime.proto`](../proto/basic/stdtime.proto) annotates a Timestamp field next to stock scalar controls, and [`test/basic/stdtime_test.go`](../test/basic/stdtime_test.go) pins the round-trip / zero-presence / UTC-normalization / cross-library wire-format invariants documented above.
+[`proto/basic/basic/stdtime/v1/stdtime.proto`](../proto/basic/basic/stdtime/v1/stdtime.proto) annotates a Timestamp field next to stock scalar controls, and [`test/basic/stdtime_test.go`](../test/basic/stdtime_test.go) pins the round-trip / zero-presence / UTC-normalization / cross-library wire-format invariants documented above.
 
 ## `(wiresmith.options.stdduration) = true`
 
@@ -380,7 +382,7 @@ Same caveat as stdtime: the `*_util.pb.go` describes the field as `google.protob
 
 ### Worked example
 
-[`proto/basic/stdtime.proto`](../proto/basic/stdtime.proto) (shared with stdtime) declares a `StdDurationHolder` message with an annotated `lookback` field, and [`test/basic/stdduration_test.go`](../test/basic/stdduration_test.go) pins the round-trip / zero-presence / negative / truncation-boundary / cross-library wire-format invariants documented above.
+[`proto/basic/basic/stdtime/v1/stdtime.proto`](../proto/basic/basic/stdtime/v1/stdtime.proto) (shared with stdtime) declares a `StdDurationHolder` message with an annotated `lookback` field, and [`test/basic/stdduration_test.go`](../test/basic/stdduration_test.go) pins the round-trip / zero-presence / negative / truncation-boundary / cross-library wire-format invariants documented above.
 
 ## `(wiresmith.options.no_presence) = true` (message) / `(wiresmith.options.no_presence_all) = true` (file)
 
@@ -394,7 +396,7 @@ By default every generated message tracks wire-presence of its singular value-ty
 
 - The struct contains exactly the declared fields — layout parity with gogoproto `nullable=false` structs. This is the property consumers need for unsafe casts between generated and domain types (e.g. Mimir's `[]Sample` ↔ `[]promql.FPoint`) and for `require.Equal(literal, unmarshalled)` tests.
 - `Has<Name>()` is **not emitted** for bitmap-tracked fields. proto3 `optional` fields keep their pointer-based `Has<Name>()`.
-- `Get<MsgField>()` returns `*T` (uniform getter shape; chained-call compatible) — byte-identical in shape to BITMAP/default getters, returning the field address for a non-nil receiver and `nil` for a nil one. This **deliberately diverges** from gogoproto `nullable=false` value getters: a value result isn't addressable, so chained pointer-receiver calls (`x.GetChild().Marshal()`) would not compile. Safe per a 2026-06-18 audit of the tempo/loki/mimir consumers — none rely on the value-getter shape.
+- `Get<MsgField>()` returns `*T` (uniform getter shape; chained-call compatible) — byte-identical in shape to BITMAP/default getters, returning the field address for a non-nil receiver and `nil` for a nil one. This **deliberately diverges** from gogoproto `nullable=false` value getters: a value result isn't addressable, so chained pointer-receiver calls (`x.GetChild().Marshal()`) would not compile. A 2026-06-18 audit of the tempo/loki/mimir consumers found no *call sites* relying on a value getter — but that audit missed *interface method-signature satisfaction*: Loki later broke because a shared interface declared a value-returning getter (`GetCachingOptions() CachingOptions`), which the `*T` getter does not satisfy. Where an interface pins the value shape, rename the field with `(wiresmith.options.customname)` and hand-write a value-returning getter.
 - A present-but-empty nested message does **not** survive a round-trip: marshal emits nothing for an empty child, so absent and empty are indistinguishable — exactly the gogoproto value-type trade-off.
 
 `no_presence_all = true` at file level applies the same to every message in the file (nested ones included). A per-message `no_presence` value — `true` or `false` — overrides the file default, same layering as gogoproto's `*_all` options. Nested messages do not inherit from their containing message; annotate them individually or use the file option.
@@ -403,7 +405,7 @@ For deep-equality between hand-built and decoded values, every transitively-embe
 
 ### Worked example
 
-[`proto/basic/no_presence.proto`](../proto/basic/no_presence.proto) declares an annotated `BareHolder` next to an unannotated `TrackedHolder` control, and [`test/basic/no_presence_test.go`](../test/basic/no_presence_test.go) pins the layout, round-trip, empty-child-drop, and accessor semantics.
+[`proto/basic/basic/nopresence/v1/no_presence.proto`](../proto/basic/basic/nopresence/v1/no_presence.proto) declares an annotated `BareHolder` next to an unannotated `TrackedHolder` control, and [`test/basic/no_presence_test.go`](../test/basic/no_presence_test.go) pins the layout, round-trip, empty-child-drop, and accessor semantics.
 
 ## `(wiresmith.options.enum_no_prefix) = true` (enum) / `(wiresmith.options.enum_no_prefix_all) = true` (file)
 
@@ -415,4 +417,114 @@ Unprefixed constants live at Go package scope: two enums in one package declarin
 
 ### Worked example
 
-[`proto/basic/enum_no_prefix.proto`](../proto/basic/enum_no_prefix.proto) declares an annotated `MetricType` next to a prefixed `PrefixedColor` control; [`test/basic/enum_no_prefix_test.go`](../test/basic/enum_no_prefix_test.go) pins the identifiers, maps, String(), and round-trip.
+[`proto/basic/basic/enumnopfx/v1/enum_no_prefix.proto`](../proto/basic/basic/enumnopfx/v1/enum_no_prefix.proto) declares an annotated `MetricType` next to a prefixed `PrefixedColor` control; [`test/basic/enum_no_prefix_test.go`](../test/basic/enum_no_prefix_test.go) pins the identifiers, maps, String(), and round-trip.
+
+## `(wiresmith.options.no_registration) = true` (file)
+
+Annotates the **file**, not a field — registration is per file (the whole file registers with the runtime as one unit), so there is no per-message form and no `*_all` layering.
+
+**The collision it solves.** By default a wiresmith-generated file — like `protoc-gen-go` output — registers its file descriptor and its message/enum types with the OFFICIAL global registries (`google.golang.org/protobuf`'s `protoregistry.GlobalFiles` / `GlobalTypes`) at `init()`. That global registration **panics** at init if another module linked into the same binary already registered a file with the same import path, or a message/enum with the same full name. This collides when a wiresmith-migrated proto shares its package / import path with an official-runtime-generated module also in the binary — e.g. Prometheus generating `io.prometheus.client` with wiresmith while the external `github.com/prometheus/client_model/go` module registers the same `io.prometheus.client` with the official runtime. (Under gogoproto there was no collision, because gogo used its own registry — the `client_model` precedent.)
+
+**What it does.** With `no_registration = true` the generated `init()` registers into a package-LOCAL `protoregistry.Files` / `protoregistry.Types` (constructed with `new(...)`) instead of the globals — the `protoimpl.DescBuilder.FileRegistry` and `protoimpl.TypeBuilder.TypeRegistry` fields are redirected at them. The file performs **zero mutation** of `protoregistry.GlobalFiles` / `GlobalTypes` and can never collide. The reflection/`TypeBuilder` machinery is otherwise emitted unchanged.
+
+**What still works.** The types stay valid `proto.Message`s backed by the file's local descriptor: the wiresmith wire methods (`Marshal` / `Unmarshal` / `Equal` / `Compare` / `Clone` / `String`) and reflective `ProtoReflect` / `proto.Marshal` / `proto.Unmarshal` / `proto.Equal` (which resolve through the LOCAL descriptor) all keep working.
+
+**What changes.** The types are invisible to the official GLOBAL registry: `proto.MessageName`, `protoregistry.GlobalTypes.Find*`, and `protoregistry.GlobalFiles.FindFileByPath` will not resolve them (the external module's registration serves that). Because the file's own descriptor is not in the global registry, reflective enumeration of its imports (`FileDescriptor.Imports`) yields placeholder file descriptors; field-level cross-type resolution is unaffected (it resolves through the generated Go type, not the import table).
+
+### Worked example
+
+[`proto/basic/basic/noregistration/v1/no_registration.proto`](../proto/basic/basic/noregistration/v1/no_registration.proto) sets `(wiresmith.options.no_registration) = true` on a file with a `Color` enum and cross-referencing `Widget` / `Part` messages; [`test/basic/no_registration_test.go`](../test/basic/no_registration_test.go) pins that the file, messages, and enum are absent from the global registries (`errors.Is(err, protoregistry.NotFound)`) while the wire methods and local-descriptor reflection still round-trip.
+
+## google.protobuf.Any
+
+Unlike the options above, `Any` is not a field option — a field declared `google.protobuf.Any` resolves **automatically** to wiresmith's shipped replacement package [`types/known/anypb`](../types/known/anypb) (resolution in [`compiler/generator/wellknown.go`](../compiler/generator/wellknown.go)). Just `import "google/protobuf/any.proto"`; no annotation or `-M` mapping is required.
+
+The replacement `anypb.Any` is a value struct (`TypeUrl string`, `Value []byte`) carrying wiresmith's own `Size`/`Marshal`/`Unmarshal`/`Equal`/`Compare` methods — the official `google.golang.org/protobuf/types/known/anypb.Any` lacks them, so a wiresmith message could not embed it. The package **registers nothing**: the official runtime (linked into virtually every binary) already registers `google/protobuf/any.proto` and the `google.protobuf.Any` message, and a second registration panics at init. Instead [`types/known/anypb/helpers.go`](../types/known/anypb/helpers.go) hand-writes `ProtoReflect()` to delegate to the official descriptor, and the typed helpers (`New`, `MarshalFrom`, `UnmarshalTo`, `UnmarshalNew`, `MessageName`, `MessageIs`) resolve packed message types through `protoregistry.GlobalTypes` — the **official** runtime's type registry.
+
+### When the shipped `anypb` is enough
+
+- **Opaque passthrough** — the field is stored and forwarded without ever unpacking/repacking the payload in Go, so no type-URL resolution happens and the registry is irrelevant. Mimir adopted this directly for `pkg/ruler/rulespb`'s `repeated google.protobuf.Any options`.
+- **Payloads registered with the official runtime** — types generated by wiresmith or `protoc-gen-go` live in `protoregistry.GlobalTypes`, so the typed helpers (`UnmarshalNew` / `UnmarshalTo` / `MessageName`) resolve them.
+
+### When you need the AnyAdapter bridge
+
+The shipped helpers resolve type URLs **only** through the official `GlobalTypes`. They **cannot** resolve payload types registered only in the **gogo** registry (via gogo's own `proto.RegisterType`). A consumer whose `Any` payloads are gogo-generated and unpacked through gogo's `types.UnmarshalAny` / `types.MarshalAny` / gogo `jsonpb` must keep those payloads on gogo's `types.Any`: the field stays `google.protobuf.Any` on the wire (byte-identical), but its Go representation bridges to `types.Any`.
+
+**This bridge is the supported pattern for gogo-registry `Any` payloads.** Native gogo-registry resolution inside the compiler is **out of scope by design**: the shipped `anypb` deliberately registers nothing (a second `google.protobuf.Any` registration panics) and resolves through the official runtime only; teaching it to also consult the gogo registry would couple the shipped package to gogoproto. Bridge on the consumer side instead.
+
+### Bridge pattern
+
+The bridge is a `customtype` adapter (see the `(wiresmith.options.customtype)` section above) that wraps gogo `types.Any` and delegates the wiresmith wire contract to gogo's existing methods. Distilled from Loki (`pkg/storage/chunk/cache/resultscache/any_adapter.go`, `pkg/ruler/rulespb/any_adapter.go`):
+
+```go
+package mypkg
+
+import "github.com/gogo/protobuf/types"
+
+// AnyAdapter bridges gogo types.Any into wiresmith-generated code. The field is
+// google.protobuf.Any on the wire (byte-identical); only the Go type differs.
+type AnyAdapter types.Any
+
+// Any returns the gogo representation; a zero adapter yields nil, matching the
+// prior *types.Any field shape where absent meant nil.
+func (a *AnyAdapter) Any() *types.Any {
+	if a == nil || (a.TypeUrl == "" && len(a.Value) == 0) {
+		return nil
+	}
+	return (*types.Any)(a)
+}
+
+// FromAny converts a (possibly nil) gogo Any into the adapter.
+func FromAny(v *types.Any) AnyAdapter {
+	if v == nil {
+		return AnyAdapter{}
+	}
+	return AnyAdapter(*v)
+}
+
+// wiresmith customtype contract — delegate to gogo's methods.
+func (a *AnyAdapter) SizeWiresmith() int                       { return (*types.Any)(a).Size() }
+func (a *AnyAdapter) MarshalWiresmith(buf []byte) (int, error) { return (*types.Any)(a).MarshalTo(buf) }
+func (a *AnyAdapter) UnmarshalWiresmith(buf []byte) error      { return (*types.Any)(a).Unmarshal(buf) }
+
+func (a *AnyAdapter) EqualWiresmith(other any) bool {
+	o, ok := coerceAnyAdapter(other)
+	return ok && (*types.Any)(a).Equal((*types.Any)(o))
+}
+
+func (a *AnyAdapter) CompareWiresmith(other any) int {
+	o, ok := coerceAnyAdapter(other)
+	if !ok {
+		return -1 // sentinel on type mismatch keeps Compare total
+	}
+	return (*types.Any)(a).Compare((*types.Any)(o))
+}
+
+func coerceAnyAdapter(other any) (*AnyAdapter, bool) {
+	switch o := other.(type) {
+	case AnyAdapter:
+		return &o, true
+	case *AnyAdapter:
+		return o, o != nil
+	default:
+		return nil, false
+	}
+}
+```
+
+Annotate the field with the adapter type (same-package shorthand shown; a fully-qualified `"import/path.AnyAdapter"` also works):
+
+```proto
+import "wiresmith/options.proto";
+import "google/protobuf/any.proto";
+
+message Extent {
+  google.protobuf.Any response = 5 [(wiresmith.options.customtype) = "AnyAdapter"];
+}
+
+message RuleGroupDesc {
+  repeated google.protobuf.Any options = 9 [(wiresmith.options.customtype) = "AnyAdapter"];
+}
+```
+
+Mind the nil contract: gogo skipped nil pointer fields, whereas wiresmith calls `SizeWiresmith()` on the value — the zero-adapter guard makes `Size` return `0` for an empty adapter, preserving proto3 omit-default semantics. `customtype` forbids combining with `pointer`, so the field is value-shaped; convert at the boundary to still-gogo code with `Any()` / `FromAny`.

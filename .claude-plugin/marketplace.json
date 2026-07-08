@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "grafana",
+  "owner": {
+    "name": "Grafana Labs",
+    "url": "https://github.com/grafana/wiresmith"
+  },
+  "metadata": {
+    "description": "Claude Code plugins that ship with the wiresmith protobuf compiler."
+  },
+  "plugins": [
+    {
+      "name": "wiresmith",
+      "source": "./",
+      "description": "Ships the wiresmith-migrator agent: guidance for migrating Go repos from gogoproto to wiresmith, kept in sync with the compiler."
+    }
+  ]
+}

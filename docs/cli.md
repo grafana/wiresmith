@@ -51,6 +51,17 @@ alias. Using the OS separator rather than a fixed `:` keeps Windows
 drive-letter paths like `C:\proto` from being split into `C` and
 `\proto`.
 
+Import keys follow `protoc`/`buf`: every file is keyed by its path relative
+to the `--proto_path` root that contains it, and the proto `package` does not
+influence the key. A file sitting directly at a root keys by its bare
+filename — so `import "types.proto"` resolves a root-level `types.proto` (the
+`buf` module-root convention) — while a nested file keys by its relative path,
+so `import "a/b/c.proto"` resolves `<root>/a/b/c.proto`. The on-disk output
+mirrors the key (source-relative): a flat proto emits a flat `.pb.go`, a
+nested one emits under matching directories. To land a flat proto's Go output
+in a package-nested directory, place the `.proto` at that nested path under
+the root (which is how wiresmith's own OTel/basic trees are laid out).
+
 When the same import key would resolve to two different files across
 the configured roots, wiresmith fails with a `duplicate import key`
 error that names both candidate absolute paths. This is stricter than
@@ -136,7 +147,7 @@ both files compile in one run:
 ./wiresmith -I=vendor/proto:internal/proto --out=gen --module=example.com/myproject
 ```
 
-To opt a field into pointer-shaped codegen, import `wiresmith/options.proto` from the `.proto` source — see [extensions.md](extensions.md) for the option's effect and the worked example in [`proto/basic/pointer.proto`](../proto/basic/pointer.proto).
+To opt a field into pointer-shaped codegen, import `wiresmith/options.proto` from the `.proto` source — see [extensions.md](extensions.md) for the option's effect and the worked example in [`proto/basic/basic/pointer/v1/pointer.proto`](../proto/basic/basic/pointer/v1/pointer.proto).
 
 ## `protoc` / `buf` plugin
 

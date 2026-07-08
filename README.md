@@ -1,10 +1,10 @@
 # wiresmith
 
-Custom protobuf compiler that generates high-performance Go code from OpenTelemetry `.proto` files. Built on `google.golang.org/protobuf/encoding/protowire` and reverse-write marshaling.
+Custom protobuf compiler that generates high-performance Go code from `.proto` files, originally built for OpenTelemetry and observability workloads. Built on `google.golang.org/protobuf/encoding/protowire` and reverse-write marshaling.
 
 ## Status
 
-Early alpha — currently working on compatibility, so breaking API changes and significant rewrites are to be expected.
+Beta. Generated code and the CLI now follow protoc/buf conventions (proto_path-relative import keying, official-runtime registration with a documented `no_registration` opt-out), and the custom options schema is published on the Buf Schema Registry as `buf.build/grafana/wiresmith`. The compiler is exercised by four production-scale migrations — Mimir, Tempo, and Loki (draft PRs) plus a Prometheus fork PR — all building and CI-green against their pinned wiresmith versions. Breaking changes are no longer expected as routine; future ones will be deliberate and called out.
 
 ## What it does
 
@@ -37,6 +37,10 @@ go build -o wiresmith ./cmd/wiresmith
 `--proto_path` walks the `.proto` tree, `--out` is the destination for generated `.pb.go` files (source-relative under that root), and `--module` is the Go module prefix used in cross-file imports. Passing one or more `.proto` paths as positional arguments scopes emission to just those files and their transitive imports. See [docs/cli.md](docs/cli.md) for the full reference, and [docs/buf.md](docs/buf.md) to run it as a `protoc` / `buf` plugin.
 
 Inside the repo, the Makefile is the canonical entry point: `make generate`, `make build`, `make test`, `make bench`. See `Makefile` for all targets.
+
+## Claude Code plugin
+
+This repo doubles as a [Claude Code](https://claude.com/claude-code) plugin marketplace (`.claude-plugin/`), shipping the `wiresmith-migrator` agent: guidance for migrating a Go repository from gogoproto-generated code to wiresmith, kept in sync with the compiler as it evolves. See [`agents/wiresmith-migrator.md`](agents/wiresmith-migrator.md).
 
 ## Documentation
 

@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package basic.noregistration.v1;
+
+option go_package = "github.com/grafana/wiresmith/gen/basic/noregistration/v1";
+option (wiresmith.options.no_registration) = true;
+
+import "wiresmith/options.proto";
+
+// Exercises (wiresmith.options.no_registration) = true: this file's descriptor
+// and the Color / Widget / Part types register into a package-local registry,
+// NOT protoregistry.GlobalFiles / GlobalTypes, so a binary that also links
+// another module registering basic.noregistration.v1 with the official runtime
+// does not panic at init. The types stay valid proto.Messages; they are simply
+// invisible to the official GLOBAL registry.
+enum Color {
+  COLOR_UNKNOWN = 0;
+  COLOR_RED     = 1;
+  COLOR_GREEN   = 2;
+}
+
+message Widget {
+  string name  = 1;
+  int64  count = 2;
+  Color  color = 3;
+  Part   part  = 4;
+}
+
+// Part is referenced by Widget so the file exercises cross-message depIdxs
+// resolution under the local registry.
+message Part {
+  string sku = 1;
+}

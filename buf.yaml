@@ -1,0 +1,15 @@
+version: v2
+modules:
+  - path: compiler/generator/embed
+    name: buf.build/grafana/wiresmith
+# wiresmith/options.proto is served from a frozen canonical import path
+# ("wiresmith/options.proto", package wiresmith.options) embedded in the
+# wiresmith CLI; every downstream consumer imports it as-is, so the
+# directory layout and package name cannot be changed to satisfy these
+# two STANDARD rules.
+lint:
+  use:
+    - STANDARD
+  except:
+    - PACKAGE_DIRECTORY_MATCH
+    - PACKAGE_VERSION_SUFFIX

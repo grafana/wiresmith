@@ -125,6 +125,8 @@ func (fg *FileGenerator) emitRegistration(fd protoreflect.FileDescriptor) {
 		return
 	}
 
+	noReg := fg.hasNoRegistration(fd)
+
 	// 1. rawDesc const.
 	rawDesc := serializeFileDescriptor(fd)
 	fg.utilBody.WriteString("const ")
@@ -189,6 +191,18 @@ func (fg *FileGenerator) emitRegistration(fd protoreflect.FileDescriptor) {
 	// 5b. The Build() call. `type x struct{}` lets us recover the Go package
 	//     path via reflect.TypeOf — same idiom protoc-gen-go uses. unsafe.Slice
 	//     hands rawDesc bytes to Build without re-copying.
+	if noReg {
+		// no_registration: register into package-local registries instead of the
+		// official protoregistry.GlobalFiles / GlobalTypes, so importing this file
+		// mutates no global registry state (and cannot panic on a duplicate
+		// registration from another module that owns the same proto package, e.g.
+		// prometheus/client_model). localFiles is retained via the built
+		// descriptor's builder for lazy import resolution; localTypes is write-only
+		// during Build. See option_no_registration.go.
+		fmt.Fprintf(fg.utilBody, "\tlocalFiles := new(protoregistry.Files)\n")
+		fmt.Fprintf(fg.utilBody, "\tlocalTypes := new(protoregistry.Types)\n")
+		fg.utilImports.addImport("google.golang.org/protobuf/reflect/protoregistry", "")
+	}
 	fmt.Fprintf(fg.utilBody, "\ttype x struct{}\n")
 	fmt.Fprintf(fg.utilBody, "\tout := protoimpl.TypeBuilder{\n")
 	fmt.Fprintf(fg.utilBody, "\t\tFile: protoimpl.DescBuilder{\n")
@@ -199,6 +213,9 @@ func (fg *FileGenerator) emitRegistration(fd protoreflect.FileDescriptor) {
 	fmt.Fprintf(fg.utilBody, "\t\t\tNumMessages:   %d,\n", len(msgs))
 	fmt.Fprintf(fg.utilBody, "\t\t\tNumExtensions: 0,\n")
 	fmt.Fprintf(fg.utilBody, "\t\t\tNumServices:   0,\n")
+	if noReg {
+		fmt.Fprintf(fg.utilBody, "\t\t\tFileRegistry:  localFiles,\n")
+	}
 	fmt.Fprintf(fg.utilBody, "\t\t},\n")
 	fmt.Fprintf(fg.utilBody, "\t\tGoTypes:           %s_goTypes,\n", prefix)
 	fmt.Fprintf(fg.utilBody, "\t\tDependencyIndexes: %s_depIdxs,\n", prefix)
@@ -207,6 +224,9 @@ func (fg *FileGenerator) emitRegistration(fd protoreflect.FileDescriptor) {
 	}
 	if len(msgs) > 0 {
 		fmt.Fprintf(fg.utilBody, "\t\tMessageInfos:      %s_msgTypes,\n", prefix)
+	}
+	if noReg {
+		fmt.Fprintf(fg.utilBody, "\t\tTypeRegistry:      localTypes,\n")
 	}
 	fmt.Fprintf(fg.utilBody, "\t}.Build()\n")
 	fmt.Fprintf(fg.utilBody, "\t%s_fd = out.File\n", prefix)

@@ -103,6 +103,11 @@ type Generator struct {
 	enumNoPrefixExt    protoreflect.FieldDescriptor
 	enumNoPrefixAllExt protoreflect.FieldDescriptor
 
+	// noRegistrationExt is the linked file-level no_registration extension
+	// descriptor, consulted by FileGenerator.hasNoRegistration in
+	// emitRegistration. Outside the FieldOption registry (annotates the file).
+	noRegistrationExt protoreflect.FieldDescriptor
+
 	// outputs accumulates the formatted Go files produced by writeFormatted
 	// during a Generate run. Two callers harvest it: Generate writes them
 	// to disk; GenerateFromDescriptors returns them to a protoc plugin
@@ -196,6 +201,10 @@ type FileGenerator struct {
 	// enum_no_prefix pair (option_enum_no_prefix.go).
 	enumNoPrefixExt    protoreflect.FieldDescriptor
 	enumNoPrefixAllExt protoreflect.FieldDescriptor
+
+	// noRegistrationExt is the cached file-level no_registration extension
+	// descriptor. Consulted by hasNoRegistration (option_no_registration.go).
+	noRegistrationExt protoreflect.FieldDescriptor
 
 	// compareBody / compareImports hold the value-comparison companion
 	// `_compare.pb.go` file: the per-message Equal(other interface{}) bool and
@@ -394,21 +403,34 @@ func (g *Generator) compileSources(ctx context.Context) ([]protoreflect.FileDesc
 		}
 	}
 
-	// Always inject the embedded `wiresmith/options.proto` into the input set
+	// Always ensure the embedded `wiresmith/options.proto` is in the input set
 	// so its extension descriptor ends up in the linked results — that's how
 	// hasPointerOption finds the extension type later. Users `import
 	// "wiresmith/options.proto"` from their own .proto files; the memResolver
-	// serves it from the embed. A user file at the canonical path would
-	// silently shadow the embedded schema — reject that explicitly rather
-	// than guessing intent.
-	if _, ok := mapping[embeddedOptionsPath]; ok {
-		return nil, nil, fmt.Errorf("user proto at %q conflicts with the embedded wiresmith schema — remove the on-disk file; wiresmith serves it from its own embed", embeddedOptionsPath)
+	// serves it from the embed.
+	//
+	// Consumers that also run buf/protoc over the same tree must vendor a
+	// physical copy at the canonical path (those tools cannot read the
+	// compiler's embed), so an on-disk file keyed there is tolerated IFF it is
+	// byte-identical to the embedded schema — wiresmith just serves its own
+	// copy and skips emitting it. A file whose contents differ is rejected: it
+	// would shadow the embedded schema with a divergent definition.
+	if existing, ok := mapping[embeddedOptionsPath]; ok {
+		if !bytes.Equal(existing, embeddedOptionsProto) {
+			return nil, nil, fmt.Errorf("user proto at %q conflicts with the embedded wiresmith schema: on-disk contents differ from the compiler's embedded copy — remove the on-disk file (wiresmith serves it from its own embed) or sync it to the pinned wiresmith version", embeddedOptionsPath)
+		}
+		// Byte-identical vendored copy (the documented buf/protoc pattern):
+		// serve the canonical embed and leave importPaths untouched — the walk
+		// already registered this key exactly once, so re-appending would
+		// double-compile it.
+		mapping[embeddedOptionsPath] = embeddedOptionsProto
+	} else {
+		mapping[embeddedOptionsPath] = embeddedOptionsProto
+		importPaths = append(importPaths, embeddedOptionsPath)
+		// buildImportMapping returns importPaths sorted for determinism; restore
+		// that invariant after the in-place append.
+		sort.Strings(importPaths)
 	}
-	mapping[embeddedOptionsPath] = embeddedOptionsProto
-	importPaths = append(importPaths, embeddedOptionsPath)
-	// buildImportMapping returns importPaths sorted for determinism; restore
-	// that invariant after the in-place append.
-	sort.Strings(importPaths)
 
 	// WithStandardImports satisfies imports for the well-known protos
 	// (`google/protobuf/descriptor.proto` and friends) that the embedded
@@ -493,6 +515,7 @@ func (g *Generator) generateFromFiles(results []protoreflect.FileDescriptor, emi
 	g.noPresenceAllExt = findExtension(results, noPresenceAllExtName)
 	g.enumNoPrefixExt = findExtension(results, enumNoPrefixExtName)
 	g.enumNoPrefixAllExt = findExtension(results, enumNoPrefixAllExtName)
+	g.noRegistrationExt = findExtension(results, noRegistrationExtName)
 	if err := g.validateJsontagOptions(results); err != nil {
 		return nil, err
 	}
@@ -952,6 +975,7 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 		noPresenceAllExt:   g.noPresenceAllExt,
 		enumNoPrefixExt:    g.enumNoPrefixExt,
 		enumNoPrefixAllExt: g.enumNoPrefixAllExt,
+		noRegistrationExt:  g.noRegistrationExt,
 	}
 
 	// Hot-path emitters target the main .pb.go: structs, oneof variants,
@@ -1002,6 +1026,15 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 	// conditional writes for _util / _compare below.
 	if fg.body.Len() > 0 {
 		var mainOut bytes.Buffer
+		// emitSize adds the protowire import per message unconditionally, but a
+		// field-less message emits Size/Marshal/unmarshal bodies that never
+		// reference protowire. A file whose messages are all field-less would
+		// then carry an unused import and fail to compile — drop it when the
+		// assembled body has no protowire reference (protowire is always emitted
+		// unaliased, so the "protowire." token is a reliable usage signal).
+		if !bytes.Contains(fg.body.Bytes(), []byte("protowire.")) {
+			fg.imports.unrequest("google.golang.org/protobuf/encoding/protowire")
+		}
 		fg.emitHeader(&mainOut, fg.imports)
 		mainOut.Write(fg.body.Bytes())
 		g.writeFormatted(g.outputPathFor(fd), mainOut.Bytes(), fd.Path())
@@ -1354,24 +1387,23 @@ func oneofVariantName(md protoreflect.MessageDescriptor, fd protoreflect.FieldDe
 
 // buildImportMapping reads proto files (recursively, across every
 // supplied root) and builds a mapping from import paths to file
-// contents. Top-level files are registered under the package-derived
-// path so existing flat layouts keep working; nested files use their
-// on-disk relative path (relative to the root they were found under)
-// as the import key.
+// contents. Every file is keyed by its path relative to the --proto_path
+// root it was found under — matching protoc/buf semantics, where an
+// `import "x/y.proto"` resolves to `<root>/x/y.proto`. A file sitting
+// directly at a root keys by its bare filename; a nested file by its
+// relative path. The file's proto `package` does not influence the key
+// (it must still declare one, consumed later for Go codegen).
 //
-// Each file is registered under exactly one canonical path. Imports
-// across files must use that canonical form: package-derived for
-// top-level files, relative-path for nested files. Registering the same
-// content under two keys would cause protocompile to compile it twice
-// and emit duplicate-symbol errors when a consumer imports it via the
-// non-canonical name.
+// Each file is registered under exactly one key. Imports across files
+// must use that same relative-path form: a bare filename resolves only a
+// file at the root, a nested path only a file at that nested location.
 //
 // When the same import key would be produced by two different files
-// (across roots, or within a single root for the package-collision
-// case), the function returns an error naming both candidate absolute
-// paths. This is stricter than `protoc -I=a -I=b`'s first-match-wins
-// behaviour — we trade a bit of ergonomics for a guarantee that no
-// import silently resolves to a shadowed file.
+// (across roots, or one root nested inside another), the function returns
+// an error naming both candidate absolute paths. This is stricter than
+// `protoc -I=a -I=b`'s first-match-wins behaviour — we trade a bit of
+// ergonomics for a guarantee that no import silently resolves to a
+// shadowed file.
 func buildImportMapping(protoDirs []string) (map[string][]byte, []string, map[string]string, error) {
 	mapping := make(map[string][]byte)
 	pathToKey := make(map[string]string)
@@ -1416,8 +1448,9 @@ func buildImportMapping(protoDirs []string) (map[string][]byte, []string, map[st
 				return err
 			}
 
-			m := pkgRE.FindSubmatch(content)
-			if m == nil {
+			// A proto package is still required — it drives Go codegen
+			// downstream — but it no longer influences the import key.
+			if !pkgRE.Match(content) {
 				return fmt.Errorf("no package found in %s", p)
 			}
 
@@ -1425,15 +1458,10 @@ func buildImportMapping(protoDirs []string) (map[string][]byte, []string, map[st
 			if err != nil {
 				return err
 			}
-			rel = filepath.ToSlash(rel)
-
-			var key string
-			if strings.Contains(rel, "/") {
-				key = rel
-			} else {
-				pkg := string(m[1])
-				key = strings.ReplaceAll(pkg, ".", "/") + "/" + d.Name()
-			}
+			// protoc/buf key: the path relative to the containing root.
+			// Flat files key by their bare filename, nested files by their
+			// relative path; the proto package is not consulted.
+			key := filepath.ToSlash(rel)
 
 			abs, err := filepath.Abs(p)
 			if err != nil {

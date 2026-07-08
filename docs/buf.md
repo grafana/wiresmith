@@ -47,4 +47,4 @@ Supported `--wiresmith_opt` parameters:
 
 The plugin and the CLI share the same generator core — bug fixes in either land in both at once.
 
-To use `(wiresmith.options.*)` extensions in plugin mode, the consumer's proto module must make `wiresmith/options.proto` resolvable (vendor it, or add it as a `buf` module dependency). The plugin only auto-injects the embedded schema in CLI mode; `protoc`/`buf` need to see the file ahead of time to compile any `.proto` that references the extensions.
+To use `(wiresmith.options.*)` extensions in plugin mode, the consumer's proto module must make `wiresmith/options.proto` resolvable to `protoc`/`buf` ahead of time — the plugin only auto-injects the embedded schema in CLI mode. `buf` users can add the published `buf.build/grafana/wiresmith` module as a `deps:` entry instead of vendoring; see [extensions.md](extensions.md#wiresmithoptionsproto) for that and the vendoring alternative.

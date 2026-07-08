@@ -190,14 +190,23 @@ func TestGenerateMatchesCheckedIn(t *testing.T) {
 			// For conformance, only test_messages_proto3.proto is generated
 			// by wiresmith; conformance.proto uses protoc. Copy just that file
 			// to a temp dir so the generator doesn't see conformance.proto.
+			// Preserve its nested path so path-parity keys it as
+			// protobuf_test_messages/proto3/test_messages_proto3.proto (matching
+			// the checked-in gen/ layout) — a flat copy would key by bare
+			// filename and emit to the wrong directory.
 			protoDir := tc.protoDir
 			if tc.name == "conformance/test_messages" {
 				isolated := t.TempDir()
-				src, err := os.ReadFile(filepath.Join(tc.protoDir, "test_messages_proto3.proto"))
+				const rel = "protobuf_test_messages/proto3/test_messages_proto3.proto"
+				src, err := os.ReadFile(filepath.Join(tc.protoDir, rel))
 				if err != nil {
 					t.Fatalf("reading conformance proto: %v", err)
 				}
-				if err := os.WriteFile(filepath.Join(isolated, "test_messages_proto3.proto"), src, 0o644); err != nil {
+				dst := filepath.Join(isolated, rel)
+				if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
+					t.Fatalf("mkdir isolated proto dir: %v", err)
+				}
+				if err := os.WriteFile(dst, src, 0o644); err != nil {
 					t.Fatalf("writing isolated proto: %v", err)
 				}
 				protoDir = isolated
@@ -290,10 +299,10 @@ func TestGenerateMatchesCheckedIn(t *testing.T) {
 // rejects the result. Skipping the file entirely avoids the failure mode.
 func TestGenerateEmptyProto(t *testing.T) {
 	protoDir := t.TempDir()
-	writeProto(t, protoDir, "empty.proto", `
+	writeProto(t, protoDir, "empty/empty.proto", `
 syntax = "proto3";
 package empty;`)
-	writeProto(t, protoDir, "real.proto", `
+	writeProto(t, protoDir, "real_pkg/real.proto", `
 syntax = "proto3";
 package real_pkg;
 message Foo { string name = 1; }`)
@@ -323,7 +332,7 @@ message Foo { string name = 1; }`)
 // addImport's cache).
 func TestGenerateEnumsOnlyProto(t *testing.T) {
 	protoDir := t.TempDir()
-	writeProto(t, protoDir, "enumsonly.proto", `
+	writeProto(t, protoDir, "enumsonly/enumsonly.proto", `
 syntax = "proto3";
 package enumsonly;
 enum Color {
@@ -388,11 +397,11 @@ message Foo { string s = 1; }`)
 // impossible to honor for any proto package containing more than one file.
 func TestGeneratePerSourceFileOutput(t *testing.T) {
 	protoDir := t.TempDir()
-	writeProto(t, protoDir, "common.proto", `
+	writeProto(t, protoDir, "example/v1/common.proto", `
 syntax = "proto3";
 package example.v1;
 message Foo { string name = 1; }`)
-	writeProto(t, protoDir, "types.proto", `
+	writeProto(t, protoDir, "example/v1/types.proto", `
 syntax = "proto3";
 package example.v1;
 import "example/v1/common.proto";
@@ -487,10 +496,10 @@ func mustReadFile(t *testing.T, path string) string {
 // routing the empty file through destFor would be a false positive.
 func TestGenerateEmptyProtoDoesNotTriggerDestinationCollision(t *testing.T) {
 	protoDir := t.TempDir()
-	writeProto(t, protoDir, "empty.proto", `
+	writeProto(t, protoDir, "alpha/empty.proto", `
 syntax = "proto3";
 package alpha;`)
-	writeProto(t, protoDir, "real.proto", `
+	writeProto(t, protoDir, "beta/real.proto", `
 syntax = "proto3";
 package beta;
 option go_package = "github.com/grafana/wiresmith/gen/alpha";
@@ -977,20 +986,20 @@ func TestBuildImportMappingFlat(t *testing.T) {
 	if len(importPaths) != 1 {
 		t.Fatalf("expected 1 import path, got %d", len(importPaths))
 	}
-	// Top-level file uses package-derived key as its canonical path.
-	if _, ok := mapping["test/foo/foo.proto"]; !ok {
+	// A file sitting directly at the root keys by its bare filename
+	// (protoc/buf path-parity), regardless of its proto package.
+	if _, ok := mapping["foo.proto"]; !ok {
 		keys := make([]string, 0, len(mapping))
 		for k := range mapping {
 			keys = append(keys, k)
 		}
 		sort.Strings(keys)
-		t.Errorf("expected key test/foo/foo.proto in mapping, got keys: %v", keys)
+		t.Errorf("expected key foo.proto in mapping, got keys: %v", keys)
 	}
-	// The plain filename must not be registered — doing so would cause
-	// protocompile to compile the same content twice if a consumer imported
-	// it via the basename, producing a duplicate-symbol error.
-	if _, ok := mapping["foo.proto"]; ok {
-		t.Error("plain filename foo.proto should not be aliased; only canonical pkg-derived key should exist")
+	// The proto package must NOT leak into the key: the pre-parity
+	// package-derived form (test/foo/foo.proto) must not be registered.
+	if _, ok := mapping["test/foo/foo.proto"]; ok {
+		t.Error("package-derived key test/foo/foo.proto must not be registered; flat files key by bare filename")
 	}
 }
 
@@ -1040,8 +1049,10 @@ func TestBuildImportMappingMixed(t *testing.T) {
 	if len(importPaths) != 2 {
 		t.Fatalf("expected 2 import paths, got %d: %v", len(importPaths), importPaths)
 	}
-	if _, ok := mapping["mypkg/root.proto"]; !ok {
-		t.Error("expected mypkg/root.proto for top-level file")
+	// Flat file keys by bare filename; nested file by its relative path.
+	// Neither consults the proto package.
+	if _, ok := mapping["root.proto"]; !ok {
+		t.Error("expected root.proto for the file sitting at the root")
 	}
 	if _, ok := mapping["sub/v1/nested.proto"]; !ok {
 		t.Error("expected sub/v1/nested.proto for nested file")
@@ -1061,23 +1072,33 @@ func TestBuildImportMappingNoPackage(t *testing.T) {
 	}
 }
 
-// TestBuildImportMappingDuplicateKey covers the realistic collision: a
-// top-level file's package-derived key collides with a nested file's
-// relative-path key (e.g. top-level foo.proto with `package bar` produces
-// key `bar/foo.proto`, same as a nested file at `bar/foo.proto`).
-func TestBuildImportMappingDuplicateKey(t *testing.T) {
+// TestBuildImportMappingFlatVsNestedDistinct documents the path-parity
+// consequence for what used to be a single-root collision: a flat foo.proto
+// (package bar) and a nested bar/foo.proto once both keyed as bar/foo.proto
+// (the flat file via its package) and were rejected as a duplicate. Under
+// path-parity the flat file keys by its bare filename (foo.proto), so the two
+// now occupy distinct keys and coexist without error. (The genuine
+// same-key-different-file collision is still exercised across roots by
+// TestBuildImportMappingMultiRootCollision.)
+func TestBuildImportMappingFlatVsNestedDistinct(t *testing.T) {
 	dir := t.TempDir()
 	writeProto(t, dir, "foo.proto",
 		"syntax = \"proto3\";\npackage bar;\nmessage Foo {}")
 	writeProto(t, dir, "bar/foo.proto",
-		"syntax = \"proto3\";\npackage bar;\nmessage Foo {}")
+		"syntax = \"proto3\";\npackage bar;\nmessage Nested {}")
 
-	_, _, _, err := buildImportMapping([]string{dir})
-	if err == nil {
-		t.Fatal("expected duplicate-key error, got nil")
+	mapping, importPaths, _, err := buildImportMapping([]string{dir})
+	if err != nil {
+		t.Fatalf("flat and nested files must not collide under path-parity, got: %v", err)
 	}
-	if !strings.Contains(err.Error(), "duplicate import key") {
-		t.Errorf("expected 'duplicate import key' error, got: %v", err)
+	if len(importPaths) != 2 {
+		t.Fatalf("expected 2 distinct import paths, got %d: %v", len(importPaths), importPaths)
+	}
+	if _, ok := mapping["foo.proto"]; !ok {
+		t.Error("expected flat file keyed as foo.proto")
+	}
+	if _, ok := mapping["bar/foo.proto"]; !ok {
+		t.Error("expected nested file keyed as bar/foo.proto")
 	}
 }
 
@@ -1210,12 +1231,10 @@ func TestBuildImportMappingMultiRootSameRootTwice(t *testing.T) {
 // path matching their package.
 func TestBuildImportMappingMultiRootOverlap(t *testing.T) {
 	outer := t.TempDir()
-	// Inner is a subdirectory of outer that itself contains a flat
-	// .proto whose package would yield a key unrelated to the rel
-	// path under outer. Outer sees `inner/foo.proto` as a nested rel
-	// path → key `inner/foo.proto`. Inner sees `foo.proto` as
-	// top-level → key derived from `package mypkg;` → `mypkg/foo.proto`.
-	// Two different keys, one file.
+	// Inner is a subdirectory of outer, so its file is reachable from both
+	// roots under different keys. Outer sees `inner/foo.proto` as a nested
+	// rel path → key `inner/foo.proto`. Inner sees `foo.proto` sitting at its
+	// root → bare key `foo.proto`. Two different keys, one file.
 	inner := filepath.Join(outer, "inner")
 	if err := os.MkdirAll(inner, 0o755); err != nil {
 		t.Fatal(err)
@@ -1232,7 +1251,7 @@ func TestBuildImportMappingMultiRootOverlap(t *testing.T) {
 		t.Errorf("error should call out the overlap reason, got: %v", err)
 	}
 	// Both keys must show up so the user can decide which root to drop.
-	for _, wantKey := range []string{"inner/foo.proto", "mypkg/foo.proto"} {
+	for _, wantKey := range []string{"inner/foo.proto", "foo.proto"} {
 		if !strings.Contains(msg, wantKey) {
 			t.Errorf("error should name the conflicting key %q, got: %v", wantKey, err)
 		}
@@ -1510,20 +1529,19 @@ message Probe { string s = 1; }`)
 	}
 }
 
-// TestGenerateMixedLayoutImport documents the supported import shape for a
-// mixed flat+nested layout: a nested file importing a top-level file must
-// use the top-level's package-derived path (its canonical key), not the
-// plain basename. The plain-basename form fails because protocompile uses
-// the queried path as file identity and would compile the file twice.
+// TestGenerateMixedLayoutImport documents the import shape for a mixed
+// flat+nested layout under path-parity keying: a nested file importing a file
+// that sits directly at the --proto_path root must reference it by its bare
+// filename (its key), not a package-derived path. The package-derived form
+// fails because no file is registered under that key.
 func TestGenerateMixedLayoutImport(t *testing.T) {
 	protoDir := t.TempDir()
-	// Flat common.proto registers under its package-derived key
-	// `testpb/common.proto`; the source-relative output therefore lands at
-	// outDir/testpb/common.pb.go.
+	// common.proto sits at the root, so it keys as `common.proto`; the
+	// source-relative output therefore lands at outDir/common.pb.go.
 	writeProto(t, protoDir, "common.proto",
 		"syntax = \"proto3\";\npackage testpb;\nmessage Resource { string name = 1; }")
 	writeProto(t, protoDir, "testpb/trace/v1/trace.proto",
-		"syntax = \"proto3\";\npackage testpb.trace.v1;\nimport \"testpb/common.proto\";\nmessage Span { testpb.Resource resource = 1; }")
+		"syntax = \"proto3\";\npackage testpb.trace.v1;\nimport \"common.proto\";\nmessage Span { testpb.Resource resource = 1; }")
 
 	outDir := testOutDir(t)
 	gen := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDirs: []string{protoDir}}
@@ -1532,7 +1550,7 @@ func TestGenerateMixedLayoutImport(t *testing.T) {
 	}
 
 	for _, rel := range []string{
-		filepath.Join("testpb", "common.pb.go"),
+		"common.pb.go",
 		filepath.Join("testpb", "trace", "v1", "trace.pb.go"),
 	} {
 		if _, err := os.Stat(filepath.Join(outDir, rel)); err != nil {
@@ -1540,17 +1558,17 @@ func TestGenerateMixedLayoutImport(t *testing.T) {
 		}
 	}
 
-	// The plain-basename form must be rejected: registering both keys for the
-	// same content would cause protocompile to compile it twice and emit a
-	// duplicate-symbol error.
+	// The package-derived form must be rejected: common.proto keys by its bare
+	// filename, so no file is registered under `testpb/common.proto` and the
+	// import cannot resolve.
 	protoDir2 := t.TempDir()
 	writeProto(t, protoDir2, "common.proto",
 		"syntax = \"proto3\";\npackage testpb;\nmessage Resource { string name = 1; }")
 	writeProto(t, protoDir2, "testpb/trace/v1/trace.proto",
-		"syntax = \"proto3\";\npackage testpb.trace.v1;\nimport \"common.proto\";\nmessage Span { testpb.Resource resource = 1; }")
+		"syntax = \"proto3\";\npackage testpb.trace.v1;\nimport \"testpb/common.proto\";\nmessage Span { testpb.Resource resource = 1; }")
 	gen2 := &Generator{Module: "wiresmith", OutDir: testOutDir(t), ProtoDirs: []string{protoDir2}}
 	if err := gen2.Generate(context.Background()); err == nil {
-		t.Error("expected plain-basename import to fail; canonical pkg-derived path is required for cross-imports")
+		t.Error("expected package-derived import to fail; a root-level file resolves only by its bare filename")
 	}
 }
 
@@ -1619,12 +1637,12 @@ func TestGenerateUtilOutputCollision(t *testing.T) {
 // importing files. Output location is independent (always source-relative).
 func TestGenerateWithGoPackage(t *testing.T) {
 	protoDir := t.TempDir()
-	writeProto(t, protoDir, "a.proto", `
+	writeProto(t, protoDir, "myproject/a/a.proto", `
 syntax = "proto3";
 package myproject.a;
 option go_package = "example.com/mod/gen/myproject/a;a";
 message Foo { string name = 1; }`)
-	writeProto(t, protoDir, "b.proto", `
+	writeProto(t, protoDir, "myproject/b/b.proto", `
 syntax = "proto3";
 package myproject.b;
 option go_package = "example.com/mod/gen/myproject/b;b";
@@ -1672,7 +1690,7 @@ message Bar { myproject.a.Foo foo = 1; }`)
 // matches protoc-gen-go's behavior in `paths=source_relative` mode.
 func TestGenerateGoPackageHonoredLiterally(t *testing.T) {
 	protoDir := t.TempDir()
-	writeProto(t, protoDir, "x.proto", `
+	writeProto(t, protoDir, "mytest/x/x.proto", `
 syntax = "proto3";
 package mytest.x;
 option go_package = "some.other/module/pkg";
@@ -1869,7 +1887,7 @@ message Bar { vendored.a.Foo foo = 1; }`)
 // differs from the last component of the import path.
 func TestGenerateGoPackageWithSemicolon(t *testing.T) {
 	protoDir := t.TempDir()
-	writeProto(t, protoDir, "svc.proto", `
+	writeProto(t, protoDir, "myapp/svc/svc.proto", `
 syntax = "proto3";
 package myapp.svc;
 option go_package = "example.com/app/gen/myapp/svc;service";
@@ -2315,14 +2333,14 @@ message Outer {
 func TestGenerateGoPackageShadowsStdlibAlias(t *testing.T) {
 	protoDir := t.TempDir()
 	// fmtish.proto's go_package pkgName is exactly "fmt".
-	writeProto(t, protoDir, "fmtish.proto", `
+	writeProto(t, protoDir, "x/fmtish/fmtish.proto", `
 syntax = "proto3";
 package x.fmtish;
 option go_package = "example.com/mod/gen/x/fmtish;fmt";
 message Sprintf { string s = 1; }`)
 	// use.proto imports fmtish AND triggers stdlib fmt (every generated
 	// file calls fmt.Sprintf in its String() / Reset() helpers).
-	writeProto(t, protoDir, "use.proto", `
+	writeProto(t, protoDir, "y/use/use.proto", `
 syntax = "proto3";
 package y.use;
 import "x/fmtish/fmtish.proto";
@@ -2585,7 +2603,7 @@ message Request {
 // derived from sourceRelDir(fd.Path()) and is `..`-free by construction).
 func TestGenerateOverrideDoesNotEscapeOutDir(t *testing.T) {
 	protoDir := t.TempDir()
-	writeProto(t, protoDir, "x.proto", `
+	writeProto(t, protoDir, "myproject/x/x.proto", `
 syntax = "proto3";
 package myproject.x;
 message Msg { string s = 1; }`)
@@ -2618,7 +2636,7 @@ message Msg { string s = 1; }`)
 // (which then fails loudly at `go build`, matching protoc-gen-go).
 func TestGenerateGoPackageDoesNotEscapeOutDir(t *testing.T) {
 	protoDir := t.TempDir()
-	writeProto(t, protoDir, "evil.proto", `
+	writeProto(t, protoDir, "myproject/evil/evil.proto", `
 syntax = "proto3";
 package myproject.evil;
 option go_package = "example.com/mod/gen/../outside;evil";
@@ -2648,12 +2666,12 @@ message Mal { string s = 1; }`)
 // they would share a directory but disagree on the package clause.
 func TestGenerateGoPackageDuplicateImportPath(t *testing.T) {
 	protoDir := t.TempDir()
-	writeProto(t, protoDir, "a.proto", `
+	writeProto(t, protoDir, "proj/a/a.proto", `
 syntax = "proto3";
 package proj.a;
 option go_package = "example.com/mod/gen/shared;shared";
 message Foo { string s = 1; }`)
-	writeProto(t, protoDir, "b.proto", `
+	writeProto(t, protoDir, "proj/b/b.proto", `
 syntax = "proto3";
 package proj.b;
 option go_package = "example.com/mod/gen/shared;shared";
@@ -2719,12 +2737,12 @@ func TestGenerateGoPackageFallbackAliasMatchesPathBase(t *testing.T) {
 	// NOT match path.Base. To force the bug we'd need the fallback alias
 	// to equal path.Base — instead we just demonstrate the cleaner check:
 	// any time alias != naturalName, the alias is emitted explicitly.
-	writeProto(t, protoDir, "dep.proto", `
+	writeProto(t, protoDir, "x/pkgone/dep.proto", `
 syntax = "proto3";
 package x.pkgone;
 option go_package = "example.com/mod/gen/x/pkgone;myalias";
 message Foo { string s = 1; }`)
-	writeProto(t, protoDir, "use.proto", `
+	writeProto(t, protoDir, "y/use/use.proto", `
 syntax = "proto3";
 package y.use;
 option go_package = "example.com/mod/gen/y/use;myalias";
@@ -2770,14 +2788,14 @@ func TestGenerateGoPackageFallbackAliasElision(t *testing.T) {
 	// Construct a proto package whose proto-derived fallback alias equals
 	// the path.Base of its import path. goPackageName("p.xfoo") = "pxfoo",
 	// so we set the go_package import path to end in `/pxfoo`.
-	writeProto(t, protoDir, "dep.proto", `
+	writeProto(t, protoDir, "p/xfoo/dep.proto", `
 syntax = "proto3";
 package p.xfoo;
 option go_package = "example.com/mod/gen/wrap/pxfoo;myalias";
 message Foo { string s = 1; }`)
 	// Importer also has pkgName "myalias" so dep's pkgName collides with
 	// selfName, forcing the fallback to "pxfoo".
-	writeProto(t, protoDir, "use.proto", `
+	writeProto(t, protoDir, "q/use/use.proto", `
 syntax = "proto3";
 package q.use;
 option go_package = "example.com/mod/gen/q/use;myalias";
