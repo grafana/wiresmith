@@ -287,6 +287,15 @@ func TestGenerateMatchesCheckedIn(t *testing.T) {
 			}
 			for root := range roots {
 				checkedInRoot := filepath.Join(compareRoot, root)
+				// A missing checked-in root means the generator produced a
+				// brand-new top-level package that isn't committed yet. There
+				// is nothing checked-in to be orphaned, and the forward check
+				// above already flags each new file as "has no checked-in
+				// counterpart" — so skip rather than let Walk's ErrNotExist
+				// abort the subtest and mask those actionable per-file errors.
+				if _, err := os.Stat(checkedInRoot); os.IsNotExist(err) {
+					continue
+				}
 				err := filepath.Walk(checkedInRoot, func(path string, info os.FileInfo, err error) error {
 					if err != nil {
 						return err
