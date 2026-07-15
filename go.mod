@@ -1,11 +1,11 @@
 module github.com/grafana/wiresmith
 
-go 1.25.0
+go 1.26.4
 
 require (
 	github.com/bufbuild/protocompile v0.14.1
 	github.com/gogo/protobuf v1.3.2
-	github.com/planetscale/vtprotobuf v0.6.1-0.20250313105119-ba97887b0a25
+	github.com/planetscale/vtprotobuf v0.6.1-0.20260702190614-8ae5a48058df
 	github.com/stretchr/testify v1.11.1
 	go.opentelemetry.io/collector/pdata v1.62.0
 	go.opentelemetry.io/proto/otlp v1.10.0
