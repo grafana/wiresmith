@@ -17,12 +17,20 @@ syntax = "proto3";
 package opentelemetry.proto.resource.v1;
 
 import "opentelemetry/proto/common/v1/common.proto";
+import "wiresmith/options.proto";
 
 option csharp_namespace = "OpenTelemetry.Proto.Resource.V1";
 option java_multiple_files = true;
 option java_package = "io.opentelemetry.proto.resource.v1";
 option java_outer_classname = "ResourceProto";
 option go_package = "go.opentelemetry.io/proto/otlp/resource/v1";
+// Local addition (not upstream OTel): go.opentelemetry.io/proto/otlp registers
+// this same proto package into the official global registry. A binary linking
+// both it and this snapshot (test/differential, test/peer, etc., which compare
+// wiresmith's wire output against the official implementation) panics at init
+// on the duplicate registration. no_registration keeps this snapshot's
+// descriptors package-local instead — see docs/extensions.md.
+option (wiresmith.options.no_registration) = true;
 
 // Resource information.
 message Resource {

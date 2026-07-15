@@ -159,7 +159,7 @@ The generator smoke test (`TestGenerateMatchesCheckedIn`) only checks files that
 
 ## Known issues
 
-- `go test ./...` panics with `proto: file ... is already registered` due to conflicting proto registrations between wiresmith types and official protobuf types (in `test/...`) and between `gen/bench/official`, `gen/bench/vtpb`, and `gen/bench/gogopb` (in `bench/`). Use `GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn go test ./...` to run all tests, or `go test ./compiler/...` for the conflict-free subset.
+- `go test ./bench/...` panics with `proto: file ... is already registered` due to conflicting proto registrations between `gen/bench/official`, `gen/bench/vtpb`, and `gen/bench/gogopb` — three generators independently registering the same `maps.proto` package with the official runtime. Use `GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn go test ./bench/...` (as `make bench`/`make bench-compare` already do), or `go test ./compiler/...` for the conflict-free subset. (The equivalent conflict under `test/...`, between wiresmith's own OTLP snapshot in `gen/opentelemetry/proto/` and `go.opentelemetry.io/proto/otlp`, was fixed by wiresmith-2igz via `(wiresmith.options.no_registration)` on the snapshot's `.proto` files — `go test ./test/...` no longer needs the env var.)
 
 ## Rejected approaches
 
