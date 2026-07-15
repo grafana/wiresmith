@@ -265,28 +265,55 @@ func TestGenerateMatchesCheckedIn(t *testing.T) {
 				t.Fatal("generator produced no files")
 			}
 
-			// Reverse check: for each directory that contains generated files,
-			// verify the matching checked-in directory has no extra .go files
-			// the generator didn't produce. We scope to exact directories
-			// because gen/ also contains protoc-generated files in sibling dirs.
-			genDirs := make(map[string]struct{})
+			// Reverse check: every checked-in .pb.go under the package roots
+			// this case is responsible for must have been produced by the
+			// generator. We scope to the top-level roots that actually
+			// appeared in the generated output (e.g. "opentelemetry",
+			// "basic") rather than the exact directories that received files,
+			// because a per-directory scope silently passes when the
+			// generator drops an *entire* package directory (e.g.
+			// gen/basic/oneof/v1): the dropped dir never shows up in the
+			// generated set, so a per-dir loop never inspects it. Walking the
+			// whole root catches those orphaned files. Scoping to the
+			// case's own roots keeps us clear of protoc-generated siblings
+			// (gen/vtpb, gen/gogopb, gen/bench, ...).
+			roots := make(map[string]struct{})
 			for rel := range generatedFiles {
-				genDirs[filepath.Dir(rel)] = struct{}{}
-			}
-			for dir := range genDirs {
-				checkedInDir := filepath.Join(compareRoot, dir)
-				entries, err := os.ReadDir(checkedInDir)
-				if err != nil {
-					t.Fatalf("reading checked-in directory %s: %v", dir, err)
+				root := rel
+				if i := strings.IndexByte(rel, filepath.Separator); i >= 0 {
+					root = rel[:i]
 				}
-				for _, e := range entries {
-					if e.IsDir() || !strings.HasSuffix(e.Name(), ".pb.go") {
-						continue
+				roots[root] = struct{}{}
+			}
+			for root := range roots {
+				checkedInRoot := filepath.Join(compareRoot, root)
+				// A missing checked-in root means the generator produced a
+				// brand-new top-level package that isn't committed yet. There
+				// is nothing checked-in to be orphaned, and the forward check
+				// above already flags each new file as "has no checked-in
+				// counterpart" — so skip rather than let Walk's ErrNotExist
+				// abort the subtest and mask those actionable per-file errors.
+				if _, err := os.Stat(checkedInRoot); os.IsNotExist(err) {
+					continue
+				}
+				err := filepath.Walk(checkedInRoot, func(path string, info os.FileInfo, err error) error {
+					if err != nil {
+						return err
 					}
-					rel := filepath.Join(dir, e.Name())
+					if info.IsDir() || !strings.HasSuffix(info.Name(), ".pb.go") {
+						return nil
+					}
+					rel, err := filepath.Rel(compareRoot, path)
+					if err != nil {
+						return err
+					}
 					if _, ok := generatedFiles[rel]; !ok {
 						t.Errorf("checked-in %s was not generated; run 'make generate-ours'", rel)
 					}
+					return nil
+				})
+				if err != nil {
+					t.Fatalf("walking checked-in root %s: %v", root, err)
 				}
 			}
 		})
