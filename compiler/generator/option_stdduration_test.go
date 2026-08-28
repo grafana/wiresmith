@@ -1,6 +1,9 @@
 package generator
 
 import (
+	"context"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -96,8 +99,16 @@ message M {
 	expectInvalidStdDuration(t, err, "not supported on oneof variants")
 }
 
-func TestStdDurationOption_RejectsOptional(t *testing.T) {
-	err := runGenerator(t, `
+// TestStdDurationOption_AcceptsOptional mirrors
+// TestStdtimeOption_AcceptsOptional: proto3 `optional` + stdduration
+// produces a `*time.Duration` struct field, with presence carried by the
+// pointer rather than the `time.Duration(0)` sentinel the non-optional
+// StdDurationType uses.
+func TestStdDurationOption_AcceptsOptional(t *testing.T) {
+	protoDir := t.TempDir()
+	outDir := testOutDir(t)
+
+	const body = `
 syntax = "proto3";
 package test.v1;
 option go_package = "wiresmith/gen/test/v1";
@@ -106,8 +117,23 @@ import "google/protobuf/duration.proto";
 message M {
   optional google.protobuf.Duration x = 1 [(wiresmith.options.stdduration) = true];
 }
-`)
-	expectInvalidStdDuration(t, err, "not supported on proto3 `optional` fields")
+`
+	writeProto(t, protoDir, "test/v1/test.proto", body)
+
+	g := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDirs: []string{protoDir}}
+	if err := g.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate failed: %v", err)
+	}
+
+	out := filepath.Join(outDir, "test", "v1", "test.pb.go")
+	contents, err := os.ReadFile(out)
+	if err != nil {
+		t.Fatalf("expected generated file at %s: %v", out, err)
+	}
+	src := string(contents)
+	if !strings.Contains(src, "X *time.Duration") {
+		t.Errorf("expected `X *time.Duration` in struct, got:\n%s", src)
+	}
 }
 
 func TestStdDurationOption_RejectsMap(t *testing.T) {

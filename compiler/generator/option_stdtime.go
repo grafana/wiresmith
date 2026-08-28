@@ -36,13 +36,17 @@ func (o *stdtimeOption) Has(fd protoreflect.FieldDescriptor) bool {
 
 // Validate rejects invalid placements of stdtime.
 //
-// v1 scope: only singular `google.protobuf.Timestamp` message fields.
-// Map, oneof, repeated, proto3 `optional`, non-Timestamp messages, scalar
+// v1 scope: singular or proto3-`optional` `google.protobuf.Timestamp`
+// message fields. Map, oneof, repeated, non-Timestamp messages, scalar
 // kinds, and the combination with `(wiresmith.options.pointer) = true` are
 // all rejected. The pointer combo gets a dedicated message rather than the
 // fallback "not a Timestamp" — both options live on the same field but
 // produce conflicting Go shapes (`*time.Time` vs `time.Time`), and
-// silencing one would erase a user-meaningful intent.
+// silencing one would erase a user-meaningful intent. Optional and pointer
+// are not mutually exclusive with each other, but pointer never applies to
+// an `optional` field in the first place (pointer's own Validate rejects
+// that combination), so the only stdtime-vs-pointer conflict left to catch
+// here is the non-optional case.
 func (o *stdtimeOption) Validate(g *Generator, results []protoreflect.FileDescriptor) error {
 	if o.ext == nil {
 		return nil
@@ -65,28 +69,37 @@ func (o *stdtimeOption) Validate(g *Generator, results []protoreflect.FileDescri
 	return combinedOptionError(stdtimeExtensionName, "placement", errs)
 }
 
-// FieldType returns a StdtimeType wrapper when the field is annotated AND
-// is a singular google.protobuf.Timestamp. Registers the "time" import as
-// a side effect — same idempotent shape as GoFieldType, since the struct-
-// field declaration and the Size/Marshal/Unmarshal emitters need the same
-// import set and either path may run first.
+// FieldType returns a StdtimeType (or OptionalStdtimeType, for a proto3
+// `optional` field) wrapper when the field is annotated AND is a Timestamp.
+// Registers the "time" import as a side effect — same idempotent shape as
+// GoFieldType, since the struct-field declaration and the
+// Size/Marshal/Unmarshal emitters need the same import set and either path
+// may run first.
 func (o *stdtimeOption) FieldType(fg *FileGenerator, fd protoreflect.FieldDescriptor) (types.FieldType, bool) {
 	if !o.applies(fd) {
 		return nil, false
 	}
 	fg.imports.addImport("time", "")
+	if fd.HasOptionalKeyword() {
+		return &types.OptionalStdtimeType{}, true
+	}
 	return &types.StdtimeType{}, true
 }
 
 // GoFieldType returns "time.Time" for stdtime-annotated singular Timestamp
-// fields. validateStdtime has rejected every other placement, so the
-// kind/shape guards here are defensive against direct descriptor
-// construction in tests.
+// fields, or "*time.Time" for a proto3 `optional` one — matching the
+// pointer shape ImportTracker.goOptionalType would have produced for a
+// plain optional message field. validateStdtime has rejected every other
+// placement, so the kind/shape guards here are defensive against direct
+// descriptor construction in tests.
 func (o *stdtimeOption) GoFieldType(fg *FileGenerator, fd protoreflect.FieldDescriptor) (string, bool) {
 	if !o.applies(fd) {
 		return "", false
 	}
 	fg.imports.addImport("time", "")
+	if fd.HasOptionalKeyword() {
+		return "*time.Time", true
+	}
 	return "time.Time", true
 }
 
@@ -103,7 +116,7 @@ func (o *stdtimeOption) applies(fd protoreflect.FieldDescriptor) bool {
 	if string(fd.Message().FullName()) != timestampMessageFullName {
 		return false
 	}
-	if fd.IsMap() || fd.IsList() || fd.HasOptionalKeyword() || isRealOneof(fd) {
+	if fd.IsMap() || fd.IsList() || isRealOneof(fd) {
 		return false
 	}
 	return true
@@ -125,9 +138,6 @@ func stdtimeOptionRejection(pointerOpt *pointerOption, fd protoreflect.FieldDesc
 	}
 	if fd.IsList() {
 		return "(wiresmith.options.stdtime) is not supported on repeated fields (v1 scope)"
-	}
-	if fd.HasOptionalKeyword() {
-		return "(wiresmith.options.stdtime) is not supported on proto3 `optional` fields (v1 scope)"
 	}
 	if pointerOpt != nil && pointerOpt.Has(fd) {
 		return "(wiresmith.options.stdtime) cannot combine with (wiresmith.options.pointer) — pick one"

@@ -508,6 +508,9 @@ func (g *Generator) generateFromFiles(results []protoreflect.FileDescriptor, emi
 			return nil, err
 		}
 	}
+	if err := g.validateWellKnownFields(results); err != nil {
+		return nil, err
+	}
 	if err := g.resolveJsontagExtension(results); err != nil {
 		return nil, err
 	}

@@ -92,9 +92,17 @@ extend google.protobuf.FieldOptions {
   // value as `time.Time{}` and round-trips as an explicit empty Timestamp
   // payload.
   //
-  // v1 scope: only valid on singular `google.protobuf.Timestamp` fields.
-  // Map, oneof, repeated, optional, and (wiresmith.options.pointer) are
-  // rejected — they need separate plumbing and are tracked in follow-up beads.
+  // v1 scope: valid on singular OR proto3-`optional`
+  // `google.protobuf.Timestamp` fields. On an `optional` field the Go type
+  // is `*time.Time` instead of `time.Time`, and presence is the pointer
+  // (real optional semantics, with a normal Has<Name>() accessor) rather
+  // than the IsZero() sentinel described above — this is the shape
+  // client_model-style protos need (e.g. Prometheus's
+  // `optional google.protobuf.Timestamp created_timestamp`), where the Go
+  // zero time must be distinguishable from "unset".
+  //
+  // Map, oneof, repeated, and (wiresmith.options.pointer) are rejected —
+  // they need separate plumbing and are tracked in follow-up beads.
   optional bool stdtime = 50034;
 
   // stdduration = true emits a `google.protobuf.Duration` field as a stdlib
@@ -118,9 +126,12 @@ extend google.protobuf.FieldOptions {
   // proto Duration can express up to ~10000 years while time.Duration tops
   // out at ~292 years (int64 nanoseconds).
   //
-  // v1 scope: only valid on singular `google.protobuf.Duration` fields.
-  // Map, oneof, repeated, optional, and (wiresmith.options.pointer) are
-  // rejected — same shape as stdtime.
+  // v1 scope: valid on singular OR proto3-`optional`
+  // `google.protobuf.Duration` fields — same shape as stdtime, including
+  // the optional-field `*time.Duration` / real-presence behavior.
+  //
+  // Map, oneof, repeated, and (wiresmith.options.pointer) are rejected —
+  // same shape as stdtime.
   optional bool stdduration = 50035;
 
   // casttype = "MyAlias" overrides the generated Go field type name

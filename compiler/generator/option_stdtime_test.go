@@ -1,6 +1,9 @@
 package generator
 
 import (
+	"context"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -79,8 +82,17 @@ message M {
 	expectInvalidStdtime(t, err, "not supported on oneof variants")
 }
 
-func TestStdtimeOption_RejectsOptional(t *testing.T) {
-	err := runGenerator(t, `
+// TestStdtimeOption_AcceptsOptional locks down proto3 `optional` +
+// stdtime — the shape client_model-style protos need (e.g.
+// `optional google.protobuf.Timestamp created_timestamp`): the struct field
+// is `*time.Time` rather than the non-optional `time.Time`, so presence is
+// carried by the pointer (nil vs non-nil) instead of the Go-zero-time
+// sentinel. Mirrors TestPointerOption_AcceptsMessage's on-disk-output shape.
+func TestStdtimeOption_AcceptsOptional(t *testing.T) {
+	protoDir := t.TempDir()
+	outDir := testOutDir(t)
+
+	const body = `
 syntax = "proto3";
 package test.v1;
 option go_package = "wiresmith/gen/test/v1";
@@ -89,8 +101,23 @@ import "google/protobuf/timestamp.proto";
 message M {
   optional google.protobuf.Timestamp x = 1 [(wiresmith.options.stdtime) = true];
 }
-`)
-	expectInvalidStdtime(t, err, "not supported on proto3 `optional` fields")
+`
+	writeProto(t, protoDir, "test/v1/test.proto", body)
+
+	g := &Generator{Module: "wiresmith", OutDir: outDir, ProtoDirs: []string{protoDir}}
+	if err := g.Generate(context.Background()); err != nil {
+		t.Fatalf("Generate failed: %v", err)
+	}
+
+	out := filepath.Join(outDir, "test", "v1", "test.pb.go")
+	contents, err := os.ReadFile(out)
+	if err != nil {
+		t.Fatalf("expected generated file at %s: %v", out, err)
+	}
+	src := string(contents)
+	if !strings.Contains(src, "X *time.Time") {
+		t.Errorf("expected `X *time.Time` in struct, got:\n%s", src)
+	}
 }
 
 func TestStdtimeOption_RejectsMap(t *testing.T) {

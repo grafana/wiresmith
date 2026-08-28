@@ -36,8 +36,8 @@ func (o *stddurationOption) Has(fd protoreflect.FieldDescriptor) bool {
 
 // Validate rejects invalid placements of stdduration.
 //
-// v1 scope: only singular `google.protobuf.Duration` message fields.
-// Map, oneof, repeated, proto3 `optional`, non-Duration messages, scalar
+// v1 scope: singular or proto3-`optional` `google.protobuf.Duration`
+// message fields. Map, oneof, repeated, non-Duration messages, scalar
 // kinds, and the combination with `(wiresmith.options.pointer) = true`
 // are all rejected. Mirrors stdtime's validation list.
 func (o *stddurationOption) Validate(g *Generator, results []protoreflect.FileDescriptor) error {
@@ -62,28 +62,37 @@ func (o *stddurationOption) Validate(g *Generator, results []protoreflect.FileDe
 	return combinedOptionError(stddurationExtensionName, "placement", errs)
 }
 
-// FieldType returns a StdDurationType wrapper when the field is annotated
-// AND is a singular google.protobuf.Duration. Registers the "time" import
-// as a side effect — same idempotent shape as GoFieldType, since the
-// struct-field declaration and the Size/Marshal/Unmarshal emitters need
-// the same import set and either path may run first.
+// FieldType returns a StdDurationType (or OptionalStdDurationType, for a
+// proto3 `optional` field) wrapper when the field is annotated AND is a
+// Duration. Registers the "time" import as a side effect — same idempotent
+// shape as GoFieldType, since the struct-field declaration and the
+// Size/Marshal/Unmarshal emitters need the same import set and either path
+// may run first.
 func (o *stddurationOption) FieldType(fg *FileGenerator, fd protoreflect.FieldDescriptor) (types.FieldType, bool) {
 	if !o.applies(fd) {
 		return nil, false
 	}
 	fg.imports.addImport("time", "")
+	if fd.HasOptionalKeyword() {
+		return &types.OptionalStdDurationType{}, true
+	}
 	return &types.StdDurationType{}, true
 }
 
 // GoFieldType returns "time.Duration" for stdduration-annotated singular
-// Duration fields. Validate has rejected every other placement, so the
-// kind/shape guards in applies() are defensive against direct descriptor
-// construction in tests.
+// Duration fields, or "*time.Duration" for a proto3 `optional` one —
+// matching the pointer shape ImportTracker.goOptionalType would have
+// produced for a plain optional message field. Validate has rejected every
+// other placement, so the kind/shape guards in applies() are defensive
+// against direct descriptor construction in tests.
 func (o *stddurationOption) GoFieldType(fg *FileGenerator, fd protoreflect.FieldDescriptor) (string, bool) {
 	if !o.applies(fd) {
 		return "", false
 	}
 	fg.imports.addImport("time", "")
+	if fd.HasOptionalKeyword() {
+		return "*time.Duration", true
+	}
 	return "time.Duration", true
 }
 
@@ -100,7 +109,7 @@ func (o *stddurationOption) applies(fd protoreflect.FieldDescriptor) bool {
 	if string(fd.Message().FullName()) != durationMessageFullName {
 		return false
 	}
-	if fd.IsMap() || fd.IsList() || fd.HasOptionalKeyword() || isRealOneof(fd) {
+	if fd.IsMap() || fd.IsList() || isRealOneof(fd) {
 		return false
 	}
 	return true
@@ -122,9 +131,6 @@ func stddurationOptionRejection(pointerOpt *pointerOption, fd protoreflect.Field
 	}
 	if fd.IsList() {
 		return "(wiresmith.options.stdduration) is not supported on repeated fields (v1 scope)"
-	}
-	if fd.HasOptionalKeyword() {
-		return "(wiresmith.options.stdduration) is not supported on proto3 `optional` fields (v1 scope)"
 	}
 	if pointerOpt != nil && pointerOpt.Has(fd) {
 		return "(wiresmith.options.stdduration) cannot combine with (wiresmith.options.pointer) — pick one"
