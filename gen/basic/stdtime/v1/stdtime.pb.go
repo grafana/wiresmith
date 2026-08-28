@@ -25,6 +25,15 @@ type StdtimeHolder struct {
 	Version uint64 `protobuf:"varint,2,opt,name=version,proto3" json:"version,omitempty"`
 	// Generated Go: Created time.Time
 	Created time.Time `protobuf:"bytes,3,opt,name=created,proto3" json:"created,omitempty"`
+	// proto3 `optional` + stdtime: presence is the pointer (nil vs non-nil),
+	// not the Go-zero-time sentinel `created` above relies on. This is the
+	// shape client_model-style protos need (e.g. Prometheus's
+	// `optional google.protobuf.Timestamp created_timestamp`), where the
+	// caller must be able to distinguish "never set" from "explicitly set to
+	// the zero instant".
+	//
+	// Generated Go: CreatedOpt *time.Time
+	CreatedOpt *time.Time `protobuf:"bytes,4,opt,name=created_opt,json=createdOpt,proto3,oneof" json:"created_opt,omitempty"`
 
 	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
@@ -43,6 +52,13 @@ type StdDurationHolder struct {
 	Retries uint32 `protobuf:"varint,2,opt,name=retries,proto3" json:"retries,omitempty"`
 	// Generated Go: Lookback time.Duration
 	Lookback time.Duration `protobuf:"bytes,3,opt,name=lookback,proto3" json:"lookback,omitempty"`
+	// proto3 `optional` + stdduration: presence is the pointer, not the
+	// `time.Duration(0)` sentinel `lookback` above relies on — lets a caller
+	// distinguish "explicitly zero" from "unset", which plain
+	// StdDurationType cannot do.
+	//
+	// Generated Go: LookbackOpt *time.Duration
+	LookbackOpt *time.Duration `protobuf:"bytes,4,opt,name=lookback_opt,json=lookbackOpt,proto3,oneof" json:"lookback_opt,omitempty"`
 
 	XXX_fieldsPresent [1]uint64 `json:"-"`
 }
@@ -77,6 +93,10 @@ func (m *StdtimeHolder) HasVersion() bool {
 	return m.XXX_fieldsPresent[0]&(1<<1) != 0
 }
 
+func (m *StdtimeHolder) HasCreatedOpt() bool {
+	return m != nil && m.CreatedOpt != nil
+}
+
 func (m *StdDurationHolder) HasName() bool {
 	if m == nil {
 		return false
@@ -89,6 +109,10 @@ func (m *StdDurationHolder) HasRetries() bool {
 		return false
 	}
 	return m.XXX_fieldsPresent[0]&(1<<1) != 0
+}
+
+func (m *StdDurationHolder) HasLookbackOpt() bool {
+	return m != nil && m.LookbackOpt != nil
 }
 
 func (m *StdtimeHolder) GetName() string {
@@ -112,6 +136,13 @@ func (m *StdtimeHolder) GetCreated() time.Time {
 	return time.Time{}
 }
 
+func (m *StdtimeHolder) GetCreatedOpt() *time.Time {
+	if m != nil {
+		return m.CreatedOpt
+	}
+	return nil
+}
+
 func (m *StdDurationHolder) GetName() string {
 	if m != nil {
 		return m.Name
@@ -133,6 +164,13 @@ func (m *StdDurationHolder) GetLookback() time.Duration {
 	return 0
 }
 
+func (m *StdDurationHolder) GetLookbackOpt() *time.Duration {
+	if m != nil {
+		return m.LookbackOpt
+	}
+	return nil
+}
+
 func (m *StdtimeHolder) Size() int {
 	if m == nil {
 		return 0
@@ -146,6 +184,10 @@ func (m *StdtimeHolder) Size() int {
 	}
 	if !m.Created.IsZero() {
 		inner := protohelpers.SizeStdTime(m.Created)
+		n += 1 + protowire.SizeVarint(uint64(inner)) + inner
+	}
+	if m.CreatedOpt != nil {
+		inner := protohelpers.SizeStdTimeAlways(*m.CreatedOpt)
 		n += 1 + protowire.SizeVarint(uint64(inner)) + inner
 	}
 	return n
@@ -164,6 +206,10 @@ func (m *StdDurationHolder) Size() int {
 	}
 	if m.Lookback != 0 {
 		inner := protohelpers.SizeStdDuration(m.Lookback)
+		n += 1 + protowire.SizeVarint(uint64(inner)) + inner
+	}
+	if m.LookbackOpt != nil {
+		inner := protohelpers.SizeStdDuration(*m.LookbackOpt)
 		n += 1 + protowire.SizeVarint(uint64(inner)) + inner
 	}
 	return n
@@ -198,6 +244,14 @@ func (m *StdtimeHolder) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		return 0, nil
 	}
 	i := len(dAtA)
+	if m.CreatedOpt != nil {
+		start := i
+		i = protohelpers.EncodeStdTime(dAtA, i, *m.CreatedOpt)
+		inner := start - i
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(inner))
+		i--
+		dAtA[i] = 0x22
+	}
 	if !m.Created.IsZero() {
 		start := i
 		i = protohelpers.EncodeStdTime(dAtA, i, m.Created)
@@ -255,6 +309,14 @@ func (m *StdDurationHolder) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		return 0, nil
 	}
 	i := len(dAtA)
+	if m.LookbackOpt != nil {
+		start := i
+		i = protohelpers.EncodeStdDuration(dAtA, i, *m.LookbackOpt)
+		inner := start - i
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(inner))
+		i--
+		dAtA[i] = 0x22
+	}
 	if m.Lookback != 0 {
 		start := i
 		i = protohelpers.EncodeStdDuration(dAtA, i, m.Lookback)
@@ -451,6 +513,55 @@ func (m *StdtimeHolder) unmarshal(dAtA []byte, depth int) error {
 			}
 			m.Created = stdtimeVal
 			iNdEx = postIndex
+		case 4: // created_opt
+			if wireType != 2 {
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
+				if err != nil {
+					return err
+				}
+				iNdEx += n
+				continue
+			}
+			var byteLen uint64
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
+				iNdEx++
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
+				}
+			}
+			if byteLen > uint64(math.MaxInt) {
+				return io.ErrUnexpectedEOF
+			}
+			intByteLen := int(byteLen)
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			stdtimeVal, err := protohelpers.DecodeStdTime(dAtA[iNdEx:postIndex])
+			if err != nil {
+				return err
+			}
+			m.CreatedOpt = &stdtimeVal
+			iNdEx = postIndex
 		default:
 			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
 			if err != nil {
@@ -632,6 +743,55 @@ func (m *StdDurationHolder) unmarshal(dAtA []byte, depth int) error {
 				return err
 			}
 			m.Lookback = stddurationVal
+			iNdEx = postIndex
+		case 4: // lookback_opt
+			if wireType != 2 {
+				n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)
+				if err != nil {
+					return err
+				}
+				iNdEx += n
+				continue
+			}
+			var byteLen uint64
+			if iNdEx < l && dAtA[iNdEx] < 0x80 {
+				byteLen = uint64(dAtA[iNdEx])
+				iNdEx++
+			} else {
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return fmt.Errorf("proto: integer overflow")
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						if shift == 63 && b > 1 {
+							return fmt.Errorf("proto: varint overflow")
+						}
+						break
+					}
+				}
+			}
+			if byteLen > uint64(math.MaxInt) {
+				return io.ErrUnexpectedEOF
+			}
+			intByteLen := int(byteLen)
+			postIndex := iNdEx + intByteLen
+			if postIndex < 0 {
+				return fmt.Errorf("proto: negative length")
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			stddurationVal, err := protohelpers.DecodeStdDuration(dAtA[iNdEx:postIndex])
+			if err != nil {
+				return err
+			}
+			m.LookbackOpt = &stddurationVal
 			iNdEx = postIndex
 		default:
 			n, err := protohelpers.SkipValue(dAtA[iNdEx:], wireType, fieldNum)

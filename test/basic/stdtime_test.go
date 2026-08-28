@@ -204,3 +204,80 @@ func TestStdtime_GetterOnNilReceiver(t *testing.T) {
 	assert.Empty(t, m.GetName())
 	assert.Zero(t, m.GetVersion())
 }
+
+// TestStdtimeOptional_FieldTypeIsPointerTimeTime pins the struct field type
+// for the proto3-`optional` + stdtime combination — client_model's
+// `optional google.protobuf.Timestamp created_timestamp` shape.
+func TestStdtimeOptional_FieldTypeIsPointerTimeTime(t *testing.T) {
+	f, ok := reflect.TypeFor[st.StdtimeHolder]().FieldByName("CreatedOpt")
+	require.True(t, ok, "field CreatedOpt missing")
+	assert.Equal(t, "*time.Time", f.Type.String())
+}
+
+// TestStdtimeOptional_UnsetIsAbsent locks down real proto3 optional
+// presence: a nil CreatedOpt has HasCreatedOpt() == false and marshals to
+// zero bytes — unlike the non-optional Created (TestStdtime_ZeroIsAbsent),
+// there is no sentinel value here; absence is the nil pointer itself.
+func TestStdtimeOptional_UnsetIsAbsent(t *testing.T) {
+	src := &st.StdtimeHolder{Name: "no-time"}
+	assert.False(t, src.HasCreatedOpt())
+	b, err := src.Marshal()
+	require.NoError(t, err)
+	want := []byte{0x0a, 0x07, 'n', 'o', '-', 't', 'i', 'm', 'e'}
+	assert.Equal(t, want, b, "unset CreatedOpt must not emit a tag")
+
+	dst := &st.StdtimeHolder{}
+	require.NoError(t, dst.Unmarshal(b))
+	assert.False(t, dst.HasCreatedOpt())
+	assert.Nil(t, dst.CreatedOpt)
+}
+
+// TestStdtimeOptional_ExplicitZeroIsPresent is the key contrast with the
+// non-optional stdtime contract: a Go-zero `time.Time{}` explicitly SET
+// (via a non-nil pointer) must round-trip as present — this is exactly the
+// distinction (unset vs "the zero instant") that the non-optional
+// StdtimeType cannot make (TestStdtime_ZeroIsAbsent), and the whole reason
+// to reach for `optional` here.
+func TestStdtimeOptional_ExplicitZeroIsPresent(t *testing.T) {
+	zero := time.Time{}
+	src := &st.StdtimeHolder{CreatedOpt: &zero}
+	require.True(t, src.HasCreatedOpt())
+
+	b, err := src.Marshal()
+	require.NoError(t, err)
+	require.NotEmpty(t, b, "an explicitly-set zero time must still emit a tag")
+
+	dst := &st.StdtimeHolder{}
+	require.NoError(t, dst.Unmarshal(b))
+	require.True(t, dst.HasCreatedOpt())
+	assert.True(t, dst.CreatedOpt.Equal(zero))
+}
+
+// TestStdtimeOptional_RoundTrip exercises a representative instant through
+// the shared roundTrip helper (Marshal/Unmarshal/Equal/Compare all agree).
+func TestStdtimeOptional_RoundTrip(t *testing.T) {
+	instant := time.Date(2026, 6, 3, 12, 30, 45, 123456789, time.UTC)
+	src := &st.StdtimeHolder{Name: "snapshot", CreatedOpt: &instant}
+	roundTrip(t, src)
+}
+
+// TestStdtimeOptional_Clone pins that Clone reallocates a fresh pointee
+// rather than aliasing the source's *time.Time.
+func TestStdtimeOptional_Clone(t *testing.T) {
+	instant := time.Date(2026, 6, 3, 12, 30, 45, 0, time.UTC)
+	src := &st.StdtimeHolder{CreatedOpt: &instant}
+	clone := src.Clone()
+	require.True(t, clone.Equal(src))
+	assert.NotSame(t, src.CreatedOpt, clone.CreatedOpt, "Clone must not alias the pointee")
+
+	var nilSrc *st.StdtimeHolder
+	assert.Nil(t, nilSrc.Clone())
+}
+
+// TestStdtimeOptional_GetterOnNilReceiver mirrors
+// TestStdtime_GetterOnNilReceiver for the optional field: nil receiver
+// returns nil, not a zero time.Time (the field is already a pointer).
+func TestStdtimeOptional_GetterOnNilReceiver(t *testing.T) {
+	var m *st.StdtimeHolder
+	assert.Nil(t, m.GetCreatedOpt())
+}

@@ -196,6 +196,25 @@ func (fg *FileGenerator) emitOneofVariantGetter(md protoreflect.MessageDescripto
 // For scalar and enum fields, it returns the dereferenced value or the zero value if unset.
 // For message and bytes fields, it returns the stored pointer/slice value, or nil if unset.
 func (fg *FileGenerator) emitOptionalGetter(typeName string, fd protoreflect.FieldDescriptor, goName string) {
+	// Optional Timestamp/Duration with stdtime/stdduration surface as
+	// *time.Time / *time.Duration rather than the natural *Msg shape — check
+	// before the generic MessageKind branch below, which would otherwise
+	// call goSingularType(fd) and return the wrong (unsubstituted) message
+	// type. stdtimeGoFieldType/stdDurationGoFieldType already return the
+	// pointer-inclusive form ("*time.Time") for an optional field, so it's
+	// used directly as the getter's return type with no extra "*".
+	if stdType, ok := fg.stdtimeGoFieldType(fd); ok {
+		fmt.Fprintf(fg.body, "func (m *%s) Get%s() %s {\n", typeName, goName, stdType)
+		fmt.Fprintf(fg.body, "\tif m != nil {\n\t\treturn m.%s\n\t}\n", goName)
+		fmt.Fprintf(fg.body, "\treturn nil\n}\n\n")
+		return
+	}
+	if stdType, ok := fg.stdDurationGoFieldType(fd); ok {
+		fmt.Fprintf(fg.body, "func (m *%s) Get%s() %s {\n", typeName, goName, stdType)
+		fmt.Fprintf(fg.body, "\tif m != nil {\n\t\treturn m.%s\n\t}\n", goName)
+		fmt.Fprintf(fg.body, "\treturn nil\n}\n\n")
+		return
+	}
 	if fd.Kind() == protoreflect.MessageKind {
 		msgType := fg.imports.goSingularType(fd)
 		fmt.Fprintf(fg.body, "func (m *%s) Get%s() *%s {\n", typeName, goName, msgType)

@@ -50,6 +50,12 @@ func (this *StdtimeHolder) Equal(that interface{}) bool {
 	if !this.Created.Equal(that1.Created) {
 		return false
 	}
+	if (this.CreatedOpt == nil) != (that1.CreatedOpt == nil) {
+		return false
+	}
+	if this.CreatedOpt != nil && !this.CreatedOpt.Equal(*that1.CreatedOpt) {
+		return false
+	}
 	return true
 }
 
@@ -79,6 +85,12 @@ func (this *StdDurationHolder) Equal(that interface{}) bool {
 		return false
 	}
 	if this.Lookback != that1.Lookback {
+		return false
+	}
+	if (this.LookbackOpt == nil) != (that1.LookbackOpt == nil) {
+		return false
+	}
+	if this.LookbackOpt != nil && *this.LookbackOpt != *that1.LookbackOpt {
 		return false
 	}
 	return true
@@ -124,6 +136,17 @@ func (this *StdtimeHolder) Compare(that interface{}) int {
 	if c := this.Created.Compare(that1.Created); c != 0 {
 		return c
 	}
+	if (this.CreatedOpt == nil) != (that1.CreatedOpt == nil) {
+		if this.CreatedOpt == nil {
+			return -1
+		}
+		return 1
+	}
+	if this.CreatedOpt != nil {
+		if c := this.CreatedOpt.Compare(*that1.CreatedOpt); c != 0 {
+			return c
+		}
+	}
 	return 0
 }
 
@@ -168,6 +191,19 @@ func (this *StdDurationHolder) Compare(that interface{}) int {
 		return -1
 	} else if this.Lookback > that1.Lookback {
 		return 1
+	}
+	if (this.LookbackOpt == nil) != (that1.LookbackOpt == nil) {
+		if this.LookbackOpt == nil {
+			return -1
+		}
+		return 1
+	}
+	if this.LookbackOpt != nil {
+		if *this.LookbackOpt < *that1.LookbackOpt {
+			return -1
+		} else if *this.LookbackOpt > *that1.LookbackOpt {
+			return 1
+		}
 	}
 	return 0
 }

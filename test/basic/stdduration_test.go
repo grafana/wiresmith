@@ -180,3 +180,74 @@ func TestStdDuration_GetterOnNilReceiver(t *testing.T) {
 	assert.Empty(t, m.GetName())
 	assert.Zero(t, m.GetRetries())
 }
+
+// TestStdDurationOptional_FieldTypeIsPointerTimeDuration pins the struct
+// field type for the proto3-`optional` + stdduration combination.
+func TestStdDurationOptional_FieldTypeIsPointerTimeDuration(t *testing.T) {
+	f, ok := reflect.TypeFor[st.StdDurationHolder]().FieldByName("LookbackOpt")
+	require.True(t, ok, "field LookbackOpt missing")
+	assert.Equal(t, "*time.Duration", f.Type.String())
+}
+
+// TestStdDurationOptional_UnsetIsAbsent locks down real proto3 optional
+// presence: a nil LookbackOpt has HasLookbackOpt() == false and marshals to
+// zero bytes.
+func TestStdDurationOptional_UnsetIsAbsent(t *testing.T) {
+	src := &st.StdDurationHolder{Name: "no-duration"}
+	assert.False(t, src.HasLookbackOpt())
+	b, err := src.Marshal()
+	require.NoError(t, err)
+	want := []byte{0x0a, 0x0b, 'n', 'o', '-', 'd', 'u', 'r', 'a', 't', 'i', 'o', 'n'}
+	assert.Equal(t, want, b, "unset LookbackOpt must not emit a tag")
+
+	dst := &st.StdDurationHolder{}
+	require.NoError(t, dst.Unmarshal(b))
+	assert.False(t, dst.HasLookbackOpt())
+	assert.Nil(t, dst.LookbackOpt)
+}
+
+// TestStdDurationOptional_ExplicitZeroIsPresent is the key contrast with
+// the non-optional stdduration contract: `time.Duration(0)` explicitly SET
+// (via a non-nil pointer) must round-trip as present — the distinction
+// plain StdDurationType documents that it cannot make
+// (TestStdDuration_ZeroIsAbsent), and the reason to reach for `optional`.
+func TestStdDurationOptional_ExplicitZeroIsPresent(t *testing.T) {
+	zero := time.Duration(0)
+	src := &st.StdDurationHolder{LookbackOpt: &zero}
+	require.True(t, src.HasLookbackOpt())
+
+	b, err := src.Marshal()
+	require.NoError(t, err)
+	require.NotEmpty(t, b, "an explicitly-set zero duration must still emit a tag")
+
+	dst := &st.StdDurationHolder{}
+	require.NoError(t, dst.Unmarshal(b))
+	require.True(t, dst.HasLookbackOpt())
+	assert.Equal(t, time.Duration(0), *dst.LookbackOpt)
+}
+
+// TestStdDurationOptional_RoundTrip exercises a representative duration
+// through the shared roundTrip helper.
+func TestStdDurationOptional_RoundTrip(t *testing.T) {
+	d := 5*time.Hour + 23*time.Minute + 17*time.Second + 123456789*time.Nanosecond
+	src := &st.StdDurationHolder{Name: "query-lookback", LookbackOpt: &d}
+	roundTrip(t, src)
+}
+
+// TestStdDurationOptional_Clone pins that Clone reallocates a fresh
+// pointee rather than aliasing the source's *time.Duration.
+func TestStdDurationOptional_Clone(t *testing.T) {
+	d := 90 * time.Second
+	src := &st.StdDurationHolder{LookbackOpt: &d}
+	clone := src.Clone()
+	require.True(t, clone.Equal(src))
+	assert.NotSame(t, src.LookbackOpt, clone.LookbackOpt, "Clone must not alias the pointee")
+}
+
+// TestStdDurationOptional_GetterOnNilReceiver mirrors
+// TestStdDuration_GetterOnNilReceiver for the optional field: nil receiver
+// returns nil, not a zero time.Duration (the field is already a pointer).
+func TestStdDurationOptional_GetterOnNilReceiver(t *testing.T) {
+	var m *st.StdDurationHolder
+	assert.Nil(t, m.GetLookbackOpt())
+}

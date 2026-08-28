@@ -336,6 +336,21 @@ func (fg *FileGenerator) emitFieldUnmarshal(md protoreflect.MessageDescriptor, f
 	}
 
 	if fd.HasOptionalKeyword() {
+		// Optional Timestamp/Duration with stdtime/stdduration have
+		// MessageKind on the wire but a stdlib pointer shape on the Go side
+		// (*time.Time / *time.Duration) — check these before the generic
+		// message-pointer path below, which would otherwise wrap the plain
+		// MessageType and emit calls the stdlib type doesn't have.
+		if ft, ok := fg.stdtimeFieldType(fd); ok {
+			types.AddTypeImports(fg, ft)
+			ft.EmitUnmarshal(fg, access, ctx)
+			return
+		}
+		if ft, ok := fg.stdDurationFieldType(fd); ok {
+			types.AddTypeImports(fg, ft)
+			ft.EmitUnmarshal(fg, access, ctx)
+			return
+		}
 		// Optional message has the same `*Msg` shape as the pointer-option
 		// case, so reuse PointerField. Other optional kinds need the *T
 		// allocation in OptionalField.

@@ -19,6 +19,29 @@ func SizeStdTime(t time.Time) int {
 	if t.IsZero() {
 		return 0
 	}
+	return sizeStdTimeFields(t)
+}
+
+// SizeStdTimeAlways is SizeStdTime without the whole-value "IsZero means
+// absent" special case, for callers where presence is tracked separately
+// (a `*time.Time`, as in the proto3 `optional` stdtime field type) rather
+// than by treating the Go zero time as a sentinel. This matters because
+// `time.Time{}` (year 1) is not the same instant as the Unix epoch: its
+// Unix-seconds value is a large non-zero number, so — unlike
+// `time.Duration(0)`, whose seconds/nanos are always both exactly zero —
+// it does NOT fall out of the per-field zero-suppression in
+// sizeStdTimeFields on its own. A caller that reserves SizeStdTime(t) bytes
+// (0, via the IsZero short-circuit) but then unconditionally encodes via
+// EncodeStdTime would write past the reserved buffer for exactly this
+// value; SizeStdTimeAlways/EncodeStdTime is the correct size/encode pair
+// for a caller that always encodes when non-nil.
+func SizeStdTimeAlways(t time.Time) int {
+	return sizeStdTimeFields(t)
+}
+
+// sizeStdTimeFields computes the per-field (seconds, nanos) wire size with
+// proto3 default-suppression, shared by SizeStdTime and SizeStdTimeAlways.
+func sizeStdTimeFields(t time.Time) int {
 	seconds := t.Unix()
 	nanos := int32(t.Nanosecond())
 	n := 0

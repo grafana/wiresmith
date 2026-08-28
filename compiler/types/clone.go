@@ -67,6 +67,24 @@ func (StdDurationType) EmitClone(e Emitter, indent, dst, src string) {
 	emitValueCopy(e, indent, dst, src)
 }
 
+// OptionalStdtimeType / OptionalStdDurationType (*time.Time / *time.Duration):
+// reallocate a fresh pointee, preserving nil — same shape as OptionalField's
+// scalar-optional branch, since time.Time/time.Duration are themselves
+// value-copy-safe once dereferenced.
+func (OptionalStdtimeType) EmitClone(e Emitter, indent, dst, src string) {
+	e.Writef("%sif %s != nil {\n", indent, src)
+	e.Writef("%s\ttmp := *%s\n", indent, src)
+	e.Writef("%s\t%s = &tmp\n", indent, dst)
+	e.Writef("%s}\n", indent)
+}
+
+func (OptionalStdDurationType) EmitClone(e Emitter, indent, dst, src string) {
+	e.Writef("%sif %s != nil {\n", indent, src)
+	e.Writef("%s\ttmp := *%s\n", indent, src)
+	e.Writef("%s\t%s = &tmp\n", indent, dst)
+	e.Writef("%s}\n", indent)
+}
+
 // BytesType clones the backing array (never alias) via slices.Clone, which
 // preserves nil-vs-empty so the field round-trips through Equal.
 func (BytesType) EmitClone(e Emitter, indent, dst, src string) {

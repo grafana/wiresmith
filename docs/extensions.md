@@ -304,19 +304,32 @@ This matches `gogoproto.stdtime`'s contract and means **the Unix epoch is distin
 
 Presence is carried entirely by `time.Time.IsZero()` — wiresmith does **not** emit a `Has<Name>()` accessor for stdtime fields (unlike most other singular non-oneof fields where presence rides on a bitmap). Callers check `m.GetCreated().IsZero()` instead of `m.HasCreated()`.
 
+### proto3 `optional` + stdtime: real presence via `*time.Time`
+
+Adding `optional` combines with stdtime to produce a `*time.Time` field instead of `time.Time`. This is the shape client_model-style protos need — e.g. Prometheus's `optional google.protobuf.Timestamp created_timestamp` — where the caller must distinguish "never set" from "explicitly set to the zero instant":
+
+```proto
+message Snapshot {
+  // Generated Go: CreatedOpt *time.Time
+  optional google.protobuf.Timestamp created_opt = 4 [(wiresmith.options.stdtime) = true];
+}
+```
+
+Presence here is the pointer, not the value: a `nil` `CreatedOpt` is absent, and wiresmith emits a normal `HasCreatedOpt() bool` accessor (`m != nil && m.CreatedOpt != nil`) — unlike the non-optional case above, which has no `Has<Name>()` because presence is folded into the value. Because presence is real, `&time.Time{}` (an explicitly-set Go zero) marshals as a present, explicit Timestamp envelope rather than being suppressed — the "explicit zero vs unset" ambiguity the non-optional form cannot resolve goes away entirely once presence is a pointer.
+
 ### UTC normalization
 
 Decoded times are always in UTC. UTC is the canonical Timestamp timezone in the proto spec; encoded `seconds + nanos` carry no zone information, so the decoder picks UTC to keep the round-trip independent of the writer's local zone. Code that needs a local zone after decode should call `.In(loc)` itself.
 
 ### Where it applies (v1)
 
-Allowed: singular `google.protobuf.Timestamp` fields.
+Allowed: singular or proto3-`optional` `google.protobuf.Timestamp` fields.
 
 Rejected (combined compile-time error from `validateStdtimeOptions`):
 
 - Non-Timestamp message fields, scalars, enums, and `bytes`/`string`. Error: `(wiresmith.options.stdtime) only applies to google.protobuf.Timestamp fields, got <kind-or-name>`.
-- Map, oneof, repeated, and proto3 `optional` fields. Filed as follow-up beads if a real Mimir / Tempo use case surfaces.
-- Combination with `(wiresmith.options.pointer)`. The two options produce conflicting Go shapes (`*time.Time` vs `time.Time`); the generator refuses to pick one for you.
+- Map, oneof, and repeated fields. Filed as follow-up beads if a real Mimir / Tempo use case surfaces.
+- Combination with `(wiresmith.options.pointer)`. The two options produce conflicting Go shapes (`*time.Time` vs `time.Time`); the generator refuses to pick one for you. (Moot for `optional` fields anyway — `pointer`'s own validation already rejects `optional`, since `optional` already produces a pointer.)
 
 ### Protoreflect compatibility caveat
 
@@ -324,7 +337,7 @@ The generated `*_util.pb.go` still describes the field as `google.protobuf.Times
 
 ### Worked example
 
-[`proto/basic/basic/stdtime/v1/stdtime.proto`](../proto/basic/basic/stdtime/v1/stdtime.proto) annotates a Timestamp field next to stock scalar controls, and [`test/basic/stdtime_test.go`](../test/basic/stdtime_test.go) pins the round-trip / zero-presence / UTC-normalization / cross-library wire-format invariants documented above.
+[`proto/basic/basic/stdtime/v1/stdtime.proto`](../proto/basic/basic/stdtime/v1/stdtime.proto) annotates a Timestamp field next to stock scalar controls (plus a proto3-`optional` sibling field), and [`test/basic/stdtime_test.go`](../test/basic/stdtime_test.go) pins the round-trip / zero-presence / UTC-normalization / cross-library wire-format / optional-presence invariants documented above.
 
 ## `(wiresmith.options.stdduration) = true`
 
@@ -362,18 +375,29 @@ Unlike stdtime, `time.Duration` has only one zero value, so there is **no "expli
 
 Presence is carried entirely by the value (`d != 0`) — wiresmith does **not** emit a `Has<Name>()` accessor for stdduration fields, same shape as stdtime.
 
+### proto3 `optional` + stdduration: real presence via `*time.Duration`
+
+Adding `optional` combines with stdduration to produce a `*time.Duration` field, with a normal `HasLookbackOpt() bool` accessor (`m != nil && m.LookbackOpt != nil`) — the pointer carries presence instead of the value, so `&time.Duration(0)` (an explicitly-set zero) marshals as a present, explicit Duration envelope rather than being suppressed. This resolves the "no explicit zero vs unset distinction" limitation noted above, the same way `optional` + stdtime resolves it for Timestamp.
+
+```proto
+message Query {
+  // Generated Go: LookbackOpt *time.Duration
+  optional google.protobuf.Duration lookback_opt = 4 [(wiresmith.options.stdduration) = true];
+}
+```
+
 ### Overflow saturation
 
 `time.Duration` is int64 nanoseconds and tops out at ~292 years; proto Duration permits up to ~10000 years. A payload whose `seconds * 1e9 + nanos` does not fit decodes to `math.MaxInt64` (or `math.MinInt64` on negative overflow) rather than wrapping silently — matches `(*durationpb.Duration).AsDuration()` in `google.golang.org/protobuf`. See `protohelpers.DecodeStdDuration`.
 
 ### Where it applies (v1)
 
-Allowed: singular `google.protobuf.Duration` fields.
+Allowed: singular or proto3-`optional` `google.protobuf.Duration` fields.
 
 Rejected (combined compile-time error from `stddurationOption.Validate`):
 
 - Non-Duration message fields, scalars, enums, and `bytes`/`string`. Error: `(wiresmith.options.stdduration) only applies to google.protobuf.Duration fields, got <kind-or-name>`.
-- Map, oneof, repeated, and proto3 `optional` fields. Filed as follow-up beads if a real Mimir / Tempo use case surfaces.
+- Map, oneof, and repeated fields. Filed as follow-up beads if a real Mimir / Tempo use case surfaces.
 - Combination with `(wiresmith.options.pointer)`. The two options produce conflicting Go shapes (`*time.Duration` vs `time.Duration`); the generator refuses to pick one for you.
 
 ### Protoreflect compatibility caveat
@@ -382,7 +406,7 @@ Same caveat as stdtime: the `*_util.pb.go` describes the field as `google.protob
 
 ### Worked example
 
-[`proto/basic/basic/stdtime/v1/stdtime.proto`](../proto/basic/basic/stdtime/v1/stdtime.proto) (shared with stdtime) declares a `StdDurationHolder` message with an annotated `lookback` field, and [`test/basic/stdduration_test.go`](../test/basic/stdduration_test.go) pins the round-trip / zero-presence / negative / truncation-boundary / cross-library wire-format invariants documented above.
+[`proto/basic/basic/stdtime/v1/stdtime.proto`](../proto/basic/basic/stdtime/v1/stdtime.proto) (shared with stdtime) declares a `StdDurationHolder` message with an annotated `lookback` field (plus a proto3-`optional` sibling field), and [`test/basic/stdduration_test.go`](../test/basic/stdduration_test.go) pins the round-trip / zero-presence / negative / truncation-boundary / cross-library wire-format / optional-presence invariants documented above.
 
 ## `(wiresmith.options.no_presence) = true` (message) / `(wiresmith.options.no_presence_all) = true` (file)
 

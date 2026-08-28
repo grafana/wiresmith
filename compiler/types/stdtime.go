@@ -93,3 +93,78 @@ func (StdtimeType) EmitCompare(e Emitter, indent, lhs, rhs string) {
 	e.Writef("%s\treturn c\n", indent)
 	e.Writef("%s}\n", indent)
 }
+
+// OptionalStdtimeType is the FieldType for a proto3 `optional
+// google.protobuf.Timestamp` field annotated with
+// `(wiresmith.options.stdtime) = true`. The Go-side field is `*time.Time`;
+// unlike the non-optional StdtimeType, presence is real proto3 optional
+// semantics — a nil pointer means "not set", so `time.Time{}` (the Go zero)
+// is a legitimate set value that round-trips as an explicit empty Timestamp
+// envelope rather than being suppressed. This is the shape client_model-style
+// protos need (e.g. `optional google.protobuf.Timestamp created_timestamp`)
+// where absence must be distinguishable from the zero instant.
+//
+// Wire format is unchanged from StdtimeType: the standard Timestamp
+// sub-message envelope. Decoded times are normalised to UTC, same as
+// StdtimeType.
+type OptionalStdtimeType struct{}
+
+// RequiredImports declares "time" for *time.Time access.
+func (OptionalStdtimeType) RequiredImports() []string {
+	return []string{"time"}
+}
+
+// EmitSize emits a nil-guarded size accumulator — presence is the pointer,
+// not the value, so every non-nil pointee (including the Go zero time.Time)
+// is sized and emitted. Uses SizeStdTimeAlways rather than SizeStdTime: the
+// latter special-cases the Go zero time as "absent" (size 0) to support the
+// non-optional StdtimeType's value-based presence, which would under-count
+// here and desync from EncodeStdTime's unconditional write — see
+// SizeStdTimeAlways's doc comment.
+func (OptionalStdtimeType) EmitSize(e Emitter, access string, tagSize int) {
+	e.Writef("\tif %s != nil {\n", access)
+	e.Writef("\t\tinner := protohelpers.SizeStdTimeAlways(*%s)\n", access)
+	e.Writef("\t\tn += %d + protowire.SizeVarint(uint64(inner)) + inner\n", tagSize)
+	e.Writef("\t}\n")
+}
+
+// EmitMarshal mirrors EmitSize: nil-guard then dereferenced encode. See
+// StdtimeType.EmitMarshal for the reverse-write cursor rationale.
+func (OptionalStdtimeType) EmitMarshal(e Emitter, access string, num protowire.Number) {
+	e.Writef("\tif %s != nil {\n", access)
+	e.Writef("\t\tstart := i\n")
+	e.Writef("\t\ti = protohelpers.EncodeStdTime(dAtA, i, *%s)\n", access)
+	e.Writef("\t\tinner := start - i\n")
+	e.Writef("\t\ti = protohelpers.EncodeVarint(dAtA, i, uint64(inner))\n")
+	e.ReverseTag("\t\t", num, protowire.BytesType)
+	e.Writef("\t}\n")
+}
+
+// EmitUnmarshal decodes the Timestamp envelope into a freshly allocated
+// *time.Time, so a decoded field is always non-nil (matching Marshal's
+// contract that presence == non-nil).
+func (OptionalStdtimeType) EmitUnmarshal(e Emitter, access string, ctx FieldContext) {
+	emitConsumeBytesLen(e)
+	e.Writef("\t\t\tstdtimeVal, err := protohelpers.DecodeStdTime(dAtA[iNdEx:postIndex])\n")
+	e.Writef("\t\t\tif err != nil {\n\t\t\t\treturn err\n\t\t\t}\n")
+	e.Writef("\t\t\t%s = &stdtimeVal\n", access)
+	e.Writef("\t\t\tiNdEx = postIndex\n")
+}
+
+// EmitEqual: nil-pair mismatch is a difference, otherwise compare by instant
+// via time.Time.Equal (dereferencing both pointers).
+func (OptionalStdtimeType) EmitEqual(e Emitter, indent, lhs, rhs string) {
+	e.Writef("%sif (%s == nil) != (%s == nil) {\n%s\treturn false\n%s}\n", indent, lhs, rhs, indent, indent)
+	e.Writef("%sif %s != nil && !%s.Equal(*%s) {\n%s\treturn false\n%s}\n", indent, lhs, lhs, rhs, indent, indent)
+}
+
+// EmitCompare: nil < non-nil, then time.Time.Compare on the dereferenced
+// values. Mirrors OptionalField's message-shaped EmitCompare.
+func (OptionalStdtimeType) EmitCompare(e Emitter, indent, lhs, rhs string) {
+	emitNilPairOrdering(e, indent, lhs, rhs)
+	e.Writef("%sif %s != nil {\n", indent, lhs)
+	e.Writef("%s\tif c := %s.Compare(*%s); c != 0 {\n", indent, lhs, rhs)
+	e.Writef("%s\t\treturn c\n", indent)
+	e.Writef("%s\t}\n", indent)
+	e.Writef("%s}\n", indent)
+}

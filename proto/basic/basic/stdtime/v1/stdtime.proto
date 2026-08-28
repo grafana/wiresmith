@@ -22,6 +22,16 @@ message StdtimeHolder {
 
   // Generated Go: Created time.Time
   google.protobuf.Timestamp created = 3 [(wiresmith.options.stdtime) = true];
+
+  // proto3 `optional` + stdtime: presence is the pointer (nil vs non-nil),
+  // not the Go-zero-time sentinel `created` above relies on. This is the
+  // shape client_model-style protos need (e.g. Prometheus's
+  // `optional google.protobuf.Timestamp created_timestamp`), where the
+  // caller must be able to distinguish "never set" from "explicitly set to
+  // the zero instant".
+  //
+  // Generated Go: CreatedOpt *time.Time
+  optional google.protobuf.Timestamp created_opt = 4 [(wiresmith.options.stdtime) = true];
 }
 
 // StdDurationHolder exercises (wiresmith.options.stdduration) on a singular
@@ -39,4 +49,12 @@ message StdDurationHolder {
 
   // Generated Go: Lookback time.Duration
   google.protobuf.Duration lookback = 3 [(wiresmith.options.stdduration) = true];
+
+  // proto3 `optional` + stdduration: presence is the pointer, not the
+  // `time.Duration(0)` sentinel `lookback` above relies on — lets a caller
+  // distinguish "explicitly zero" from "unset", which plain
+  // StdDurationType cannot do.
+  //
+  // Generated Go: LookbackOpt *time.Duration
+  optional google.protobuf.Duration lookback_opt = 4 [(wiresmith.options.stdduration) = true];
 }
