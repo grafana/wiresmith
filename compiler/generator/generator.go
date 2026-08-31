@@ -989,12 +989,17 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 	// comments for details.
 	fg.emitAllEnums(fd)
 	fg.emitAllOneofs(fd)
-	fg.emitAllStructs(fd)
-	fg.emitAllResetMethods(fd)
+
+	// Do these in the same order as upstream.
+	forEachMessage(fd, func(md protoreflect.MessageDescriptor) {
+		fg.emitStruct(md)
+		fg.emitReset(md)
+		fg.emitGetters(md)
+	})
+
 	fg.emitAllHasMethods(fd)
-	fg.emitAllGetterMethods(fd)
-	fg.emitAllSizeMethods(fd)
 	fg.emitAllMarshalMethods(fd)
+	fg.emitAllSizeMethods(fd)
 	fg.emitAllUnmarshalMethods(fd)
 	fg.emitAllEqualMethods(fd)
 	fg.emitAllCompareMethods(fd)
@@ -1272,11 +1277,6 @@ func (fg *FileGenerator) emitAllOneofs(fd protoreflect.FileDescriptor) {
 		}
 	})
 }
-
-func (fg *FileGenerator) emitAllStructs(fd protoreflect.FileDescriptor) {
-	forEachMessage(fd, fg.emitStruct)
-}
-
 func (fg *FileGenerator) emitAllHasMethods(fd protoreflect.FileDescriptor) {
 	forEachMessage(fd, fg.emitHasMethods)
 }
