@@ -1,10 +1,11 @@
 module github.com/grafana/wiresmith
 
-go 1.25.0
+go 1.27.1
 
 require (
 	github.com/bufbuild/protocompile v0.14.1
 	github.com/gogo/protobuf v1.3.2
+	github.com/google/go-cmp v0.7.0
 	github.com/planetscale/vtprotobuf v0.6.1-0.20250313105119-ba97887b0a25
 	github.com/stretchr/testify v1.11.1
 	go.opentelemetry.io/collector/pdata v1.62.0
@@ -12,8 +13,6 @@ require (
 	google.golang.org/grpc v1.82.0
 	google.golang.org/protobuf v1.36.11
 )
-
-require github.com/google/go-cmp v0.7.0
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
