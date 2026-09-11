@@ -10,7 +10,7 @@ require (
 	go.opentelemetry.io/collector/pdata v1.62.0
 	go.opentelemetry.io/proto/otlp v1.10.0
 	google.golang.org/grpc v1.82.0
-	google.golang.org/protobuf v1.36.11
+	google.golang.org/protobuf v1.36.12
 )
 
 require github.com/google/go-cmp v0.7.0
@@ -29,6 +29,6 @@ require (
 	golang.org/x/sync v0.22.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
 	golang.org/x/text v0.40.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260713224248-f5fc221cf8c4 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260908043556-f8649ddbbfe6 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
