@@ -54,6 +54,10 @@ type Generator struct {
 	// doesn't match the generator's target tree.
 	Overrides map[string]string
 
+	// Global generation options
+	GenerateStringMethods  bool
+	GenerateCompareMethods bool
+
 	// goPackages maps a proto package name to the raw value of its
 	// `option go_package`. Populated during Generate after compilation.
 	goPackages map[string]string
@@ -1001,9 +1005,13 @@ func (g *Generator) generateFile(fd protoreflect.FileDescriptor) error {
 	fg.emitAllMarshalMethods(fd)
 	fg.emitAllSizeMethods(fd)
 	fg.emitAllUnmarshalMethods(fd)
-	fg.emitAllEqualMethods(fd)
-	fg.emitAllCompareMethods(fd)
-	fg.emitAllStringMethods(fd)
+	if g.GenerateCompareMethods {
+		fg.emitAllEqualMethods(fd)
+		fg.emitAllCompareMethods(fd)
+	}
+	if g.GenerateStringMethods {
+		fg.emitAllStringMethods(fd)
+	}
 	fg.emitAllCloneMethods(fd)
 
 	// Companion file: reflection/registration glue. These emitters write to
@@ -1193,22 +1201,6 @@ func (fg *FileGenerator) emitUtilFileBanner(out *bytes.Buffer) {
 	fmt.Fprintf(out, "//\n")
 	fmt.Fprintf(out, "// None of these are called on the marshal / unmarshal / size hot path.\n")
 	fmt.Fprintf(out, "//\n")
-	fmt.Fprintf(out, "// Why a separate file? Putting this code (plus its descriptorpb /\n")
-	fmt.Fprintf(out, "// protoreflect / protoimpl imports — ~64KB of descriptorpb alone, ~377KB\n")
-	fmt.Fprintf(out, "// added to __TEXT overall) next to the hot Marshal/Unmarshal functions\n")
-	fmt.Fprintf(out, "// caused a measured +7–14%% regression on otlp benchmarks (UnmarshalProfiles\n")
-	fmt.Fprintf(out, "// regressed by +12.6%%) due to icache / iTLB / BTB pressure: the hot\n")
-	fmt.Fprintf(out, "// loops themselves were unchanged, but cold reflection code interleaved\n")
-	fmt.Fprintf(out, "// in the same compilation unit shifted hot functions onto different\n")
-	fmt.Fprintf(out, "// cache sets and pushed them ~131KB further into the binary. Emitting\n")
-	fmt.Fprintf(out, "// the cold half here, in its own .o, lets the linker place it away\n")
-	fmt.Fprintf(out, "// from the hot half and recovers that throughput. reflect and String()\n")
-	fmt.Fprintf(out, "// are both cold and were already split out, so merging them (cold→cold)\n")
-	fmt.Fprintf(out, "// preserves the rationale while halving the companion-file count.\n")
-	fmt.Fprintf(out, "//\n")
-	fmt.Fprintf(out, "// See compiler/generator/emit_registration.go for the full rationale\n")
-	fmt.Fprintf(out, "// and the benchmark methodology. DO NOT inline this file's contents\n")
-	fmt.Fprintf(out, "// back into the main .pb.go without re-measuring.\n\n")
 }
 
 // emitCompareFileBanner is the parallel of emitUtilFileBanner for the

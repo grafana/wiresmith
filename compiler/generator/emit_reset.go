@@ -11,9 +11,7 @@ func (fg *FileGenerator) emitAllResetMethods(fd protoreflect.FileDescriptor) {
 }
 
 // emitReset emits Reset() and the ProtoMessage() marker into the hot main
-// .pb.go. String() is NOT emitted here — it moved to the cold companion
-// `<name>_util.pb.go` (see emit_string.go), so the deterministic per-field
-// formatter does not bloat the hot path.
+// .pb.go.
 func (fg *FileGenerator) emitReset(md protoreflect.MessageDescriptor) {
 	name := goMessageTypeName(md)
 	fmt.Fprintf(fg.body, "func (m *%s) Reset() {\n", name)

@@ -132,6 +132,8 @@ Flags:
 	overrides := &overridesFlag{m: map[string]string{}}
 	flag.Var(overrides, "M",
 		`override the Go import path for one .proto file (repeatable). Format: -M source=destpath[;name]. The source key matches the file's import-mapping key (the path used in 'import' statements); the destination wins over the file's own option go_package, mirroring protoc's M-flag semantics. Useful for vendored .protos whose go_package points outside the consumer's tree.`)
+	generateStringMethods := flag.Bool("string-methods", false, "generate String() methods for every message")
+	generateCompareMethods := flag.Bool("compare-methods", false, "generate Compare() and Equal() methods for every message")
 	flag.Parse()
 
 	if *showVersion {
@@ -140,11 +142,13 @@ Flags:
 	}
 
 	g := &generator.Generator{
-		Module:    *module,
-		OutDir:    *outDir,
-		ProtoDirs: protoPaths.dirs,
-		Files:     flag.Args(),
-		Overrides: overrides.m,
+		Module:                 *module,
+		OutDir:                 *outDir,
+		ProtoDirs:              protoPaths.dirs,
+		Files:                  flag.Args(),
+		Overrides:              overrides.m,
+		GenerateStringMethods:  *generateStringMethods,
+		GenerateCompareMethods: *generateCompareMethods,
 	}
 
 	if err := g.Generate(context.Background()); err != nil {

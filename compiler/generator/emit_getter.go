@@ -8,10 +8,6 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
-func (fg *FileGenerator) emitAllGetterMethods(fd protoreflect.FileDescriptor) {
-	forEachMessage(fd, fg.emitGetters)
-}
-
 func (fg *FileGenerator) emitGetters(md protoreflect.MessageDescriptor) {
 	name := goMessageTypeName(md)
 	pm := fg.presenceMap(md)
