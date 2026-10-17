@@ -10,7 +10,7 @@ require (
 	go.opentelemetry.io/collector/pdata v1.62.0
 	go.opentelemetry.io/proto/otlp v1.10.0
 	google.golang.org/grpc v1.82.0
-	google.golang.org/protobuf v1.36.11
+	google.golang.org/protobuf v1.36.12
 )
 
 require github.com/google/go-cmp v0.7.0
